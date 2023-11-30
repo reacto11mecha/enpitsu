@@ -11,6 +11,7 @@ if (!process.env.DATABASE_URL) {
 
 export default {
   schema: "./schema",
+  out: "./out",
   driver: "pg",
   dbCredentials: {
     connectionString: process.env.DATABASE_URL,

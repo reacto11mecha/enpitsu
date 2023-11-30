@@ -9,13 +9,13 @@
     "clean": "rm -rf .turbo node_modules",
     "lint": "eslint .",
     "format": "prettier --check . --ignore-path ../../.gitignore",
-    "push": "drizzle-kit push:mysql",
+    "push": "drizzle-kit push:pg",
     "studio": "drizzle-kit studio",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "drizzle-orm": "^0.29.0",
-    "postgres": "^3.4.3"
+    "pg": "8.10.0"
   },
   "devDependencies": {
     "@enpitsu/eslint-config": "workspace:^0.2.0",
