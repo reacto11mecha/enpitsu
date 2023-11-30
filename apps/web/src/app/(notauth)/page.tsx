@@ -1,14 +1,14 @@
-import { Zen_Maru_Gothic, IBM_Plex_Mono } from "next/font/google"
+import { IBM_Plex_Mono, Zen_Maru_Gothic } from "next/font/google";
 
 const zen = Zen_Maru_Gothic({
-  subsets: ['latin'],
-  weight: "500"
-})
+  subsets: ["latin"],
+  weight: "500",
+});
 
 const ibm = IBM_Plex_Mono({
-  subsets: ['latin'],
-  weight: "500"
-})
+  subsets: ["latin"],
+  weight: "500",
+});
 
 export default function HomePage() {
   return (

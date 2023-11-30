@@ -11,7 +11,7 @@ export default function Layout(props: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <main className="flex h-screen bg-gray-100 items-center justify-center flex-col gap-24">
+        <main className="flex h-screen flex-col items-center justify-center gap-24 bg-gray-100">
           {props.children}
         </main>
       </body>
