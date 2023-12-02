@@ -1,0 +1,51 @@
+{
+  "name": "@enpitsu/ui",
+  "private": true,
+  "version": "0.1.0",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "src/*"
+      ]
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "lint": "eslint .",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "lucide-react": "^0.294.0",
+    "next": "^14.0.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "tailwind-merge": "^2.0.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@enpitsu/eslint-config": "workspace:^0.2.0",
+    "@enpitsu/prettier-config": "workspace:^0.1.0",
+    "@enpitsu/tsconfig": "workspace:^0.1.0",
+    "@types/node": "^20.10.2",
+    "@types/react": "^18.2.40",
+    "@types/react-dom": "^18.2.17",
+    "eslint": "^8.55.0",
+    "tailwindcss": "3.3.5",
+    "typescript": "^5.3.2"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@enpitsu/eslint-config/base",
+      "@enpitsu/eslint-config/nextjs",
+      "@enpitsu/eslint-config/react"
+    ]
+  },
+  "prettier": "@enpitsu/prettier-config"
+}

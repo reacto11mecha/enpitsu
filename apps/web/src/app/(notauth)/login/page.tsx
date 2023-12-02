@@ -21,5 +21,5 @@ export default async function LoginPage() {
     );
   }
 
-  redirect("/somewherelse");
+  redirect("/admin");
 }

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { auth } from "@enpitsu/auth";
 
 import "~/styles/globals.css";
 
@@ -10,7 +12,11 @@ export const metadata: Metadata = {
   title: "enpitsu | Dasbor Admin",
 };
 
-export default function Layout(props: { children: React.ReactNode }) {
+export default async function Layout(props: { children: React.ReactNode }) {
+  const session = await auth();
+
+  if (!session) return redirect("/login");
+
   return (
     <html lang="en">
       <body>
