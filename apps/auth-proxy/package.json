@@ -11,17 +11,17 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@auth/core": "^0.18.0"
+    "@auth/core": "0.18.4"
   },
   "devDependencies": {
     "@enpitsu/eslint-config": "workspace:^0.2.0",
     "@enpitsu/prettier-config": "workspace:^0.1.0",
     "@enpitsu/tailwind-config": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
-    "eslint": "^8.53.0",
-    "nitropack": "^2.7.2",
+    "eslint": "^8.55.0",
+    "nitropack": "^2.8.1",
     "prettier": "^3.1.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.2"
   },
   "eslintConfig": {
     "root": true,

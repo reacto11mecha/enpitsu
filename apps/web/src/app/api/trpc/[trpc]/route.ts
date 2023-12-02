@@ -2,6 +2,8 @@ import { appRouter, createTRPCContext } from "@enpitsu/api";
 import { auth } from "@enpitsu/auth";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 
+export const runtime = "nodejs";
+
 /**
  * Configure basic CORS headers
  * You should extend this to match your needs
