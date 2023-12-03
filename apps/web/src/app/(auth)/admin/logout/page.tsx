@@ -1,22 +1,26 @@
-
+import { Button } from "@/components/ui/button";
 import { signOut } from "@enpitsu/auth";
 
 export default function LogoutPage() {
   return (
-    <div className=" flex flex-col items-center justify-center">
-      <h1>Ingin logout?</h1>
+    <div className=" flex h-[calc(100vh-5rem)] flex-col items-center justify-center p-10">
+      <div className=" flex h-[calc(100vh-5rem)] flex-col items-center justify-center gap-5 md:gap-10">
+        <h1 className="text-2xl font-bold md:text-4xl">Mau LogOut?</h1>
+        <h2 className="font-regular text-center text-xl md:text-3xl">
+          Masih bisa LogIn lagi kok
+        </h2>
+      </div>
 
       <form
+        className="w-full"
         action={async () => {
-          "use server"
+          "use server";
 
           await signOut();
         }}
       >
-        <button>
-          Keluar
-        </button>
-      </form >
+        <Button className="w-full md:text-lg">Keluar</Button>
+      </form>
     </div>
   );
 }

@@ -2,13 +2,12 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@enpitsu/auth";
 
-
 import "~/styles/globals.css";
 
 import { headers } from "next/headers";
 
-import { TRPCReactProvider } from "./providers";
 import { Navbar } from "~/_components/Navbar";
+import { TRPCReactProvider } from "./providers";
 
 export const metadata: Metadata = {
   title: "enpitsu | Dasbor Admin",

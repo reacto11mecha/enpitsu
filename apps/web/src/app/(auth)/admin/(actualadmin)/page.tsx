@@ -1,5 +1,3 @@
 export default function AdminPage() {
-  return (
-    <></>
-  );
+  return <></>;
 }

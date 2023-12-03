@@ -1,5 +1,3 @@
 export default function AngkatanPage() {
-  return (
-    <></>
-  );
+  return <></>;
 }
