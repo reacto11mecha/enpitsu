@@ -51,15 +51,25 @@ export function UserNav({
             </p>
           </div>
         </DropdownMenuLabel>
+
         <DropdownMenuSeparator />
+
         <DropdownMenuGroup>
-          <DropdownMenuItem>Profil</DropdownMenuItem>
-          <DropdownMenuItem>Tentang Aplikasi</DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link href={"/profile"} className="w-full hover:cursor-pointer">
+              Profil Anda
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link href={"/about"} className="w-full hover:cursor-pointer">
+              Tentang Aplikasi
+            </Link>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <Link href={"/admin/logout"} className="w-full hover:cursor-pointer">
+          <Link href={"/logout"} className="w-full hover:cursor-pointer">
             Keluar
           </Link>
         </DropdownMenuItem>

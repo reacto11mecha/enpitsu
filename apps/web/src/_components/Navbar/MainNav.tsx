@@ -1,6 +1,21 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+const links = [
+  {
+    href: "/admin",
+    label: "Admin",
+  },
+  {
+    href: "/admin/angkatan",
+    label: "Angkatan",
+  },
+  {
+    href: "/admin/soal",
+    label: "Soal",
+  },
+];
+
 export function MainNav({
   className,
   ...props
@@ -10,24 +25,15 @@ export function MainNav({
       className={cn("flex items-center space-x-4 lg:space-x-6", className)}
       {...props}
     >
-      <Link
-        href="/admin"
-        className="hover:text-primary text-base font-medium transition-colors"
-      >
-        Beranda
-      </Link>
-      <Link
-        href="/admin/angkatan"
-        className="hover:text-primary text-base font-medium transition-colors"
-      >
-        Angkatan
-      </Link>
-      <Link
-        href="/admin/soal"
-        className="hover:text-primary text-base font-medium transition-colors"
-      >
-        Soal
-      </Link>
+      {links.map((link) => (
+        <Link
+          key={link.href}
+          href={link.href}
+          className="hover:text-primary text-base font-medium transition-colors"
+        >
+          {link.label}
+        </Link>
+      ))}
     </nav>
   );
 }

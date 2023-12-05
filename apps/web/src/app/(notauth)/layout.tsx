@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Manrope as FontSans } from "next/font/google";
 
 import "~/styles/globals.css";
 
@@ -7,14 +8,15 @@ export const metadata: Metadata = {
   description: "Aplikasi ujian online berbasis web dan mobile apps",
 };
 
+const fontSans = FontSans({
+  subsets: ["latin"],
+  variable: "--font-manrope",
+});
+
 export default function Layout(props: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
-        <main className="flex h-screen flex-col items-center justify-center gap-24 bg-gray-100">
-          {props.children}
-        </main>
-      </body>
+    <html lang="ID-id">
+      <body className={fontSans.className}>{props.children}</body>
     </html>
   );
 }
