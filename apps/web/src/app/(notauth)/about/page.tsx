@@ -24,7 +24,9 @@ export default function AboutPage() {
         <span className={zen.className}>鉛筆</span> |{" "}
         <span className={zen.className}>えんぴつ</span>) yang memiliki arti
         pensil, mengapa? Karena pensil adalah ATK yang digunakan untuk mengisi
-        LJK (Lembar Jawaban Komputer) ketika ulangan tulis.
+        LJK (Lembar Jawaban Komputer) ketika ulangan tulis. Dengan keberadaan
+        software ini, di harapkan bisa memenuhi kebutuhan sekolah dalam
+        melakukan asesmen peserta didik.
       </p>
 
       <h2 className="mt-10 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
