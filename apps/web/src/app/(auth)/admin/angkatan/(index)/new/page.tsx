@@ -1,33 +1,33 @@
-import * as React from "react"
-
-import { Button } from "@/components/ui/button"
+import * as React from "react";
+import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function CardWithForm() {
-    return (
-        <div className="px-5 mt-5">
-
-            <Card className="w-[350px]">
-                <CardHeader>
-                    <CardTitle>Create project</CardTitle>
-                    <CardDescription>Deploy your new project in one-click.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form>
-                        <div className="grid w-full items-center gap-4">
-                            <div className="flex flex-col space-y-1.5">
-                                {/* <Label htmlFor="name">Name</Label>
+  return (
+    <div className="mt-5 px-5">
+      <Card className="w-[350px]">
+        <CardHeader>
+          <CardTitle>Create project</CardTitle>
+          <CardDescription>
+            Deploy your new project in one-click.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form>
+            <div className="grid w-full items-center gap-4">
+              <div className="flex flex-col space-y-1.5">
+                {/* <Label htmlFor="name">Name</Label>
                             <Input id="name" placeholder="Name of your project" /> */}
-                            </div>
-                            <div className="flex flex-col space-y-1.5">
-                                {/* <Label htmlFor="framework">Framework</Label>
+              </div>
+              <div className="flex flex-col space-y-1.5">
+                {/* <Label htmlFor="framework">Framework</Label>
                             <Select>
                                 <SelectTrigger id="framework">
                                     <SelectValue placeholder="Select" />
@@ -39,15 +39,15 @@ export default function CardWithForm() {
                                     <SelectItem value="nuxt">Nuxt.js</SelectItem>
                                     </SelectContent>
                                 </Select> */}
-                            </div>
-                        </div>
-                    </form>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                    <Button variant="outline">Cancel</Button>
-                    <Button>Deploy</Button>
-                </CardFooter>
-            </Card>
-        </div>
-    )
+              </div>
+            </div>
+          </form>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button variant="outline">Cancel</Button>
+          <Button>Deploy</Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
 }
