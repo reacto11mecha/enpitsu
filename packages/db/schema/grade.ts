@@ -18,9 +18,28 @@ export const subGrades = myPgTable("subgrade", {
   gradeId: integer("grade_id").notNull(),
 });
 
-export const subgradesRelations = relations(subGrades, ({ one }) => ({
+export const subgradesRelations = relations(subGrades, ({ one, many }) => ({
   grade: one(grades, {
     fields: [subGrades.gradeId],
     references: [grades.id],
+  }),
+  students: many(students),
+}));
+
+export const students = myPgTable("student", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  token: varchar("token", { length: 35 }).$defaultFn(() => "kjsdsd"),
+  participantNumber: varchar("participant_number", { length: 50 }).notNull(),
+  room: varchar("room", { length: 50 }).notNull(),
+  subgradeId: integer("subgrade_id")
+    .notNull()
+    .references(() => subGrades.id),
+});
+
+export const studentsRelations = relations(students, ({ one }) => ({
+  subgrade: one(subGrades, {
+    fields: [students.subgradeId],
+    references: [subGrades.id],
   }),
 }));

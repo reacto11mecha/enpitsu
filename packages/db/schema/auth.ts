@@ -10,6 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { myPgTable } from "./_table";
+import { questions } from "./question";
 
 export const users = myPgTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
@@ -23,6 +24,7 @@ export const users = myPgTable("user", {
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
+  questions: many(questions),
 }));
 
 export const accounts = myPgTable(
