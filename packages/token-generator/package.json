@@ -1,39 +1,37 @@
 {
-  "name": "@enpitsu/db",
-  "version": "0.1.0",
+  "name": "@enpitsu/token-generator",
   "private": true,
-  "main": "./index.ts",
-  "types": "./index.ts",
-  "license": "MIT",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "src/*"
+      ]
+    }
+  },
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
     "lint": "eslint .",
     "format": "prettier --check . --ignore-path ../../.gitignore",
-    "push": "drizzle-kit push:pg",
-    "studio": "drizzle-kit studio",
     "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "drizzle-orm": "^0.29.1",
-    "pg": "^8.11.3",
-    "postgres": "^3.4.3"
   },
   "devDependencies": {
     "@enpitsu/eslint-config": "workspace:^0.2.0",
     "@enpitsu/prettier-config": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
-    "@enpitsu/token-generator": "workspace:^0.1.0",
-    "dotenv-cli": "^7.3.0",
-    "drizzle-kit": "^0.20.6",
     "eslint": "^8.55.0",
-    "prettier": "^3.1.0",
     "typescript": "^5.3.2"
   },
   "eslintConfig": {
-    "root": true,
     "extends": [
       "@enpitsu/eslint-config/base"
     ]
   },
-  "prettier": "@enpitsu/prettier-config"
+  "prettier": "@enpitsu/prettier-config",
+  "dependencies": {
+    "nanoid": "3.x.x"
+  }
 }
