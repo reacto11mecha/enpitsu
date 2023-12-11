@@ -1,5 +1,5 @@
-import { AngkatanViewer } from "~/_components/AngkatanViewer";
-import { NewAngkatan } from "~/_components/NewAngkatan";
+import { AngkatanViewer } from "~/_components/Angkatan/AngkatanViewer";
+import { NewAngkatan } from "~/_components/Angkatan/NewAngkatan";
 
 export default function AngkatanPage() {
   return (
@@ -15,7 +15,7 @@ export default function AngkatanPage() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-5 pb-10">
         <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
           List Kelas
         </h4>

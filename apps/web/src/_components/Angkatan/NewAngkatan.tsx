@@ -57,7 +57,6 @@ export const NewAngkatan = () => {
     },
   });
 
-  // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
     gradeMutation.mutate(values);
   }
