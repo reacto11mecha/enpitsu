@@ -1,34 +1,9 @@
-{
-  "name": "@enpitsu/{{ name }}",
-  "private": true,
-  "version": "0.1.0",
-  "exports": {
-    ".": "./index.ts"
-  },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "src/*"
-      ]
-    }
-  },
-  "scripts": {
-    "clean": "rm -rf .turbo node_modules",
-    "lint": "eslint .",
-    "format": "prettier --check . --ignore-path ../../.gitignore",
-    "typecheck": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "@enpitsu/eslint-config": "workspace:^0.2.0",
-    "@enpitsu/prettier-config": "workspace:^0.1.0",
-    "@enpitsu/tsconfig": "workspace:^0.1.0",
-    "eslint": "^8.55.0",
-    "typescript": "^5.3.2"
-  },
-  "eslintConfig": {
-    "extends": [
-      "@enpitsu/eslint-config/base"
-    ]
-  },
-  "prettier": "@enpitsu/prettier-config"
-}
+{ "name": "@enpitsu/{{name}}", "private": true, "version": "0.1.0", "exports": {
+".": "./index.ts" }, "typesVersions": { "*": { "*": [ "src/*" ] } }, "scripts":
+{ "clean": "rm -rf .turbo node_modules", "lint": "eslint .", "format": "prettier
+--check . --ignore-path ../../.gitignore", "typecheck": "tsc --noEmit" },
+"devDependencies": { "@enpitsu/eslint-config": "workspace:^0.2.0",
+"@enpitsu/prettier-config": "workspace:^0.1.0", "@enpitsu/tsconfig":
+"workspace:^0.1.0", "eslint": "^8.55.0", "typescript": "^5.3.3" },
+"eslintConfig": { "extends": [ "@enpitsu/eslint-config/base" ] }, "prettier":
+"@enpitsu/prettier-config" }

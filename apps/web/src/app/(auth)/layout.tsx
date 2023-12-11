@@ -6,6 +6,7 @@ import { auth } from "@enpitsu/auth";
 import "~/styles/globals.css";
 
 import { headers } from "next/headers";
+import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 
 import { Navbar } from "~/_components/Navbar";
@@ -37,6 +38,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
           <Navbar user={session.user} />
           {props.children}
         </TRPCReactProvider>
+        <Toaster />
       </body>
     </html>
   );

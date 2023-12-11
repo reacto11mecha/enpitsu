@@ -1,29 +1,18 @@
-import {
-  // desc, eq,
-  schema,
-} from "@enpitsu/db";
+import { schema } from "@enpitsu/db"; // desc, eq,
+
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const gradeRouter = createTRPCRouter({
-  all: protectedProcedure.query(({ ctx }) =>
-    ctx.db.query.grades.findMany({
-      with: {
-        subgrades: {
-          columns: {
-            id: true,
-            label: true,
-          },
-        },
-      },
-    }),
+  getGrades: protectedProcedure.query(({ ctx }) =>
+    ctx.db.query.grades.findMany(),
   ),
 
   createGrade: protectedProcedure
-    .input(z.string())
-    .mutation(({ ctx, input: label }) => {
-      return ctx.db.insert(schema.grades).values({ label });
+    .input(z.object({ label: z.string() }))
+    .mutation(({ ctx, input }) => {
+      return ctx.db.insert(schema.grades).values(input);
     }),
 
   createSubGrade: protectedProcedure
