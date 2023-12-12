@@ -8,6 +8,15 @@ export const gradeRouter = createTRPCRouter({
     ctx.db.query.grades.findMany(),
   ),
 
+
+  getSubrades: protectedProcedure.input(z.object({
+    id: z.number()
+  })).query(({ ctx }) =>
+    ctx.db.query.subGrades.findMany({
+      where: eq(schema.subGrades.gradeId, input.id)
+    }),
+  ),
+
   createGrade: protectedProcedure
     .input(z.object({ label: z.string() }))
     .mutation(({ ctx, input }) => {

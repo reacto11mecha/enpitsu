@@ -1,3 +1,5 @@
+import { DataTable } from "~/_components/Angkatan/SpecificGrade/DataTable"
+
 export default function DynamicAngkatan() {
   return (
     <div className="mt-5 flex flex-col gap-10 px-5">
@@ -12,10 +14,12 @@ export default function DynamicAngkatan() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-5 pb-10">
+      <div className="flex flex-col pb-10">
         <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
           List Subkelas
         </h4>
+
+        <DataTable />
       </div>
     </div>
   );
