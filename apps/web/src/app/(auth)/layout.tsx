@@ -9,8 +9,8 @@ import { headers } from "next/headers";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 
-import { ThemeProvider } from "~/_components/theme-provider"
 import { Navbar } from "~/_components/Navbar";
+import { ThemeProvider } from "~/_components/theme-provider";
 import { TRPCReactProvider } from "./providers";
 
 const fontSans = FontSans({
@@ -31,7 +31,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
     <html lang="en">
       <body
         className={cn(
-          "dark:bg-stone-950 min-h-screen font-sans antialiased",
+          "bg-background min-h-screen font-sans antialiased",
           fontSans.variable,
         )}
       >

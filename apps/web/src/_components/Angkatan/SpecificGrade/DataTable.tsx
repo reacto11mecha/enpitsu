@@ -37,12 +37,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  Trash2,
-  Users,
-  ClipboardCopy,
-  MoreHorizontal,
-} from "lucide-react";
+import { ClipboardCopy, MoreHorizontal, Trash2, Users } from "lucide-react";
 
 import { api } from "~/utils/api";
 import { CreateSubgrade } from "./CreateSubgrade";
@@ -75,7 +70,8 @@ export const columns: ColumnDef<SubgradeList>[] = [
             <DropdownMenuLabel>Aksi</DropdownMenuLabel>
             <DropdownMenuItem>
               <Users className="mr-2 h-4 md:w-4" />
-              Kelola Murid</DropdownMenuItem>
+              Kelola Murid
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(String(subgrade.id))}
             >
@@ -85,7 +81,8 @@ export const columns: ColumnDef<SubgradeList>[] = [
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-rose-500 hover:text-rose-700 focus:text-rose-700">
               <Trash2 className="mr-2 h-4 md:w-4" />
-              Hapus Kelas</DropdownMenuItem>
+              Hapus Kelas
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -140,9 +137,9 @@ export function DataTable({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                     </TableHead>
                   );
                 })}

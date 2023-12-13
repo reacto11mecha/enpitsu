@@ -1,8 +1,8 @@
 import type { Session } from "@enpitsu/auth";
 
 import { MainNav } from "./MainNav";
-import { UserNav } from "./UserNav";
 import { ModeToggle } from "./ThemeSwitcher";
+import { UserNav } from "./UserNav";
 
 export const Navbar = ({ user }: { user: Session["user"] }) => {
   return (
