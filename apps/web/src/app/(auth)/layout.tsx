@@ -9,6 +9,7 @@ import { headers } from "next/headers";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 
+import { ThemeProvider } from "~/_components/theme-provider"
 import { Navbar } from "~/_components/Navbar";
 import { TRPCReactProvider } from "./providers";
 
@@ -30,14 +31,21 @@ export default async function Layout(props: { children: React.ReactNode }) {
     <html lang="en">
       <body
         className={cn(
-          "bg-background min-h-screen font-sans antialiased",
+          "dark:bg-stone-950 min-h-screen font-sans antialiased",
           fontSans.variable,
         )}
       >
-        <TRPCReactProvider headers={headers()}>
-          <Navbar user={session.user} />
-          {props.children}
-        </TRPCReactProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TRPCReactProvider headers={headers()}>
+            <Navbar user={session.user} />
+            {props.children}
+          </TRPCReactProvider>
+        </ThemeProvider>
         <Toaster />
       </body>
     </html>

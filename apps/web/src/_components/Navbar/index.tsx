@@ -2,6 +2,7 @@ import type { Session } from "@enpitsu/auth";
 
 import { MainNav } from "./MainNav";
 import { UserNav } from "./UserNav";
+import { ModeToggle } from "./ThemeSwitcher";
 
 export const Navbar = ({ user }: { user: Session["user"] }) => {
   return (
@@ -9,6 +10,7 @@ export const Navbar = ({ user }: { user: Session["user"] }) => {
       <div className="flex h-16 items-center px-4">
         <MainNav className="mx-6" />
         <div className="ml-auto flex items-center space-x-4">
+          <ModeToggle />
           <UserNav
             name={user.name!}
             profileImage={user.image!}

@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+// import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   // DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  // DropdownMenuSeparator,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,7 +38,9 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  // ArrowUpDown, ChevronDown,
+  Trash2,
+  Users,
+  ClipboardCopy,
   MoreHorizontal,
 } from "lucide-react";
 
@@ -49,64 +51,12 @@ type SubgradeList = RouterOutputs["grade"]["getGrades"][number];
 
 export const columns: ColumnDef<SubgradeList>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
     accessorKey: "label",
     header: "Sub Kelas",
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("label")}</div>
     ),
   },
-  // {
-  //   accessorKey: "email",
-  //   header: ({ column }) => {
-  //     return (
-  //       <Button
-  //         variant="ghost"
-  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       >
-  //         Email
-  //         <ArrowUpDown className="ml-2 h-4 w-4" />
-  //       </Button>
-  //     )
-  //   },
-  //   cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
-  // },
-  // {
-  //   accessorKey: "amount",
-  //   header: () => <div className="text-right">Amount</div>,
-  //   cell: ({ row }) => {
-  //     const amount = parseFloat(row.getValue("amount"))
-
-  //     // Format the amount as a dollar amount
-  //     const formatted = new Intl.NumberFormat("en-US", {
-  //       style: "currency",
-  //       currency: "USD",
-  //     }).format(amount)
-
-  //     return <div className="text-right font-medium">{formatted}</div>
-  //   },
-  // },
   {
     id: "actions",
     enableHiding: false,
@@ -122,15 +72,20 @@ export const columns: ColumnDef<SubgradeList>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+            <DropdownMenuItem>
+              <Users className="mr-2 h-4 md:w-4" />
+              Kelola Murid</DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(String(subgrade.id))}
             >
-              Salin ID Subkelas
+              <ClipboardCopy className="mr-2 h-4 md:w-4" />
+              Salin link halaman kelola
             </DropdownMenuItem>
-            {/* <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem> */}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-rose-500 hover:text-rose-700 focus:text-rose-700">
+              <Trash2 className="mr-2 h-4 md:w-4" />
+              Hapus Kelas</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -185,9 +140,9 @@ export function DataTable({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                     </TableHead>
                   );
                 })}
