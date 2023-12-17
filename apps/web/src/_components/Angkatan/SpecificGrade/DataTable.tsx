@@ -60,7 +60,7 @@ import {
 import { api } from "~/utils/api";
 import { CreateSubgrade } from "./CreateSubgrade";
 
-type SubgradeList = RouterOutputs["grade"]["getGrades"][number];
+type SubgradeList = RouterOutputs["grade"]["getSubgrades"][number];
 
 export const columns: ColumnDef<SubgradeList>[] = [
   {
@@ -133,10 +133,15 @@ export const columns: ColumnDef<SubgradeList>[] = [
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => {
+                className="cursor-pointer"
+                onClick={async () => {
                   const url = `${location.origin}/admin/angkatan/${params.id}/kelola/${subgrade.id}`;
 
-                  navigator.clipboard.writeText(url);
+                  await navigator.clipboard.writeText(url);
+
+                  toast({
+                    description: "Berhasil disalin!",
+                  });
                 }}
               >
                 <ClipboardCopy className="mr-2 h-4 md:w-4" />
