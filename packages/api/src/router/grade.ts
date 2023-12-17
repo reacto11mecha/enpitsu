@@ -23,6 +23,14 @@ export const gradeRouter = createTRPCRouter({
       }),
     ),
 
+  getStudents: protectedProcedure
+    .input(z.object({ subgradeId: z.number() }))
+    .query(({ ctx, input }) =>
+      ctx.db.query.students.findMany({
+        where: eq(schema.students.subgradeId, input.subgradeId),
+      }),
+    ),
+
   createGrade: protectedProcedure
     .input(z.object({ label: z.string() }))
     .mutation(({ ctx, input }) => {
@@ -38,6 +46,20 @@ export const gradeRouter = createTRPCRouter({
     )
     .mutation(({ ctx, input }) => {
       return ctx.db.insert(schema.subGrades).values(input);
+    }),
+
+  updateSubgrade: protectedProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        label: z.string(),
+      }),
+    )
+    .mutation(({ ctx, input }) => {
+      return ctx.db
+        .update(schema.subGrades)
+        .set({ label: input.label })
+        .where(eq(schema.subGrades.id, input.id));
     }),
 
   deleteGrade: protectedProcedure

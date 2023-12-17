@@ -23,7 +23,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -35,27 +50,28 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
 import type { RouterOutputs } from "@enpitsu/api";
-import type {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-} from "@tanstack/react-table";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsLeft,
+  ChevronsRight,
   ClipboardCopy,
   Loader2,
   MoreHorizontal,
+  PencilLine,
   Trash2,
   Users,
 } from "lucide-react";
+import { useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
 
 import { api } from "~/utils/api";
 import { CreateSubgrade } from "./CreateSubgrade";
@@ -76,23 +92,32 @@ export const columns: ColumnDef<SubgradeList>[] = [
     cell: ({ row }) => {
       const subgrade = row.original;
 
-      const [open, setOpen] = useState(false);
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [openDelete, setOpenDelete] = useState(false);
+
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [openEdit, setOpenEdit] = useState(false);
+
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       const [confirmationText, setConfirmText] = useState("");
 
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       const reallySure = useMemo(
         () => confirmationText === "saya ingin menghapus subkelas ini",
         [confirmationText],
       );
 
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       const params = useParams();
 
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       const { toast } = useToast();
 
       const apiUtils = api.useUtils();
 
       const subgradeDeleteMutation = api.grade.deleteSubgrade.useMutation({
         async onSuccess() {
-          setOpen(false);
+          setOpenDelete(false);
 
           setConfirmText("");
 
@@ -112,6 +137,57 @@ export const columns: ColumnDef<SubgradeList>[] = [
         },
       });
 
+      const schema = z.object({
+        label: z.string().min(1, { message: "Harus ada isinya!" }),
+      });
+
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const form = useForm<z.infer<typeof schema>>({
+        resolver: zodResolver(schema),
+        defaultValues: {
+          label: subgrade.label,
+        },
+      });
+
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const labelValue = useWatch({
+        control: form.control,
+        name: "label",
+      });
+
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const isSameEditValue = useMemo(
+        () => labelValue === subgrade.label,
+        [labelValue, subgrade.label],
+      );
+
+      const editSubgradeMutation = api.grade.updateSubgrade.useMutation({
+        async onSuccess() {
+          form.reset();
+
+          await apiUtils.grade.getSubgrades.invalidate();
+
+          setOpenEdit(false);
+
+          toast({
+            title: "Pembaruan Berhasil!",
+            description: "Berhasil mengubah nama kelas .",
+          });
+        },
+
+        onError(error) {
+          toast({
+            variant: "destructive",
+            title: "Operasi Gagal",
+            description: `Terjadi kesalahan, Error: ${error.message}`,
+          });
+        },
+      });
+
+      function onSubmit(values: z.infer<typeof schema>) {
+        editSubgradeMutation.mutate({ id: subgrade.id, label: values.label });
+      }
+
       return (
         <>
           <DropdownMenu>
@@ -125,6 +201,7 @@ export const columns: ColumnDef<SubgradeList>[] = [
               <DropdownMenuLabel>Aksi</DropdownMenuLabel>
               <DropdownMenuItem asChild>
                 <Link
+                  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                   href={`/admin/angkatan/${params.id}/kelola/${subgrade.id}`}
                   className="cursor-pointer"
                 >
@@ -135,6 +212,7 @@ export const columns: ColumnDef<SubgradeList>[] = [
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={async () => {
+                  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                   const url = `${location.origin}/admin/angkatan/${params.id}/kelola/${subgrade.id}`;
 
                   await navigator.clipboard.writeText(url);
@@ -149,8 +227,15 @@ export const columns: ColumnDef<SubgradeList>[] = [
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => setOpenEdit(true)}
+              >
+                <PencilLine className="mr-2 h-4 md:w-4" />
+                Ubah Nama
+              </DropdownMenuItem>
+              <DropdownMenuItem
                 className="cursor-pointer text-rose-500 hover:text-rose-700 focus:text-rose-700"
-                onClick={() => setOpen(true)}
+                onClick={() => setOpenDelete(true)}
               >
                 <Trash2 className="mr-2 h-4 md:w-4" />
                 Hapus Kelas
@@ -158,10 +243,12 @@ export const columns: ColumnDef<SubgradeList>[] = [
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* DELETE DIALOG */}
           <Dialog
-            open={open}
+            open={openDelete}
             onOpenChange={() => {
-              if (!subgradeDeleteMutation.isLoading) setOpen((prev) => !prev);
+              if (!subgradeDeleteMutation.isLoading)
+                setOpenDelete((prev) => !prev);
 
               if (confirmationText.length > 0) setConfirmText("");
             }}
@@ -217,6 +304,78 @@ export const columns: ColumnDef<SubgradeList>[] = [
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          {/* RENAME DIALOG */}
+          <Dialog
+            open={openEdit}
+            onOpenChange={() => {
+              if (!editSubgradeMutation.isLoading) setOpenEdit((prev) => !prev);
+            }}
+          >
+            <DialogContent>
+              <DialogHeader className="flex flex-col gap-2">
+                <DialogTitle>Ubah Nama</DialogTitle>
+                <DialogDescription>
+                  Ubah nama{" "}
+                  <b>
+                    kelas {subgrade.grade.label} {subgrade.label}
+                  </b>{" "}
+                  menjadi nama yang lain.
+                </DialogDescription>
+                <Form {...form}>
+                  <form
+                    className="w-full pb-4"
+                    onSubmit={form.handleSubmit(onSubmit)}
+                  >
+                    <div className="flex flex-row items-end gap-5">
+                      <FormField
+                        control={form.control}
+                        name="label"
+                        render={({ field }) => (
+                          <FormItem
+                            aria-disabled={editSubgradeMutation.isLoading}
+                            className="w-full"
+                          >
+                            <FormLabel>Nama Sub Kelas</FormLabel>
+                            <FormControl className="w-full">
+                              <Input
+                                placeholder="1"
+                                {...field}
+                                autoComplete="off"
+                                disabled={editSubgradeMutation.isLoading}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </form>
+                </Form>
+              </DialogHeader>
+              <DialogFooter className="gap-2 sm:justify-start">
+                <DialogClose asChild>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={editSubgradeMutation.isLoading}
+                  >
+                    Batal
+                  </Button>
+                </DialogClose>
+                <Button
+                  type="button"
+                  disabled={isSameEditValue || editSubgradeMutation.isLoading}
+                  onClick={() => form.handleSubmit(onSubmit)()}
+                >
+                  {editSubgradeMutation.isLoading ? (
+                    <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
+                  ) : null}
+                  Ubah
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </>
       );
     },
@@ -232,28 +391,12 @@ export function DataTable({
     gradeId: currentGrade.id,
   });
 
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
-
   const table = useReactTable({
     data: subgradesQuery.data ?? [],
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
+    initialState: { pagination: { pageSize: 15 } },
   });
 
   return (
@@ -340,27 +483,71 @@ export function DataTable({
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} dari{" "}
-          {table.getFilteredRowModel().rows.length} baris dipilih.
-        </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Sebelumnya
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Selanjutnya
-          </Button>
+        <div className="flex items-center space-x-6 lg:space-x-8">
+          <div className="flex items-center space-x-2">
+            <p className="text-sm font-medium">Baris per halaman</p>
+            <Select
+              value={`${table.getState().pagination.pageSize}`}
+              onValueChange={(value: string) => {
+                table.setPageSize(Number(value));
+              }}
+            >
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue
+                  placeholder={table.getState().pagination.pageSize}
+                />
+              </SelectTrigger>
+              <SelectContent side="top">
+                {[15, 25, 35, 45, 50].map((pageSize) => (
+                  <SelectItem key={pageSize} value={`${pageSize}`}>
+                    {pageSize}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+            Halaman {table.getState().pagination.pageIndex + 1} dari{" "}
+            {table.getPageCount()}
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              className="hidden h-8 w-8 p-0 lg:flex"
+              onClick={() => table.setPageIndex(0)}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <span className="sr-only">Go to first page</span>
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              className="h-8 w-8 p-0"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <span className="sr-only">Go to previous page</span>
+              <ChevronLeftIcon className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              className="h-8 w-8 p-0"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              <span className="sr-only">Go to next page</span>
+              <ChevronRightIcon className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              className="hidden h-8 w-8 p-0 lg:flex"
+              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+              disabled={!table.getCanNextPage()}
+            >
+              <span className="sr-only">Go to last page</span>
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

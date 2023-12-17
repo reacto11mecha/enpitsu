@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { db, eq, schema } from "@enpitsu/db";
 
+import { DataTable } from "~/_components/Angkatan/SpecificSubgrade/DataTable";
+
 export default async function ManageSpecificSubgrade(props: {
   params: { id: string; subgradeId: string };
 }) {
@@ -36,6 +38,8 @@ export default async function ManageSpecificSubgrade(props: {
         <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
           Daftar Siswa-Siswi
         </h4>
+
+        <DataTable subgrade={specificSubgrade} />
       </div>
     </div>
   );
