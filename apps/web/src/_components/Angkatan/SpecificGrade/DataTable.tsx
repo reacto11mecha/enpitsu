@@ -1,8 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
 // import { Checkbox } from "@/components/ui/checkbox";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   // DropdownMenuCheckboxItem,
@@ -12,8 +23,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-// import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -22,6 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useToast } from "@/components/ui/use-toast";
 import type { RouterOutputs } from "@enpitsu/api";
 import type {
   ColumnDef,
@@ -37,7 +49,13 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ClipboardCopy, MoreHorizontal, Trash2, Users } from "lucide-react";
+import {
+  ClipboardCopy,
+  Loader2,
+  MoreHorizontal,
+  Trash2,
+  Users,
+} from "lucide-react";
 
 import { api } from "~/utils/api";
 import { CreateSubgrade } from "./CreateSubgrade";
@@ -58,33 +76,143 @@ export const columns: ColumnDef<SubgradeList>[] = [
     cell: ({ row }) => {
       const subgrade = row.original;
 
+      const [open, setOpen] = useState(false);
+      const [confirmationText, setConfirmText] = useState("");
+
+      const reallySure = useMemo(
+        () => confirmationText === "saya ingin menghapus subkelas ini",
+        [confirmationText],
+      );
+
+      const params = useParams();
+
+      const { toast } = useToast();
+
+      const apiUtils = api.useUtils();
+
+      const subgradeDeleteMutation = api.grade.deleteSubgrade.useMutation({
+        async onSuccess() {
+          setOpen(false);
+
+          setConfirmText("");
+
+          await apiUtils.grade.getSubgrades.invalidate();
+
+          toast({
+            title: "Penghapusan Berhasil!",
+            description: "Berhasil menghapus seluruh kelas spesifik.",
+          });
+        },
+        onError(error) {
+          toast({
+            variant: "destructive",
+            title: "Operasi Gagal",
+            description: `Terjadi kesalahan, Error: ${error.message}`,
+          });
+        },
+      });
+
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Buka menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-            <DropdownMenuItem>
-              <Users className="mr-2 h-4 md:w-4" />
-              Kelola Murid
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(String(subgrade.id))}
-            >
-              <ClipboardCopy className="mr-2 h-4 md:w-4" />
-              Salin link halaman kelola
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-rose-500 hover:text-rose-700 focus:text-rose-700">
-              <Trash2 className="mr-2 h-4 md:w-4" />
-              Hapus Kelas
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Buka menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+              <DropdownMenuItem asChild>
+                <Link
+                  href={`/admin/angkatan/${params.id}/kelola/${subgrade.id}`}
+                  className="cursor-pointer"
+                >
+                  <Users className="mr-2 h-4 md:w-4" />
+                  Kelola Murid
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  const url = `${location.origin}/admin/angkatan/${params.id}/kelola/${subgrade.id}`;
+
+                  navigator.clipboard.writeText(url);
+                }}
+              >
+                <ClipboardCopy className="mr-2 h-4 md:w-4" />
+                Salin link halaman kelola
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer text-rose-500 hover:text-rose-700 focus:text-rose-700"
+                onClick={() => setOpen(true)}
+              >
+                <Trash2 className="mr-2 h-4 md:w-4" />
+                Hapus Kelas
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Dialog
+            open={open}
+            onOpenChange={() => {
+              if (!subgradeDeleteMutation.isLoading) setOpen((prev) => !prev);
+
+              if (confirmationText.length > 0) setConfirmText("");
+            }}
+          >
+            <DialogContent>
+              <DialogHeader className="flex flex-col gap-2">
+                <DialogTitle>Apakah anda yakin?</DialogTitle>
+                <DialogDescription>
+                  Aksi yang anda lakukan dapat berakibat fatal. Jika anda
+                  melakukan hal ini, maka akan secara permanen menghapus data
+                  angkatan{" "}
+                  <b>
+                    kelas {subgrade.grade.label} {subgrade.label}
+                  </b>
+                  .
+                </DialogDescription>
+                <DialogDescription className="text-start">
+                  Sebelum menghapus, ketik{" "}
+                  <b>saya ingin menghapus subkelas ini</b> pada kolom dibawah:
+                </DialogDescription>
+                <Input
+                  type="text"
+                  autoComplete="false"
+                  autoCorrect="false"
+                  disabled={subgradeDeleteMutation.isLoading}
+                  value={confirmationText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                />
+              </DialogHeader>
+              <DialogFooter className="gap-2 sm:justify-start">
+                <DialogClose asChild>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={subgradeDeleteMutation.isLoading}
+                  >
+                    Batal
+                  </Button>
+                </DialogClose>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={!reallySure || subgradeDeleteMutation.isLoading}
+                  onClick={() => {
+                    if (reallySure) subgradeDeleteMutation.mutate(subgrade.id);
+                  }}
+                >
+                  {subgradeDeleteMutation.isLoading ? (
+                    <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
+                  ) : null}
+                  Hapus
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </>
       );
     },
   },

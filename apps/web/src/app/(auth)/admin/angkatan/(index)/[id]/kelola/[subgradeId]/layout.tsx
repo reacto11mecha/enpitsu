@@ -6,7 +6,7 @@ export default async function Layout(props: {
   params: { id: string; subgradeId: string };
 }) {
   const gradeId = parseInt(props.params.id);
-  const subgradeId = parseInt(props.params.id);
+  const subgradeId = parseInt(props.params.subgradeId);
 
   if (isNaN(gradeId) || isNaN(subgradeId)) return redirect("/admin/angkatan");
 

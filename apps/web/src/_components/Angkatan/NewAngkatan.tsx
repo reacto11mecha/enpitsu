@@ -79,6 +79,7 @@ export const NewAngkatan = () => {
                     <Input
                       placeholder="X"
                       {...field}
+                      autoComplete="off"
                       disabled={gradeMutation.isLoading}
                     />
                   </FormControl>

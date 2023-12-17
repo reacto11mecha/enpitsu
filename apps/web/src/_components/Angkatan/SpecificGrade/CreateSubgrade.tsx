@@ -79,6 +79,7 @@ export const CreateSubgrade = ({ gradeId }: { gradeId: number }) => {
                     <Input
                       placeholder="1"
                       {...field}
+                      autoComplete="off"
                       disabled={createSubgradeMutation.isLoading}
                     />
                   </FormControl>

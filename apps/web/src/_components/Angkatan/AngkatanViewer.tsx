@@ -110,6 +110,8 @@ export const AngkatanViewer = () => {
         open={open}
         onOpenChange={() => {
           if (!gradeDeleteMutation.isLoading) setOpen((prev) => !prev);
+
+          if (confirmationText.length > 0) setConfirmText("");
         }}
       >
         <DialogContent>
