@@ -24,40 +24,43 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, FileSpreadsheet } from "lucide-react";
 import { parse as parseCSV } from "csv-parse";
+import { FileSpreadsheet, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { api } from "~/utils/api";
 
-const FileValueSchema = z.array(z.object({
-  "Nama": z
-    .string()
-    .min(2, { message: "Nama wajib di isi!" })
-    .max(255, { message: "Nama terlalu panjang!" }),
-  "Nomor Peserta": z
-    .string()
-    .min(5, { message: "Nomor peserta wajib di isi!" })
-    .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-  "Ruang": z
-    .string()
-    .min(1, { message: "Ruangan peserta wajib di isi!" })
-    .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-}));
+const FileValueSchema = z.array(
+  z.object({
+    Nama: z
+      .string()
+      .min(2, { message: "Nama wajib di isi!" })
+      .max(255, { message: "Nama terlalu panjang!" }),
+    "Nomor Peserta": z
+      .string()
+      .min(5, { message: "Nomor peserta wajib di isi!" })
+      .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
+    Ruang: z
+      .string()
+      .min(1, { message: "Ruangan peserta wajib di isi!" })
+      .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
+  }),
+);
 
 const formSchema = z.object({
   csv: z
     .instanceof(FileList, { message: "Dibutuhkan file csv!" })
     .refine((files) => files.length > 0, `Dibutuhkan file csv!`)
-    .refine((files) => files.length <= 1, `Hanya diperbolehkan upload 1 file saja!`)
     .refine(
-      (files) =>
-        Array.from(files).every((file) => file.type === "text/csv"),
-      "Hanya bisa file csv saja!"
+      (files) => files.length <= 1,
+      `Hanya diperbolehkan upload 1 file saja!`,
+    )
+    .refine(
+      (files) => Array.from(files).every((file) => file.type === "text/csv"),
+      "Hanya bisa file csv saja!",
     ),
-
-})
+});
 
 export const UploadCSV = ({
   grade,
@@ -130,9 +133,15 @@ export const UploadCSV = ({
         return;
       }
 
-      createStudentManyMutation.mutate(result.data.map(val => ({ name: val.Nama, participantNumber: val['Nomor Peserta'], room: val.Ruang, subgradeId: subgrade.id })));
+      createStudentManyMutation.mutate(
+        result.data.map((val) => ({
+          name: val.Nama,
+          participantNumber: val["Nomor Peserta"],
+          room: val.Ruang,
+          subgradeId: subgrade.id,
+        })),
+      );
     });
-
   }
 
   return (
@@ -193,7 +202,9 @@ export const UploadCSV = ({
           <Button type="submit" onClick={() => form.handleSubmit(onSubmit)()}>
             {createStudentManyMutation.isLoading ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
-            ) : null}Tambah</Button>
+            ) : null}
+            Tambah
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
