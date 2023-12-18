@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -54,6 +55,8 @@ import {
 } from "lucide-react";
 
 import { api } from "~/utils/api";
+import { AddStudent } from "./AddStudent";
+import { UploadCSV } from "./UploadCSV";
 
 type StudentList = RouterOutputs["grade"]["getStudents"][number];
 
@@ -143,8 +146,13 @@ export const columns: ColumnDef<StudentList>[] = [
 ];
 
 export function DataTable({
+  grade,
   subgrade,
 }: {
+  grade: {
+    id: number;
+    label: string;
+  };
   subgrade: {
     id: number;
     label: string;
@@ -155,13 +163,10 @@ export function DataTable({
     subgradeId: subgrade.id,
   });
 
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
     data: studentQuery.data ?? [],
@@ -185,19 +190,23 @@ export function DataTable({
 
   return (
     <div className="w-full">
-      <div className="flex items-center pb-4">
+      <div className="flex gap-3">
+        <AddStudent subgrade={subgrade} grade={grade} />
+        <UploadCSV subgrade={subgrade} grade={grade} />
+      </div>
+      <div className="flex items-center py-4">
         <Input
           placeholder="Filter berdasarkan nama..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="max-w-md"
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+              Kolom-Kolom <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -242,6 +251,29 @@ export function DataTable({
             ))}
           </TableHeader>
           <TableBody>
+            {studentQuery.isError ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  Error: {studentQuery.error.message}
+                </TableCell>
+              </TableRow>
+            ) : null}
+
+            {studentQuery.isLoading && !studentQuery.isError ? (
+              <>
+                {Array.from({ length: 10 }).map((_, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell colSpan={columns.length}>
+                      <Skeleton className="h-5 w-full" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </>
+            ) : null}
+
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow

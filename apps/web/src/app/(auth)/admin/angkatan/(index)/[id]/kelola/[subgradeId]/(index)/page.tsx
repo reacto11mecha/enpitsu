@@ -39,7 +39,7 @@ export default async function ManageSpecificSubgrade(props: {
           Daftar Siswa-Siswi
         </h4>
 
-        <DataTable subgrade={specificSubgrade} />
+        <DataTable subgrade={specificSubgrade} grade={specificGrade} />
       </div>
     </div>
   );

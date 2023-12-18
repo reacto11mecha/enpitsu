@@ -423,7 +423,7 @@ export function DataTable({
             ))}
           </TableHeader>
           <TableBody>
-            {subgradesQuery.isError && (
+            {subgradesQuery.isError ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
@@ -432,9 +432,9 @@ export function DataTable({
                   Error: {subgradesQuery.error.message}
                 </TableCell>
               </TableRow>
-            )}
+            ) : null}
 
-            {subgradesQuery.isLoading && !subgradesQuery.isError && (
+            {subgradesQuery.isLoading && !subgradesQuery.isError ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <TableRow key={idx}>
@@ -444,7 +444,8 @@ export function DataTable({
                   </TableRow>
                 ))}
               </>
-            )}
+            ) : null}
+
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow

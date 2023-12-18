@@ -48,6 +48,19 @@ export const gradeRouter = createTRPCRouter({
       return ctx.db.insert(schema.subGrades).values(input);
     }),
 
+  createStudent: protectedProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        participantNumber: z.string(),
+        room: z.string(),
+        subgradeId: z.number(),
+      }),
+    )
+    .mutation(({ ctx, input }) => {
+      return ctx.db.insert(schema.students).values(input);
+    }),
+
   updateSubgrade: protectedProcedure
     .input(
       z.object({
