@@ -1,4 +1,4 @@
-import { eq, schema } from "@enpitsu/db";
+import { asc, eq, schema } from "@enpitsu/db";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -20,6 +20,7 @@ export const gradeRouter = createTRPCRouter({
         with: {
           grade: true,
         },
+        orderBy: [asc(schema.subGrades.label)],
       }),
     ),
 
@@ -28,6 +29,7 @@ export const gradeRouter = createTRPCRouter({
     .query(({ ctx, input }) =>
       ctx.db.query.students.findMany({
         where: eq(schema.students.subgradeId, input.subgradeId),
+        orderBy: [asc(schema.students.name)],
       }),
     ),
 
@@ -56,6 +58,21 @@ export const gradeRouter = createTRPCRouter({
         room: z.string(),
         subgradeId: z.number(),
       }),
+    )
+    .mutation(({ ctx, input }) => {
+      return ctx.db.insert(schema.students).values(input);
+    }),
+
+  createStudentMany: protectedProcedure
+    .input(
+      z.array(
+        z.object({
+          name: z.string(),
+          participantNumber: z.string(),
+          room: z.string(),
+          subgradeId: z.number(),
+        }),
+      ),
     )
     .mutation(({ ctx, input }) => {
       return ctx.db.insert(schema.students).values(input);

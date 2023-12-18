@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,9 +12,52 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { FileSpreadsheet } from "lucide-react";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, FileSpreadsheet } from "lucide-react";
+import { parse as parseCSV } from "csv-parse";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { api } from "~/utils/api";
+
+const FileValueSchema = z.array(z.object({
+  "Nama": z
+    .string()
+    .min(2, { message: "Nama wajib di isi!" })
+    .max(255, { message: "Nama terlalu panjang!" }),
+  "Nomor Peserta": z
+    .string()
+    .min(5, { message: "Nomor peserta wajib di isi!" })
+    .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
+  "Ruang": z
+    .string()
+    .min(1, { message: "Ruangan peserta wajib di isi!" })
+    .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
+}));
+
+const formSchema = z.object({
+  csv: z
+    .instanceof(FileList, { message: "Dibutuhkan file csv!" })
+    .refine((files) => files.length > 0, `Dibutuhkan file csv!`)
+    .refine((files) => files.length <= 1, `Hanya diperbolehkan upload 1 file saja!`)
+    .refine(
+      (files) =>
+        Array.from(files).every((file) => file.type === "text/csv"),
+      "Hanya bisa file csv saja!"
+    ),
+
+})
 
 export const UploadCSV = ({
   grade,
@@ -29,8 +73,76 @@ export const UploadCSV = ({
     gradeId: number;
   };
 }) => {
+  const [open, setOpen] = useState(false);
+
+  const { toast } = useToast();
+
+  const apiUtils = api.useUtils();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+  });
+
+  const createStudentManyMutation = api.grade.createStudentMany.useMutation({
+    async onSuccess() {
+      form.reset();
+
+      await apiUtils.grade.getStudents.invalidate();
+
+      setOpen(false);
+
+      toast({
+        title: "Penambahan Berhasil!",
+        description: `Berhasil menambahkan banyak murid baru di kelas ${grade.label} ${subgrade.label}.`,
+      });
+    },
+
+    onError(error) {
+      toast({
+        variant: "destructive",
+        title: "Operasi Gagal",
+        description: `Terjadi kesalahan, Error: ${error.message}`,
+      });
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const file = values.csv.item(0)!;
+    const text = await file.text();
+
+    parseCSV(text, { columns: true, trim: true }, (err, records) => {
+      if (err)
+        toast({
+          variant: "destructive",
+          title: "Gagal Membaca File",
+          description: `Terjadi kesalahan, Error: ${err.message}`,
+        });
+
+      const result = FileValueSchema.safeParse(records);
+
+      if (!result.success) {
+        toast({
+          variant: "destructive",
+          title: "Format file tidak sesuai!",
+          description: `Mohon periksa kembali format file yang ingin di upload, masih ada kesalahan.`,
+        });
+
+        return;
+      }
+
+      createStudentManyMutation.mutate(result.data.map(val => ({ name: val.Nama, participantNumber: val['Nomor Peserta'], room: val.Ruang, subgradeId: subgrade.id })));
+    });
+
+  }
+
   return (
-    <Dialog>
+    <Dialog
+      open={open}
+      onOpenChange={() => {
+        if (!createStudentManyMutation.isLoading) setOpen((prev) => !prev);
+        form.reset();
+      }}
+    >
       <DialogTrigger asChild>
         <Button>
           Upload CSV <FileSpreadsheet className="ml-2 h-4 w-4" />
@@ -47,13 +159,41 @@ export const UploadCSV = ({
             . Nama akan otomatis tersortir dari A ke Z.
           </DialogDescription>
         </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <FormField
+              control={form.control}
+              name="csv"
+              render={() => (
+                <FormItem>
+                  <FormLabel>File CSV</FormLabel>
+                  <FormControl>
+                    <Input
+                      accept="text/csv"
+                      type="file"
+                      disabled={createStudentManyMutation.isLoading}
+                      {...form.register("csv")}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Pilih file csv untuk menambahkan banyak murid sekaligus.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="secondary">
               Batal
             </Button>
           </DialogClose>
-          <Button type="submit">Tambah</Button>
+          <Button type="submit" onClick={() => form.handleSubmit(onSubmit)()}>
+            {createStudentManyMutation.isLoading ? (
+              <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
+            ) : null}Tambah</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
