@@ -1,19 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 // import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   // DropdownMenuCheckboxItem,
@@ -23,15 +14,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -50,7 +32,6 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
 import type { RouterOutputs } from "@enpitsu/api";
-import { zodResolver } from "@hookform/resolvers/zod";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   flexRender,
@@ -64,17 +45,16 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ClipboardCopy,
-  Loader2,
   MoreHorizontal,
   PencilLine,
   Trash2,
   Users,
 } from "lucide-react";
-import { useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
 
 import { api } from "~/utils/api";
 import { CreateSubgrade } from "./CreateSubgrade";
+import { DeleteSubgrade } from "./DeleteSubgrade";
+import { RenameSubgrade } from "./RenameSubgrade";
 
 type SubgradeList = RouterOutputs["grade"]["getSubgrades"][number];
 
@@ -99,94 +79,10 @@ export const columns: ColumnDef<SubgradeList>[] = [
       const [openEdit, setOpenEdit] = useState(false);
 
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      const [confirmationText, setConfirmText] = useState("");
-
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const reallySure = useMemo(
-        () => confirmationText === "saya ingin menghapus subkelas ini",
-        [confirmationText],
-      );
-
-      // eslint-disable-next-line react-hooks/rules-of-hooks
       const params = useParams();
 
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const { toast } = useToast();
-
-      const apiUtils = api.useUtils();
-
-      const subgradeDeleteMutation = api.grade.deleteSubgrade.useMutation({
-        async onSuccess() {
-          setOpenDelete(false);
-
-          setConfirmText("");
-
-          await apiUtils.grade.getSubgrades.invalidate();
-
-          toast({
-            title: "Penghapusan Berhasil!",
-            description: "Berhasil menghapus seluruh kelas spesifik.",
-          });
-        },
-        onError(error) {
-          toast({
-            variant: "destructive",
-            title: "Operasi Gagal",
-            description: `Terjadi kesalahan, Error: ${error.message}`,
-          });
-        },
-      });
-
-      const schema = z.object({
-        label: z.string().min(1, { message: "Harus ada isinya!" }),
-      });
-
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const form = useForm<z.infer<typeof schema>>({
-        resolver: zodResolver(schema),
-        defaultValues: {
-          label: subgrade.label,
-        },
-      });
-
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const labelValue = useWatch({
-        control: form.control,
-        name: "label",
-      });
-
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const isSameEditValue = useMemo(
-        () => labelValue === subgrade.label,
-        [labelValue, subgrade.label],
-      );
-
-      const editSubgradeMutation = api.grade.updateSubgrade.useMutation({
-        async onSuccess() {
-          form.reset();
-
-          await apiUtils.grade.getSubgrades.invalidate();
-
-          setOpenEdit(false);
-
-          toast({
-            title: "Pembaruan Berhasil!",
-            description: "Berhasil mengubah nama kelas .",
-          });
-        },
-
-        onError(error) {
-          toast({
-            variant: "destructive",
-            title: "Operasi Gagal",
-            description: `Terjadi kesalahan, Error: ${error.message}`,
-          });
-        },
-      });
-
-      function onSubmit(values: z.infer<typeof schema>) {
-        editSubgradeMutation.mutate({ id: subgrade.id, label: values.label });
-      }
 
       return (
         <>
@@ -243,139 +139,20 @@ export const columns: ColumnDef<SubgradeList>[] = [
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* DELETE DIALOG */}
-          <Dialog
-            open={openDelete}
-            onOpenChange={() => {
-              if (!subgradeDeleteMutation.isLoading)
-                setOpenDelete((prev) => !prev);
+          <DeleteSubgrade
+            openDelete={openDelete}
+            setOpenDelete={setOpenDelete}
+            label={`${subgrade.grade.label} ${subgrade.label}`}
+            id={subgrade.id}
+          />
 
-              if (confirmationText.length > 0) setConfirmText("");
-            }}
-          >
-            <DialogContent>
-              <DialogHeader className="flex flex-col gap-2">
-                <DialogTitle>Apakah anda yakin?</DialogTitle>
-                <DialogDescription>
-                  Aksi yang anda lakukan dapat berakibat fatal. Jika anda
-                  melakukan hal ini, maka akan secara permanen menghapus data
-                  angkatan{" "}
-                  <b>
-                    kelas {subgrade.grade.label} {subgrade.label}
-                  </b>
-                  .
-                </DialogDescription>
-                <DialogDescription className="text-start">
-                  Sebelum menghapus, ketik{" "}
-                  <b>saya ingin menghapus subkelas ini</b> pada kolom dibawah:
-                </DialogDescription>
-                <Input
-                  type="text"
-                  autoComplete="false"
-                  autoCorrect="false"
-                  disabled={subgradeDeleteMutation.isLoading}
-                  value={confirmationText}
-                  onChange={(e) => setConfirmText(e.target.value)}
-                />
-              </DialogHeader>
-              <DialogFooter className="gap-2 sm:justify-start">
-                <DialogClose asChild>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    disabled={subgradeDeleteMutation.isLoading}
-                  >
-                    Batal
-                  </Button>
-                </DialogClose>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  disabled={!reallySure || subgradeDeleteMutation.isLoading}
-                  onClick={() => {
-                    if (reallySure) subgradeDeleteMutation.mutate(subgrade.id);
-                  }}
-                >
-                  {subgradeDeleteMutation.isLoading ? (
-                    <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
-                  ) : null}
-                  Hapus
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          {/* RENAME DIALOG */}
-          <Dialog
-            open={openEdit}
-            onOpenChange={() => {
-              if (!editSubgradeMutation.isLoading) setOpenEdit((prev) => !prev);
-            }}
-          >
-            <DialogContent>
-              <DialogHeader className="flex flex-col gap-2">
-                <DialogTitle>Ubah Nama</DialogTitle>
-                <DialogDescription>
-                  Ubah nama{" "}
-                  <b>
-                    kelas {subgrade.grade.label} {subgrade.label}
-                  </b>{" "}
-                  menjadi nama yang lain.
-                </DialogDescription>
-                <Form {...form}>
-                  <form
-                    className="w-full pb-4"
-                    onSubmit={form.handleSubmit(onSubmit)}
-                  >
-                    <div className="flex flex-row items-end gap-5">
-                      <FormField
-                        control={form.control}
-                        name="label"
-                        render={({ field }) => (
-                          <FormItem
-                            aria-disabled={editSubgradeMutation.isLoading}
-                            className="w-full"
-                          >
-                            <FormLabel>Nama Sub Kelas</FormLabel>
-                            <FormControl className="w-full">
-                              <Input
-                                placeholder="1"
-                                {...field}
-                                autoComplete="off"
-                                disabled={editSubgradeMutation.isLoading}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </form>
-                </Form>
-              </DialogHeader>
-              <DialogFooter className="gap-2 sm:justify-start">
-                <DialogClose asChild>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    disabled={editSubgradeMutation.isLoading}
-                  >
-                    Batal
-                  </Button>
-                </DialogClose>
-                <Button
-                  type="button"
-                  disabled={isSameEditValue || editSubgradeMutation.isLoading}
-                  onClick={() => form.handleSubmit(onSubmit)()}
-                >
-                  {editSubgradeMutation.isLoading ? (
-                    <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
-                  ) : null}
-                  Ubah
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <RenameSubgrade
+            openEdit={openEdit}
+            setOpenEdit={setOpenEdit}
+            label={`${subgrade.grade.label} ${subgrade.label}`}
+            param={subgrade.label}
+            id={subgrade.id}
+          />
         </>
       );
     },
@@ -466,7 +243,7 @@ export function DataTable({
               <>
                 {!subgradesQuery.isLoading && (
                   <>
-                    {!subgradesQuery.isLoading && (
+                    {!subgradesQuery.isError && (
                       <TableRow>
                         <TableCell
                           colSpan={columns.length}

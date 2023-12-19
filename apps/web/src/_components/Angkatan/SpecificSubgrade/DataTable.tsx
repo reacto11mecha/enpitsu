@@ -2,14 +2,12 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -52,38 +50,19 @@ import {
   ChevronsLeft,
   ChevronsRight,
   MoreHorizontal,
+  PencilLine,
+  Trash2,
 } from "lucide-react";
 
 import { api } from "~/utils/api";
 import { AddStudent } from "./AddStudent";
+import { DeleteStudent } from "./DeleteStudent";
+import { UpdateStudent } from "./UpdateStudent";
 import { UploadCSV } from "./UploadCSV";
 
 type StudentList = RouterOutputs["grade"]["getStudents"][number];
 
 export const columns: ColumnDef<StudentList>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -118,28 +97,55 @@ export const columns: ColumnDef<StudentList>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row.original;
+      const student = row.original;
+
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [openDelete, setOpenDelete] = useState(false);
+
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [openEdit, setOpenEdit] = useState(false);
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(String(payment.id))}
-            >
-              Copy payment ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => setOpenEdit(true)}
+              >
+                <PencilLine className="mr-2 h-4 md:w-4" />
+                Perbaiki Identitas
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer text-rose-500 hover:text-rose-700 focus:text-rose-700"
+                onClick={() => setOpenDelete(true)}
+              >
+                <Trash2 className="mr-2 h-4 md:w-4" />
+                Hapus Murid
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <UpdateStudent
+            openEdit={openEdit}
+            setOpenEdit={setOpenEdit}
+            student={student}
+          />
+
+          <DeleteStudent
+            openDelete={openDelete}
+            setOpenDelete={setOpenDelete}
+            name={student.name}
+            id={student.id}
+          />
+        </>
       );
     },
   },
@@ -159,17 +165,16 @@ export function DataTable({
     gradeId: number;
   };
 }) {
-  const studentQuery = api.grade.getStudents.useQuery({
+  const studentsQuery = api.grade.getStudents.useQuery({
     subgradeId: subgrade.id,
   });
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
-    data: studentQuery.data ?? [],
+    data: studentsQuery.data ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -178,13 +183,11 @@ export function DataTable({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     initialState: { pagination: { pageSize: 15 } },
     state: {
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection,
     },
   });
 
@@ -251,18 +254,18 @@ export function DataTable({
             ))}
           </TableHeader>
           <TableBody>
-            {studentQuery.isError ? (
+            {studentsQuery.isError ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Error: {studentQuery.error.message}
+                  Error: {studentsQuery.error.message}
                 </TableCell>
               </TableRow>
             ) : null}
 
-            {studentQuery.isLoading && !studentQuery.isError ? (
+            {studentsQuery.isLoading && !studentsQuery.isError ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <TableRow key={idx}>
@@ -291,14 +294,22 @@ export function DataTable({
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Tidak ada hasil.
-                </TableCell>
-              </TableRow>
+              <>
+                {!studentsQuery.isLoading && (
+                  <>
+                    {!studentsQuery.isError && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={columns.length}
+                          className="h-24 text-center"
+                        >
+                          Tidak ada data.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
+                )}
+              </>
             )}
           </TableBody>
         </Table>

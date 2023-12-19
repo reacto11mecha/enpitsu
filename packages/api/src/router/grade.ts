@@ -33,6 +33,12 @@ export const gradeRouter = createTRPCRouter({
       }),
     ),
 
+  getSubgrade: protectedProcedure.input(z.number()).query(({ ctx, input }) =>
+    ctx.db.query.subGrades.findFirst({
+      where: eq(schema.subGrades.id, input),
+    }),
+  ),
+
   createGrade: protectedProcedure
     .input(z.object({ label: z.string() }))
     .mutation(({ ctx, input }) => {
@@ -92,6 +98,26 @@ export const gradeRouter = createTRPCRouter({
         .where(eq(schema.subGrades.id, input.id));
     }),
 
+  updateStudent: protectedProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+        participantNumber: z.string(),
+        room: z.string(),
+      }),
+    )
+    .mutation(({ ctx, input }) => {
+      return ctx.db
+        .update(schema.students)
+        .set({
+          name: input.name,
+          participantNumber: input.participantNumber,
+          room: input.room,
+        })
+        .where(eq(schema.students.id, input.id));
+    }),
+
   deleteGrade: protectedProcedure
     .input(z.number())
     .mutation(async ({ ctx, input }) => {
@@ -118,12 +144,19 @@ export const gradeRouter = createTRPCRouter({
   deleteSubgrade: protectedProcedure
     .input(z.number())
     .mutation(async ({ ctx, input }) => {
-      console.log(input);
       return await ctx.db.transaction(async (tx) => {
         await tx.delete(schema.subGrades).where(eq(schema.subGrades.id, input));
         await tx
           .delete(schema.students)
           .where(eq(schema.students.subgradeId, input));
       });
+    }),
+
+  deleteStudent: protectedProcedure
+    .input(z.number())
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db
+        .delete(schema.students)
+        .where(eq(schema.students.id, input));
     }),
 });
