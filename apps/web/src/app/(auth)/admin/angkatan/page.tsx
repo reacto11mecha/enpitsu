@@ -3,13 +3,10 @@ import { NewAngkatan } from "~/_components/Angkatan/NewAngkatan";
 
 export default function AngkatanPage() {
   return (
-    <div className="mt-5 flex flex-col gap-10 px-5">
-      <div className="flex flex-col">
-        <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0">
-          Halaman Angkatan
-        </h2>
-
-        <p className="leading-7 [&:not(:first-child)]:mt-6">
+    <div className="mt-5 flex flex-col gap-8 px-5">
+      <div className="space-y-1">
+        <h2 className="text-2xl font-bold tracking-tight">Halaman Angkatan</h2>
+        <p className="text-muted-foreground">
           Input data kelas pada halaman ini. Untuk mengelola sub kelas dan
           murid-murid, klik sesuai tingkatannya.
         </p>

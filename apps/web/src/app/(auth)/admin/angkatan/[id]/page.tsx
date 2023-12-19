@@ -17,15 +17,14 @@ export default async function DynamicAngkatan({
   if (!specificGrade) return redirect("/admin/angkatan");
 
   return (
-    <div className="mt-5 flex flex-col gap-10 px-5">
-      <div className="flex flex-col">
-        <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0">
-          Halaman Kelas — {specificGrade.label}
+    <div className="mt-5 flex flex-col gap-7 px-5">
+      <div className="space-y-1">
+        <h2 className="text-2xl font-bold tracking-tight">
+          Halaman Spesifik Angkatan — {specificGrade.label}
         </h2>
-
-        <p className="leading-7 [&:not(:first-child)]:mt-6">
-          Input sub kelas dan murid pada halaman ini. Klik sesuai tingkatan
-          untuk mengelola.
+        <p className="text-muted-foreground">
+          Input data rombongan belajar pada halaman ini. Klik sesuai rombel
+          untuk mengelola masing-masing kelas.
         </p>
       </div>
 

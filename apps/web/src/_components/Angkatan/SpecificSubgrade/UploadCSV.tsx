@@ -48,20 +48,6 @@ const FileValueSchema = z.array(
   }),
 );
 
-const formSchema = z.object({
-  csv: z
-    .instanceof(FileList, { message: "Dibutuhkan file csv!" })
-    .refine((files) => files.length > 0, `Dibutuhkan file csv!`)
-    .refine(
-      (files) => files.length <= 1,
-      `Hanya diperbolehkan upload 1 file saja!`,
-    )
-    .refine(
-      (files) => Array.from(files).every((file) => file.type === "text/csv"),
-      "Hanya bisa file csv saja!",
-    ),
-});
-
 export const UploadCSV = ({
   grade,
   subgrade,
@@ -81,6 +67,20 @@ export const UploadCSV = ({
   const { toast } = useToast();
 
   const apiUtils = api.useUtils();
+
+  const formSchema = z.object({
+    csv: z
+      .instanceof(FileList, { message: "Dibutuhkan file csv!" })
+      .refine((files) => files.length > 0, `Dibutuhkan file csv!`)
+      .refine(
+        (files) => files.length <= 1,
+        `Hanya diperbolehkan upload 1 file saja!`,
+      )
+      .refine(
+        (files) => Array.from(files).every((file) => file.type === "text/csv"),
+        "Hanya bisa file csv saja!",
+      ),
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

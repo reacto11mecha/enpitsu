@@ -9,28 +9,31 @@ export default async function ManageSpecificSubgrade(props: {
   const gradeId = parseInt(props.params.id);
   const subgradeId = parseInt(props.params.subgradeId);
 
+  if (isNaN(gradeId) || isNaN(subgradeId)) return redirect("/admin/angkatan");
+
   const specificGrade = await db.query.grades.findFirst({
     where: eq(schema.grades.id, gradeId),
   });
+
+  if (!specificGrade) return redirect("/admin/angkatan");
 
   const specificSubgrade = await db.query.subGrades.findFirst({
     where: eq(schema.subGrades.id, subgradeId),
   });
 
-  if (!specificGrade || !specificSubgrade) return redirect("/admin/angkatan");
+  if (!specificSubgrade) return redirect("/admin/angkatan");
 
   return (
-    <div className="mt-5 flex flex-col gap-10 px-5">
-      <div className="flex flex-col">
-        <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0">
-          Halaman Kelola Murid — {specificGrade.label} {specificSubgrade.label}
+    <div className="mt-5 flex flex-col gap-7 px-5">
+      <div className="space-y-1">
+        <h2 className="text-2xl font-bold tracking-tight">
+          Halaman Kelola Kelas — {specificGrade.label} {specificSubgrade.label}
         </h2>
-
-        <p className="leading-7 [&:not(:first-child)]:mt-6">
+        <p className="text-muted-foreground">
           Kelola murid-murid kelas {specificGrade.label}{" "}
           {specificSubgrade.label} untuk ditambahkan, diubah, maupun di hapus.
-          Klik simbol titik tiga pada murid spesifik di tabel untuk mengelolanya
-          lebih lanjut.
+          Klik simbol titik tiga pada murid spesifik pada tabel untuk
+          mengelolanya lebih lanjut.
         </p>
       </div>
 
