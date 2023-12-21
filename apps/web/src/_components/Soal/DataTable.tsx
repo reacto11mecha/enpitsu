@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { Space_Mono } from "next/font/google";
+import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,6 +12,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -51,6 +56,7 @@ import {
   ChevronRightIcon,
   ChevronsLeft,
   ChevronsRight,
+  LayoutList,
   MoreHorizontal,
   PencilLine,
   Trash2,
@@ -60,7 +66,36 @@ import { api } from "~/utils/api";
 
 type QuestionList = RouterOutputs["question"]["getQuestions"][number];
 
+const MonoFont = Space_Mono({
+  weight: "400",
+  subsets: ["latin"],
+});
+
 export const columns: ColumnDef<QuestionList>[] = [
+  {
+    accessorKey: "user",
+    header: "Pembuat Soal",
+    cell: ({ row }) => (
+      <div className="flex flex-row items-center gap-4">
+        <Avatar>
+          {row.original.user.image ? (
+            <AvatarImage src={row.original.user.image} />
+          ) : null}
+          <AvatarFallback className="uppercase">
+            {row.original.user.name
+              ? row.original.user.name.slice(0, 2)
+              : "N/A"}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col">
+          <p>{row.original.user.name ? row.original.user.name : "N/A"}</p>
+          <small className="text-muted-foreground">
+            {row.original.user.email ? row.original.user.email : "N/A"}
+          </small>
+        </div>
+      </div>
+    ),
+  },
   {
     accessorKey: "title",
     header: ({ column }) => {
@@ -79,15 +114,16 @@ export const columns: ColumnDef<QuestionList>[] = [
   {
     accessorKey: "slug",
     header: "Kode Soal",
-    cell: ({ row }) => <pre>{row.getValue("slug")}</pre>,
+    cell: ({ row }) => (
+      <pre className={MonoFont.className}>{row.getValue("slug")}</pre>
+    ),
   },
   {
     accessorKey: "startedAt",
     header: "Waktu Mulai",
     cell: ({ row }) => (
-      <pre>
+      <pre className={MonoFont.className}>
         {format(row.getValue("startedAt"), "dd MMM yyyy, kk.mm", {
-          addSuffix: false,
           locale: id,
         })}
       </pre>
@@ -97,7 +133,7 @@ export const columns: ColumnDef<QuestionList>[] = [
     accessorKey: "endedAt",
     header: "Waktu Selesai",
     cell: ({ row }) => (
-      <pre>
+      <pre className={MonoFont.className}>
         {format(row.getValue("endedAt"), "dd MMM yyyy, kk.mm", { locale: id })}
       </pre>
     ),
@@ -106,7 +142,7 @@ export const columns: ColumnDef<QuestionList>[] = [
     accessorKey: "duration",
     header: "Durasi Pengerjaan",
     cell: ({ row }) => (
-      <pre>
+      <div>
         {formatDuration(
           intervalToDuration({
             end: row.getValue("endedAt"),
@@ -114,7 +150,24 @@ export const columns: ColumnDef<QuestionList>[] = [
           }),
           { locale: id },
         )}
-      </pre>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "allowList",
+    header: "Kelas Yang Diperbolehkan",
+    cell: ({ row }) => (
+      <div className="space-x-0.5 space-y-0.5">
+        {row.original.allowList.map((allow) => (
+          <Link
+            className={badgeVariants({ variant: "secondary" })}
+            href={`/admin/angkatan/${allow.gradeId}/kelola/${allow.subgradeId}`}
+            key={allow.allowListId}
+          >
+            {allow.label}
+          </Link>
+        ))}
+      </div>
     ),
   },
   {
@@ -123,11 +176,11 @@ export const columns: ColumnDef<QuestionList>[] = [
     cell: () => {
       // const student = row.original;
 
-      // // eslint-disable-next-line react-hooks/rules-of-hooks
-      // const [openDelete, setOpenDelete] = useState(false);
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [, setOpenDelete] = useState(false);
 
-      // // eslint-disable-next-line react-hooks/rules-of-hooks
-      // const [openEdit, setOpenEdit] = useState(false);
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [, setOpenEdit] = useState(false);
 
       return (
         <>
@@ -141,12 +194,23 @@ export const columns: ColumnDef<QuestionList>[] = [
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Aksi</DropdownMenuLabel>
               <DropdownMenuItem className="cursor-pointer">
-                <PencilLine className="mr-2 h-4 md:w-4" />
-                Perbaiki Identitas
+                <LayoutList className="mr-2 h-4 md:w-4" />
+                Cek Butir Soal
               </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
+                <PencilLine
+                  className="mr-2 h-4 md:w-4"
+                  onClick={() => setOpenEdit(true)}
+                />
+                Perbaiki Identitas Soal
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer text-rose-500 hover:text-rose-700 focus:text-rose-700">
-                <Trash2 className="mr-2 h-4 md:w-4" />
-                Hapus Murid
+                <Trash2
+                  className="mr-2 h-4 md:w-4"
+                  onClick={() => setOpenDelete(true)}
+                />
+                Hapus Soal
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -173,7 +237,7 @@ export function DataTable() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    initialState: { pagination: { pageSize: 15 } },
+    initialState: { pagination: { pageSize: 20 } },
     state: {
       sorting,
       columnFilters,
@@ -320,7 +384,7 @@ export function DataTable() {
                 />
               </SelectTrigger>
               <SelectContent side="top">
-                {[15, 25, 35, 45, 50].map((pageSize) => (
+                {[20, 40, 60, 80, 100].map((pageSize) => (
                   <SelectItem key={pageSize} value={`${pageSize}`}>
                     {pageSize}
                   </SelectItem>

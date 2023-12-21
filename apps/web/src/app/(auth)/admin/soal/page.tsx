@@ -10,7 +10,7 @@ export default function QuestionPage() {
       <div className="space-y-1">
         <h2 className="text-2xl font-bold tracking-tight">Soal-Soal</h2>
         <p className="text-muted-foreground">
-          Kelola soal-soal yang akan dikerjakan oleh peserta ujian.
+          Kelola soal-soal yang dikerjakan oleh peserta ujian.
         </p>
       </div>
 
