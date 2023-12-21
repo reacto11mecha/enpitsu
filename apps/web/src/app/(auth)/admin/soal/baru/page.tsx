@@ -63,7 +63,7 @@ export default function NewQuestion() {
         description: `Berhasil menambahkan soal baru!`,
       });
 
-      router.replace(`/admin/soal/butir/${result.at(0).id}`);
+      router.replace(`/admin/soal/butir/${result.at(0)!.id}`);
     },
 
     onError(error) {
@@ -76,7 +76,7 @@ export default function NewQuestion() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    createQuestionMutation.mutate(values);
+    createQuestionMutation.mutate({ ...values });
   }
 
   return (
@@ -101,8 +101,8 @@ export default function NewQuestion() {
                   <FormLabel>Judul Soal</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="MATEMATIKA WAJIB XII"
                       {...field}
+                      placeholder="MATEMATIKA WAJIB XII"
                       disabled={createQuestionMutation.isLoading}
                     />
                   </FormControl>
@@ -122,8 +122,8 @@ export default function NewQuestion() {
                   <FormLabel>Kode Soal</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="MATWA-XII"
                       {...field}
+                      placeholder="MATWA-XII"
                       disabled={createQuestionMutation.isLoading}
                     />
                   </FormControl>

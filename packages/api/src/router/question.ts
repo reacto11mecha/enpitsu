@@ -1,11 +1,14 @@
-import { asc, eq, schema } from "@enpitsu/db";
+import { asc, schema } from "@enpitsu/db";
+// import { DateTime } from "luxon";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const questionRouter = createTRPCRouter({
   getQuestions: protectedProcedure.query(({ ctx }) =>
-    ctx.db.query.questions.findMany(),
+    ctx.db.query.questions.findMany({
+      orderBy: [asc(schema.questions.title)],
+    }),
   ),
   getQuestion: publicProcedure
     .input(z.object({ slug: z.string().min(2) }))
@@ -20,19 +23,14 @@ export const questionRouter = createTRPCRouter({
         endedAt: z.date(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      const startedAt = input.startedAt.toISOString();
-      const endedAt = input.endedAt.toISOString();
-
-      return await ctx.db
-        .insert(schema.questions)
-        .values({
-          slug: input.slug,
-          title: input.title,
-          startedAt,
-          endedAt,
-          authorId: ctx.session.user.id,
-        })
-        .returning({ id: schema.questions.id });
-    }),
+    .mutation(
+      async ({ ctx, input }) =>
+        await ctx.db
+          .insert(schema.questions)
+          .values({
+            ...input,
+            authorId: ctx.session.user.id,
+          })
+          .returning({ id: schema.questions.id }),
+    ),
 });

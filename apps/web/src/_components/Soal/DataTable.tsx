@@ -42,6 +42,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { format } from "date-fns";
 import {
   ArrowUpDown,
   ChevronDown,
@@ -82,24 +83,28 @@ export const columns: ColumnDef<QuestionList>[] = [
   {
     accessorKey: "startedAt",
     header: "Waktu Mulai",
-    cell: ({ row }) => <pre>{row.getValue("startedAt").toLocaleString()}</pre>,
+    cell: ({ row }) => (
+      <pre>{format(row.getValue("startedAt"), "dd MMM yyyy, kk.mm")}</pre>
+    ),
   },
   {
     accessorKey: "endedAt",
     header: "Waktu Selesai",
-    cell: ({ row }) => <pre>{row.getValue("endedAt").toLocaleString()}</pre>,
+    cell: ({ row }) => (
+      <pre>{format(row.getValue("endedAt"), "dd MMM yyyy, kk.mm")}</pre>
+    ),
   },
   {
     id: "actions",
     enableHiding: false,
-    cell: ({ row }) => {
-      const student = row.original;
+    cell: () => {
+      // const student = row.original;
 
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const [openDelete, setOpenDelete] = useState(false);
+      // // eslint-disable-next-line react-hooks/rules-of-hooks
+      // const [openDelete, setOpenDelete] = useState(false);
 
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const [openEdit, setOpenEdit] = useState(false);
+      // // eslint-disable-next-line react-hooks/rules-of-hooks
+      // const [openEdit, setOpenEdit] = useState(false);
 
       return (
         <>
