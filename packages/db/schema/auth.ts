@@ -16,9 +16,9 @@ export const users = myPgTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
   name: varchar("name", { length: 255 }),
   email: varchar("email", { length: 255 }).notNull(),
-  emailVerified: timestamp("emailVerified", {
+  accountAllowed: timestamp("emailVerified", {
     mode: "date",
-  }).default(sql`CURRENT_TIMESTAMP(3)`),
+  }),
   image: varchar("image", { length: 255 }),
 });
 

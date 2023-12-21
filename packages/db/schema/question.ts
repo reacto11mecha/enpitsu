@@ -16,10 +16,10 @@ export const questions = myPgTable(
   {
     id: serial("id").primaryKey(),
     slug: varchar("slug", { length: 50 }).notNull(),
-    title: varchar("slug", { length: 255 }).notNull(),
+    title: varchar("title", { length: 255 }).notNull(),
     startedAt: timestamp("started_at", { mode: "string" }).notNull(),
     endedAt: timestamp("ended_at", { mode: "string" }).notNull(),
-    authorId: integer("author_id").notNull(),
+    authorId: varchar("author_id").notNull(),
   },
   (table) => ({ slugIdx: index("slug_idx").on(table.slug) }),
 );

@@ -14,15 +14,25 @@ export const questionRouter = createTRPCRouter({
   createQuestion: protectedProcedure
     .input(
       z.object({
-        slug: z.string().min(2),
-        title: z.string().min(3),
-        startedAt: z.string(),
-        endedAt: z.string(),
+        slug: z.string().min(4),
+        title: z.string().min(5),
+        startedAt: z.date(),
+        endedAt: z.date(),
       }),
     )
-    .mutation(({ ctx, input }) => {
-      return ctx.db
+    .mutation(async ({ ctx, input }) => {
+      const startedAt = input.startedAt.toISOString();
+      const endedAt = input.endedAt.toISOString();
+
+      return await ctx.db
         .insert(schema.questions)
-        .values({ ...input, authorId: parseInt(ctx.session.user.id) });
+        .values({
+          slug: input.slug,
+          title: input.title,
+          startedAt,
+          endedAt,
+          authorId: ctx.session.user.id,
+        })
+        .returning({ id: schema.questions.id });
     }),
 });

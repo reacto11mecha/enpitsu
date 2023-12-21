@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PlusSquare } from "lucide-react";
 
+import { DataTable } from "~/_components/Soal/DataTable";
+
 export default function QuestionPage() {
   return (
     <div className="mt-5 flex flex-col gap-7 px-5">
@@ -23,6 +25,8 @@ export default function QuestionPage() {
             <PlusSquare className="ml-2 h-4 w-4" />
           </Link>
         </Button>
+
+        <DataTable />
       </div>
     </div>
   );

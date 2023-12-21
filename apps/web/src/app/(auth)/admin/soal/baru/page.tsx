@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -13,7 +14,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
+import { format, startOfDay } from "date-fns";
+import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -40,20 +42,18 @@ const formSchema = z
   });
 
 export default function NewQuestion() {
+  const router = useRouter();
+
   const { toast } = useToast();
 
   const apiUtils = api.useUtils();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      slug: "",
-    },
   });
 
   const createQuestionMutation = api.question.createQuestion.useMutation({
-    async onSuccess() {
+    async onSuccess(result) {
       form.reset();
 
       await apiUtils.grade.getStudents.invalidate();
@@ -62,6 +62,8 @@ export default function NewQuestion() {
         title: "Penambahan Berhasil!",
         description: `Berhasil menambahkan soal baru!`,
       });
+
+      router.replace(`/admin/soal/butir/${result.at(0).id}`);
     },
 
     onError(error) {
@@ -74,16 +76,18 @@ export default function NewQuestion() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    createQuestionMutation.mutate(values);
   }
 
   return (
     <div className="mt-5 flex flex-col gap-7 px-5 py-5 md:items-center">
       <div className="w-full md:w-[85%]">
-        <div className="mb-3">
+        <div className="mb-5">
           <h2 className="text-2xl font-bold tracking-tight">Soal Baru</h2>
           <p className="text-muted-foreground">
-            Buat soal baru untuk dikerjakan oleh peserta ujian.
+            Buat soal baru untuk dikerjakan oleh peserta ujian. Pada halaman ini
+            terlebih dahulu menambahkan idetitas soal, jika sudah dan berhasil
+            maka akan diarahkan ke halaman pembuatan soal.
           </p>
         </div>
 
@@ -143,6 +147,10 @@ export default function NewQuestion() {
                       <Input
                         className="w-full"
                         type="datetime-local"
+                        min={format(
+                          startOfDay(new Date()),
+                          "yyyy-MM-dd'T'HH:mm",
+                        )}
                         value={
                           field.value
                             ? format(field.value, "yyyy-MM-dd'T'HH:mm")
@@ -194,7 +202,8 @@ export default function NewQuestion() {
                       />
                     </FormControl>
                     <FormDescription>
-                      Tentukan kapan peserta harus mengumpulkan jawaban.
+                      Tentukan kapan batas waktu maksimal peserta dapat
+                      mengumpulkan jawaban.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -203,6 +212,9 @@ export default function NewQuestion() {
             </div>
 
             <Button type="submit" disabled={createQuestionMutation.isLoading}>
+              {createQuestionMutation.isLoading ? (
+                <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
+              ) : null}
               Buat
             </Button>
           </form>
