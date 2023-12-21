@@ -42,7 +42,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { format } from "date-fns";
+import { format, formatDuration, intervalToDuration } from "date-fns";
+import { id } from "date-fns/locale";
 import {
   ArrowUpDown,
   ChevronDown,
@@ -84,14 +85,36 @@ export const columns: ColumnDef<QuestionList>[] = [
     accessorKey: "startedAt",
     header: "Waktu Mulai",
     cell: ({ row }) => (
-      <pre>{format(row.getValue("startedAt"), "dd MMM yyyy, kk.mm")}</pre>
+      <pre>
+        {format(row.getValue("startedAt"), "dd MMM yyyy, kk.mm", {
+          addSuffix: false,
+          locale: id,
+        })}
+      </pre>
     ),
   },
   {
     accessorKey: "endedAt",
     header: "Waktu Selesai",
     cell: ({ row }) => (
-      <pre>{format(row.getValue("endedAt"), "dd MMM yyyy, kk.mm")}</pre>
+      <pre>
+        {format(row.getValue("endedAt"), "dd MMM yyyy, kk.mm", { locale: id })}
+      </pre>
+    ),
+  },
+  {
+    accessorKey: "duration",
+    header: "Durasi Pengerjaan",
+    cell: ({ row }) => (
+      <pre>
+        {formatDuration(
+          intervalToDuration({
+            end: row.getValue("endedAt"),
+            start: row.getValue("startedAt"),
+          }),
+          { locale: id },
+        )}
+      </pre>
     ),
   },
   {
