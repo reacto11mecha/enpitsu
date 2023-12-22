@@ -1,11 +1,11 @@
-import { asc, eq, schema } from "@enpitsu/db";
+import { asc, schema } from "@enpitsu/db";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const questionRouter = createTRPCRouter({
-  getQuestions: protectedProcedure.query(async ({ ctx }) => {
-    const questions = await ctx.db.query.questions.findMany({
+  getQuestions: protectedProcedure.query(({ ctx }) =>
+    ctx.db.query.questions.findMany({
       orderBy: [asc(schema.questions.title)],
       with: {
         user: {
@@ -15,42 +15,18 @@ export const questionRouter = createTRPCRouter({
             email: true,
           },
         },
-      },
-    });
-
-    const data = await Promise.all(
-      questions.map(async (question) => {
-        const rawAllow = await ctx.db.query.allowLists.findMany({
-          where: eq(schema.allowLists.questionId, question.id),
+        allowLists: {
           with: {
             subgrade: {
-              columns: {
-                label: true,
-                id: true,
-              },
               with: {
                 grade: true,
               },
             },
           },
-        });
-
-        const allowList = rawAllow.map((allow) => ({
-          label: `${allow.subgrade.grade.label} ${allow.subgrade.label}`,
-          allowListId: allow.id,
-          gradeId: allow.subgrade.grade.id,
-          subgradeId: allow.subgradeId,
-        }));
-
-        return {
-          ...question,
-          allowList,
-        };
-      }),
-    );
-
-    return data;
-  }),
+        },
+      },
+    }),
+  ),
 
   getSubgradeForAllowList: protectedProcedure.query(({ ctx }) => {
     return ctx.db.query.grades.findMany({

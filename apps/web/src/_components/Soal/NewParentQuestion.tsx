@@ -27,10 +27,10 @@ import { api } from "~/utils/api";
 const formSchema = z
   .object({
     title: z
-      .string({ required_error: "Judul soal harus di isi!" })
+      .string()
       .min(5, { message: "Minimal memiliki 5 karakter!" }),
     slug: z
-      .string({ required_error: "Kode soal wajib di isi!" })
+      .string()
       .min(4, { message: "Minimal memiliki 4 karakter!" }),
     startedAt: z.date({
       required_error: "Diperlukan kapan waktu ujian dimulai!",
@@ -60,6 +60,8 @@ export const NewParentQuestion = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       allowLists: [],
+      title: "",
+      slug: ""
     },
   });
 
@@ -105,6 +107,7 @@ export const NewParentQuestion = () => {
               <FormControl>
                 <Input
                   {...field}
+                  autoComplete="off"
                   placeholder="MATEMATIKA WAJIB XII"
                   disabled={
                     subgradeForAllowListQuery.isLoading ||
@@ -129,6 +132,7 @@ export const NewParentQuestion = () => {
               <FormControl>
                 <Input
                   {...field}
+                  autoComplete="off"
                   placeholder="MATWA-XII"
                   disabled={
                     subgradeForAllowListQuery.isLoading ||
@@ -162,7 +166,10 @@ export const NewParentQuestion = () => {
                         ? format(field.value, "yyyy-MM-dd'T'HH:mm")
                         : ""
                     }
-                    onChange={(e) => field.onChange(new Date(e.target.value))}
+                    onChange={(e) =>
+                      e.target.value === "" ? field.onChange(undefined) :
+                        field.onChange(new Date(e.target.value))
+                    }
                     disabled={
                       subgradeForAllowListQuery.isLoading ||
                       createQuestionMutation.isLoading
@@ -189,9 +196,9 @@ export const NewParentQuestion = () => {
                     min={
                       form.getValues("startedAt")
                         ? format(
-                            form.getValues("startedAt"),
-                            "yyyy-MM-dd'T'HH:mm",
-                          )
+                          form.getValues("startedAt"),
+                          "yyyy-MM-dd'T'HH:mm",
+                        )
                         : ""
                     }
                     value={
@@ -199,7 +206,10 @@ export const NewParentQuestion = () => {
                         ? format(field.value, "yyyy-MM-dd'T'HH:mm")
                         : ""
                     }
-                    onChange={(e) => field.onChange(new Date(e.target.value))}
+                    onChange={(e) =>
+                      e.target.value === "" ? field.onChange(undefined) :
+                        field.onChange(new Date(e.target.value))
+                    }
                     disabled={
                       subgradeForAllowListQuery.isLoading ||
                       !form.getValues("startedAt") ||
@@ -234,7 +244,7 @@ export const NewParentQuestion = () => {
                     !subgradeForAllowListQuery.isError &&
                     subgradeForAllowListQuery?.data.map((grade) => (
                       <>
-                        <div key={grade.id}>
+                        {grade.subgrades.length > 0 && <div key={grade.id}>
                           <div className="flex flex-row items-center gap-2">
                             <Checkbox
                               checked={grade.subgrades.every(
@@ -244,17 +254,17 @@ export const NewParentQuestion = () => {
                               onCheckedChange={(checked) => {
                                 return checked
                                   ? field.onChange([
-                                      ...field.value,
-                                      ...grade.subgrades.map((s) => s.id),
-                                    ])
+                                    ...field.value,
+                                    ...grade.subgrades.map((s) => s.id),
+                                  ])
                                   : field.onChange(
-                                      field.value?.filter(
-                                        (value) =>
-                                          !grade.subgrades
-                                            .map((s) => s.id)
-                                            .includes(value),
-                                      ),
-                                    );
+                                    field.value?.filter(
+                                      (value) =>
+                                        !grade.subgrades
+                                          .map((s) => s.id)
+                                          .includes(value),
+                                    ),
+                                  );
                               }}
                             />
                             <p>Kelas {grade.label}</p>
@@ -282,15 +292,15 @@ export const NewParentQuestion = () => {
                                           onCheckedChange={(checked) => {
                                             return checked
                                               ? field.onChange([
-                                                  ...field.value,
-                                                  subgrade.id,
-                                                ])
+                                                ...field.value,
+                                                subgrade.id,
+                                              ])
                                               : field.onChange(
-                                                  field.value?.filter(
-                                                    (value) =>
-                                                      value !== subgrade.id,
-                                                  ),
-                                                );
+                                                field.value?.filter(
+                                                  (value) =>
+                                                    value !== subgrade.id,
+                                                ),
+                                              );
                                           }}
                                         />
                                       </FormControl>
@@ -301,7 +311,7 @@ export const NewParentQuestion = () => {
                               />
                             ))}
                           </div>
-                        </div>
+                        </div>}
                       </>
                     ))}
                 </div>

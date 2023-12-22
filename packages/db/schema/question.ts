@@ -25,7 +25,7 @@ export const questions = myPgTable(
 );
 
 export const questionRelations = relations(questions, ({ one, many }) => ({
-  questions: many(allowLists),
+  allowLists: many(allowLists),
   user: one(users, {
     fields: [questions.authorId],
     references: [users.id],

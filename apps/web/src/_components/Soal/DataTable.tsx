@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Space_Mono } from "next/font/google";
-import Link from "next/link";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,8 @@ import {
   MoreHorizontal,
   PencilLine,
   Trash2,
+  QrCode,
+  PlusSquare,
 } from "lucide-react";
 
 import { api } from "~/utils/api";
@@ -72,6 +75,28 @@ const MonoFont = Space_Mono({
 });
 
 export const columns: ColumnDef<QuestionList>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "user",
     header: "Pembuat Soal",
@@ -158,13 +183,13 @@ export const columns: ColumnDef<QuestionList>[] = [
     header: "Kelas Yang Diperbolehkan",
     cell: ({ row }) => (
       <div className="space-x-0.5 space-y-0.5">
-        {row.original.allowList.map((allow) => (
+        {row.original.allowLists.map((allow) => (
           <Link
             className={badgeVariants({ variant: "secondary" })}
-            href={`/admin/angkatan/${allow.gradeId}/kelola/${allow.subgradeId}`}
-            key={allow.allowListId}
+            href={`/admin/angkatan/${allow.subgrade.gradeId}/kelola/${allow.subgradeId}`}
+            key={allow.id}
           >
-            {allow.label}
+            {allow.subgrade.grade.label} {allow.subgrade.label}
           </Link>
         ))}
       </div>
@@ -220,12 +245,13 @@ export const columns: ColumnDef<QuestionList>[] = [
   },
 ];
 
-export function DataTable() {
+export function DataTable({ countValue }: { countValue: number }) {
   const questionsQuery = api.question.getQuestions.useQuery();
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState({})
 
   const table = useReactTable({
     data: questionsQuery.data ?? [],
@@ -237,16 +263,30 @@ export function DataTable() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
     initialState: { pagination: { pageSize: 20 } },
     state: {
       sorting,
       columnFilters,
       columnVisibility,
+      rowSelection,
+
     },
   });
 
   return (
     <div className="w-full">
+      <div className="pb-4">
+        {countValue > 0 &&
+          <Button asChild className="w-fit">
+            <Link href="/admin/soal/baru">
+              Buat soal baru
+              <PlusSquare className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        }
+      </div>
+
       <div className="flex items-center pb-4">
         <Input
           placeholder="Filter berdasarkan judul soal..."
@@ -294,9 +334,9 @@ export function DataTable() {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                     </TableHead>
                   );
                 })}
@@ -365,9 +405,28 @@ export function DataTable() {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} dari{" "}
-          {table.getFilteredRowModel().rows.length} baris dipilih.
+        <div className="text-muted-foreground flex flex-1 flex-row items-center">
+          <p className="text-sm">
+            {table.getFilteredSelectedRowModel().rows.length} dari{" "}
+            {table.getFilteredRowModel().rows.length} baris dipilih.
+          </p>
+
+          {table.getFilteredSelectedRowModel().rows.length > 0 && <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+              <DropdownMenuItem className="cursor-pointer">
+                <QrCode className="mr-2 h-4 md:w-4" />
+                Buat QR Code
+              </DropdownMenuItem>
+
+            </DropdownMenuContent>
+          </DropdownMenu>}
         </div>
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">
