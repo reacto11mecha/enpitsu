@@ -1,14 +1,16 @@
-import { NewParentQuestion } from "~/_components/Soal/NewParentQuestion";
+import { redirect } from "next/navigation";
 import { count, db, schema } from "@enpitsu/db";
 
-import { redirect } from "next/navigation";
+import { NewParentQuestion } from "~/_components/Soal/NewParentQuestion";
 
 export default async function NewQuestion() {
-  const subgradeCount = await db.select({ value: count() }).from(schema.subGrades);
+  const subgradeCount = await db
+    .select({ value: count() })
+    .from(schema.subGrades);
 
   const countValue = subgradeCount.at(0)!.value;
 
-  if (countValue < 1) return redirect('/admin/baru');
+  if (countValue < 1) return redirect("/admin/baru");
 
   return (
     <div className="mt-5 flex flex-col gap-7 px-5 py-5 md:items-center">

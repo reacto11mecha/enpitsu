@@ -136,6 +136,9 @@ export const gradeRouter = createTRPCRouter({
             await tx2
               .delete(schema.students)
               .where(eq(schema.students.subgradeId, subgrade.id));
+            await tx2
+              .delete(schema.allowLists)
+              .where(eq(schema.allowLists.subgradeId, subgrade.id));
           }
         });
       });
@@ -149,6 +152,9 @@ export const gradeRouter = createTRPCRouter({
         await tx
           .delete(schema.students)
           .where(eq(schema.students.subgradeId, input));
+        await tx
+          .delete(schema.allowLists)
+          .where(eq(schema.allowLists.subgradeId, input));
       });
     }),
 

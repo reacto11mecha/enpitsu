@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { Space_Mono } from "next/font/google";
-import { Checkbox } from "@/components/ui/checkbox";
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -60,12 +60,13 @@ import {
   LayoutList,
   MoreHorizontal,
   PencilLine,
-  Trash2,
-  QrCode,
   PlusSquare,
+  QrCode,
+  Trash2,
 } from "lucide-react";
 
 import { api } from "~/utils/api";
+import { DeleteParentQuestion } from "./DeleteParentQuestion";
 
 type QuestionList = RouterOutputs["question"]["getQuestions"][number];
 
@@ -198,14 +199,11 @@ export const columns: ColumnDef<QuestionList>[] = [
   {
     id: "actions",
     enableHiding: false,
-    cell: () => {
-      // const student = row.original;
+    cell: ({ row }) => {
+      const question = row.original;
 
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      const [, setOpenDelete] = useState(false);
-
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const [, setOpenEdit] = useState(false);
+      const [openDelete, setOpenDelete] = useState(false);
 
       return (
         <>
@@ -218,16 +216,17 @@ export const columns: ColumnDef<QuestionList>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-              <DropdownMenuItem className="cursor-pointer">
-                <LayoutList className="mr-2 h-4 md:w-4" />
-                Cek Butir Soal
+              <DropdownMenuItem className="cursor-pointer" asChild>
+                <Link href={`/admin/soal/butir/${question.id}`}>
+                  <LayoutList className="mr-2 h-4 md:w-4" />
+                  Cek Butir Soal
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <PencilLine
-                  className="mr-2 h-4 md:w-4"
-                  onClick={() => setOpenEdit(true)}
-                />
-                Perbaiki Identitas Soal
+              <DropdownMenuItem className="cursor-pointer" asChild>
+                <Link href={`/admin/soal/edit/${question.id}`}>
+                  <PencilLine className="mr-2 h-4 md:w-4" />
+                  Perbaiki Identitas Soal
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer text-rose-500 hover:text-rose-700 focus:text-rose-700">
@@ -239,6 +238,13 @@ export const columns: ColumnDef<QuestionList>[] = [
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <DeleteParentQuestion
+            openDelete={openDelete}
+            setOpenDelete={setOpenDelete}
+            title={question.title}
+            id={question.id}
+          />
         </>
       );
     },
@@ -251,7 +257,7 @@ export function DataTable({ countValue }: { countValue: number }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({})
+  const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
     data: questionsQuery.data ?? [],
@@ -270,21 +276,20 @@ export function DataTable({ countValue }: { countValue: number }) {
       columnFilters,
       columnVisibility,
       rowSelection,
-
     },
   });
 
   return (
     <div className="w-full">
       <div className="pb-4">
-        {countValue > 0 &&
+        {countValue > 0 && (
           <Button asChild className="w-fit">
             <Link href="/admin/soal/baru">
               Buat soal baru
               <PlusSquare className="ml-2 h-4 w-4" />
             </Link>
           </Button>
-        }
+        )}
       </div>
 
       <div className="flex items-center pb-4">
@@ -296,6 +301,25 @@ export function DataTable({ countValue }: { countValue: number }) {
           }
           className="max-w-md"
         />
+
+        {table.getFilteredSelectedRowModel().rows.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-2 w-fit space-x-3">
+                <MoreHorizontal className="h-4 w-4" />
+                <span>Opsi Pilihan Tabel</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+              <DropdownMenuItem className="cursor-pointer">
+                <QrCode className="mr-2 h-4 md:w-4" />
+                Buat QR Code
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -334,9 +358,9 @@ export function DataTable({ countValue }: { countValue: number }) {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                     </TableHead>
                   );
                 })}
@@ -411,22 +435,23 @@ export function DataTable({ countValue }: { countValue: number }) {
             {table.getFilteredRowModel().rows.length} baris dipilih.
           </p>
 
-          {table.getFilteredSelectedRowModel().rows.length > 0 && <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-              <DropdownMenuItem className="cursor-pointer">
-                <QrCode className="mr-2 h-4 md:w-4" />
-                Buat QR Code
-              </DropdownMenuItem>
-
-            </DropdownMenuContent>
-          </DropdownMenu>}
+          {table.getFilteredSelectedRowModel().rows.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                <DropdownMenuItem className="cursor-pointer">
+                  <QrCode className="mr-2 h-4 md:w-4" />
+                  Buat QR Code
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">

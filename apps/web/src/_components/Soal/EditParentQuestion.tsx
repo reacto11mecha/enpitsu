@@ -43,7 +43,23 @@ const formSchema = z
     message: "Waktu selesai tidak boleh kurang dari waktu mulai!",
   });
 
-export const NewParentQuestion = () => {
+export const EditParentQuestion = ({
+  question,
+}: {
+  question: {
+    id: number;
+    slug: string;
+    title: string;
+    startedAt: Date;
+    endedAt: Date;
+    authorId: string;
+    allowLists: {
+      id: number;
+      subgradeId: number;
+      questionId: number;
+    }[];
+  };
+}) => {
   const router = useRouter();
 
   const { toast } = useToast();
@@ -53,27 +69,27 @@ export const NewParentQuestion = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      allowLists: [],
-      title: "",
-      slug: "",
+      allowLists: question.allowLists.map((allow) => allow.subgradeId),
+      title: question.title,
+      slug: question.slug,
+      startedAt: question.startedAt,
+      endedAt: question.endedAt,
     },
   });
 
   const subgradeForAllowListQuery =
     api.question.getSubgradeForAllowList.useQuery();
 
-  const createQuestionMutation = api.question.createQuestion.useMutation({
-    async onSuccess(result) {
-      form.reset();
-
+  const editQuestionMutation = api.question.editParentQuestion.useMutation({
+    async onSuccess() {
       await apiUtils.grade.getStudents.invalidate();
 
       toast({
-        title: "Penambahan Berhasil!",
-        description: `Berhasil menambahkan soal baru!`,
+        title: "Perbaikan Berhasil!",
+        description: `Berhasil memperbaiki soal ${form.getValues("title")}!`,
       });
 
-      router.replace(`/admin/soal/butir/${result.id}`);
+      router.replace("/admin/soal");
     },
 
     onError(error) {
@@ -86,7 +102,7 @@ export const NewParentQuestion = () => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    createQuestionMutation.mutate({ ...values });
+    editQuestionMutation.mutate({ id: question.id, ...values });
   }
 
   return (
@@ -105,7 +121,7 @@ export const NewParentQuestion = () => {
                   placeholder="MATEMATIKA WAJIB XII"
                   disabled={
                     subgradeForAllowListQuery.isLoading ||
-                    createQuestionMutation.isLoading
+                    editQuestionMutation.isLoading
                   }
                 />
               </FormControl>
@@ -130,7 +146,7 @@ export const NewParentQuestion = () => {
                   placeholder="MATWA-XII"
                   disabled={
                     subgradeForAllowListQuery.isLoading ||
-                    createQuestionMutation.isLoading
+                    editQuestionMutation.isLoading
                   }
                 />
               </FormControl>
@@ -167,7 +183,7 @@ export const NewParentQuestion = () => {
                     }
                     disabled={
                       subgradeForAllowListQuery.isLoading ||
-                      createQuestionMutation.isLoading
+                      editQuestionMutation.isLoading
                     }
                   />
                 </FormControl>
@@ -209,7 +225,7 @@ export const NewParentQuestion = () => {
                     disabled={
                       subgradeForAllowListQuery.isLoading ||
                       !form.getValues("startedAt") ||
-                      createQuestionMutation.isLoading
+                      editQuestionMutation.isLoading
                     }
                   />
                 </FormControl>
@@ -263,7 +279,7 @@ export const NewParentQuestion = () => {
                                         ),
                                       );
                                 }}
-                                disabled={createQuestionMutation.isLoading}
+                                disabled={editQuestionMutation.isLoading}
                               />
                               <p>Kelas {grade.label}</p>
                             </div>
@@ -301,7 +317,7 @@ export const NewParentQuestion = () => {
                                                   );
                                             }}
                                             disabled={
-                                              createQuestionMutation.isLoading
+                                              editQuestionMutation.isLoading
                                             }
                                           />
                                         </FormControl>
@@ -330,13 +346,13 @@ export const NewParentQuestion = () => {
           type="submit"
           disabled={
             subgradeForAllowListQuery.isLoading ||
-            createQuestionMutation.isLoading
+            editQuestionMutation.isLoading
           }
         >
-          {createQuestionMutation.isLoading ? (
+          {editQuestionMutation.isLoading ? (
             <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
           ) : null}
-          Buat
+          Perbaiki
         </Button>
       </form>
     </Form>
