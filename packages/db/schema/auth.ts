@@ -3,6 +3,7 @@ import { relations } from "drizzle-orm";
 import {
   index,
   integer,
+  pgEnum,
   primaryKey,
   text,
   timestamp,
@@ -12,6 +13,8 @@ import {
 import { myPgTable } from "./_table";
 import { questions } from "./question";
 
+export const roleEnum = pgEnum("role", ["admin", "user"]);
+
 export const users = myPgTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
   name: varchar("name", { length: 255 }),
@@ -19,6 +22,7 @@ export const users = myPgTable("user", {
   accountAllowed: timestamp("emailVerified", {
     mode: "date",
   }),
+  role: roleEnum("role").default("user").notNull(),
   image: varchar("image", { length: 255 }),
 });
 
@@ -71,15 +75,3 @@ export const sessions = myPgTable(
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, { fields: [sessions.userId], references: [users.id] }),
 }));
-
-export const verificationTokens = myPgTable(
-  "verificationToken",
-  {
-    identifier: varchar("identifier", { length: 255 }).notNull(),
-    token: varchar("token", { length: 255 }).notNull(),
-    expires: timestamp("expires", { mode: "date" }).notNull(),
-  },
-  (vt) => ({
-    compoundKey: primaryKey(vt.identifier, vt.token),
-  }),
-);
