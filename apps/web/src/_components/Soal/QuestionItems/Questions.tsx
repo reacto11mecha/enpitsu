@@ -42,7 +42,18 @@ const formSchema = z.object({
     .min(1),
 });
 
-export const Questions = () => {
+interface Props {
+  question: {
+    id: number;
+    slug: string;
+    title: string;
+    startedAt: Date;
+    endedAt: Date;
+    authorId: string;
+  };
+}
+
+export const Questions = ({ question }: Props) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -69,8 +80,13 @@ export const Questions = () => {
         </h3>
 
         <div className="flex flex-col gap-5">
-          {mutlipleChoiceField.fields.map((field) => (
-            <MultipleChoice key={field.id} />
+          {mutlipleChoiceField.fields.map((field, index) => (
+            <MultipleChoice
+              key={field.id}
+              index={index}
+              title={question.title}
+              currentField={mutlipleChoiceField}
+            />
           ))}
 
           <Button
