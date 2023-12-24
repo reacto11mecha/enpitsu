@@ -2,14 +2,16 @@ import { relations } from "drizzle-orm";
 import {
   index,
   integer,
+  json,
   serial,
+  text,
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
 
 import { myPgTable } from "./_table";
 import { users } from "./auth";
-import { subGrades } from "./grade";
+import { students, subGrades } from "./grade";
 
 export const questions = myPgTable(
   "question",
@@ -30,6 +32,9 @@ export const questionRelations = relations(questions, ({ one, many }) => ({
     fields: [questions.authorId],
     references: [users.id],
   }),
+  multipleChoices: many(multipleChoices),
+  essays: many(essays),
+  blocklists: many(studentBlocklists),
 }));
 
 export const allowLists = myPgTable("allowList", {
@@ -52,3 +57,70 @@ export const allowListRelations = relations(allowLists, ({ one }) => ({
     references: [subGrades.id],
   }),
 }));
+
+export const multipleChoices = myPgTable("multipleChoice", {
+  id: serial("id").primaryKey(),
+  questionId: integer("question_id")
+    .notNull()
+    .references(() => questions.id),
+  question: text("question").notNull(),
+  options: json("options")
+    .$type<{ order: number; answer: string }[]>()
+    .notNull(),
+  correctAnswerOrder: integer("correct_answer").notNull(),
+});
+
+export const multipleChoiceRelations = relations(
+  multipleChoices,
+  ({ one }) => ({
+    question: one(questions, {
+      fields: [multipleChoices.questionId],
+      references: [questions.id],
+    }),
+  }),
+);
+
+export const essays = myPgTable("essay", {
+  id: serial("id").primaryKey(),
+  questionId: integer("question_id")
+    .notNull()
+    .references(() => questions.id),
+  question: text("question").notNull(),
+  answer: text("correct_answer").notNull(),
+});
+
+export const essayRelations = relations(essays, ({ one }) => ({
+  question: one(questions, {
+    fields: [essays.questionId],
+    references: [questions.id],
+  }),
+}));
+
+// TODO: create a more proper table to store student responds
+export const studentResponds = myPgTable("studentRespond", {
+  id: serial("id").primaryKey(),
+});
+
+export const studentBlocklists = myPgTable("studentBlocklist", {
+  id: serial("id").primaryKey(),
+  questionId: integer("question_id")
+    .notNull()
+    .references(() => questions.id),
+  studentId: integer("student_id")
+    .notNull()
+    .references(() => students.id),
+});
+
+export const studentBlocklistRelations = relations(
+  studentBlocklists,
+  ({ one }) => ({
+    question: one(questions, {
+      fields: [studentBlocklists.questionId],
+      references: [questions.id],
+    }),
+    student: one(students, {
+      fields: [studentBlocklists.studentId],
+      references: [students.id],
+    }),
+  }),
+);

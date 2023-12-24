@@ -3,7 +3,7 @@ import { relations } from "drizzle-orm";
 import { integer, serial, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 
 import { myPgTable } from "./_table";
-import { allowLists } from "./question";
+import { allowLists, studentBlocklists } from "./question";
 
 export const grades = myPgTable("grade", {
   id: serial("id").primaryKey(),
@@ -44,9 +44,10 @@ export const students = myPgTable(
   (table) => ({ tokenIdx: uniqueIndex("token_idx").on(table.token) }),
 );
 
-export const studentsRelations = relations(students, ({ one }) => ({
+export const studentsRelations = relations(students, ({ one, many }) => ({
   subgrade: one(subGrades, {
     fields: [students.subgradeId],
     references: [subGrades.id],
   }),
+  blocklists: many(studentBlocklists),
 }));
