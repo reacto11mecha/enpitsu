@@ -153,4 +153,46 @@ export const questionRouter = createTRPCRouter({
             .where(eq(schema.allowLists.questionId, input.id));
         }),
     ),
+
+  // Semi realtime stuff begin from this line
+  getMultipleChoices: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .query(({ ctx, input }) =>
+      ctx.db.query.multipleChoices.findMany({
+        where: eq(schema.multipleChoices.questionId, input.questionId),
+      }),
+    ),
+
+  getEssays: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .query(({ ctx, input }) =>
+      ctx.db.query.essays.findMany({
+        where: eq(schema.essays.questionId, input.questionId),
+      }),
+    ),
+
+  createChoice: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .mutation(({ ctx, input }) =>
+      ctx.db
+        .insert(schema.multipleChoices)
+        .values({
+          ...input,
+          question: "",
+          correctAnswerOrder: 0,
+          options: Array.from({ length: 5 }).map((_, idx) => ({
+            order: idx + 1,
+            answer: "",
+          })),
+        })
+        .returning(),
+    ),
+
+  deleteChoice: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(({ ctx, input }) =>
+      ctx.db
+        .delete(schema.multipleChoices)
+        .where(eq(schema.multipleChoices.id, input.id)),
+    ),
 });

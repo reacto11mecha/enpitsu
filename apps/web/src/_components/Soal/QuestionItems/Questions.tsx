@@ -1,18 +1,52 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  // FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PlusCircle } from "lucide-react";
-import { useFieldArray, useForm } from "react-hook-form";
+import {
+  ClipboardCheck,
+  Copy,
+  Loader2,
+  PlusCircle,
+  Trash2,
+} from "lucide-react";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { EssayQuestion } from "./EssayQuestion";
-import { MultipleChoice } from "./MultipleChoice";
+import { api } from "~/utils/api";
+import { NewLoadingQuestion } from "./NewLoadingQuestion";
 
 const formSchema = z.object({
   multipleChoice: z
     .array(
       z.object({
+        id: z.number(),
         question: z.string().min(1, { message: "Pertanyaan wajib di isi!" }),
         options: z
           .array(
@@ -26,8 +60,7 @@ const formSchema = z.object({
           .min(5)
           .max(5),
 
-        // correct answer by options order
-        correctAnswer: z.number(),
+        correctAnswerOrder: z.number(),
       }),
     )
     .min(1),
@@ -35,6 +68,7 @@ const formSchema = z.object({
   essay: z
     .array(
       z.object({
+        id: z.number(),
         question: z.string().min(1, { message: "Pertanyaan wajib di isi!" }),
         answer: z.string().min(1, { message: "Jawaban harus di isi!" }),
       }),
@@ -54,11 +88,46 @@ interface Props {
 }
 
 export const Questions = ({ question }: Props) => {
+  const apiUtils = api.useUtils();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       multipleChoice: [],
       essay: [],
+    },
+    mode: "onChange",
+  });
+
+  const multipleChoicesQuery = api.question.getMultipleChoices.useQuery(
+    {
+      questionId: question.id,
+    },
+    {
+      onSuccess(result) {
+        form.setValue("multipleChoice", result);
+      },
+    },
+  );
+  const essaysQuery = api.question.getEssays.useQuery(
+    {
+      questionId: question.id,
+    },
+    {
+      onSuccess(result) {
+        form.setValue("essay", result);
+      },
+    },
+  );
+
+  const createNewChoiceMutation = api.question.createChoice.useMutation({
+    async onSuccess() {
+      await apiUtils.question.getMultipleChoices.invalidate();
+    },
+  });
+  const deleteChoiceMutation = api.question.deleteChoice.useMutation({
+    async onSuccess() {
+      await apiUtils.question.getMultipleChoices.invalidate();
     },
   });
 
@@ -72,6 +141,24 @@ export const Questions = ({ question }: Props) => {
     name: "essay",
   });
 
+  // const multipleChoice = useWatch({
+  //   control: form.control,
+  //   name: "multipleChoice"
+  // });
+
+  // useEffect(() => {
+  //   console.log(multipleChoice);
+  // }, [multipleChoice])
+
+  // const essay = useWatch({
+  //   control: form.control,
+  //   name: "essay"
+  // });
+
+  // useEffect(() => {
+  //   console.log(essay);
+  // }, [essay])
+
   return (
     <div className="flex flex-col gap-8 pb-10">
       <div className="flex flex-col gap-4">
@@ -79,33 +166,172 @@ export const Questions = ({ question }: Props) => {
           Pilihan Ganda
         </h3>
 
-        <div className="flex flex-col gap-5">
-          {mutlipleChoiceField.fields.map((field, index) => (
-            <MultipleChoice
-              key={field.id}
-              index={index}
-              title={question.title}
-              currentField={mutlipleChoiceField}
-            />
-          ))}
+        <Form {...form}>
+          <div className="flex flex-col gap-5">
+            {mutlipleChoiceField.fields.map((field, index) => (
+              <Card key={field.id}>
+                <CardHeader>
+                  <CardTitle>Soal Nomor {index + 1}</CardTitle>
+                  <CardDescription className="text-muted-foreground">
+                    Soal: {question.title}
+                  </CardDescription>
+                </CardHeader>
 
-          <Button
-            variant="outline"
-            className="h-full w-full p-5"
-            onClick={() =>
-              mutlipleChoiceField.append({
-                question: "",
-                options: Array.from({ length: 5 }).map((_, idx) => ({
-                  order: idx + 1,
-                  answer: "",
-                })),
-                correctAnswer: 0,
-              })
-            }
-          >
-            <PlusCircle className="h-6 w-6" />
-          </Button>
-        </div>
+                <CardContent className="flex flex-col gap-5">
+                  <FormField
+                    key={field.id}
+                    control={form.control}
+                    name={`multipleChoice.${index}.question` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Pertanyaan</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Masukan pertanyaan soal disini"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="multipleChoice"
+                    render={() => (
+                      <FormItem>
+                        <FormLabel>Opsi Jawaban</FormLabel>
+                        <FormControl>
+                          <div className="flex flex-col gap-8">
+                            {field.options.map((option, optIndex) => (
+                              <FormField
+                                key={option.order}
+                                control={form.control}
+                                name={
+                                  `multipleChoice.${index}.options.${optIndex}.answer` as const
+                                }
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <div className="flex flex-row items-center gap-3">
+                                        <Checkbox
+                                          disabled
+                                          className="rounded-full"
+                                        />
+
+                                        <Textarea
+                                          placeholder="Masukan jawaban disini"
+                                          {...field}
+                                        />
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            ))}
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+
+                <Separator />
+
+                <CardFooter className="flex flex-row p-5">
+                  <div className="flex w-full flex-row justify-between">
+                    <Popover>
+                      <PopoverTrigger className="flex flex-row items-center gap-2 text-sky-600 dark:text-sky-500">
+                        <ClipboardCheck />
+                        Kunci jawaban
+                      </PopoverTrigger>
+                      <PopoverContent className="space-y-4">
+                        <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+                          Pilih jawaban benar
+                        </h4>
+
+                        <FormField
+                          control={form.control}
+                          name={
+                            `multipleChoice.${index}.correctAnswerOrder` as const
+                          }
+                          render={({ field: currentField }) => (
+                            <FormItem className="space-y-3">
+                              <FormControl>
+                                <RadioGroup
+                                  onValueChange={(val) =>
+                                    currentField.onChange(parseInt(val))
+                                  }
+                                  defaultValue={String(currentField.value)}
+                                  className="flex flex-col space-y-1"
+                                >
+                                  {field.options.map((option) => (
+                                    <FormItem
+                                      key={option.order}
+                                      className="flex items-center space-x-3 space-y-0"
+                                    >
+                                      <FormControl>
+                                        <RadioGroupItem
+                                          value={String(option.order)}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="font-normal">
+                                        {option.answer}
+                                      </FormLabel>
+                                    </FormItem>
+                                  ))}
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </PopoverContent>
+                    </Popover>
+
+                    <div className="flex flex-row gap-2">
+                      <Button variant="ghost">
+                        <span className="sr-only">Duplikat pertanyaan</span>
+                        <Copy />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() =>
+                          deleteChoiceMutation.mutate({
+                            id: parseInt(field.id),
+                          })
+                        }
+                      >
+                        <span className="sr-only">Hapus pertanyaan</span>
+                        <Trash2 />
+                      </Button>
+                    </div>
+                  </div>
+                </CardFooter>
+              </Card>
+            ))}
+
+            {createNewChoiceMutation.isLoading && <NewLoadingQuestion />}
+
+            {multipleChoicesQuery.isLoading ? (
+              <Button className="h-full w-full p-5" variant="outline" disabled>
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                className="h-full w-full p-5"
+                onClick={() =>
+                  createNewChoiceMutation.mutate({ questionId: question.id })
+                }
+              >
+                <PlusCircle className="h-6 w-6" />
+              </Button>
+            )}
+          </div>
+        </Form>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -114,22 +340,15 @@ export const Questions = ({ question }: Props) => {
         </h3>
 
         <div className="flex flex-col gap-5">
-          {essayField.fields.map((field) => (
-            <EssayQuestion key={field.id} />
-          ))}
-
-          <Button
-            variant="outline"
-            className="h-full w-full p-5"
-            onClick={() =>
-              essayField.append({
-                question: "",
-                answer: "",
-              })
-            }
-          >
-            <PlusCircle className="h-6 w-6" />
-          </Button>
+          {essaysQuery.isLoading ? (
+            <Button variant="outline" disabled className="h-full w-full p-5">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </Button>
+          ) : (
+            <Button variant="outline" className="h-full w-full p-5">
+              <PlusCircle className="h-6 w-6" />
+            </Button>
+          )}
         </div>
       </div>
     </div>
