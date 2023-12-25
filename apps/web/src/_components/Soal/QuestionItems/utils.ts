@@ -81,3 +81,26 @@ export const findMultipleChoiceUpdate = (
 
   return undefined; // No updated object found
 };
+
+type TCleanedEssay = Omit<Props["question"]["essays"][number], "questionId">[];
+
+export const findEssayUpdate = (
+  baseArray: Props["question"]["essays"],
+  updatedArray: TCleanedEssay,
+): TCleanedEssay[number] | undefined => {
+  for (const baseObj of baseArray) {
+    const updatedObj = updatedArray.find((obj) => obj.iqid === baseObj.iqid);
+
+    if (updatedObj) {
+      // Compare properties to determine if the object is updated
+      if (
+        baseObj.question !== updatedObj.question ||
+        baseObj.answer !== updatedObj.answer
+      ) {
+        return updatedObj;
+      }
+    }
+  }
+
+  return undefined; // No updated object found
+};

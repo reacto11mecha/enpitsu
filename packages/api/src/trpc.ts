@@ -8,10 +8,38 @@
  */
 import { auth } from "@enpitsu/auth";
 import type { Session } from "@enpitsu/auth";
-import { db } from "@enpitsu/db";
+import { db, eq, schema } from "@enpitsu/db";
+import { validateId } from "@enpitsu/token-generator";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
+
+const getStudent = async (token: string) =>
+  await db.query.students.findFirst({
+    where: eq(schema.students.token, token),
+    columns: {
+      name: true,
+      participantNumber: true,
+      room: true,
+    },
+    with: {
+      subgrade: {
+        columns: {
+          id: true,
+          label: true,
+        },
+        with: {
+          grade: {
+            columns: {
+              label: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+// type TStudent = Awaited<ReturnType<typeof getStudent>>;
 
 /**
  * 1. CONTEXT
@@ -24,6 +52,7 @@ import { ZodError } from "zod";
  */
 interface CreateContextOptions {
   session: Session | null;
+  studentToken: string | null;
 }
 
 /**
@@ -37,6 +66,7 @@ interface CreateContextOptions {
  */
 const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
+    studentToken: opts.studentToken,
     session: opts.session,
     db,
   };
@@ -54,10 +84,20 @@ export const createTRPCContext = async (opts: {
   const session = opts.auth ?? (await auth());
   const source = opts.req?.headers.get("x-trpc-source") ?? "unknown";
 
-  console.log(">>> tRPC Request from", source, "by", session?.user);
+  const studentToken =
+    opts.req?.headers.get("authorization")?.split("Student")?.at(1)?.trim() ??
+    null;
+
+  console.log(
+    ">>> tRPC Request from",
+    source,
+    "by",
+    session?.user ?? studentToken,
+  );
 
   return createInnerTRPCContext({
     session,
+    studentToken,
   });
 };
 
@@ -129,3 +169,31 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
  * @see https://trpc.io/docs/procedures
  */
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
+
+const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.studentToken) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  if (!validateId(ctx.studentToken)) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  const studentInfo = await getStudent(ctx.studentToken);
+
+  if (!studentInfo) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Peserta ujian tidak dapat ditemukan.",
+    });
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      student: studentInfo,
+    },
+  });
+});
+
+export const studentProcedure = t.procedure.use(enforceUserIsStudent);
