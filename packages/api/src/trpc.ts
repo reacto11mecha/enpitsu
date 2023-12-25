@@ -18,6 +18,7 @@ const getStudent = async (token: string) =>
   await db.query.students.findFirst({
     where: eq(schema.students.token, token),
     columns: {
+      id: true,
       name: true,
       participantNumber: true,
       room: true,

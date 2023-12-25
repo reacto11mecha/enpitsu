@@ -1,3 +1,4 @@
+import { examRouter } from "./router/exam";
 import { gradeRouter } from "./router/grade";
 import { questionRouter } from "./router/question";
 import { createTRPCRouter } from "./trpc";
@@ -5,6 +6,7 @@ import { createTRPCRouter } from "./trpc";
 export const appRouter = createTRPCRouter({
   question: questionRouter,
   grade: gradeRouter,
+  exam: examRouter,
 });
 
 // export type definition of API

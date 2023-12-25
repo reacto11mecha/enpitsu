@@ -35,6 +35,7 @@ export const questionRelations = relations(questions, ({ one, many }) => ({
   multipleChoices: many(multipleChoices),
   essays: many(essays),
   blocklists: many(studentBlocklists),
+  responds: many(studentResponds),
 }));
 
 export const allowLists = myPgTable("allowList", {
@@ -72,11 +73,12 @@ export const multipleChoices = myPgTable("multipleChoice", {
 
 export const multipleChoiceRelations = relations(
   multipleChoices,
-  ({ one }) => ({
+  ({ one, many }) => ({
     question: one(questions, {
       fields: [multipleChoices.questionId],
       references: [questions.id],
     }),
+    responds: many(studentRespondChoices),
   }),
 );
 
@@ -89,17 +91,89 @@ export const essays = myPgTable("essay", {
   answer: text("correct_answer").notNull(),
 });
 
-export const essayRelations = relations(essays, ({ one }) => ({
+export const essayRelations = relations(essays, ({ one, many }) => ({
   question: one(questions, {
     fields: [essays.questionId],
     references: [questions.id],
   }),
+  responds: many(studentRespondEssays),
 }));
 
-// TODO: create a more proper table to store student responds
 export const studentResponds = myPgTable("studentRespond", {
   id: serial("id").primaryKey(),
+  questionId: integer("question_id")
+    .notNull()
+    .references(() => questions.id),
+  studentId: integer("student_id")
+    .notNull()
+    .references(() => students.id),
 });
+
+export const studentRespondRelations = relations(
+  studentResponds,
+  ({ one, many }) => ({
+    question: one(questions, {
+      fields: [studentResponds.questionId],
+      references: [questions.id],
+    }),
+    student: one(students, {
+      fields: [studentResponds.studentId],
+      references: [students.id],
+    }),
+    essays: many(studentRespondEssays),
+    choices: many(studentRespondChoices),
+  }),
+);
+
+export const studentRespondChoices = myPgTable("studentResponChoice", {
+  id: serial("id").primaryKey(),
+  respondId: integer("respond_id")
+    .notNull()
+    .references(() => studentResponds.id),
+  choiceId: integer("choice_id")
+    .notNull()
+    .references(() => multipleChoices.iqid),
+  answer: integer("answer").default(0).notNull(),
+});
+
+export const studentRespondChoiceRelations = relations(
+  studentRespondChoices,
+  ({ one }) => ({
+    parentRespond: one(studentResponds, {
+      fields: [studentRespondChoices.respondId],
+      references: [studentResponds.id],
+    }),
+    choiceQuestion: one(multipleChoices, {
+      fields: [studentRespondChoices.choiceId],
+      references: [multipleChoices.iqid],
+    }),
+  }),
+);
+
+export const studentRespondEssays = myPgTable("studentRespondEssay", {
+  id: serial("id").primaryKey(),
+  respondId: integer("respond_id")
+    .notNull()
+    .references(() => studentResponds.id),
+  essayId: integer("essay_id")
+    .notNull()
+    .references(() => essays.iqid),
+  answer: text("answer").notNull(),
+});
+
+export const studentRespondEssayRelations = relations(
+  studentRespondEssays,
+  ({ one }) => ({
+    parentRespond: one(studentResponds, {
+      fields: [studentRespondEssays.respondId],
+      references: [studentResponds.id],
+    }),
+    essayQuestion: one(essays, {
+      fields: [studentRespondEssays.essayId],
+      references: [essays.iqid],
+    }),
+  }),
+);
 
 export const studentBlocklists = myPgTable("studentBlocklist", {
   id: serial("id").primaryKey(),

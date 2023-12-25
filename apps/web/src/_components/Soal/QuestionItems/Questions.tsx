@@ -83,8 +83,6 @@ const formSchema = z.object({
 });
 
 export const Questions = ({ question }: Props) => {
-  api.question.getQuestion.useQuery({ slug: "SJI-XII" });
-
   const apiUtils = api.useUtils();
 
   const form = useForm<z.infer<typeof formSchema>>({
