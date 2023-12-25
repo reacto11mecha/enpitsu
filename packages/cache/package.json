@@ -1,5 +1,5 @@
 {
-  "name": "@enpitsu/{{ name }}",
+  "name": "@enpitsu/cache",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -26,5 +26,8 @@
       "@enpitsu/eslint-config/base"
     ]
   },
-  "prettier": "@enpitsu/prettier-config"
+  "prettier": "@enpitsu/prettier-config",
+  "dependencies": {
+    "ioredis": "^5.3.2"
+  }
 }
