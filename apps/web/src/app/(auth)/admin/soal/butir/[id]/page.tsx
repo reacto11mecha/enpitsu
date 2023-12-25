@@ -14,6 +14,14 @@ export default async function QuestionItemsPage({
 
   const question = await db.query.questions.findFirst({
     where: eq(schema.questions.id, id),
+    with: {
+      multipleChoices: {
+        orderBy: (choice, { asc }) => [asc(choice.iqid)],
+      },
+      essays: {
+        orderBy: (essay, { asc }) => [asc(essay.iqid)],
+      },
+    },
   });
 
   if (!question) return redirect("/admin/soal");

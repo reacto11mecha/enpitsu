@@ -59,7 +59,7 @@ export const allowListRelations = relations(allowLists, ({ one }) => ({
 }));
 
 export const multipleChoices = myPgTable("multipleChoice", {
-  id: serial("id").primaryKey(),
+  iqid: serial("id").primaryKey(),
   questionId: integer("question_id")
     .notNull()
     .references(() => questions.id),
@@ -81,7 +81,7 @@ export const multipleChoiceRelations = relations(
 );
 
 export const essays = myPgTable("essay", {
-  id: serial("id").primaryKey(),
+  iqid: serial("id").primaryKey(),
   questionId: integer("question_id")
     .notNull()
     .references(() => questions.id),

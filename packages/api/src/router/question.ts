@@ -160,6 +160,7 @@ export const questionRouter = createTRPCRouter({
     .query(({ ctx, input }) =>
       ctx.db.query.multipleChoices.findMany({
         where: eq(schema.multipleChoices.questionId, input.questionId),
+        orderBy: [asc(schema.multipleChoices.iqid)],
       }),
     ),
 
@@ -188,11 +189,56 @@ export const questionRouter = createTRPCRouter({
         .returning(),
     ),
 
+  updateChoice: protectedProcedure
+    .input(
+      z.object({
+        iqid: z.number(),
+        question: z.string(),
+        options: z
+          .array(
+            z.object({
+              order: z.number().min(1).max(5),
+              answer: z.string(),
+            }),
+          )
+          .min(5)
+          .max(5),
+
+        correctAnswerOrder: z.number(),
+      }),
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.db
+        .update(schema.multipleChoices)
+        .set({
+          question: input.question,
+          options: input.options,
+          correctAnswerOrder: input.correctAnswerOrder,
+        })
+        .where(eq(schema.multipleChoices.iqid, input.iqid)),
+    ),
+
   deleteChoice: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(({ ctx, input }) =>
       ctx.db
         .delete(schema.multipleChoices)
-        .where(eq(schema.multipleChoices.id, input.id)),
+        .where(eq(schema.multipleChoices.iqid, input.id)),
+    ),
+
+  createEssay: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .mutation(({ ctx, input }) =>
+      ctx.db.insert(schema.essays).values({
+        question: "",
+        answer: "",
+        questionId: input.questionId,
+      }),
+    ),
+
+  deleteEssay: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(({ ctx, input }) =>
+      ctx.db.delete(schema.essays).where(eq(schema.essays.iqid, input.id)),
     ),
 });
