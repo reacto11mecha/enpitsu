@@ -229,11 +229,11 @@ export const columns: ColumnDef<QuestionList>[] = [
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer text-rose-500 hover:text-rose-700 focus:text-rose-700">
-                <Trash2
-                  className="mr-2 h-4 md:w-4"
-                  onClick={() => setOpenDelete(true)}
-                />
+              <DropdownMenuItem
+                className="cursor-pointer text-rose-500 hover:text-rose-700 focus:text-rose-700"
+                onClick={() => setOpenDelete(true)}
+              >
+                <Trash2 className="mr-2 h-4 md:w-4" />
                 Hapus Soal
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -251,8 +251,16 @@ export const columns: ColumnDef<QuestionList>[] = [
   },
 ];
 
-export function DataTable({ countValue }: { countValue: number }) {
-  const questionsQuery = api.question.getQuestions.useQuery();
+export function DataTable({
+  countValue,
+  initialData,
+}: {
+  countValue: number;
+  initialData: RouterOutputs["question"]["getQuestions"];
+}) {
+  const questionsQuery = api.question.getQuestions.useQuery(undefined, {
+    initialData,
+  });
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);

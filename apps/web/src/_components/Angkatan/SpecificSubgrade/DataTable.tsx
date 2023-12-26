@@ -154,6 +154,7 @@ export const columns: ColumnDef<StudentList>[] = [
 export function DataTable({
   grade,
   subgrade,
+  initialData,
 }: {
   grade: {
     id: number;
@@ -164,10 +165,16 @@ export function DataTable({
     label: string;
     gradeId: number;
   };
+  initialData: RouterOutputs["grade"]["getStudents"];
 }) {
-  const studentsQuery = api.grade.getStudents.useQuery({
-    subgradeId: subgrade.id,
-  });
+  const studentsQuery = api.grade.getStudents.useQuery(
+    {
+      subgradeId: subgrade.id,
+    },
+    {
+      initialData,
+    },
+  );
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);

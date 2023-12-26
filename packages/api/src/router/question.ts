@@ -26,6 +26,16 @@ export const questionRouter = createTRPCRouter({
             },
           },
         },
+        multipleChoices: {
+          columns: {
+            iqid: true,
+          },
+        },
+        essays: {
+          columns: {
+            iqid: true,
+          },
+        },
       },
     }),
   ),
@@ -150,6 +160,13 @@ export const questionRouter = createTRPCRouter({
             columns: {
               slug: true,
             },
+            with: {
+              responds: {
+                columns: {
+                  id: true,
+                },
+              },
+            },
           });
 
           if (!currentQuestion)
@@ -159,13 +176,44 @@ export const questionRouter = createTRPCRouter({
             });
 
           await tx
-            .delete(schema.questions)
-            .where(eq(schema.questions.id, input.id));
-          await tx
             .delete(schema.allowLists)
             .where(eq(schema.allowLists.questionId, input.id));
+          await tx
+            .delete(schema.studentBlocklists)
+            .where(eq(schema.studentBlocklists.questionId, input.id));
+          await tx
+            .delete(schema.multipleChoices)
+            .where(eq(schema.multipleChoices.questionId, input.id));
+          await tx
+            .delete(schema.essays)
+            .where(eq(schema.essays.questionId, input.id));
 
-          await cache.del(`trpc-get-question-slug-${currentQuestion.slug}`);
+          await tx.transaction(async (tx2) => {
+            for (const respond of currentQuestion.responds) {
+              await tx2
+                .delete(schema.studentResponds)
+                .where(eq(schema.studentResponds.id, respond.id));
+              await tx2
+                .delete(schema.studentRespondChoices)
+                .where(eq(schema.studentRespondChoices.respondId, respond.id));
+              await tx2
+                .delete(schema.studentRespondEssays)
+                .where(eq(schema.studentRespondEssays.respondId, respond.id));
+            }
+          });
+
+          await tx
+            .delete(schema.questions)
+            .where(eq(schema.questions.id, input.id));
+
+          try {
+            await cache.del(`trpc-get-question-slug-${currentQuestion.slug}`);
+          } catch (_) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Masalah terhadap konektivitas sistem cache",
+            });
+          }
         }),
     ),
 
@@ -189,8 +237,15 @@ export const questionRouter = createTRPCRouter({
   createChoice: protectedProcedure
     .input(z.object({ questionId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-      if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      try {
+        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+        if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      } catch (_) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Masalah terhadap konektivitas sistem cache",
+        });
+      }
 
       return await ctx.db
         .insert(schema.multipleChoices)
@@ -224,8 +279,15 @@ export const questionRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-      if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      try {
+        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+        if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      } catch (_) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Masalah terhadap konektivitas sistem cache",
+        });
+      }
 
       return await ctx.db
         .update(schema.multipleChoices)
@@ -234,14 +296,22 @@ export const questionRouter = createTRPCRouter({
           options: input.options,
           correctAnswerOrder: input.correctAnswerOrder,
         })
-        .where(eq(schema.multipleChoices.iqid, input.iqid));
+        .where(eq(schema.multipleChoices.iqid, input.iqid))
+        .returning();
     }),
 
   deleteChoice: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-      if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      try {
+        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+        if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      } catch (_) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Masalah terhadap konektivitas sistem cache",
+        });
+      }
 
       return await ctx.db
         .delete(schema.multipleChoices)
@@ -252,8 +322,15 @@ export const questionRouter = createTRPCRouter({
   createEssay: protectedProcedure
     .input(z.object({ questionId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-      if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      try {
+        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+        if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      } catch (_) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Masalah terhadap konektivitas sistem cache",
+        });
+      }
 
       return await ctx.db
         .insert(schema.essays)
@@ -273,8 +350,15 @@ export const questionRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-      if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      try {
+        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+        if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      } catch (_) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Masalah terhadap konektivitas sistem cache",
+        });
+      }
 
       return await ctx.db
         .update(schema.essays)
@@ -287,8 +371,15 @@ export const questionRouter = createTRPCRouter({
   deleteEssay: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-      if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      try {
+        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+        if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      } catch (_) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Masalah terhadap konektivitas sistem cache",
+        });
+      }
 
       return await ctx.db
         .delete(schema.essays)

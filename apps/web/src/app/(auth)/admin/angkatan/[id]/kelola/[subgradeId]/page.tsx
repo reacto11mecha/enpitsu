@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { db, eq, schema } from "@enpitsu/db";
+import { asc, db, eq, schema } from "@enpitsu/db";
 
 import { DataTable } from "~/_components/Angkatan/SpecificSubgrade/DataTable";
 
@@ -23,6 +23,11 @@ export default async function ManageSpecificSubgrade(props: {
 
   if (!specificSubgrade) return redirect("/admin/angkatan");
 
+  const students = await db.query.students.findMany({
+    where: eq(schema.students.subgradeId, subgradeId),
+    orderBy: [asc(schema.students.name)],
+  });
+
   return (
     <div className="mt-5 flex flex-col gap-7 px-5">
       <div className="space-y-1">
@@ -42,7 +47,11 @@ export default async function ManageSpecificSubgrade(props: {
           Daftar Siswa-Siswi
         </h4>
 
-        <DataTable subgrade={specificSubgrade} grade={specificGrade} />
+        <DataTable
+          subgrade={specificSubgrade}
+          grade={specificGrade}
+          initialData={students}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Roboto } from "next/font/google";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +31,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ClipboardCheck,
@@ -91,6 +92,8 @@ const formSchema = z.object({
 });
 
 export const Questions = ({ question }: Props) => {
+  const { toast } = useToast();
+
   const apiUtils = api.useUtils();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -136,7 +139,19 @@ export const Questions = ({ question }: Props) => {
     },
   );
 
+  const toastBuilder = useCallback(
+    (type: string, message: string) =>
+      void toast({
+        variant: "destructive",
+        title: `Gagal Menghapus Soal ${type}`,
+        description: `Terjadi kesalahan, coba lagi nanti. Error: ${message}`,
+      }),
+    [toast],
+  );
+
   const createNewChoiceMutation = api.question.createChoice.useMutation({
+    retryDelay: 0,
+    retry: false,
     async onSuccess(result) {
       await apiUtils.question.getMultipleChoices.invalidate();
 
@@ -144,14 +159,33 @@ export const Questions = ({ question }: Props) => {
         result.map(({ questionId: _, ...rest }) => rest).at(0)!,
       );
     },
+    onError: (e) => toastBuilder("Pilihan Ganda", e.message),
   });
   const updateChoiceMutation = api.question.updateChoice.useMutation({
     retry: false,
-    async onSuccess() {
+    retryDelay: 0,
+    async onSuccess(result) {
       await apiUtils.question.getMultipleChoices.invalidate();
+
+      const resIqid = result.at(0);
+
+      // Just to be safe and easy
+      if (resIqid) {
+        const { questionId: _, ...newValue } = resIqid;
+
+        mutlipleChoiceField.update(
+          mutlipleChoiceField.fields.findIndex(
+            (field) => field.iqid === resIqid.iqid,
+          ),
+          newValue,
+        );
+      }
     },
+    onError: (e) => toastBuilder("Pilihan Ganda", e.message),
   });
   const deleteChoiceMutation = api.question.deleteChoice.useMutation({
+    retry: false,
+    retryDelay: 0,
     async onSuccess(result) {
       await apiUtils.question.getMultipleChoices.invalidate();
 
@@ -165,9 +199,12 @@ export const Questions = ({ question }: Props) => {
           ),
         );
     },
+    onError: (e) => toastBuilder("Pilihan Ganda", e.message),
   });
 
   const createNewEssayMutation = api.question.createEssay.useMutation({
+    retry: false,
+    retryDelay: 0,
     async onSuccess(result) {
       await apiUtils.question.getEssays.invalidate();
 
@@ -175,14 +212,19 @@ export const Questions = ({ question }: Props) => {
         result.map(({ questionId: _, ...rest }) => rest).at(0)!,
       );
     },
+    onError: (e) => toastBuilder("Esai", e.message),
   });
   const updateEssayMutation = api.question.updateEssay.useMutation({
     retry: false,
+    retryDelay: 0,
     async onSuccess() {
       await apiUtils.question.getEssays.invalidate();
     },
+    onError: (e) => toastBuilder("Esai", e.message),
   });
   const deleteEssayMutation = api.question.deleteEssay.useMutation({
+    retry: false,
+    retryDelay: 0,
     async onSuccess(result) {
       await apiUtils.question.getEssays.invalidate();
 
@@ -194,6 +236,7 @@ export const Questions = ({ question }: Props) => {
           essayField.fields.findIndex((field) => field.iqid === resIqid.iqid),
         );
     },
+    onError: (e) => toastBuilder("Esai", e.message),
   });
 
   const multipleChouceDebounced = useDebounce((data: typeof multipleChoice) => {
@@ -301,6 +344,12 @@ export const Questions = ({ question }: Props) => {
                                                 className="text-base font-normal"
                                                 placeholder="Masukan jawaban disini"
                                                 {...currentField}
+                                                onFocus={(e) =>
+                                                  e.target.scrollIntoView({
+                                                    behavior: "instant",
+                                                    block: "center",
+                                                  })
+                                                }
                                                 onPaste={(e) => {
                                                   if (
                                                     currentField.value === "" &&
@@ -641,7 +690,7 @@ export const Questions = ({ question }: Props) => {
               <div className="flex flex-col items-center justify-center gap-2">
                 <NuhUh className="h-8 w-8 text-red-600 dark:text-red-500" />
                 <small className="text-muted-foreground font-mono text-red-600 dark:text-red-500">
-                  Error.
+                  Error, perubahan tidak disimpan
                 </small>
               </div>
             ) : (
@@ -667,7 +716,7 @@ export const Questions = ({ question }: Props) => {
               <div className="flex flex-col items-center justify-center gap-2">
                 <NuhUh className="h-8 w-8 text-red-600 dark:text-red-500" />
                 <small className="text-muted-foreground font-mono text-red-600 dark:text-red-500">
-                  Error.
+                  Error, perubahan tidak disimpan
                 </small>
               </div>
             ) : (

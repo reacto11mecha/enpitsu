@@ -1,7 +1,11 @@
+import { db } from "@enpitsu/db";
+
 import { AngkatanViewer } from "~/_components/Angkatan/AngkatanViewer";
 import { NewAngkatan } from "~/_components/Angkatan/NewAngkatan";
 
-export default function AngkatanPage() {
+export default async function AngkatanPage() {
+  const grades = await db.query.grades.findMany();
+
   return (
     <div className="mt-5 flex flex-col gap-8 px-5">
       <div className="space-y-1">
@@ -19,7 +23,7 @@ export default function AngkatanPage() {
 
         <NewAngkatan />
 
-        <AngkatanViewer />
+        <AngkatanViewer initialData={grades} />
       </div>
     </div>
   );
