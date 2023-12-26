@@ -8,39 +8,17 @@
  */
 import { auth } from "@enpitsu/auth";
 import type { Session } from "@enpitsu/auth";
-import { db, eq, schema } from "@enpitsu/db";
+import { cache } from "@enpitsu/cache";
+import { db, preparedGetStudent } from "@enpitsu/db";
 import { validateId } from "@enpitsu/token-generator";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
 const getStudent = async (token: string) =>
-  await db.query.students.findFirst({
-    where: eq(schema.students.token, token),
-    columns: {
-      id: true,
-      name: true,
-      participantNumber: true,
-      room: true,
-    },
-    with: {
-      subgrade: {
-        columns: {
-          id: true,
-          label: true,
-        },
-        with: {
-          grade: {
-            columns: {
-              label: true,
-            },
-          },
-        },
-      },
-    },
-  });
+  await preparedGetStudent.execute({ token });
 
-// type TStudent = Awaited<ReturnType<typeof getStudent>>;
+export type TStudent = NonNullable<Awaited<ReturnType<typeof getStudent>>>;
 
 /**
  * 1. CONTEXT
@@ -180,6 +158,18 @@ const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
+  const cachedStudentInfo = await cache.get(
+    `student-trpc-token-${ctx.studentToken}`,
+  );
+
+  if (cachedStudentInfo)
+    return next({
+      ctx: {
+        ...ctx,
+        student: JSON.parse(cachedStudentInfo) as TStudent,
+      },
+    });
+
   const studentInfo = await getStudent(ctx.studentToken);
 
   if (!studentInfo) {
@@ -188,6 +178,13 @@ const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
       message: "Peserta ujian tidak dapat ditemukan.",
     });
   }
+
+  await cache.set(
+    `student-trpc-token-${ctx.studentToken}`,
+    JSON.stringify(studentInfo),
+    "EX",
+    10 * 60,
+  );
 
   return next({
     ctx: {

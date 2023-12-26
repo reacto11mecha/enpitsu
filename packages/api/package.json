@@ -14,6 +14,7 @@
   "dependencies": {
     "@enpitsu/auth": "workspace:^0.1.0",
     "@enpitsu/db": "workspace:^0.1.0",
+    "@enpitsu/cache": "workspace:^0.1.0",
     "@enpitsu/token-generator": "workspace:^0.1.0",
     "@trpc/client": "^10.44.1",
     "@trpc/server": "^10.44.1",

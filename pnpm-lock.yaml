@@ -178,6 +178,9 @@ importers:
       '@enpitsu/auth':
         specifier: workspace:^0.1.0
         version: link:../../packages/auth
+      '@enpitsu/cache':
+        specifier: workspace:^0.1.0
+        version: link:../../packages/cache
       '@enpitsu/db':
         specifier: workspace:^0.1.0
         version: link:../../packages/db
@@ -347,6 +350,9 @@ importers:
       '@enpitsu/auth':
         specifier: workspace:^0.1.0
         version: link:../auth
+      '@enpitsu/cache':
+        specifier: workspace:^0.1.0
+        version: link:../cache
       '@enpitsu/db':
         specifier: workspace:^0.1.0
         version: link:../db

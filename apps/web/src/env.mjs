@@ -15,6 +15,7 @@ export const env = createEnv({
    */
   server: {
     DATABASE_URL: z.string().url(),
+    REDIS_URL: z.string().url(),
   },
   /**
    * Specify your client-side environment variables schema here.
@@ -30,6 +31,7 @@ export const env = createEnv({
     VERCEL_URL: process.env.VERCEL_URL,
     PORT: process.env.PORT,
     DATABASE_URL: process.env.DATABASE_URL,
+    REDIS_URL: process.env.REDIS_URL,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   skipValidation:
