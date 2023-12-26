@@ -1,4 +1,6 @@
+import { cache } from "@enpitsu/cache";
 import { and, asc, eq, schema } from "@enpitsu/db";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -133,6 +135,8 @@ export const questionRouter = createTRPCRouter({
                   );
               }
           });
+
+        await cache.del(`trpc-get-question-slug-${input.slug}`);
       }),
     ),
 
@@ -141,12 +145,27 @@ export const questionRouter = createTRPCRouter({
     .mutation(
       async ({ ctx, input }) =>
         await ctx.db.transaction(async (tx) => {
+          const currentQuestion = await tx.query.questions.findFirst({
+            where: eq(schema.questions.id, input.id),
+            columns: {
+              slug: true,
+            },
+          });
+
+          if (!currentQuestion)
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Soal tidak dtemukan!",
+            });
+
           await tx
             .delete(schema.questions)
             .where(eq(schema.questions.id, input.id));
           await tx
             .delete(schema.allowLists)
             .where(eq(schema.allowLists.questionId, input.id));
+
+          await cache.del(`trpc-get-question-slug-${currentQuestion.slug}`);
         }),
     ),
 
@@ -169,8 +188,11 @@ export const questionRouter = createTRPCRouter({
     ),
   createChoice: protectedProcedure
     .input(z.object({ questionId: z.number() }))
-    .mutation(({ ctx, input }) =>
-      ctx.db
+    .mutation(async ({ ctx, input }) => {
+      const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+      if (cacheKeys.length > 0) await cache.del(cacheKeys);
+
+      return await ctx.db
         .insert(schema.multipleChoices)
         .values({
           ...input,
@@ -181,8 +203,8 @@ export const questionRouter = createTRPCRouter({
             answer: "",
           })),
         })
-        .returning(),
-    ),
+        .returning();
+    }),
   updateChoice: protectedProcedure
     .input(
       z.object({
@@ -201,34 +223,47 @@ export const questionRouter = createTRPCRouter({
         correctAnswerOrder: z.number(),
       }),
     )
-    .mutation(({ ctx, input }) =>
-      ctx.db
+    .mutation(async ({ ctx, input }) => {
+      const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+      if (cacheKeys.length > 0) await cache.del(cacheKeys);
+
+      return await ctx.db
         .update(schema.multipleChoices)
         .set({
           question: input.question,
           options: input.options,
           correctAnswerOrder: input.correctAnswerOrder,
         })
-        .where(eq(schema.multipleChoices.iqid, input.iqid)),
-    ),
+        .where(eq(schema.multipleChoices.iqid, input.iqid));
+    }),
 
   deleteChoice: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(({ ctx, input }) =>
-      ctx.db
+    .mutation(async ({ ctx, input }) => {
+      const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+      if (cacheKeys.length > 0) await cache.del(cacheKeys);
+
+      return await ctx.db
         .delete(schema.multipleChoices)
-        .where(eq(schema.multipleChoices.iqid, input.id)),
-    ),
+        .where(eq(schema.multipleChoices.iqid, input.id))
+        .returning({ iqid: schema.multipleChoices.iqid });
+    }),
 
   createEssay: protectedProcedure
     .input(z.object({ questionId: z.number() }))
-    .mutation(({ ctx, input }) =>
-      ctx.db.insert(schema.essays).values({
-        question: "",
-        answer: "",
-        questionId: input.questionId,
-      }),
-    ),
+    .mutation(async ({ ctx, input }) => {
+      const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+      if (cacheKeys.length > 0) await cache.del(cacheKeys);
+
+      return await ctx.db
+        .insert(schema.essays)
+        .values({
+          question: "",
+          answer: "",
+          questionId: input.questionId,
+        })
+        .returning();
+    }),
   updateEssay: protectedProcedure
     .input(
       z.object({
@@ -237,18 +272,27 @@ export const questionRouter = createTRPCRouter({
         answer: z.string(),
       }),
     )
-    .mutation(({ ctx, input }) =>
-      ctx.db
+    .mutation(async ({ ctx, input }) => {
+      const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+      if (cacheKeys.length > 0) await cache.del(cacheKeys);
+
+      return await ctx.db
         .update(schema.essays)
         .set({
           question: input.question,
           answer: input.answer,
         })
-        .where(eq(schema.essays.iqid, input.iqid)),
-    ),
+        .where(eq(schema.essays.iqid, input.iqid));
+    }),
   deleteEssay: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(({ ctx, input }) =>
-      ctx.db.delete(schema.essays).where(eq(schema.essays.iqid, input.id)),
-    ),
+    .mutation(async ({ ctx, input }) => {
+      const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+      if (cacheKeys.length > 0) await cache.del(cacheKeys);
+
+      return await ctx.db
+        .delete(schema.essays)
+        .where(eq(schema.essays.iqid, input.id))
+        .returning({ iqid: schema.essays.iqid });
+    }),
 });
