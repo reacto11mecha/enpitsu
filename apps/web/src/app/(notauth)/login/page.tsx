@@ -6,7 +6,7 @@ import { FcGoogle } from "react-icons/fc";
 
 export default async function LoginPage() {
   const status = await cache.get("login-status");
-  const isAllowed = status ? (JSON.parse(status as string) as boolean) : true;
+  const isAllowed = status ? (JSON.parse(status) as boolean) : true;
 
   if (!isAllowed) {
     return (
