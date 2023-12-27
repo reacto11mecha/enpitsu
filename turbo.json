@@ -46,6 +46,7 @@
     "AUTH_GOOGLE_SECRET",
     "AUTH_REDIRECT_PROXY_URL",
     "AUTH_SECRET",
-    "AUTH_URL"
+    "AUTH_URL",
+    "VITE_TRPC_URL"
   ]
 }

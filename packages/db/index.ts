@@ -70,6 +70,7 @@ export const preparedGetStudent = db.query.students
       name: true,
       participantNumber: true,
       room: true,
+      token: true,
     },
     with: {
       subgrade: {

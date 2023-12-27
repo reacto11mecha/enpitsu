@@ -52,9 +52,11 @@ const getQuestionPrecheck = async (student: TStudent, question: TQuestion) => {
 };
 
 export const examRouter = createTRPCRouter({
+  getStudent: studentProcedure.query(({ ctx }) => ({ student: ctx.student })),
+
   getQuestion: studentProcedure
     .input(z.object({ slug: z.string().min(2) }))
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const cachedQuestion = await cache.get(
         `trpc-get-question-slug-${input.slug}`,
       );
