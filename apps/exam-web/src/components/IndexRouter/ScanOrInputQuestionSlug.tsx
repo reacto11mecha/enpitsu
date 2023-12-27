@@ -1,15 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  AlertDialog,
-  // AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -23,118 +12,14 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { api } from "@/utils/api";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Loader2, ScanLine } from "lucide-react";
-import QrScanner from "qr-scanner";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { ModeToggle } from "../mode-toggle";
-
-const formSchema = z.object({
-  slug: z
-    .string()
-    .min(1, { message: "Kode soal wajib di isi!" })
-    .min(4, { message: "Kode soal minimal memiliki panjang 4 karakter" }),
-});
-
-const Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
-  const videoRef = useRef<HTMLVideoElement>(null!);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const qrScanner = new QrScanner(
-      videoRef.current,
-      async ({ data: slug }) => {
-        if (slug || slug !== "") {
-          const result = await formSchema.safeParseAsync({ slug });
-
-          if (!result.success) {
-            const error = JSON.parse(result.error.message) as {
-              message: string;
-            }[];
-
-            setError(error.at(0)!.message);
-
-            return;
-          }
-
-          setError(null);
-
-          qrScanner.stop();
-          mutate(slug);
-        }
-      },
-      {
-        highlightCodeOutline: true,
-        highlightScanRegion: true,
-      },
-    );
-
-    qrScanner.start();
-
-    return () => {
-      qrScanner.destroy();
-    };
-  }, []);
-
-  return (
-    <>
-      <AlertDialogTitle>Mulai Scan</AlertDialogTitle>
-      <AlertDialogDescription>
-        Izinkan web ini mengakses untuk mengakses kamera.
-      </AlertDialogDescription>
-
-      <video
-        className={`h-72 w-full rounded-md border ${
-          error ? "border-red-600" : ""
-        }`}
-        ref={videoRef}
-      />
-
-      {error ? (
-        <p className="text-center text-sm text-red-600">{error}</p>
-      ) : null}
-    </>
-  );
-};
-
-export const ScannerWrapper = ({
-  sendMutate,
-}: {
-  sendMutate: (slug: string) => void;
-}) => {
-  const [open, setOpen] = useState(false);
-
-  const mutate = useCallback(
-    (slug: string) => {
-      setOpen(false);
-
-      sendMutate(slug);
-    },
-    [sendMutate],
-  );
-
-  return (
-    <AlertDialog open={open} onOpenChange={() => setOpen((prev) => !prev)}>
-      <AlertDialogTrigger asChild>
-        <Button
-          className="mt-1 flex w-full flex-row gap-2 p-10 text-lg"
-          variant="outline"
-        >
-          <ScanLine /> Scan QR Code
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <Scanner mutate={mutate} />
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Batal</AlertDialogCancel>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-};
+import { Precaution } from "./Precaution";
+import { ScannerWrapper } from "./Scanner";
+import { formSchema } from "./schema";
 
 export const ScanOrInputQuestionSlug = ({
   closeScanner,
@@ -142,10 +27,11 @@ export const ScanOrInputQuestionSlug = ({
   closeScanner: () => void;
 }) => {
   const { toast } = useToast();
+  const [isPrecautionOpen, setOpen] = useState(false);
 
   const getQuestionMutation = api.exam.getQuestion.useMutation({
-    onSuccess(result) {
-      console.log(result);
+    onSuccess() {
+      setOpen(true);
     },
     onError(error) {
       toast({
@@ -158,6 +44,8 @@ export const ScanOrInputQuestionSlug = ({
       });
     },
   });
+
+  const closePrecaution = useCallback(() => setOpen(false), []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -229,6 +117,12 @@ export const ScanOrInputQuestionSlug = ({
 
         <ModeToggle />
       </div>
+
+      <Precaution
+        open={isPrecautionOpen}
+        close={closePrecaution}
+        data={getQuestionMutation.data}
+      />
     </div>
   );
 };

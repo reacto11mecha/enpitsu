@@ -27,6 +27,7 @@ export function IndexRoute() {
   const studentQuery = api.exam.getStudent.useQuery(undefined, {
     onError(error) {
       toast({
+        duration: 9500,
         variant: "destructive",
         title: "Gagal mengambil data pribadi",
         description: `Operasi mengambil data gagal, mohon coba lagi. Error: ${
@@ -56,87 +57,105 @@ export function IndexRoute() {
 
         <CardContent className="pt-6">
           <table className="w-full">
-            {!studentQuery.isLoading &&
-            studentQuery.data &&
-            studentQuery.data.student ? (
-              <tr className="w-full">
-                <td>No Peserta</td>
-                <td className="px-1">:</td>
-                <td>{studentQuery.data.student.participantNumber}</td>
-              </tr>
+            {studentQuery.isError ? (
+              <tbody className="w-full">
+                {Array.from({ length: 5 }).map((_, idx) => (
+                  <tr key={idx}>
+                    <td colSpan={3}>
+                      <Skeleton
+                        className={`h-5 w-full animate-none bg-red-500 dark:bg-red-800 ${
+                          idx > 0 ? "mt-2" : ""
+                        }`}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             ) : (
-              <tr className="w-full">
-                <td colSpan={3}>
-                  <Skeleton className="h-5 w-full" />
-                </td>
-              </tr>
-            )}
+              <tbody className="w-full">
+                {!studentQuery.isLoading &&
+                studentQuery.data &&
+                studentQuery.data.student ? (
+                  <tr className="w-full">
+                    <td>No Peserta</td>
+                    <td className="px-1">:</td>
+                    <td>{studentQuery.data.student.participantNumber}</td>
+                  </tr>
+                ) : (
+                  <tr className="w-full">
+                    <td colSpan={3}>
+                      <Skeleton className="h-5 w-full" />
+                    </td>
+                  </tr>
+                )}
 
-            {!studentQuery.isLoading &&
-            studentQuery.data &&
-            studentQuery.data.student ? (
-              <tr className="w-full">
-                <td>Nama</td>
-                <td className="px-1">:</td>
-                <td>{studentQuery.data.student.name}</td>
-              </tr>
-            ) : (
-              <tr className="w-full">
-                <td colSpan={3}>
-                  <Skeleton className="mt-2 h-5 w-full" />
-                </td>
-              </tr>
-            )}
+                {!studentQuery.isLoading &&
+                studentQuery.data &&
+                studentQuery.data.student ? (
+                  <tr className="w-full">
+                    <td>Nama</td>
+                    <td className="px-1">:</td>
+                    <td>{studentQuery.data.student.name}</td>
+                  </tr>
+                ) : (
+                  <tr className="w-full">
+                    <td colSpan={3}>
+                      <Skeleton className="mt-2 h-5 w-full" />
+                    </td>
+                  </tr>
+                )}
 
-            {!studentQuery.isLoading &&
-            studentQuery.data &&
-            studentQuery.data.student ? (
-              <tr className="w-full">
-                <td>Kelas</td>
-                <td className="px-1">:</td>
-                <td>
-                  {studentQuery.data.student.subgrade.grade.label}{" "}
-                  {studentQuery.data.student.subgrade.label}
-                </td>
-              </tr>
-            ) : (
-              <tr className="w-full">
-                <td colSpan={3}>
-                  <Skeleton className="mt-2 h-5 w-full" />
-                </td>
-              </tr>
-            )}
+                {!studentQuery.isLoading &&
+                studentQuery.data &&
+                studentQuery.data.student ? (
+                  <tr className="w-full">
+                    <td>Kelas</td>
+                    <td className="px-1">:</td>
+                    <td>
+                      {studentQuery.data.student.subgrade.grade.label}{" "}
+                      {studentQuery.data.student.subgrade.label}
+                    </td>
+                  </tr>
+                ) : (
+                  <tr className="w-full">
+                    <td colSpan={3}>
+                      <Skeleton className="mt-2 h-5 w-full" />
+                    </td>
+                  </tr>
+                )}
 
-            {!studentQuery.isLoading &&
-            studentQuery.data &&
-            studentQuery.data.student ? (
-              <tr className="w-full">
-                <td>Ruangan</td>
-                <td className="px-1">:</td>
-                <td>{studentQuery.data.student.room}</td>
-              </tr>
-            ) : (
-              <tr className="w-full">
-                <td colSpan={3}>
-                  <Skeleton className="mt-2 h-5 w-full" />
-                </td>
-              </tr>
-            )}
+                {!studentQuery.isLoading &&
+                studentQuery.data &&
+                studentQuery.data.student ? (
+                  <tr className="w-full">
+                    <td>Ruangan</td>
+                    <td className="px-1">:</td>
+                    <td>{studentQuery.data.student.room}</td>
+                  </tr>
+                ) : (
+                  <tr className="w-full">
+                    <td colSpan={3}>
+                      <Skeleton className="mt-2 h-5 w-full" />
+                    </td>
+                  </tr>
+                )}
 
-            {!studentQuery.isLoading &&
-            studentQuery.data &&
-            studentQuery.data.student ? (
-              <tr className="w-full">
-                <td>Token</td>
-                <td className="px-1">:</td>
-                <td>{studentQuery.data.student.token}</td>
-              </tr>
-            ) : (
-              <tr className="w-full">
-                <td colSpan={3}>
-                  <Skeleton className="mt-2 h-5 w-full" />
-                </td>
-              </tr>
+                {!studentQuery.isLoading &&
+                studentQuery.data &&
+                studentQuery.data.student ? (
+                  <tr className="w-full">
+                    <td>Token</td>
+                    <td className="px-1">:</td>
+                    <td>{studentQuery.data.student.token}</td>
+                  </tr>
+                ) : (
+                  <tr className="w-full">
+                    <td colSpan={3}>
+                      <Skeleton className="mt-2 h-5 w-full" />
+                    </td>
+                  </tr>
+                )}
+              </tbody>
             )}
           </table>
         </CardContent>
