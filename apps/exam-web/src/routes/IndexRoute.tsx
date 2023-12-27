@@ -29,12 +29,16 @@ export function IndexRoute() {
       toast({
         variant: "destructive",
         title: "Gagal mengambil data pribadi",
-        description: `Operasi mengambil data gagal, coba lagi nanti. Error: ${error.message}`,
+        description: `Operasi mengambil data gagal, mohon coba lagi. Error: ${
+          error.message === "Failed to fetch"
+            ? "Gagal meraih server"
+            : error.message
+        }`,
       });
     },
   });
 
-  if (isCorrect)
+  if (!studentQuery.isError && isCorrect)
     return <ScanOrInputQuestionSlug closeScanner={closeQuestionScan} />;
 
   return (
@@ -43,7 +47,8 @@ export function IndexRoute() {
         <CardHeader>
           <CardTitle>Sebelum Mengerjakan,</CardTitle>
           <CardDescription>
-            Pastikan sudah benar dan sesuai sebelum mengerjakan.
+            Pastikan sudah benar dan sesuai dengan yang tertera pada kartu
+            ujian.
           </CardDescription>
         </CardHeader>
 
@@ -146,7 +151,7 @@ export function IndexRoute() {
           </Button>
           <Button
             className="w-full"
-            disabled={studentQuery.isLoading && !studentQuery.data}
+            disabled={!studentQuery.data || studentQuery.isError}
             onClick={() => setCorrect(true)}
           >
             Ya, sudah benar

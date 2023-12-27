@@ -33,7 +33,7 @@ const getQuestionPrecheck = async (student: TStudent, question: TQuestion) => {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message:
-        "Tidak diizinkan mengerjakan soal. Kemungkinan anda salah mata pelajaran, jika dianggap benar maka informasikan pengawas ruangan.",
+        "Tidak diizinkan mengerjakan soal, kemungkinan anda salah mata pelajaran. Jika seharusnya anda bisa mengerjakan maka informasikan pengawas ruangan.",
     });
 
   if (question.startedAt >= new Date())
@@ -57,6 +57,41 @@ export const examRouter = createTRPCRouter({
   getQuestion: studentProcedure
     .input(z.object({ slug: z.string().min(2) }))
     .mutation(async ({ ctx, input }) => {
+      const cachedQuestion = await cache.get(
+        `trpc-get-question-slug-${input.slug}`,
+      );
+
+      if (cachedQuestion) {
+        const question = JSON.parse(cachedQuestion) as TQuestion;
+
+        const sendedData = await getQuestionPrecheck(ctx.student, question);
+
+        return sendedData;
+      }
+
+      const question = await preparedQuestionSelect.execute(input);
+
+      if (!question)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Soal tidak ditemukan.",
+        });
+
+      const sendedData = await getQuestionPrecheck(ctx.student, question);
+
+      await cache.set(
+        `trpc-get-question-slug-${input.slug}`,
+        JSON.stringify(question),
+        "EX",
+        5 * 10,
+      );
+
+      return sendedData;
+    }),
+
+  queryQuestion: studentProcedure
+    .input(z.object({ slug: z.string().min(2) }))
+    .query(async ({ ctx, input }) => {
       const cachedQuestion = await cache.get(
         `trpc-get-question-slug-${input.slug}`,
       );

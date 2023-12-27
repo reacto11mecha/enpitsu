@@ -36,6 +36,7 @@
     "date-fns": "^3.0.1",
     "jotai": "^2.6.0",
     "lucide-react": "^0.294.0",
+    "qr-scanner": "^1.4.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.49.0",
