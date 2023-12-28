@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { SetToken } from "@/components/set-token";
+import { lazy, Suspense, useState } from "react";
 import { studentTokenAtom } from "@/lib/atom";
-import { IndexRoute } from "@/routes/IndexRoute";
+import IndexRoute from "@/routes/IndexRoute";
 import { api } from "@/utils/api";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { useAtom } from "jotai";
+import { RefreshCw } from "lucide-react";
 import {
   createBrowserRouter,
   Navigate,
@@ -14,7 +14,9 @@ import {
 import superjson from "superjson";
 
 import { env } from "./env";
-import { TestRoute } from "./routes/TestRoute";
+
+const SetToken = lazy(() => import("@/components/set-token"));
+const TestRoute = lazy(() => import("./routes/TestRoute"));
 
 const router = createBrowserRouter([
   {
@@ -27,11 +29,31 @@ const router = createBrowserRouter([
   },
   {
     path: "test/:slug",
-    element: <TestRoute />,
+    element: (
+      <Suspense
+        fallback={
+          <div className="flex h-screen w-screen items-center justify-center">
+            <RefreshCw size={35} className="animate-spin" />
+          </div>
+        }
+      >
+        <TestRoute />
+      </Suspense>
+    ),
   },
   {
     path: "settings",
-    element: <SetToken />,
+    element: (
+      <Suspense
+        fallback={
+          <div className="flex h-screen w-screen items-center justify-center">
+            <RefreshCw size={35} className="animate-spin" />
+          </div>
+        }
+      >
+        <SetToken />
+      </Suspense>
+    ),
   },
 ]);
 

@@ -85,6 +85,27 @@ const PrecautionChildren = ({
 
       <div className="space-y-1">
         <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+          Perilaku Aplikasi
+        </h4>
+
+        <ul className="list-disc space-y-1.5 px-5 text-sm">
+          <li>
+            Jika sudah menekan tombol <b>"Kerjakan"</b> maka web ini memantau
+            aktivitas yang berpotensi mencurigakan.
+          </li>
+          <li>
+            Akan diberikan tiga kali (3) kesempatan untuk berpindah tab, lebih
+            dari itu maka otomatis anda dinyatakan curang dan otomatis gugur.
+          </li>
+          <li>
+            Jika waktu sudah menyentuh waktu selesai, maka anda tidak bisa
+            mengumpulkan jawaban anda bagaimanapun caaranya.
+          </li>
+        </ul>
+      </div>
+
+      <div className="space-y-1">
+        <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
           Tata Tertib
         </h4>
 

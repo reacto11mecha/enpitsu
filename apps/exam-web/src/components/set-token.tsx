@@ -174,7 +174,7 @@ const InitVersion = () => {
   );
 };
 
-export function SetToken({ init }: { init?: boolean }) {
+export default function SetToken({ init }: { init?: boolean }) {
   if (init) return <InitVersion />;
 
   return <NonInitVer />;

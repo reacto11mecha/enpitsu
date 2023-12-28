@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { Logout } from "@/components/IndexRouter/Logout";
 import { ScanOrInputQuestionSlug } from "@/components/IndexRouter/ScanOrInputQuestionSlug";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ import { api } from "@/utils/api";
 import { Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 
-export function IndexRoute() {
+export default function IndexRoute() {
   const { toast } = useToast();
 
   const [isCorrect, setCorrect] = useState(false);
@@ -43,8 +44,8 @@ export function IndexRoute() {
     return <ScanOrInputQuestionSlug closeScanner={closeQuestionScan} />;
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center px-5 sm:px-0">
-      <Card className="w-[450px]">
+    <div className="flex h-screen w-screen flex-col items-center justify-center gap-8 px-5 sm:px-0">
+      <Card className="sm:w-[450px]">
         <CardHeader>
           <CardTitle>Sebelum Mengerjakan,</CardTitle>
           <CardDescription>
@@ -178,6 +179,8 @@ export function IndexRoute() {
           <ModeToggle size="default" />
         </CardFooter>
       </Card>
+
+      <Logout />
     </div>
   );
 }

@@ -80,8 +80,10 @@ const Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
 
 export const ScannerWrapper = ({
   sendMutate,
+  isDisabled,
 }: {
   sendMutate: (slug: string) => void;
+  isDisabled: boolean;
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -100,6 +102,7 @@ export const ScannerWrapper = ({
         <Button
           className="mt-1 flex w-full flex-row gap-2 p-10 text-lg"
           variant="outline"
+          disabled={isDisabled}
         >
           <ScanLine /> Scan QR
         </Button>

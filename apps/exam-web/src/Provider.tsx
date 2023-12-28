@@ -1,4 +1,4 @@
-import { SetToken } from "@/components/set-token";
+import SetToken from "@/components/set-token";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { studentTokenAtom } from "@/lib/atom";

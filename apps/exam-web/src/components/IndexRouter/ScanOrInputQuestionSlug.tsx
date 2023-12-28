@@ -106,7 +106,10 @@ export const ScanOrInputQuestionSlug = ({
 
         <p className="text-muted-foreground mb-1 mt-5 text-center">atau</p>
 
-        <ScannerWrapper sendMutate={sendMutate} />
+        <ScannerWrapper
+          sendMutate={sendMutate}
+          isDisabled={getQuestionMutation.isLoading}
+        />
       </div>
 
       <div className="flex w-full translate-y-16 justify-around">
