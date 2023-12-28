@@ -146,7 +146,14 @@ export const questionRouter = createTRPCRouter({
               }
           });
 
-        await cache.del(`trpc-get-question-slug-${input.slug}`);
+        try {
+          await cache.del(`trpc-get-question-slug-${input.slug}`);
+        } catch (_) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Terjadi masalah terhadap konektivitas sistem cache",
+          });
+        }
       }),
     ),
 
@@ -211,7 +218,7 @@ export const questionRouter = createTRPCRouter({
           } catch (_) {
             throw new TRPCError({
               code: "INTERNAL_SERVER_ERROR",
-              message: "Masalah terhadap konektivitas sistem cache",
+              message: "Terjadi masalah terhadap konektivitas sistem cache",
             });
           }
         }),
@@ -243,7 +250,7 @@ export const questionRouter = createTRPCRouter({
       } catch (_) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Masalah terhadap konektivitas sistem cache",
+          message: "Terjadi masalah terhadap konektivitas sistem cache",
         });
       }
 
@@ -285,7 +292,7 @@ export const questionRouter = createTRPCRouter({
       } catch (_) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Masalah terhadap konektivitas sistem cache",
+          message: "Terjadi masalah terhadap konektivitas sistem cache",
         });
       }
 
@@ -309,7 +316,7 @@ export const questionRouter = createTRPCRouter({
       } catch (_) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Masalah terhadap konektivitas sistem cache",
+          message: "Terjadi masalah terhadap konektivitas sistem cache",
         });
       }
 
@@ -328,7 +335,7 @@ export const questionRouter = createTRPCRouter({
       } catch (_) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Masalah terhadap konektivitas sistem cache",
+          message: "Terjadi masalah terhadap konektivitas sistem cache",
         });
       }
 
@@ -356,7 +363,7 @@ export const questionRouter = createTRPCRouter({
       } catch (_) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Masalah terhadap konektivitas sistem cache",
+          message: "Terjadi masalah terhadap konektivitas sistem cache",
         });
       }
 
@@ -377,7 +384,7 @@ export const questionRouter = createTRPCRouter({
       } catch (_) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Masalah terhadap konektivitas sistem cache",
+          message: "Terjadi masalah terhadap konektivitas sistem cache",
         });
       }
 

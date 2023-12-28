@@ -161,17 +161,12 @@ export const columns: ColumnDef<SubgradeList>[] = [
 
 export function DataTable({
   currentGrade,
-  initialData,
 }: {
   currentGrade: { id: number; label: string };
-  initialData: RouterOutputs["grade"]["getSubgrades"];
 }) {
-  const subgradesQuery = api.grade.getSubgrades.useQuery(
-    {
-      gradeId: currentGrade.id,
-    },
-    { initialData },
-  );
+  const subgradesQuery = api.grade.getSubgrades.useQuery({
+    gradeId: currentGrade.id,
+  });
 
   const table = useReactTable({
     data: subgradesQuery.data ?? [],

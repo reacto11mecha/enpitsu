@@ -251,16 +251,8 @@ export const columns: ColumnDef<QuestionList>[] = [
   },
 ];
 
-export function DataTable({
-  countValue,
-  initialData,
-}: {
-  countValue: number;
-  initialData: RouterOutputs["question"]["getQuestions"];
-}) {
-  const questionsQuery = api.question.getQuestions.useQuery(undefined, {
-    initialData,
-  });
+export function DataTable({ countValue }: { countValue: number }) {
+  const questionsQuery = api.question.getQuestions.useQuery(undefined);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);

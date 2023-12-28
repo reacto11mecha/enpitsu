@@ -24,13 +24,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { ChevronsRight, Loader2, Trash2 } from "lucide-react";
 
 import { api } from "~/utils/api";
-import type { RouterOutputs } from "~/utils/api";
 
-export const AngkatanViewer = ({
-  initialData,
-}: {
-  initialData: RouterOutputs["grade"]["getGrades"];
-}) => {
+export const AngkatanViewer = () => {
   const { toast } = useToast();
 
   const [open, setOpen] = useState(false);
@@ -44,9 +39,7 @@ export const AngkatanViewer = ({
 
   const apiUtils = api.useUtils();
 
-  const grades = api.grade.getGrades.useQuery(undefined, {
-    initialData,
-  });
+  const grades = api.grade.getGrades.useQuery(undefined);
 
   const gradeDeleteMutation = api.grade.deleteGrade.useMutation({
     async onSuccess() {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { asc, count, db, schema } from "@enpitsu/db";
+import { count, db, schema } from "@enpitsu/db";
 
 import { DataTable } from "~/_components/Soal/DataTable";
 
@@ -9,38 +9,6 @@ export default async function QuestionPage() {
     .from(schema.subGrades);
 
   const countValue = subgradeCount.at(0)!.value;
-
-  const allQuestion = await db.query.questions.findMany({
-    orderBy: [asc(schema.questions.title)],
-    with: {
-      user: {
-        columns: {
-          name: true,
-          image: true,
-          email: true,
-        },
-      },
-      allowLists: {
-        with: {
-          subgrade: {
-            with: {
-              grade: true,
-            },
-          },
-        },
-      },
-      multipleChoices: {
-        columns: {
-          iqid: true,
-        },
-      },
-      essays: {
-        columns: {
-          iqid: true,
-        },
-      },
-    },
-  });
 
   return (
     <div className="mt-5 flex flex-col gap-7 px-5">
@@ -71,7 +39,7 @@ export default async function QuestionPage() {
           </h4>
         )}
 
-        <DataTable countValue={countValue} initialData={allQuestion} />
+        <DataTable countValue={countValue} />
       </div>
     </div>
   );

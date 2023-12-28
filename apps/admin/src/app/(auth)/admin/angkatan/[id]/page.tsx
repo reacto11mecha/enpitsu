@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { asc, db, eq, schema } from "@enpitsu/db";
+import { db, eq, schema } from "@enpitsu/db";
 
 import { DataTable } from "~/_components/Angkatan/SpecificGrade/DataTable";
 
@@ -15,14 +15,6 @@ export default async function DynamicAngkatan({
   });
 
   if (!specificGrade) return redirect("/admin/angkatan");
-
-  const subgrades = await db.query.subGrades.findMany({
-    where: eq(schema.subGrades.gradeId, gradeId),
-    with: {
-      grade: true,
-    },
-    orderBy: [asc(schema.subGrades.label)],
-  });
 
   return (
     <div className="mt-5 flex flex-col gap-7 px-5">
@@ -41,7 +33,7 @@ export default async function DynamicAngkatan({
           List Subkelas
         </h4>
 
-        <DataTable currentGrade={specificGrade} initialData={subgrades} />
+        <DataTable currentGrade={specificGrade} />
       </div>
     </div>
   );
