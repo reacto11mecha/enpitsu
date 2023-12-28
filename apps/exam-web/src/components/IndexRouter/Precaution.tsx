@@ -25,7 +25,7 @@ const PrecautionChildren = ({
   data: TData;
   setScrollBottom: (scrolled: boolean) => void;
 }) => {
-  const refEl = useRef<HTMLDIvElement>(null!);
+  const refEl = useRef<HTMLDivElement>(null!);
 
   useEffect(() => {
     const cb = () => {
@@ -35,6 +35,8 @@ const PrecautionChildren = ({
     };
 
     refEl.current.addEventListener("scroll", cb);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
