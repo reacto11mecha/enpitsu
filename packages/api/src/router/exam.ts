@@ -57,16 +57,26 @@ export const examRouter = createTRPCRouter({
   getQuestion: studentProcedure
     .input(z.object({ slug: z.string().min(2) }))
     .mutation(async ({ ctx, input }) => {
-      const cachedQuestion = await cache.get(
-        `trpc-get-question-slug-${input.slug}`,
-      );
+      try {
+        const cachedQuestion = await cache.get(
+          `trpc-get-question-slug-${input.slug}`,
+        );
 
-      if (cachedQuestion) {
-        const question = JSON.parse(cachedQuestion) as TQuestion;
+        if (cachedQuestion) {
+          const question = JSON.parse(cachedQuestion) as TQuestion;
 
-        const sendedData = await getQuestionPrecheck(ctx.student, question);
+          const sendedData = await getQuestionPrecheck(ctx.student, question);
 
-        return sendedData;
+          return sendedData;
+        }
+      } catch (_) {
+        console.error(
+          JSON.stringify({
+            time: Date.now().valueOf(),
+            msg: "Failed to get cached question data, fallback to database request",
+            ...input,
+          }),
+        );
       }
 
       const question = await preparedQuestionSelect.execute(input);
@@ -79,12 +89,23 @@ export const examRouter = createTRPCRouter({
 
       const sendedData = await getQuestionPrecheck(ctx.student, question);
 
-      await cache.set(
-        `trpc-get-question-slug-${input.slug}`,
-        JSON.stringify(question),
-        "EX",
-        5 * 10,
-      );
+      try {
+        await cache.set(
+          `trpc-get-question-slug-${input.slug}`,
+          JSON.stringify(question),
+          "EX",
+          5 * 10,
+        );
+      } catch (_) {
+        console.error(
+          JSON.stringify({
+            time: Date.now().valueOf(),
+            msg: "Failed to set cache question data, continuing without cache write",
+            studentToken: ctx.studentToken,
+            ...input,
+          }),
+        );
+      }
 
       return sendedData;
     }),
@@ -92,16 +113,26 @@ export const examRouter = createTRPCRouter({
   queryQuestion: studentProcedure
     .input(z.object({ slug: z.string().min(2) }))
     .query(async ({ ctx, input }) => {
-      const cachedQuestion = await cache.get(
-        `trpc-get-question-slug-${input.slug}`,
-      );
+      try {
+        const cachedQuestion = await cache.get(
+          `trpc-get-question-slug-${input.slug}`,
+        );
 
-      if (cachedQuestion) {
-        const question = JSON.parse(cachedQuestion) as TQuestion;
+        if (cachedQuestion) {
+          const question = JSON.parse(cachedQuestion) as TQuestion;
 
-        const sendedData = await getQuestionPrecheck(ctx.student, question);
+          const sendedData = await getQuestionPrecheck(ctx.student, question);
 
-        return sendedData;
+          return sendedData;
+        }
+      } catch (_) {
+        console.error(
+          JSON.stringify({
+            time: Date.now().valueOf(),
+            msg: "Failed to get cached question data, fallback to database request",
+            ...input,
+          }),
+        );
       }
 
       const question = await preparedQuestionSelect.execute(input);
@@ -114,12 +145,23 @@ export const examRouter = createTRPCRouter({
 
       const sendedData = await getQuestionPrecheck(ctx.student, question);
 
-      await cache.set(
-        `trpc-get-question-slug-${input.slug}`,
-        JSON.stringify(question),
-        "EX",
-        5 * 10,
-      );
+      try {
+        await cache.set(
+          `trpc-get-question-slug-${input.slug}`,
+          JSON.stringify(question),
+          "EX",
+          5 * 10,
+        );
+      } catch (_) {
+        console.error(
+          JSON.stringify({
+            time: Date.now().valueOf(),
+            msg: "Failed to set cache question data, continuing without cache write",
+            studentToken: ctx.studentToken,
+            ...input,
+          }),
+        );
+      }
 
       return sendedData;
     }),

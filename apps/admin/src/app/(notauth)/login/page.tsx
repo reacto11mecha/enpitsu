@@ -4,9 +4,20 @@ import { auth, signIn } from "@enpitsu/auth";
 import { cache } from "@enpitsu/cache";
 import { FcGoogle } from "react-icons/fc";
 
+const getStatus = async () => {
+  try {
+    const status = await cache.get("login-status");
+
+    // This is true because it actually a success connection
+    return status ? (JSON.parse(status) as boolean) : true;
+  } catch (_) {
+    // Need to be false because you need to check the status of the redis instance
+    return false;
+  }
+};
+
 export default async function LoginPage() {
-  const status = await cache.get("login-status");
-  const isAllowed = status ? (JSON.parse(status) as boolean) : true;
+  const isAllowed = await getStatus();
 
   if (!isAllowed) {
     return (

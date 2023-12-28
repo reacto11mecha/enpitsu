@@ -155,20 +155,30 @@ const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
   }
 
   if (!validateId(ctx.studentToken)) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+    throw new TRPCError({ code: "BAD_REQUEST" });
   }
 
-  const cachedStudentInfo = await cache.get(
-    `student-trpc-token-${ctx.studentToken}`,
-  );
+  try {
+    const cachedStudentInfo = await cache.get(
+      `student-trpc-token-${ctx.studentToken}`,
+    );
 
-  if (cachedStudentInfo)
-    return next({
-      ctx: {
-        ...ctx,
-        student: JSON.parse(cachedStudentInfo) as TStudent,
-      },
-    });
+    if (cachedStudentInfo)
+      return next({
+        ctx: {
+          ...ctx,
+          student: JSON.parse(cachedStudentInfo) as TStudent,
+        },
+      });
+  } catch (_) {
+    console.error(
+      JSON.stringify({
+        time: Date.now().valueOf(),
+        msg: "Failed to get cached student data, fallback to database request",
+        studentToken: ctx.studentToken,
+      }),
+    );
+  }
 
   const studentInfo = await getStudent(ctx.studentToken);
 
@@ -179,12 +189,22 @@ const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
     });
   }
 
-  await cache.set(
-    `student-trpc-token-${ctx.studentToken}`,
-    JSON.stringify(studentInfo),
-    "EX",
-    10 * 60,
-  );
+  try {
+    await cache.set(
+      `student-trpc-token-${ctx.studentToken}`,
+      JSON.stringify(studentInfo),
+      "EX",
+      10 * 60,
+    );
+  } catch (_) {
+    console.error(
+      JSON.stringify({
+        time: Date.now().valueOf(),
+        msg: "Failed to set cache student data, continuing without writing cache",
+        studentToken: ctx.studentToken,
+      }),
+    );
+  }
 
   return next({
     ctx: {
