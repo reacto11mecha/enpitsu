@@ -101,7 +101,7 @@ export const ScannerWrapper = ({
           className="mt-1 flex w-full flex-row gap-2 p-10 text-lg"
           variant="outline"
         >
-          <ScanLine /> Scan QR Code
+          <ScanLine /> Scan QR
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

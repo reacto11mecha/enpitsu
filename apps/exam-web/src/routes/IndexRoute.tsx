@@ -48,8 +48,8 @@ export function IndexRoute() {
         <CardHeader>
           <CardTitle>Sebelum Mengerjakan,</CardTitle>
           <CardDescription>
-            Pastikan sudah benar dan sesuai dengan yang tertera pada kartu
-            ujian.
+            Pastikan identitas anda sudah benar dan sesuai dengan yang tertera
+            pada kartu ujian.
           </CardDescription>
         </CardHeader>
 

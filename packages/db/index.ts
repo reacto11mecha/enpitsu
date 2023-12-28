@@ -34,6 +34,7 @@ export const preparedQuestionSelect = db.query.questions
     columns: {
       id: true,
       title: true,
+      slug: true,
       startedAt: true,
       endedAt: true,
     },
