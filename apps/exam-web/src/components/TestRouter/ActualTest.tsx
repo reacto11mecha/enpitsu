@@ -25,7 +25,7 @@ import { studentAnswerAtom } from "@/lib/atom";
 import { api } from "@/utils/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
-import { ArrowLeft, Link } from "lucide-react";
+import { ArrowLeft, Link, Loader2 } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -43,7 +43,10 @@ import {
 const Test = ({ data, initialData }: Props) => {
   const [checkIn] = useState(
     initialData.find((d) => d.slug === data.slug)?.checkIn
-      ? new Date(initialData.find((d) => d.slug === data.slug)!.checkIn as unknown as string)
+      ? new Date(
+        initialData.find((d) => d.slug === data.slug)!
+          .checkIn as unknown as string,
+      )
       : new Date(),
   );
 
@@ -62,6 +65,21 @@ const Test = ({ data, initialData }: Props) => {
         variant: "destructive",
         title: "Operasi Gagal",
         description: `Gagal menyimpan status kecurangan. Error: ${error.message}`,
+      });
+    },
+    retry: false,
+  });
+  const submitAnswerMutation = api.exam.submitAnswer.useMutation({
+    onSuccess() {
+      setStudentAnswers(
+        studentAnswers.filter((answer) => answer.slug !== data.slug),
+      );
+    },
+    onError(error) {
+      toast({
+        variant: "destructive",
+        title: "Operasi Gagal",
+        description: `Gagal menyimpan jawaban. Error: ${error.message}`,
       });
     },
     retry: false,
@@ -222,8 +240,41 @@ const Test = ({ data, initialData }: Props) => {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     setCanUpdateDishonesty(false);
-    console.log({ ...values, checkIn, submittedAt: new Date() });
+
+    submitAnswerMutation.mutate({
+      multipleChoices: values.multipleChoices.map((choice) => ({
+        iqid: choice.iqid,
+        choosedAnswer: choice.choosedAnswer,
+      })),
+      essays: values.essays.map((essay) => ({
+        iqid: essay.iqid,
+        answer: essay.answer,
+      })),
+      questionId: data.id,
+      checkIn,
+      submittedAt: new Date(),
+    });
   };
+
+  if (submitAnswerMutation.isSuccess)
+    return (
+      <div className="flex h-screen w-screen flex-col items-center justify-center gap-3 p-3">
+        <h2 className="font-monospace scroll-m-20 pb-2 text-center text-3xl font-semibold tracking-tight text-green-600 first:mt-0 dark:text-green-500">
+          Berhasil Submit
+        </h2>
+        <p className="text-center text-lg md:w-[75%]">
+          Jawaban anda sudah di simpan, anda bisa menunjukan ini ke pengawas
+          ruangan bahwa jawaban anda sudah di submit dengan aman.
+        </p>
+
+        <Button variant="outline" size="icon" asChild>
+          <Link to="/">
+            <ArrowLeft />
+            <span className="sr-only">Kembali ke halaman depan</span>
+          </Link>
+        </Button>
+      </div>
+    );
 
   if (dishonestyCount > 2)
     return (
@@ -253,6 +304,7 @@ const Test = ({ data, initialData }: Props) => {
             </>
           )}
         </p>
+
         <Button variant="outline" size="icon" asChild>
           <Link to="/">
             <ArrowLeft />
@@ -345,6 +397,7 @@ const Test = ({ data, initialData }: Props) => {
                                     choosedAnswer: parseInt(val),
                                   });
                                 }}
+                                disabled={submitAnswerMutation.isLoading}
                               >
                                 {field.options.map((option, idx) => (
                                   <div
@@ -354,6 +407,7 @@ const Test = ({ data, initialData }: Props) => {
                                     <RadioGroupItem
                                       value={String(option.order)}
                                       id={`options.${field.iqid}.opt.${idx}`}
+                                      disabled={submitAnswerMutation.isLoading}
                                     />
                                     <Label
                                       htmlFor={`options.${field.iqid}.opt.${idx}`}
@@ -405,6 +459,7 @@ const Test = ({ data, initialData }: Props) => {
                                     answer: e.target.value,
                                   });
                                 }}
+                                disabled={submitAnswerMutation.isLoading}
                               />
                             </FormControl>
                             <FormMessage />
@@ -418,7 +473,15 @@ const Test = ({ data, initialData }: Props) => {
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" variant="ghost" className="uppercase">
+              <Button
+                type="submit"
+                variant="ghost"
+                className="uppercase"
+                disabled={submitAnswerMutation.isLoading}
+              >
+                {submitAnswerMutation.isLoading ? (
+                  <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
+                ) : null}{" "}
                 submit
               </Button>
             </div>

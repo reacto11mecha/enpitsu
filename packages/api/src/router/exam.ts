@@ -174,7 +174,7 @@ export const examRouter = createTRPCRouter({
       return sendedData;
     }),
 
-  storeAnswer: studentProcedure
+  submitAnswer: studentProcedure
     .input(
       z.object({
         questionId: z.number(),
