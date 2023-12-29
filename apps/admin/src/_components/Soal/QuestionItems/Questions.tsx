@@ -239,7 +239,7 @@ export const Questions = ({ question }: Props) => {
     onError: (e) => toastBuilder("Esai", e.message),
   });
 
-  const multipleChouceDebounced = useDebounce((data: typeof multipleChoice) => {
+  const multipleChoiceDebounced = useDebounce((data: typeof multipleChoice) => {
     const updatedData = findMultipleChoiceUpdate(
       multipleChoicesQuery.data,
       data,
@@ -251,8 +251,8 @@ export const Questions = ({ question }: Props) => {
   });
 
   useEffect(() => {
-    multipleChouceDebounced(multipleChoice);
-  }, [multipleChoice, multipleChouceDebounced]);
+    multipleChoiceDebounced(multipleChoice);
+  }, [multipleChoice, multipleChoiceDebounced]);
 
   const essay = useWatch({
     control: form.control,

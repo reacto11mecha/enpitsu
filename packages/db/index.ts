@@ -52,6 +52,11 @@ export const preparedQuestionSelect = db.query.questions
           options: true,
         },
       },
+      responds: {
+        columns: {
+          studentId: true,
+        },
+      },
       essays: {
         orderBy: (essay, { asc }) => [asc(essay.iqid)],
         columns: {

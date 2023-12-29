@@ -10,12 +10,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { studentTokenAtom } from "@/lib/atom";
+import { studentAnswerAtom, studentTokenAtom } from "@/lib/atom";
 import { useAtom } from "jotai";
 import { LogOut } from "lucide-react";
 
 export const Logout = () => {
   const [, setToken] = useAtom(studentTokenAtom);
+  const [, setAnswers] = useAtom(studentAnswerAtom);
 
   return (
     <AlertDialog>
@@ -33,7 +34,12 @@ export const Logout = () => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Batal</AlertDialogCancel>
-          <AlertDialogAction onClick={() => setToken("")}>
+          <AlertDialogAction
+            onClick={() => {
+              setToken("");
+              setAnswers([]);
+            }}
+          >
             Logout
           </AlertDialogAction>
         </AlertDialogFooter>

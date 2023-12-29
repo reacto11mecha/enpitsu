@@ -101,6 +101,8 @@ export const essayRelations = relations(essays, ({ one, many }) => ({
 
 export const studentResponds = myPgTable("studentRespond", {
   id: serial("id").primaryKey(),
+  checkIn: timestamp("check_in", { mode: "date" }).notNull(),
+  submittedAt: timestamp("submittedAt", { mode: "date" }).notNull(),
   questionId: integer("question_id")
     .notNull()
     .references(() => questions.id),
@@ -177,6 +179,7 @@ export const studentRespondEssayRelations = relations(
 
 export const studentBlocklists = myPgTable("studentBlocklist", {
   id: serial("id").primaryKey(),
+  time: timestamp("time", { mode: "date" }).notNull(),
   questionId: integer("question_id")
     .notNull()
     .references(() => questions.id),

@@ -1,5 +1,7 @@
 import { cache } from "@enpitsu/cache";
 import {
+  and,
+  eq,
   preparedBlocklistGetCount,
   preparedQuestionSelect,
   schema,
@@ -15,7 +17,7 @@ type TQuestion = NonNullable<
 >;
 
 const getQuestionPrecheck = async (student: TStudent, question: TQuestion) => {
-  const { allowLists, ...sendedData } = question;
+  const { allowLists, responds, ...sendedData } = question;
 
   const cheatedCount = await preparedBlocklistGetCount.execute({
     questionId: question.id,
@@ -26,7 +28,13 @@ const getQuestionPrecheck = async (student: TStudent, question: TQuestion) => {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message:
-        "Anda sudah melakukan kecurangan, data kecurangan sudah direkam.",
+        "Anda sudah melakukan kecurangan, data kecurangan sudah direkam dan anda tidak bisa lagi mengerjakan soal ini.",
+    });
+
+  if (responds.find((respond) => respond.studentId === student.id))
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Anda sudah mengerjakan soal ini!",
     });
 
   if (!allowLists.find((list) => list.subgradeId === student.subgrade.id))
@@ -166,14 +174,137 @@ export const examRouter = createTRPCRouter({
       return sendedData;
     }),
 
-  storeAnswer: studentProcedure.mutation(() => {
-    return { d: "" };
-  }),
+  storeAnswer: studentProcedure
+    .input(
+      z.object({
+        questionId: z.number(),
+        checkIn: z.date(),
+        submittedAt: z.date(),
+        multipleChoices: z.array(
+          z.object({
+            iqid: z.number(),
+            choosedAnswer: z.number().min(1),
+          }),
+        ),
+
+        essays: z.array(
+          z.object({
+            iqid: z.number(),
+            answer: z.string().min(1),
+          }),
+        ),
+      }),
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        const question = await tx.query.questions.findFirst({
+          where: eq(schema.questions.id, input.questionId),
+        });
+
+        if (!question)
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Soal tidak ditemukan.",
+          });
+
+        if (question.startedAt >= new Date())
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Soal ini belum bisa diakses, belum bisa mengumpulkan jawaban.",
+          });
+
+        if (question.endedAt <= new Date())
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Soal ini sudah melewati waktu ujian, tidak bisa mengumpulkan jawaban lagi.",
+          });
+
+        const isCheated = await tx.query.studentBlocklists.findFirst({
+          where: and(
+            eq(schema.studentBlocklists.studentId, ctx.student.id),
+            eq(schema.studentBlocklists.questionId, input.questionId),
+          ),
+        });
+
+        if (isCheated)
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Tidak bisa mengumpulkan jawaban, anda sudah melakukan kecurangan.",
+          });
+
+        const alreadyHasAnswer = await tx.query.studentResponds.findFirst({
+          where: and(
+            eq(schema.studentResponds.studentId, ctx.student.id),
+            eq(schema.studentResponds.questionId, input.questionId),
+          ),
+        });
+
+        if (alreadyHasAnswer)
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Tidak bisa mengumpulkan jawaban, anda sudah mengerjakan soal ini.",
+          });
+
+        const newRespond = await tx
+          .insert(schema.studentResponds)
+          .values({
+            questionId: question.id,
+            studentId: ctx.student.id,
+            checkIn: input.checkIn,
+            submittedAt: input.submittedAt,
+          })
+          .returning({ id: schema.studentResponds.id });
+
+        const { id: respondId } = newRespond.at(0)!;
+
+        await tx.transaction(async (tx2) => {
+          if (input.multipleChoices.length > 0) {
+            for (const choiceRespond of input.multipleChoices) {
+              await tx2.insert(schema.studentRespondChoices).values({
+                respondId,
+                choiceId: choiceRespond.iqid,
+                answer: choiceRespond.choosedAnswer,
+              });
+            }
+          }
+        });
+
+        await tx.transaction(async (tx2) => {
+          if (input.essays.length > 0) {
+            for (const essayRespond of input.essays) {
+              await tx2.insert(schema.studentRespondEssays).values({
+                respondId,
+                essayId: essayRespond.iqid,
+                answer: essayRespond.answer,
+              });
+            }
+          }
+        });
+
+        try {
+          await cache.del(`trpc-get-question-slug-${question.slug}`);
+        } catch (_) {
+          console.error(
+            JSON.stringify({
+              time: Date.now().valueOf(),
+              msg: "Failed to remove cached question data, continuing operation",
+            }),
+          );
+        }
+      }),
+    ),
 
   storeBlocklist: studentProcedure
-    .input(z.object({ questionId: z.number(), studentId: z.number() }))
+    .input(z.object({ questionId: z.number(), time: z.date() }))
     .mutation(async ({ ctx, input }) => {
-      const count = await preparedBlocklistGetCount.execute(input);
+      const count = await preparedBlocklistGetCount.execute({
+        questionId: input.questionId,
+        studentId: ctx.student.id,
+      });
 
       if (count.at(0)!.value > 0)
         throw new TRPCError({
@@ -181,6 +312,8 @@ export const examRouter = createTRPCRouter({
           message: "Data kecurangan yang sama sudah terekam sebelumnya.",
         });
 
-      return await ctx.db.insert(schema.studentBlocklists).values(input);
+      return await ctx.db
+        .insert(schema.studentBlocklists)
+        .values({ ...input, studentId: ctx.student.id });
     }),
 });
