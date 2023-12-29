@@ -44,9 +44,9 @@ const Test = ({ data, initialData }: Props) => {
   const [checkIn] = useState(
     initialData.find((d) => d.slug === data.slug)?.checkIn
       ? new Date(
-        initialData.find((d) => d.slug === data.slug)!
-          .checkIn as unknown as string,
-      )
+          initialData.find((d) => d.slug === data.slug)!
+            .checkIn as unknown as string,
+        )
       : new Date(),
   );
 
@@ -163,15 +163,15 @@ const Test = ({ data, initialData }: Props) => {
       const updatedAnswers = studentAnswers.map((answer) =>
         answer.slug === data.slug
           ? {
-            ...answer,
-            multipleChoices: !answer.multipleChoices.find(
-              (choice) => choice.iqid === updatedData.iqid,
-            )
-              ? [...answer.multipleChoices, updatedData]
-              : answer.multipleChoices.map((choice) =>
-                choice.iqid === updatedData.iqid ? updatedData : choice,
-              ),
-          }
+              ...answer,
+              multipleChoices: !answer.multipleChoices.find(
+                (choice) => choice.iqid === updatedData.iqid,
+              )
+                ? [...answer.multipleChoices, updatedData]
+                : answer.multipleChoices.map((choice) =>
+                    choice.iqid === updatedData.iqid ? updatedData : choice,
+                  ),
+            }
           : answer,
       );
 
@@ -183,15 +183,15 @@ const Test = ({ data, initialData }: Props) => {
       const updatedAnswers = studentAnswers.map((answer) =>
         answer.slug === data.slug
           ? {
-            ...answer,
-            essays: !answer.essays.find(
-              (choice) => choice.iqid === updatedData.iqid,
-            )
-              ? [...answer.essays, updatedData]
-              : answer.essays.map((essay) =>
-                essay.iqid === updatedData.iqid ? updatedData : essay,
-              ),
-          }
+              ...answer,
+              essays: !answer.essays.find(
+                (choice) => choice.iqid === updatedData.iqid,
+              )
+                ? [...answer.essays, updatedData]
+                : answer.essays.map((essay) =>
+                    essay.iqid === updatedData.iqid ? updatedData : essay,
+                  ),
+            }
           : answer,
       );
 
