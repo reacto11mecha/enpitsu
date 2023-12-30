@@ -61,11 +61,11 @@ import {
   MoreHorizontal,
   PencilLine,
   PlusSquare,
-  QrCode,
   Trash2,
 } from "lucide-react";
 
 import { api } from "~/utils/api";
+import { CreateQRCodes } from "./CreateQRCodes";
 import { DeleteParentQuestion } from "./DeleteParentQuestion";
 
 type QuestionList = RouterOutputs["question"]["getQuestions"][number];
@@ -303,21 +303,14 @@ export function DataTable({ countValue }: { countValue: number }) {
         />
 
         {table.getFilteredSelectedRowModel().rows.length > 0 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-2 w-fit space-x-3">
-                <MoreHorizontal className="h-4 w-4" />
-                <span>Opsi Pilihan Tabel</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-              <DropdownMenuItem className="cursor-pointer">
-                <QrCode className="mr-2 h-4 md:w-4" />
-                Buat QR Code
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <CreateQRCodes
+            selectedData={table
+              .getFilteredSelectedRowModel()
+              .rows.map((row) => ({
+                slug: row.original.slug,
+                title: row.original.title,
+              }))}
+          />
         )}
 
         <DropdownMenu>
@@ -434,24 +427,6 @@ export function DataTable({ countValue }: { countValue: number }) {
             {table.getFilteredSelectedRowModel().rows.length} dari{" "}
             {table.getFilteredRowModel().rows.length} baris dipilih.
           </p>
-
-          {table.getFilteredSelectedRowModel().rows.length > 0 && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                <DropdownMenuItem className="cursor-pointer">
-                  <QrCode className="mr-2 h-4 md:w-4" />
-                  Buat QR Code
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
         </div>
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">

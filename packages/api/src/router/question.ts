@@ -89,6 +89,21 @@ export const questionRouter = createTRPCRouter({
         }),
     ),
 
+  getQuestionForEdit: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(({ ctx, input }) =>
+      ctx.db.query.questions.findFirst({
+        where: eq(schema.questions.id, input.id),
+        with: {
+          allowLists: {
+            columns: {
+              subgradeId: true,
+            },
+          },
+        },
+      }),
+    ),
+
   editParentQuestion: protectedProcedure
     .input(
       z.object({

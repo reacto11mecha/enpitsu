@@ -43,23 +43,7 @@ const formSchema = z
     message: "Waktu selesai tidak boleh kurang dari waktu mulai!",
   });
 
-export const EditParentQuestion = ({
-  question,
-}: {
-  question: {
-    id: number;
-    slug: string;
-    title: string;
-    startedAt: Date;
-    endedAt: Date;
-    authorId: string;
-    allowLists: {
-      id: number;
-      subgradeId: number;
-      questionId: number;
-    }[];
-  };
-}) => {
+export const EditParentQuestion = ({ id }: { id: number }) => {
   const router = useRouter();
 
   const { toast } = useToast();
@@ -69,13 +53,40 @@ export const EditParentQuestion = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      allowLists: question.allowLists.map((allow) => allow.subgradeId),
-      title: question.title,
-      slug: question.slug,
-      startedAt: question.startedAt,
-      endedAt: question.endedAt,
+      allowLists: [],
+      title: "",
+      slug: "",
+      startedAt: undefined,
+      endedAt: undefined,
     },
   });
+
+  const currentQuestionQuery = api.question.getQuestionForEdit.useQuery(
+    { id },
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
+      onSuccess(data) {
+        if (data) {
+          form.setValue(
+            "allowLists",
+            data.allowLists.map((allow) => allow.subgradeId),
+          );
+          form.setValue("title", data.title);
+          form.setValue("slug", data.slug);
+          form.setValue("startedAt", data.startedAt);
+          form.setValue("endedAt", data.endedAt);
+        }
+      },
+      onError(error) {
+        toast({
+          variant: "destructive",
+          title: "Gagal mengambil data pertanyaan ke server",
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    },
+  );
 
   const subgradeForAllowListQuery =
     api.question.getSubgradeForAllowList.useQuery();
@@ -102,7 +113,7 @@ export const EditParentQuestion = ({
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    editQuestionMutation.mutate({ id: question.id, ...values });
+    editQuestionMutation.mutate({ id, ...values });
   }
 
   return (
@@ -120,6 +131,7 @@ export const EditParentQuestion = ({
                   autoComplete="off"
                   placeholder="MATEMATIKA WAJIB XII"
                   disabled={
+                    currentQuestionQuery.isLoading ||
                     subgradeForAllowListQuery.isLoading ||
                     editQuestionMutation.isLoading
                   }
@@ -145,6 +157,7 @@ export const EditParentQuestion = ({
                   autoComplete="off"
                   placeholder="MATWA-XII"
                   disabled={
+                    currentQuestionQuery.isLoading ||
                     subgradeForAllowListQuery.isLoading ||
                     editQuestionMutation.isLoading
                   }
@@ -182,6 +195,7 @@ export const EditParentQuestion = ({
                         : field.onChange(new Date(e.target.value))
                     }
                     disabled={
+                      currentQuestionQuery.isLoading ||
                       subgradeForAllowListQuery.isLoading ||
                       editQuestionMutation.isLoading
                     }
@@ -223,6 +237,7 @@ export const EditParentQuestion = ({
                         : field.onChange(new Date(e.target.value))
                     }
                     disabled={
+                      currentQuestionQuery.isLoading ||
                       subgradeForAllowListQuery.isLoading ||
                       !form.getValues("startedAt") ||
                       editQuestionMutation.isLoading
@@ -279,7 +294,10 @@ export const EditParentQuestion = ({
                                         ),
                                       );
                                 }}
-                                disabled={editQuestionMutation.isLoading}
+                                disabled={
+                                  currentQuestionQuery.isLoading ||
+                                  editQuestionMutation.isLoading
+                                }
                               />
                               <p>Kelas {grade.label}</p>
                             </div>
@@ -317,6 +335,7 @@ export const EditParentQuestion = ({
                                                   );
                                             }}
                                             disabled={
+                                              currentQuestionQuery.isLoading ||
                                               editQuestionMutation.isLoading
                                             }
                                           />
@@ -345,6 +364,7 @@ export const EditParentQuestion = ({
         <Button
           type="submit"
           disabled={
+            currentQuestionQuery.isLoading ||
             subgradeForAllowListQuery.isLoading ||
             editQuestionMutation.isLoading
           }

@@ -18,14 +18,12 @@ export default async function NewQuestion({
 
   if (subgradeCount.at(0)!.value < 1) return redirect("/admin/baru");
 
-  const question = await db.query.questions.findFirst({
-    where: eq(schema.questions.id, id),
-    with: {
-      allowLists: true,
-    },
-  });
+  const questionCount = await db
+    .select({ value: count() })
+    .from(schema.questions)
+    .where(eq(schema.questions.id, id));
 
-  if (!question) return redirect("/admin/soal");
+  if (questionCount.at(0)!.value < 1) return redirect("/admin/soal");
 
   return (
     <div className="mt-5 flex flex-col gap-7 px-5 py-5 md:items-center">
@@ -41,7 +39,7 @@ export default async function NewQuestion({
           </p>
         </div>
 
-        <EditParentQuestion question={question} />
+        <EditParentQuestion id={id} />
       </div>
     </div>
   );
