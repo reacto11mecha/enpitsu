@@ -132,6 +132,111 @@ export const questionRouter = createTRPCRouter({
       }),
     ),
 
+  getStudentAnswers: protectedProcedure.query(({ ctx }) =>
+    ctx.db.query.studentResponds.findMany({
+      columns: {
+        id: true,
+        checkIn: true,
+        submittedAt: true,
+      },
+      with: {
+        question: {
+          columns: {
+            id: true,
+            title: true,
+          },
+        },
+        student: {
+          columns: {
+            name: true,
+            room: true,
+          },
+          with: {
+            subgrade: {
+              columns: {
+                id: true,
+                label: true,
+              },
+              with: {
+                grade: {
+                  columns: {
+                    id: true,
+                    label: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+  ),
+
+  getStudentAnswersByQuestion: protectedProcedure
+    .input(
+      z.object({
+        questionId: z.number(),
+      }),
+    )
+    .query(({ ctx, input }) =>
+      ctx.db.query.studentResponds.findMany({
+        where: eq(schema.studentResponds.questionId, input.questionId),
+        columns: {
+          id: true,
+          checkIn: true,
+          submittedAt: true,
+        },
+        with: {
+          question: {
+            columns: {
+              id: true,
+              title: true,
+            },
+          },
+          student: {
+            columns: {
+              name: true,
+              room: true,
+            },
+            with: {
+              subgrade: {
+                columns: {
+                  id: true,
+                  label: true,
+                },
+                with: {
+                  grade: {
+                    columns: {
+                      id: true,
+                      label: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }),
+    ),
+
+  deleteSpecificAnswer: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        await tx
+          .delete(schema.studentRespondChoices)
+          .where(eq(schema.studentRespondChoices.respondId, input.id));
+
+        await tx
+          .delete(schema.studentRespondEssays)
+          .where(eq(schema.studentRespondEssays.respondId, input.id));
+
+        await tx
+          .delete(schema.studentResponds)
+          .where(eq(schema.studentResponds.id, input.id));
+      }),
+    ),
+
   deleteSpecificBlocklist: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(({ ctx, input }) =>
@@ -150,9 +255,9 @@ export const questionRouter = createTRPCRouter({
         allowLists: z.array(z.number()).min(1),
       }),
     )
-    .mutation(
-      async ({ ctx, input }) =>
-        await ctx.db.transaction(async (tx) => {
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return await ctx.db.transaction(async (tx) => {
           const question = await tx
             .insert(schema.questions)
             .values({
@@ -173,8 +278,21 @@ export const questionRouter = createTRPCRouter({
           });
 
           return { id };
-        }),
-    ),
+        });
+      } catch (e) {
+        // @ts-expect-error unknown error value
+        if (e.code === "23505" && e.constraint_name === "slug_idx")
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Sudah ada kode soal dengan nama yang sama, mohon di ubah",
+          });
+        else
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Terjadi kesalahan internal, mohon coba lagi nanti",
+          });
+      }
+    }),
 
   getQuestionForEdit: protectedProcedure
     .input(z.object({ id: z.number() }))

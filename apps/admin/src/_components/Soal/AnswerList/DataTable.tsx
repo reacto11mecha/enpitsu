@@ -1,22 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -36,7 +32,6 @@ import {
 import type { RouterOutputs } from "@enpitsu/api";
 import type {
   ColumnDef,
-  ColumnFiltersState,
   SortingState,
   VisibilityState,
 } from "@tanstack/react-table";
@@ -51,118 +46,52 @@ import {
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 import {
-  ArrowUpDown,
   ChevronDown,
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronsLeft,
   ChevronsRight,
-  ClipboardCheck,
-  LayoutList,
+  ListChecks,
   MoreHorizontal,
-  PencilLine,
-  PlusSquare,
   Trash2,
-  UserRoundX,
 } from "lucide-react";
 
 import { api } from "~/utils/api";
-import { CreateQRCodes } from "./CreateQRCodes";
-import { DeleteParentQuestion } from "./DeleteParentQuestion";
+import { DeleteStudentAnswer } from "./DeleteStudentAnswer";
 
-type QuestionList = RouterOutputs["question"]["getQuestions"][number];
+type BlocklistByQuestion =
+  RouterOutputs["question"]["getStudentAnswersByQuestion"][number];
 
 const MonoFont = Space_Mono({
   weight: "400",
   subsets: ["latin"],
 });
 
-export const columns: ColumnDef<QuestionList>[] = [
+export const columns: ColumnDef<BlocklistByQuestion>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
+    accessorKey: "studentName",
+    header: "Nama Peserta",
+    cell: ({ row }) => <div>{row.original.student.name}</div>,
   },
   {
-    accessorKey: "user",
-    header: "Pembuat Soal",
-    cell: ({ row }) => (
-      <div className="flex flex-row items-center gap-4">
-        <Avatar>
-          {row.original.user.image ? (
-            <AvatarImage src={row.original.user.image} />
-          ) : null}
-          <AvatarFallback className="uppercase">
-            {row.original.user.name
-              ? row.original.user.name.slice(0, 2)
-              : "N/A"}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex flex-col">
-          <p>{row.original.user.name ? row.original.user.name : "N/A"}</p>
-          <small className="text-muted-foreground">
-            {row.original.user.email ? row.original.user.email : "N/A"}
-          </small>
-        </div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "title",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Judul Soal
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("title")}</div>,
-  },
-  {
-    accessorKey: "slug",
-    header: "Kode Soal",
-    cell: ({ row }) => (
-      <pre className={MonoFont.className}>{row.getValue("slug")}</pre>
-    ),
-  },
-  {
-    accessorKey: "startedAt",
-    header: "Waktu Mulai",
+    accessorKey: "checkIn",
+    header: "Mulai Mengerjakan",
     cell: ({ row }) => (
       <pre className={MonoFont.className}>
-        {format(row.getValue("startedAt"), "dd MMM yyyy, kk.mm", {
+        {format(row.getValue("checkIn"), "dd MMM yyy, kk.mm", {
           locale: id,
         })}
       </pre>
     ),
   },
   {
-    accessorKey: "endedAt",
-    header: "Waktu Selesai",
+    accessorKey: "submittedAt",
+    header: "Dikumpulkan Jawaban",
     cell: ({ row }) => (
       <pre className={MonoFont.className}>
-        {format(row.getValue("endedAt"), "dd MMM yyyy, kk.mm", { locale: id })}
+        {format(row.getValue("submittedAt"), "dd MMM yyy, kk.mm", {
+          locale: id,
+        })}
       </pre>
     ),
   },
@@ -173,8 +102,8 @@ export const columns: ColumnDef<QuestionList>[] = [
       <div>
         {formatDuration(
           intervalToDuration({
-            end: row.getValue("endedAt"),
-            start: row.getValue("startedAt"),
+            start: row.getValue("checkIn"),
+            end: row.getValue("submittedAt"),
           }),
           { locale: id },
         )}
@@ -182,40 +111,29 @@ export const columns: ColumnDef<QuestionList>[] = [
     ),
   },
   {
-    accessorKey: "multipleChoices",
-    header: "Jumlah Soal PG",
-    cell: ({ row }) => <div>{row.original.multipleChoices.length} Soal</div>,
-  },
-  {
-    accessorKey: "essays",
-    header: "Jumlah Soal Esai",
-    cell: ({ row }) => <div>{row.original.essays.length} Soal</div>,
-  },
-  {
-    accessorKey: "allowList",
-    header: "Kelas Yang Diperbolehkan",
+    accessorKey: "StudentClass",
+    header: "Kelas Asal",
     cell: ({ row }) => (
-      <div className="space-x-0.5 space-y-0.5">
-        {row.original.allowLists.map((allow) => (
-          <Link
-            className={badgeVariants({ variant: "secondary" })}
-            href={`/admin/angkatan/${allow.subgrade.gradeId}/kelola/${allow.subgradeId}`}
-            key={allow.id}
-          >
-            {allow.subgrade.grade.label} {allow.subgrade.label}
-          </Link>
-        ))}
-      </div>
+      <Link
+        className={badgeVariants({ variant: "secondary" })}
+        href={`/admin/angkatan/${row.original.student.subgrade.id}/kelola/${row.original.student.subgrade.grade.id}`}
+      >
+        {row.original.student.subgrade.grade.label}{" "}
+        {row.original.student.subgrade.label}
+      </Link>
     ),
   },
   {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const question = row.original;
+      const answer = row.original;
 
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const [openDelete, setOpenDelete] = useState(false);
+
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const closeDialog = useCallback(() => setOpenDelete((prev) => !prev), []);
 
       return (
         <>
@@ -229,45 +147,28 @@ export const columns: ColumnDef<QuestionList>[] = [
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Aksi</DropdownMenuLabel>
               <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href={`/admin/soal/butir/${question.id}`}>
-                  <LayoutList className="mr-2 h-4 md:w-4" />
-                  Butir Soal
+                <Link
+                  href={`/admin/soal/answer/${answer.question.id}/${answer.id}`}
+                >
+                  <ListChecks className="mr-2 h-4 md:w-4" />
+                  Koreksi Jawaban
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href={`/admin/soal/edit/${question.id}`}>
-                  <PencilLine className="mr-2 h-4 md:w-4" />
-                  Identitas Soal
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href={`/admin/soal/answer/${question.id}`}>
-                  <ClipboardCheck className="mr-2 h-4 md:w-4" />
-                  Jawaban peserta
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href={`/admin/soal/cheat/${question.id}`}>
-                  <UserRoundX className="mr-2 h-4 md:w-4" />
-                  Kecurangan peserta
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer text-rose-500 hover:text-rose-700 focus:text-rose-700"
                 onClick={() => setOpenDelete(true)}
               >
                 <Trash2 className="mr-2 h-4 md:w-4" />
-                Hapus Soal
+                Hapus Jawaban
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <DeleteParentQuestion
+          <DeleteStudentAnswer
+            closeDialog={closeDialog}
+            id={answer.id}
             openDelete={openDelete}
-            setOpenDelete={setOpenDelete}
-            title={question.title}
-            id={question.id}
+            name={answer.student.name}
           />
         </>
       );
@@ -275,82 +176,41 @@ export const columns: ColumnDef<QuestionList>[] = [
   },
 ];
 
-export function DataTable({ countValue }: { countValue: number }) {
-  const questionsQuery = api.question.getQuestions.useQuery(undefined);
+export function DataTable({
+  questionId,
+  title,
+}: {
+  questionId: number;
+  title: string;
+}) {
+  const specificAnswerByQuestionQuery =
+    api.question.getStudentAnswersByQuestion.useQuery({
+      questionId,
+    });
 
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
-    data: questionsQuery.data ?? [],
+    data: specificAnswerByQuestionQuery.data ?? [],
     columns,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     initialState: { pagination: { pageSize: 20 } },
     state: {
       sorting,
-      columnFilters,
       columnVisibility,
-      rowSelection,
     },
   });
 
   return (
     <div className="w-full">
-      <div className="space-x-2 pb-4">
-        {countValue > 0 && (
-          <>
-            <Button asChild className="w-fit">
-              <Link href="/admin/soal/baru">
-                Buat soal baru
-                <PlusSquare className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild className="w-fit">
-              <Link href="/admin/soal/cheat">
-                Data Kecurangan
-                <UserRoundX className="ml-2 h-4 md:w-4" />
-              </Link>
-            </Button>
-            <Button asChild className="w-fit">
-              <Link href="/admin/soal/answer">
-                Data Jawaban
-                <ClipboardCheck className="ml-2 h-4 md:w-4" />
-              </Link>
-            </Button>
-          </>
-        )}
-      </div>
-
       <div className="flex items-center pb-4">
-        <Input
-          placeholder="Filter berdasarkan judul soal..."
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
-          }
-          className="max-w-md"
-        />
-
-        {table.getFilteredSelectedRowModel().rows.length > 0 && (
-          <CreateQRCodes
-            selectedData={table
-              .getFilteredSelectedRowModel()
-              .rows.map((row) => ({
-                slug: row.original.slug,
-                title: row.original.title,
-              }))}
-          />
-        )}
-
+        <p>Soal: {title}</p>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -399,18 +259,19 @@ export function DataTable({ countValue }: { countValue: number }) {
             ))}
           </TableHeader>
           <TableBody>
-            {questionsQuery.isError ? (
+            {specificAnswerByQuestionQuery.isError ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Error: {questionsQuery.error.message}
+                  Error: {specificAnswerByQuestionQuery.error.message}
                 </TableCell>
               </TableRow>
             ) : null}
 
-            {questionsQuery.isLoading && !questionsQuery.isError ? (
+            {specificAnswerByQuestionQuery.isLoading &&
+            !specificAnswerByQuestionQuery.isError ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <TableRow key={idx}>
@@ -440,9 +301,9 @@ export function DataTable({ countValue }: { countValue: number }) {
               ))
             ) : (
               <>
-                {!questionsQuery.isLoading && (
+                {!specificAnswerByQuestionQuery.isLoading && (
                   <>
-                    {!questionsQuery.isError && (
+                    {!specificAnswerByQuestionQuery.isError && (
                       <TableRow>
                         <TableCell
                           colSpan={columns.length}
@@ -460,12 +321,6 @@ export function DataTable({ countValue }: { countValue: number }) {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex flex-1 flex-row items-center">
-          <p className="text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} dari{" "}
-            {table.getFilteredRowModel().rows.length} baris dipilih.
-          </p>
-        </div>
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Baris per halaman</p>

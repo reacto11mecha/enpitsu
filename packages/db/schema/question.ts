@@ -1,11 +1,11 @@
 import { relations } from "drizzle-orm";
 import {
-  index,
   integer,
   json,
   serial,
   text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
 
@@ -23,7 +23,7 @@ export const questions = myPgTable(
     endedAt: timestamp("ended_at", { mode: "date" }).notNull(),
     authorId: varchar("author_id").notNull(),
   },
-  (table) => ({ slugIdx: index("slug_idx").on(table.slug) }),
+  (table) => ({ slugIdx: uniqueIndex("slug_idx").on(table.slug) }),
 );
 
 export const questionRelations = relations(questions, ({ one, many }) => ({
