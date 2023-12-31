@@ -25,8 +25,9 @@ import { studentAnswerAtom } from "@/lib/atom";
 import { api } from "@/utils/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
-import { ArrowLeft, Link, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 import { z } from "zod";
 
 import { ModeToggle } from "../mode-toggle";
@@ -88,7 +89,7 @@ const Test = ({ data, initialData }: Props) => {
   const [dishonestyCount, setDishonestyCount] = useState(
     initialData.find((d) => d.slug === data.slug)?.dishonestCount ?? 0,
   );
-  const [canUpdateDishonesty, setCanUpdateDishonesty] = useState(false); // update this to true please
+  const [canUpdateDishonesty, setCanUpdateDishonesty] = useState(true);
   const [dishonestyWarning, setDishonestyWarning] = useState(false);
 
   const closeAlertCallback = useCallback(() => {

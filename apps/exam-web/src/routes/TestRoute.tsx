@@ -28,7 +28,9 @@ export default function TestRoute() {
         <h2 className="font-monospace scroll-m-20 pb-2 text-center text-3xl font-semibold tracking-tight text-red-600 first:mt-0 dark:text-red-500">
           Terjadi Kesalahan
         </h2>
+
         <p className="text-center text-lg">{questionQuery.error.message}</p>
+
         <Button variant="outline" size="icon" asChild>
           <Link to="/">
             <ArrowLeft />

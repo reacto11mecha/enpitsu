@@ -40,8 +40,8 @@ export const questionRouter = createTRPCRouter({
     }),
   ),
 
-  getSubgradeForAllowList: protectedProcedure.query(({ ctx }) => {
-    return ctx.db.query.grades.findMany({
+  getSubgradeForAllowList: protectedProcedure.query(({ ctx }) =>
+    ctx.db.query.grades.findMany({
       with: {
         subgrades: {
           columns: {
@@ -50,8 +50,89 @@ export const questionRouter = createTRPCRouter({
           },
         },
       },
-    });
-  }),
+    }),
+  ),
+
+  getStudentBlocklists: protectedProcedure.query(({ ctx }) =>
+    ctx.db.query.studentBlocklists.findMany({
+      columns: {
+        id: true,
+        time: true,
+      },
+      with: {
+        student: {
+          columns: {
+            name: true,
+            room: true,
+          },
+          with: {
+            subgrade: {
+              columns: {
+                id: true,
+                label: true,
+              },
+              with: {
+                grade: {
+                  columns: {
+                    id: true,
+                    label: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+  ),
+
+  getStudentBlocklistByQuestion: protectedProcedure
+    .input(
+      z.object({
+        questionId: z.number(),
+      }),
+    )
+    .query(({ ctx, input }) =>
+      ctx.db.query.studentBlocklists.findMany({
+        where: eq(schema.studentBlocklists.questionId, input.questionId),
+        columns: {
+          id: true,
+          time: true,
+        },
+        with: {
+          student: {
+            columns: {
+              name: true,
+              room: true,
+            },
+            with: {
+              subgrade: {
+                columns: {
+                  id: true,
+                  label: true,
+                },
+                with: {
+                  grade: {
+                    columns: {
+                      id: true,
+                      label: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }),
+    ),
+
+  deleteSpecificBlocklist: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(({ ctx, input }) =>
+      ctx.db
+        .delete(schema.studentBlocklists)
+        .where(eq(schema.studentBlocklists.id, input.id)),
+    ),
 
   createQuestion: protectedProcedure
     .input(
