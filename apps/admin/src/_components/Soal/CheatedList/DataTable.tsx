@@ -158,16 +158,17 @@ export function DataTable({
   questionId: number;
   title: string;
 }) {
-  const questionsQuery = api.question.getStudentBlocklistByQuestion.useQuery({
-    questionId,
-  });
+  const specificQuestionBlocklistQuery =
+    api.question.getStudentBlocklistByQuestion.useQuery({
+      questionId,
+    });
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const table = useReactTable({
-    data: questionsQuery.data ?? [],
+    data: specificQuestionBlocklistQuery.data ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -236,18 +237,19 @@ export function DataTable({
             ))}
           </TableHeader>
           <TableBody>
-            {questionsQuery.isError ? (
+            {specificQuestionBlocklistQuery.isError ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Error: {questionsQuery.error.message}
+                  Error: {specificQuestionBlocklistQuery.error.message}
                 </TableCell>
               </TableRow>
             ) : null}
 
-            {questionsQuery.isLoading && !questionsQuery.isError ? (
+            {specificQuestionBlocklistQuery.isLoading &&
+            !specificQuestionBlocklistQuery.isError ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <TableRow key={idx}>
@@ -277,9 +279,9 @@ export function DataTable({
               ))
             ) : (
               <>
-                {!questionsQuery.isLoading && (
+                {!specificQuestionBlocklistQuery.isLoading && (
                   <>
-                    {!questionsQuery.isError && (
+                    {!specificQuestionBlocklistQuery.isError && (
                       <TableRow>
                         <TableCell
                           colSpan={columns.length}

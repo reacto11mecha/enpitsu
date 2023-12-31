@@ -23,7 +23,7 @@ export default async function CheatedListPage({
   if (!question) return redirect("/admin/soal");
 
   return (
-    <div className="mt-5 flex flex-col gap-7 px-1 py-5 md:items-center">
+    <div className="mt-5 flex flex-col gap-7 px-5 py-5 md:items-center">
       <div className="w-full md:w-[85%]">
         <div className="mb-5 space-y-0.5">
           <h2 className="text-2xl font-bold tracking-tight">

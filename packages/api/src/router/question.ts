@@ -82,6 +82,12 @@ export const questionRouter = createTRPCRouter({
             },
           },
         },
+        question: {
+          columns: {
+            id: true,
+            title: true,
+          },
+        },
       },
     }),
   ),
