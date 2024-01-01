@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
   integer,
   json,
+  numeric,
   serial,
   text,
   timestamp,
@@ -161,6 +162,7 @@ export const studentRespondEssays = myPgTable("studentRespondEssay", {
     .notNull()
     .references(() => essays.iqid),
   answer: text("answer").notNull(),
+  score: numeric("score", { precision: 5, scale: 6 }).notNull(),
 });
 
 export const studentRespondEssayRelations = relations(

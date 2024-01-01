@@ -25,25 +25,21 @@ const PrecautionChildren = ({
   data: TData;
   setScrollBottom: (scrolled: boolean) => void;
 }) => {
-  const refEl = useRef<HTMLDivElement>(null!);
+  const refEl = useRef<HTMLLIElement>(null!);
 
   useEffect(() => {
-    const cb = () => {
-      const obj = refEl.current;
+    const observer = new IntersectionObserver(([entry]) => {
+      setScrollBottom(entry.isIntersecting);
+    });
 
-      setScrollBottom(obj.scrollTop === obj.scrollHeight - obj.offsetHeight);
-    };
+    observer.observe(refEl.current);
 
-    refEl.current.addEventListener("scroll", cb);
-
+    return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div
-      className="mt-8 max-h-72 w-auto space-y-5 overflow-y-scroll p-2 text-start"
-      ref={refEl}
-    >
+    <div className="mt-8 max-h-72 w-auto space-y-5 overflow-y-scroll p-2 text-start">
       <div className="space-y-1">
         <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
           Soal Ujian
@@ -134,7 +130,7 @@ const PrecautionChildren = ({
           <li>
             Peserta tidak boleh mencontek atau membantu peserta lain mencontek.
           </li>
-          <li>
+          <li ref={refEl}>
             Peserta yang melanggar tata tertib akan dikenakan sanksi sesuai
             dengan peraturan yang berlaku.
           </li>

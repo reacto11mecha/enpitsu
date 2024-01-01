@@ -11,6 +11,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, studentProcedure } from "../trpc";
 import type { TStudent } from "../trpc";
+import { compareTwoStringLikability } from "../utils";
 
 type TQuestion = NonNullable<
   Awaited<ReturnType<typeof preparedQuestionSelect.execute>>
@@ -276,10 +277,22 @@ export const examRouter = createTRPCRouter({
         await tx.transaction(async (tx2) => {
           if (input.essays.length > 0) {
             for (const essayRespond of input.essays) {
+              const essayAnswer = await tx2.query.essays.findFirst({
+                where: eq(schema.essays.iqid, essayRespond.iqid),
+              });
+
+              const score = compareTwoStringLikability(
+                essayAnswer!.answer,
+                essayRespond.answer,
+              );
+
+              console.log(score);
+
               await tx2.insert(schema.studentRespondEssays).values({
                 respondId,
                 essayId: essayRespond.iqid,
                 answer: essayRespond.answer,
+                score,
               });
             }
           }
