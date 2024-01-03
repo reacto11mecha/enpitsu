@@ -1,8 +1,8 @@
 import { atom } from "jotai";
 
-export const studentTokenAtom = atom("studentToken", "");
+export const studentTokenAtom = atom("");
 
-export type TStudentAnswer = {
+export interface TStudentAnswer {
   slug: string;
   dishonestCount: number | undefined;
   checkIn: Date | undefined;
@@ -14,6 +14,6 @@ export type TStudentAnswer = {
     iqid: number;
     answer: string;
   }[];
-};
+}
 
-export const studentAnswerAtom = atom<TStudentAnswer[]>("studentAnswer", []);
+export const studentAnswerAtom = atom<TStudentAnswer[]>([]);

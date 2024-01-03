@@ -5,9 +5,9 @@ const defineConfig = (): ExpoConfig => ({
   slug: "enpitsu",
   scheme: "expo",
   version: "0.1.0",
-  orientation: "automatic",
+  orientation: "portrait",
   icon: "./assets/icon.png",
-  userInterfaceStyle: "dark",
+  userInterfaceStyle: "automatic",
   splash: {
     image: "./assets/icon.png",
     resizeMode: "contain",
