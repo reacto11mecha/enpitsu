@@ -1,28 +1,28 @@
 import type { ExpoConfig } from "@expo/config";
 
 const defineConfig = (): ExpoConfig => ({
-  name: "expo",
-  slug: "expo",
+  name: "enpitsu",
+  slug: "enpitsu",
   scheme: "expo",
   version: "0.1.0",
-  orientation: "portrait",
+  orientation: "automatic",
   icon: "./assets/icon.png",
-  userInterfaceStyle: "light",
+  userInterfaceStyle: "dark",
   splash: {
     image: "./assets/icon.png",
     resizeMode: "contain",
-    backgroundColor: "#1F104A",
+    backgroundColor: "#FFFFFF",
   },
   updates: {
     fallbackToCacheTimeout: 0,
   },
   assetBundlePatterns: ["**/*"],
   ios: {
-    bundleIdentifier: "your.bundle.identifier",
+    bundleIdentifier: "rmecha.my.id.enpitsu",
     supportsTablet: true,
   },
   android: {
-    package: "your.bundle.identifier",
+    package: "rmecha.my.id.enpitsu",
     adaptiveIcon: {
       foregroundImage: "./assets/icon.png",
       backgroundColor: "#1F104A",
