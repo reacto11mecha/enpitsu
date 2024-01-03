@@ -7,10 +7,7 @@ const Index = () => {
 
   return (
     <SafeAreaView>
-      <View className="flex h-full w-full items-center justify-center">
-        <Button title="Toggle theme" onPress={toggleColorScheme} />
-        <Text className="dark:text-stone-100">{colorScheme}</Text>
-      </View>
+      <View className="flex h-full w-full items-center justify-center"></View>
     </SafeAreaView>
   );
 };

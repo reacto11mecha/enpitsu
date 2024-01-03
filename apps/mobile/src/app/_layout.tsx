@@ -1,15 +1,22 @@
 import React from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useAtom } from "jotai";
 import { useColorScheme } from "nativewind";
 
-import { TRPCProvider } from "~/utils/api";
+import { InsertToken } from "~/components/insert-token";
+import { TRPCProvider } from "~/lib/api";
+import { studentTokenAtom } from "~/lib/atom";
 
 import "../styles.css";
 
 // This is the main layout of t
 const RootLayout = () => {
   const { colorScheme } = useColorScheme();
+
+  const [token] = useAtom(studentTokenAtom);
+
+  if (token === "") return <InsertToken />;
 
   return (
     <TRPCProvider>
