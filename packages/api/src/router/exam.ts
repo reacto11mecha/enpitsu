@@ -286,8 +286,6 @@ export const examRouter = createTRPCRouter({
                 essayRespond.answer,
               );
 
-              console.log(score);
-
               await tx2.insert(schema.studentRespondEssays).values({
                 respondId,
                 essayId: essayRespond.iqid,
