@@ -7,5 +7,8 @@ export const compareTwoStringLikability = (first: string, second: string) => {
     return "1";
   }
 
-  return stringSimilarity.compareTwoStrings(first, second).toString();
+  return stringSimilarity
+    .compareTwoStrings(first, second)
+    .toFixed(5)
+    .toString();
 };

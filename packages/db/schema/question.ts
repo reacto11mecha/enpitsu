@@ -162,7 +162,7 @@ export const studentRespondEssays = myPgTable("studentRespondEssay", {
     .notNull()
     .references(() => essays.iqid),
   answer: text("answer").notNull(),
-  score: numeric("score", { precision: 5, scale: 6 }).notNull(),
+  score: numeric("score").notNull(),
 });
 
 export const studentRespondEssayRelations = relations(
