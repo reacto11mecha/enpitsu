@@ -1,7 +1,7 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useCallback, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { Roboto } from "next/font/google";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +33,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+import type { OutputData } from "@editorjs/editorjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ClipboardCheck,
@@ -104,8 +105,14 @@ export const Questions = ({ question }: Props) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      multipleChoice: question.multipleChoices,
-      essay: question.essays,
+      multipleChoice: question.multipleChoices.map((c) => ({
+        ...c,
+        question: JSON.stringify(c.question),
+      })),
+      essay: question.essays.map((e) => ({
+        ...e,
+        question: JSON.stringify(e.question),
+      })),
     },
     mode: "onChange",
   });
@@ -161,7 +168,12 @@ export const Questions = ({ question }: Props) => {
       await apiUtils.question.getMultipleChoices.invalidate();
 
       mutlipleChoiceField.append(
-        result.map(({ questionId: _, ...rest }) => rest).at(0)!,
+        result
+          .map(({ questionId: _, ...rest }) => ({
+            ...rest,
+            question: JSON.stringify(rest.question),
+          }))
+          .at(0)!,
       );
     },
     onError: (e) => toastBuilder("Pilihan Ganda", e.message),
@@ -182,7 +194,10 @@ export const Questions = ({ question }: Props) => {
           mutlipleChoiceField.fields.findIndex(
             (field) => field.iqid === resIqid.iqid,
           ),
-          newValue,
+          {
+            ...newValue,
+            question: JSON.parse(newValue.question) as OutputData,
+          },
         );
       }
     },
@@ -214,7 +229,12 @@ export const Questions = ({ question }: Props) => {
       await apiUtils.question.getEssays.invalidate();
 
       essayField.append(
-        result.map(({ questionId: _, ...rest }) => rest).at(0)!,
+        result
+          .map(({ questionId: _, ...rest }) => ({
+            ...rest,
+            question: JSON.stringify(rest.question),
+          }))
+          .at(0)!,
       );
     },
     onError: (e) => toastBuilder("Esai", e.message),
@@ -310,7 +330,10 @@ export const Questions = ({ question }: Props) => {
                             <FormItem>
                               <FormLabel>Pertanyaan</FormLabel>
                               <FormControl>
-                                <Editor onChange={field.onChange} />
+                                <Editor
+                                  data={JSON.parse(field.value) as OutputData}
+                                  onChange={field.onChange}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -372,7 +395,7 @@ export const Questions = ({ question }: Props) => {
                                                         form.setValue(
                                                           `multipleChoice.${index}.options.${idx}.answer` as const,
                                                           textArray.at(idx) ??
-                                                          "",
+                                                            "",
                                                         ),
                                                     );
                                                   }
@@ -460,7 +483,7 @@ export const Questions = ({ question }: Props) => {
                               variant="ghost"
                               disabled={
                                 deleteChoiceMutation.variables?.id ===
-                                field.iqid && deleteChoiceMutation.isLoading
+                                  field.iqid && deleteChoiceMutation.isLoading
                               }
                               onClick={() =>
                                 deleteChoiceMutation.mutate({

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import type { OutputData } from "@editorjs/editorjs";
 
 export interface Props {
   question: {
@@ -9,7 +10,7 @@ export interface Props {
     endedAt: Date;
     authorId: string;
     multipleChoices: {
-      question: string;
+      question: OutputData;
       questionId: number;
       iqid: number;
       options: {
@@ -19,7 +20,7 @@ export interface Props {
       correctAnswerOrder: number;
     }[];
     essays: {
-      question: string;
+      question: OutputData;
       questionId: number;
       iqid: number;
       answer: string;
