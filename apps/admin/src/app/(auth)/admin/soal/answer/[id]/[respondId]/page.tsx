@@ -80,6 +80,7 @@ export default async function CorrectionPage({
         </div>
 
         <Correction
+          respondId={respondId}
           questionId={studentRespond.question.id}
           questionTitle={studentRespond.question.title}
           studentName={studentRespond.student.name}

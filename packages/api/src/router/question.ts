@@ -613,4 +613,19 @@ export const questionRouter = createTRPCRouter({
         .where(eq(schema.essays.iqid, input.id))
         .returning({ iqid: schema.essays.iqid });
     }),
+  // ended at this line
+
+  // Correction purpose endpoint started from this line below
+  getEssaysScore: protectedProcedure
+    .input(z.object({ respondId: z.number() }))
+    .query(({ ctx, input }) =>
+      ctx.db.query.studentRespondEssays.findMany({
+        where: eq(schema.studentRespondEssays.respondId, input.respondId),
+        columns: {
+          id: true,
+          essayId: true,
+          score: true,
+        },
+      }),
+    ),
 });

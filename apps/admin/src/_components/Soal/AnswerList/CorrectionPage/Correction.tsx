@@ -4,10 +4,11 @@ import {
   Card,
   CardContent,
   // CardDescription,
-  // CardFooter,
+  CardFooter,
   CardHeader,
   // CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +19,7 @@ import { id } from "date-fns/locale";
 import { api } from "~/utils/api";
 
 export const Correction = ({
+  respondId,
   questionId,
   questionTitle,
   studentName,
@@ -27,6 +29,7 @@ export const Correction = ({
   choices,
   essays,
 }: {
+  respondId: number;
   questionId: number;
   questionTitle: string;
   studentName: string;
@@ -44,12 +47,24 @@ export const Correction = ({
       refetchOnWindowFocus: false,
     },
   );
+
+  const essayScoresQuery = api.question.getEssaysScore.useQuery(
+    {
+      respondId,
+    },
+    {
+      enabled: false,
+    },
+  );
   const essaysQuery = api.question.getEssays.useQuery(
     {
       questionId,
     },
     {
       refetchOnWindowFocus: false,
+      async onSuccess() {
+        await essayScoresQuery.refetch();
+      },
     },
   );
 
@@ -149,7 +164,7 @@ export const Correction = ({
                   >
                     {choice.options.map((option, idx) => (
                       <div
-                        className={`flex h-10 items-center space-x-2 rounded px-2 ${
+                        className={`flex h-10 items-center space-x-3 rounded px-2 ${
                           option.order === choice.correctAnswerOrder
                             ? "bg-green-500/40 dark:bg-green-700/30"
                             : choices.find((c) => c.choiceId === choice.iqid)!
@@ -205,6 +220,21 @@ export const Correction = ({
                     value={essays.find((e) => e.essayId === essay.iqid)!.answer}
                   />
                 </CardContent>
+                <CardFooter className="space-x-5">
+                  <p>Poin:</p>
+                  {essayScoresQuery.isLoading ? (
+                    <Skeleton className="h-10 w-full" />
+                  ) : (
+                    <Input
+                      type="number"
+                      value={
+                        essayScoresQuery.data!.find(
+                          (d) => d.essayId === essay.iqid,
+                        )!.score
+                      }
+                    />
+                  )}
+                </CardFooter>
               </Card>
             ))}
           </div>
