@@ -25,6 +25,7 @@ export default async function CorrectionPage({
     with: {
       question: {
         columns: {
+          id: true,
           title: true,
         },
       },
@@ -50,6 +51,19 @@ export default async function CorrectionPage({
           },
         },
       },
+      choices: {
+        columns: {
+          choiceId: true,
+          answer: true,
+        },
+      },
+      essays: {
+        columns: {
+          id: true,
+          essayId: true,
+          answer: true,
+        },
+      },
     },
   });
 
@@ -66,12 +80,14 @@ export default async function CorrectionPage({
         </div>
 
         <Correction
-          id={studentRespond.id}
+          questionId={studentRespond.question.id}
           questionTitle={studentRespond.question.title}
           studentName={studentRespond.student.name}
           studentClass={`${studentRespond.student.subgrade.grade.label} ${studentRespond.student.subgrade.label}`}
           checkIn={studentRespond.checkIn}
           submittedAt={studentRespond.submittedAt}
+          choices={studentRespond.choices}
+          essays={studentRespond.essays}
         />
       </div>
     </div>
