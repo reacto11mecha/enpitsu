@@ -32,7 +32,7 @@ type SomeFunction = (...args: never) => void;
 
 export function useDebounce<Func extends SomeFunction>(
   func: Func,
-  delay = 950,
+  delay = 450,
 ) {
   const timer = useRef<Timer>();
 
