@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect } from "react";
 import { Roboto } from "next/font/google";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,10 @@ import {
   useDebounce,
 } from "./utils";
 import type { Props } from "./utils";
+
+const Editor = dynamic(() => import("./Editor"), {
+  ssr: false,
+});
 
 const robotoFont = Roboto({
   weight: "400",
@@ -305,11 +310,7 @@ export const Questions = ({ question }: Props) => {
                             <FormItem>
                               <FormLabel>Pertanyaan</FormLabel>
                               <FormControl>
-                                <Textarea
-                                  className="text-base font-normal"
-                                  placeholder="Masukan pertanyaan soal disini"
-                                  {...field}
-                                />
+                                <Editor onChange={field.onChange} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -371,7 +372,7 @@ export const Questions = ({ question }: Props) => {
                                                         form.setValue(
                                                           `multipleChoice.${index}.options.${idx}.answer` as const,
                                                           textArray.at(idx) ??
-                                                            "",
+                                                          "",
                                                         ),
                                                     );
                                                   }
@@ -459,7 +460,7 @@ export const Questions = ({ question }: Props) => {
                               variant="ghost"
                               disabled={
                                 deleteChoiceMutation.variables?.id ===
-                                  field.iqid && deleteChoiceMutation.isLoading
+                                field.iqid && deleteChoiceMutation.isLoading
                               }
                               onClick={() =>
                                 deleteChoiceMutation.mutate({

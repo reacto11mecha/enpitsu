@@ -65,7 +65,7 @@ export const multipleChoices = myPgTable("multipleChoice", {
   questionId: integer("question_id")
     .notNull()
     .references(() => questions.id),
-  question: text("question").notNull(),
+  question: json("question").notNull(),
   options: json("options")
     .$type<{ order: number; answer: string }[]>()
     .notNull(),
@@ -88,7 +88,7 @@ export const essays = myPgTable("essay", {
   questionId: integer("question_id")
     .notNull()
     .references(() => questions.id),
-  question: text("question").notNull(),
+  question: json("question").notNull(),
   answer: text("correct_answer").notNull(),
 });
 
