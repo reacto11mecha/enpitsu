@@ -29,7 +29,7 @@ const PrecautionChildren = ({
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
-      setScrollBottom(entry?.isIntersecting);
+      setScrollBottom(entry?.isIntersecting ?? false);
     });
 
     observer.observe(refEl.current);
