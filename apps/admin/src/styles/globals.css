@@ -80,9 +80,13 @@
 }
 
 .ql-snow {
-  @apply dark:text-white;
+  @apply dark:text-stone-50;
 }
 
 .ql-toolbar {
   @apply dark:bg-stone-300;
+}
+
+.ql-editing input {
+  @apply dark:text-stone-50;
 }

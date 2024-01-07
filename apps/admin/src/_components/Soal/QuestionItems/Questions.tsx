@@ -603,9 +603,10 @@ export const Questions = ({ question }: Props) => {
                 {multipleChoicesQuery.data?.map((choice) => (
                   <Card key={choice.iqid}>
                     <CardHeader>
-                      <h3 className="scroll-m-20 text-base tracking-tight">
-                        {choice.question}
-                      </h3>
+                      <h3
+                        className="scroll-m-20 text-base tracking-tight"
+                        dangerouslySetInnerHTML={{ __html: choice.question }}
+                      />
                     </CardHeader>
                     <CardContent>
                       <RadioGroup className="space-y-2">
@@ -620,10 +621,11 @@ export const Questions = ({ question }: Props) => {
                             />
                             <Label
                               htmlFor={`preview.${choice.iqid}.opt.${idx}`}
-                              className="text-base "
-                            >
-                              {option.answer}
-                            </Label>
+                              className="text-base"
+                              dangerouslySetInnerHTML={{
+                                __html: option.answer,
+                              }}
+                            />
                           </div>
                         ))}
                       </RadioGroup>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -17,6 +18,9 @@ import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 
 import { api } from "~/utils/api";
+
+import "katex/dist/katex.min.css";
+import "react-quill/dist/quill.snow.css";
 
 export const Correction = ({
   respondId,
@@ -67,6 +71,12 @@ export const Correction = ({
       },
     },
   );
+
+  useEffect(() => {
+    void import("katex").then((katex) => {
+      window.katex = katex;
+    });
+  }, []);
 
   return (
     <>
@@ -152,9 +162,8 @@ export const Correction = ({
                         ? "text-green-600"
                         : "text-rose-600"
                     }`}
-                  >
-                    {choice.question}
-                  </h3>
+                    dangerouslySetInnerHTML={{ __html: choice.question }}
+                  />
                 </CardHeader>
                 <CardContent>
                   <RadioGroup
@@ -181,10 +190,9 @@ export const Correction = ({
                         />
                         <Label
                           htmlFor={`preview.${choice.iqid}.opt.${idx}`}
-                          className="text-base "
-                        >
-                          {option.answer}
-                        </Label>
+                          className="text-base"
+                          dangerouslySetInnerHTML={{ __html: option.answer }}
+                        />
                       </div>
                     ))}
                   </RadioGroup>
@@ -210,9 +218,10 @@ export const Correction = ({
             {essaysQuery.data?.map((essay) => (
               <Card key={essay.iqid}>
                 <CardHeader>
-                  <h3 className="scroll-m-20 text-base tracking-tight">
-                    {essay.question}
-                  </h3>
+                  <h3
+                    className="scroll-m-20 text-base tracking-tight"
+                    dangerouslySetInnerHTML={{ __html: essay.question }}
+                  />
                 </CardHeader>
                 <CardContent>
                   <Textarea

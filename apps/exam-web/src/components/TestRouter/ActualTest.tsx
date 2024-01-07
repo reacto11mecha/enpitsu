@@ -25,6 +25,7 @@ import { studentAnswerAtom } from "@/lib/atom";
 import { api } from "@/utils/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
+import katex from "katex";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
@@ -40,6 +41,12 @@ import {
   type Props,
   type TFormSchema,
 } from "./utils";
+
+import "katex/dist/katex.min.css";
+import "react-quill/dist/quill.snow.css";
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+window.katex = katex;
 
 const Test = ({ data, initialData }: Props) => {
   const [checkIn] = useState(
@@ -89,7 +96,7 @@ const Test = ({ data, initialData }: Props) => {
   const [dishonestyCount, setDishonestyCount] = useState(
     initialData.find((d) => d.slug === data.slug)?.dishonestCount ?? 0,
   );
-  const [canUpdateDishonesty, setCanUpdateDishonesty] = useState(true);
+  const [canUpdateDishonesty, setCanUpdateDishonesty] = useState(false); // Toggle this initial state value for prod and dev
   const [dishonestyWarning, setDishonestyWarning] = useState(false);
 
   const closeAlertCallback = useCallback(() => {
@@ -376,9 +383,10 @@ const Test = ({ data, initialData }: Props) => {
                 {multipleChoicesField.fields.map((field, index) => (
                   <Card key={field.id} className="w-full">
                     <CardHeader>
-                      <h3 className="scroll-m-20 text-lg tracking-tight">
-                        {field.question}
-                      </h3>
+                      <h3
+                        className="scroll-m-20 text-lg tracking-tight"
+                        dangerouslySetInnerHTML={{ __html: field.question }}
+                      />
                     </CardHeader>
                     <CardContent>
                       <FormField
@@ -413,9 +421,10 @@ const Test = ({ data, initialData }: Props) => {
                                     <Label
                                       htmlFor={`options.${field.iqid}.opt.${idx}`}
                                       className="text-base font-normal"
-                                    >
-                                      {option.answer}
-                                    </Label>
+                                      dangerouslySetInnerHTML={{
+                                        __html: option.answer,
+                                      }}
+                                    />
                                   </div>
                                 ))}
                               </RadioGroup>
