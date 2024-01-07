@@ -45,7 +45,6 @@ import {
 import "katex/dist/katex.min.css";
 import "react-quill/dist/quill.snow.css";
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 window.katex = katex;
 
 const Test = ({ data, initialData }: Props) => {
