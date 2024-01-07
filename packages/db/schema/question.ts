@@ -1,4 +1,3 @@
-import type { OutputData } from "@editorjs/editorjs";
 import { relations } from "drizzle-orm";
 import {
   integer,
@@ -66,7 +65,7 @@ export const multipleChoices = myPgTable("multipleChoice", {
   questionId: integer("question_id")
     .notNull()
     .references(() => questions.id),
-  question: json("question").$type<OutputData>().notNull(),
+  question: text("question").notNull(),
   options: json("options")
     .$type<{ order: number; answer: string }[]>()
     .notNull(),
@@ -89,7 +88,7 @@ export const essays = myPgTable("essay", {
   questionId: integer("question_id")
     .notNull()
     .references(() => questions.id),
-  question: json("question").$type<OutputData>().notNull(),
+  question: text("question").notNull(),
   answer: text("correct_answer").notNull(),
 });
 

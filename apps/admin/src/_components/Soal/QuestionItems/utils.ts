@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import type { OutputData } from "@editorjs/editorjs";
 
 export interface Props {
   question: {
@@ -10,7 +9,7 @@ export interface Props {
     endedAt: Date;
     authorId: string;
     multipleChoices: {
-      question: OutputData;
+      question: string;
       questionId: number;
       iqid: number;
       options: {
@@ -20,7 +19,7 @@ export interface Props {
       correctAnswerOrder: number;
     }[];
     essays: {
-      question: OutputData;
+      question: string;
       questionId: number;
       iqid: number;
       answer: string;
@@ -33,7 +32,7 @@ type SomeFunction = (...args: never) => void;
 
 export function useDebounce<Func extends SomeFunction>(
   func: Func,
-  delay = 450,
+  delay = 950,
 ) {
   const timer = useRef<Timer>();
 

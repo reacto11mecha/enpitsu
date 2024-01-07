@@ -30,10 +30,10 @@ import {
 } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import type { OutputData } from "@editorjs/editorjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ClipboardCheck,
@@ -58,6 +58,7 @@ import type { Props } from "./utils";
 
 const Editor = dynamic(() => import("./Editor"), {
   ssr: false,
+  loading: () => <Skeleton className="h-16 w-full" />,
 });
 
 const robotoFont = Roboto({
@@ -105,14 +106,8 @@ export const Questions = ({ question }: Props) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      multipleChoice: question.multipleChoices.map((c) => ({
-        ...c,
-        question: JSON.stringify(c.question),
-      })),
-      essay: question.essays.map((e) => ({
-        ...e,
-        question: JSON.stringify(e.question),
-      })),
+      multipleChoice: question.multipleChoices,
+      essay: question.essays,
     },
     mode: "onChange",
   });
@@ -168,12 +163,7 @@ export const Questions = ({ question }: Props) => {
       await apiUtils.question.getMultipleChoices.invalidate();
 
       mutlipleChoiceField.append(
-        result
-          .map(({ questionId: _, ...rest }) => ({
-            ...rest,
-            question: JSON.stringify(rest.question),
-          }))
-          .at(0)!,
+        result.map(({ questionId: _, ...rest }) => rest).at(0)!,
       );
     },
     onError: (e) => toastBuilder("Pilihan Ganda", e.message),
@@ -194,10 +184,7 @@ export const Questions = ({ question }: Props) => {
           mutlipleChoiceField.fields.findIndex(
             (field) => field.iqid === resIqid.iqid,
           ),
-          {
-            ...newValue,
-            question: JSON.parse(newValue.question) as OutputData,
-          },
+          newValue,
         );
       }
     },
@@ -229,12 +216,7 @@ export const Questions = ({ question }: Props) => {
       await apiUtils.question.getEssays.invalidate();
 
       essayField.append(
-        result
-          .map(({ questionId: _, ...rest }) => ({
-            ...rest,
-            question: JSON.stringify(rest.question),
-          }))
-          .at(0)!,
+        result.map(({ questionId: _, ...rest }) => rest).at(0)!,
       );
     },
     onError: (e) => toastBuilder("Esai", e.message),
@@ -331,8 +313,8 @@ export const Questions = ({ question }: Props) => {
                               <FormLabel>Pertanyaan</FormLabel>
                               <FormControl>
                                 <Editor
-                                  data={JSON.parse(field.value) as OutputData}
-                                  onChange={field.onChange}
+                                  value={field.value}
+                                  setValue={field.onChange}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -364,42 +346,9 @@ export const Questions = ({ question }: Props) => {
                                                 className="rounded-full"
                                               />
 
-                                              <Textarea
-                                                className="text-base font-normal"
-                                                placeholder="Masukan jawaban disini"
-                                                {...currentField}
-                                                onFocus={(e) =>
-                                                  e.target.scrollIntoView({
-                                                    behavior: "instant",
-                                                    block: "center",
-                                                  })
-                                                }
-                                                onPaste={(e) => {
-                                                  if (
-                                                    currentField.value === "" &&
-                                                    optIndex === 0
-                                                  ) {
-                                                    e.preventDefault();
-
-                                                    const textArray =
-                                                      e.clipboardData
-                                                        .getData("text")
-                                                        .trim()
-                                                        .split(/\r?\n/)
-                                                        .filter(
-                                                          (t) => t !== "",
-                                                        );
-
-                                                    field.options.forEach(
-                                                      (_, idx) =>
-                                                        form.setValue(
-                                                          `multipleChoice.${index}.options.${idx}.answer` as const,
-                                                          textArray.at(idx) ??
-                                                            "",
-                                                        ),
-                                                    );
-                                                  }
-                                                }}
+                                              <Editor
+                                                value={currentField.value}
+                                                setValue={currentField.onChange}
                                               />
                                             </div>
                                           </FormControl>
@@ -436,7 +385,7 @@ export const Questions = ({ question }: Props) => {
                                     `multipleChoice.${index}.correctAnswerOrder` as const
                                   }
                                   render={({ field: currentField }) => (
-                                    <FormItem className="space-y-3">
+                                    <FormItem className="space-y-5">
                                       <FormControl>
                                         <RadioGroup
                                           onValueChange={(val) =>
@@ -457,9 +406,12 @@ export const Questions = ({ question }: Props) => {
                                                   value={String(option.order)}
                                                 />
                                               </FormControl>
-                                              <FormLabel className="font-base font-normal">
-                                                {option.answer}
-                                              </FormLabel>
+                                              <FormLabel
+                                                className="font-base font-normal"
+                                                dangerouslySetInnerHTML={{
+                                                  __html: option.answer,
+                                                }}
+                                              />
                                             </FormItem>
                                           ))}
                                         </RadioGroup>
@@ -554,9 +506,9 @@ export const Questions = ({ question }: Props) => {
                             <FormItem>
                               <FormLabel>Pertanyaan</FormLabel>
                               <FormControl>
-                                <Textarea
-                                  placeholder="Masukan pertanyaan soal disini"
-                                  {...field}
+                                <Editor
+                                  value={field.value}
+                                  setValue={field.onChange}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -572,9 +524,9 @@ export const Questions = ({ question }: Props) => {
                             <FormItem>
                               <FormLabel>Jawaban</FormLabel>
                               <FormControl>
-                                <Textarea
-                                  placeholder="Masukan jawaban soal disini"
-                                  {...field}
+                                <Editor
+                                  value={field.value}
+                                  setValue={field.onChange}
                                 />
                               </FormControl>
                               <FormMessage />

@@ -1,90 +1,15 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
-import { useEffect, useRef } from "react";
-// @ts-expect-error no types
-import CheckList from "@editorjs/checklist";
-// @ts-expect-error no types
-import Code from "@editorjs/code";
-// @ts-expect-error no types
-import Delimiter from "@editorjs/delimiter";
-import type { EditorConfig, OutputData } from "@editorjs/editorjs";
-import EditorJS from "@editorjs/editorjs";
-// @ts-expect-error no types
-import Embed from "@editorjs/embed";
-// @ts-expect-error no types
-import Header from "@editorjs/header";
-// @ts-expect-error no types
-import Image from "@editorjs/image";
-// @ts-expect-error no types
-import InlineCode from "@editorjs/inline-code";
-// @ts-expect-error no types
-import Link from "@editorjs/link";
-// @ts-expect-error no types
-import List from "@editorjs/list";
-// @ts-expect-error no types
-import Paragraph from "@editorjs/paragraph";
-// @ts-expect-error no types
-import Quote from "@editorjs/quote";
-// @ts-expect-error no types
-import SimpleImage from "@editorjs/simple-image";
+import ReactQuill from "react-quill";
 
-export const EDITOR_TOOLS = {
-  code: Code,
-  header: {
-    class: Header,
-    config: {
-      placeholder: "Enter a Header",
-      levels: [1, 2, 3, 4],
-      defaultLevel: 2,
-    },
-  },
-  paragraph: Paragraph,
-  checklist: CheckList,
-  embed: Embed,
-  image: Image,
-  inlineCode: InlineCode,
-  link: Link,
-  list: List,
-  quote: Quote,
-  simpleImage: SimpleImage,
-  delimiter: Delimiter,
-} satisfies EditorConfig["tools"];
+import "react-quill/dist/quill.snow.css";
 
 export default function Editor({
-  onChange,
-  data,
+  value,
+  setValue,
 }: {
-  onChange: (value: string) => void;
-  data: OutputData;
+  value: ReactQuill.Value | undefined;
+  setValue: (val: string) => void;
 }) {
-  const ref = useRef<EditorJS>();
-  const holder = useRef<HTMLDivElement>(null!);
-
-  //initialize editorjs
-  useEffect(() => {
-    if (!ref.current) {
-      const editor = new EditorJS({
-        holder: holder.current,
-        tools: EDITOR_TOOLS,
-        data,
-        async onChange(api) {
-          const data = await api.saver.save();
-
-          onChange(JSON.stringify(data));
-        },
-        minHeight: 5,
-      });
-
-      ref.current = editor;
-    }
-
-    return () => {
-      if (ref.current?.destroy) {
-        ref.current.destroy();
-      }
-    };
-  }, []);
-
-  return <div ref={holder} className="prose max-w-full border-b" />;
+  return <ReactQuill theme="snow" value={value} onChange={setValue} />;
 }
