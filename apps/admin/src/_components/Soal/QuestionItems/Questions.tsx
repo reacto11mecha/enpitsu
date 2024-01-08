@@ -644,9 +644,10 @@ export const Questions = ({ question }: Props) => {
                 {essaysQuery.data?.map((essay) => (
                   <Card key={essay.iqid}>
                     <CardHeader>
-                      <h3 className="scroll-m-20 text-base tracking-tight">
-                        {essay.question}
-                      </h3>
+                      <h3
+                        className="scroll-m-20 text-base tracking-tight"
+                        dangerouslySetInnerHTML={{ __html: essay.question }}
+                      />
                     </CardHeader>
                     <CardContent>
                       <Textarea placeholder="jawab disini" />

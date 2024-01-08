@@ -95,7 +95,7 @@ const Test = ({ data, initialData }: Props) => {
   const [dishonestyCount, setDishonestyCount] = useState(
     initialData.find((d) => d.slug === data.slug)?.dishonestCount ?? 0,
   );
-  const [canUpdateDishonesty, setCanUpdateDishonesty] = useState(false); // Toggle this initial state value for prod and dev
+  const [canUpdateDishonesty, setCanUpdateDishonesty] = useState(true); // Toggle this initial state value for prod and dev
   const [dishonestyWarning, setDishonestyWarning] = useState(false);
 
   const closeAlertCallback = useCallback(() => {
@@ -447,9 +447,10 @@ const Test = ({ data, initialData }: Props) => {
                 {essaysField.fields.map((field, index) => (
                   <Card key={field.iqid}>
                     <CardHeader>
-                      <h3 className="scroll-m-20 text-base tracking-tight">
-                        {field.question}
-                      </h3>
+                      <h3
+                        className="scroll-m-20 text-base tracking-tight"
+                        dangerouslySetInnerHTML={{ __html: field.question }}
+                      />
                     </CardHeader>
                     <CardContent>
                       <FormField
@@ -491,7 +492,7 @@ const Test = ({ data, initialData }: Props) => {
                 {submitAnswerMutation.isLoading ? (
                   <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
                 ) : null}{" "}
-                submit
+                Submit
               </Button>
             </div>
           </div>
