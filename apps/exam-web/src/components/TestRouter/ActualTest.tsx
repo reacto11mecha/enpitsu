@@ -20,6 +20,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCountdown } from "@/hooks/useCountdown";
+import { useNetworkState } from "@/hooks/useNetworkState";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { studentAnswerAtom } from "@/lib/atom";
 import { api } from "@/utils/api";
@@ -44,6 +45,8 @@ import {
 
 import "katex/dist/katex.min.css";
 import "react-quill/dist/quill.snow.css";
+
+import { BadInternetAlert } from "./BadInternetAlert";
 
 window.katex = katex;
 
@@ -95,15 +98,26 @@ const Test = ({ data, initialData }: Props) => {
   const [dishonestyCount, setDishonestyCount] = useState(
     initialData.find((d) => d.slug === data.slug)?.dishonestCount ?? 0,
   );
-  const [canUpdateDishonesty, setCanUpdateDishonesty] = useState(true); // Toggle this initial state value for prod and dev
+
+  const { isPageVisible } = usePageVisibility();
+  const { isOnline } = useNetworkState();
+
+  // Toggle this initial state value for prod and dev
+  const [canUpdateDishonesty, setCanUpdateDishonesty] = useState(true);
+
   const [dishonestyWarning, setDishonestyWarning] = useState(false);
+  const [badInternetAlert, setBadInternet] = useState(false);
 
   const closeAlertCallback = useCallback(() => {
     setCanUpdateDishonesty(true);
     setDishonestyWarning(false);
   }, []);
-
-  const { isPageVisible } = usePageVisibility();
+  const closeBadInternet = useCallback(() => {
+    if (isOnline) {
+      setCanUpdateDishonesty(true);
+      setBadInternet(false);
+    }
+  }, [isOnline]);
 
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
@@ -149,7 +163,8 @@ const Test = ({ data, initialData }: Props) => {
 
   const { countdown, isEnded } = useCountdown(data.endedAt);
 
-  // Comment this useEffect on development
+  // Increment dishonesty count up to 3 tab changes.
+  // The first two will ask kindly to not to cheat on their exam.
   useEffect(() => {
     if (!isPageVisible && canUpdateDishonesty)
       setDishonestyCount((prev) => {
@@ -164,6 +179,15 @@ const Test = ({ data, initialData }: Props) => {
         return newValue;
       });
   }, [canUpdateDishonesty, isPageVisible]);
+
+  // Track changes of user network status. User can turned on their
+  // internet connection and safely continue their exam like normal.
+  useEffect(() => {
+    if (!isOnline) {
+      setCanUpdateDishonesty(false);
+      setBadInternet(true);
+    }
+  }, [isOnline]);
 
   const multipleChoiceDebounced = useDebounce(
     (updatedData: { iqid: number; choosedAnswer: number }) => {
@@ -346,6 +370,11 @@ const Test = ({ data, initialData }: Props) => {
       <DishonestyAlert
         open={dishonestyWarning}
         closeAlert={closeAlertCallback}
+      />
+      <BadInternetAlert
+        backOnline={isOnline}
+        open={badInternetAlert}
+        closeBadInternet={closeBadInternet}
       />
 
       <header className="fixed inset-x-0 top-0 flex w-full justify-center border-solid">
