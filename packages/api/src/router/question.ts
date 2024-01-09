@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { compareTwoStringLikability } from "../utils";
 
 export const questionRouter = createTRPCRouter({
   getQuestions: protectedProcedure.query(({ ctx }) =>
@@ -578,6 +579,7 @@ export const questionRouter = createTRPCRouter({
         iqid: z.number(),
         question: z.string(),
         answer: z.string(),
+        isStrictEqual: z.boolean(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -597,6 +599,7 @@ export const questionRouter = createTRPCRouter({
         .set({
           question: input.question,
           answer: input.answer,
+          isStrictEqual: input.isStrictEqual,
         })
         .where(eq(schema.essays.iqid, input.iqid));
     }),
@@ -652,5 +655,94 @@ export const questionRouter = createTRPCRouter({
         .returning({
           score: schema.studentRespondEssays.score,
         }),
+    ),
+
+  recalcEssayScore: protectedProcedure
+    .input(
+      z.object({
+        questionId: z.number(),
+      }),
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        const essaysResponds = await tx.query.studentResponds.findMany({
+          where: eq(schema.studentResponds.questionId, input.questionId),
+          columns: {},
+          with: {
+            essays: {
+              columns: {
+                id: true,
+                essayId: true,
+                answer: true,
+              },
+            },
+          },
+        });
+
+        if (!essaysResponds || essaysResponds.length < 1)
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tidak ada jawaban yang disubmit berdasarkan soal ini!",
+          });
+
+        if (
+          essaysResponds
+            .map((e) => e.essays.length)
+            .reduce((curr, acc) => curr + acc) < 1
+        )
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Jawaban dari peserta tidak ditemukan",
+          });
+
+        const essayAnswers = await tx.query.essays.findMany({
+          where: eq(schema.essays.questionId, input.questionId),
+          columns: {
+            iqid: true,
+            answer: true,
+            isStrictEqual: true,
+          },
+        });
+
+        // This condition would not likely to happen, like,
+        // this case scenario is really impossible thanks
+        // to relational database like postgresql
+        if (!essayAnswers || essayAnswers.length < 1)
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tidak ada soal dari jawaban ini!",
+          });
+
+        await tx.transaction(async (tx2) => {
+          for (const responses of essaysResponds) {
+            for (const essay of responses.essays) {
+              const answerBase = essayAnswers.find(
+                (e) => e.iqid === essay.essayId,
+              );
+
+              // This thing too
+              if (!answerBase)
+                throw new TRPCError({
+                  code: "INTERNAL_SERVER_ERROR",
+                  message:
+                    "Terdapat jawaban yang tidak memiliki soal, tidak akan bisa di update",
+                });
+
+              const updatedScore = compareTwoStringLikability(
+                answerBase.isStrictEqual,
+                answerBase.answer.trim(),
+                essay.answer.trim(),
+              );
+
+              await tx2
+                .update(schema.studentRespondEssays)
+                .set({
+                  score: updatedScore,
+                })
+                .where(eq(schema.studentRespondEssays.essayId, essay.essayId));
+            }
+          }
+        });
+      }),
     ),
 });

@@ -23,6 +23,7 @@ export interface Props {
       questionId: number;
       iqid: number;
       answer: string;
+      isStrictEqual: boolean;
     }[];
   };
 }
@@ -95,7 +96,8 @@ export const findEssayUpdate = (
       // Compare properties to determine if the object is updated
       if (
         baseObj.question !== updatedObj.question ||
-        baseObj.answer !== updatedObj.answer
+        baseObj.answer !== updatedObj.answer ||
+        baseObj.isStrictEqual !== updatedObj.isStrictEqual
       ) {
         return updatedObj;
       }

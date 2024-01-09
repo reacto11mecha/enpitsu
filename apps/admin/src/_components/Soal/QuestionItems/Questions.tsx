@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
-  // FormDescription,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -31,6 +31,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
@@ -94,6 +95,7 @@ const formSchema = z.object({
       iqid: z.number(),
       question: z.string().min(1, { message: "Pertanyaan wajib di isi!" }),
       answer: z.string().min(1, { message: "Jawaban harus di isi!" }),
+      isStrictEqual: z.boolean(),
     }),
   ),
 });
@@ -530,6 +532,32 @@ export const Questions = ({ question }: Props) => {
                                 />
                               </FormControl>
                               <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name={`essay.${index}.isStrictEqual` as const}
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-base">
+                                  Jawaban Wajib Persis Sama
+                                </FormLabel>
+                                <FormDescription className="lg:w-[65%]">
+                                  Jika dinyalakan, jawaban yang dikirimkan oleh
+                                  peserta ujian akan di cocokan dengan jawaban
+                                  yang wajib persis sama dengan jawaban yang
+                                  sudah ditentukan.
+                                </FormDescription>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
                             </FormItem>
                           )}
                         />

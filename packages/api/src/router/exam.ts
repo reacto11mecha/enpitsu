@@ -281,15 +281,23 @@ export const examRouter = createTRPCRouter({
                 where: eq(schema.essays.iqid, essayRespond.iqid),
               });
 
+              if (!essayAnswer)
+                throw new TRPCError({
+                  code: "NOT_IMPLEMENTED",
+                  message:
+                    "Terjadi kesalahan, ada soal esay yang sudah dihapus secara tidak sengaja. Refresh halaman ini dan submit supaya dapat melanjutkan proses submit.",
+                });
+
               const score = compareTwoStringLikability(
-                essayAnswer!.answer,
-                essayRespond.answer,
+                essayAnswer.isStrictEqual,
+                essayAnswer.answer.trim(),
+                essayRespond.answer.trim(),
               );
 
               await tx2.insert(schema.studentRespondEssays).values({
                 respondId,
                 essayId: essayRespond.iqid,
-                answer: essayRespond.answer,
+                answer: essayRespond.answer.trim(),
                 score,
               });
             }

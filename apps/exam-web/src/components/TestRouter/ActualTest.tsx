@@ -27,7 +27,7 @@ import { api } from "@/utils/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
 import katex from "katex";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Globe, Loader2 } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { z } from "zod";
@@ -379,6 +379,19 @@ const Test = ({ data, initialData }: Props) => {
 
       <header className="fixed inset-x-0 top-0 flex w-full justify-center border-solid">
         <div className="flex h-full w-full flex-wrap items-center justify-between gap-4 border border-b bg-white p-2 px-5 dark:bg-stone-900 sm:justify-center">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline">
+                  <Globe />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Platform saat ini: web</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

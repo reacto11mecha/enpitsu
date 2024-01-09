@@ -53,11 +53,13 @@ import {
   ChevronsRight,
   ListChecks,
   MoreHorizontal,
+  Sheet,
   Trash2,
 } from "lucide-react";
 
 import { api } from "~/utils/api";
 import { DeleteStudentAnswer } from "./DeleteStudentAnswer";
+import { RecalcEssayAnswer } from "./RecalcEssayAnswer";
 
 type BlocklistByQuestion =
   RouterOutputs["question"]["getStudentAnswersByQuestion"][number];
@@ -209,11 +211,18 @@ export function DataTable({
 
   return (
     <div className="w-full">
-      <div className="flex items-center pb-4">
-        <p>Soal: {title}</p>
+      <p>Soal: {title}</p>
+      <div className="mt-2 flex flex-col gap-2 pb-4 md:flex-row md:items-center">
+        <RecalcEssayAnswer questionId={questionId} title={title} />
+
+        <Button>
+          <Sheet className="mr-2 h-4 md:w-4" />
+          Unduh nilai dalam excel
+        </Button>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+            <Button variant="outline" className="md:ml-auto">
               Kolom-Kolom <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

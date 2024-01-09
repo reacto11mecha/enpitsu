@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  boolean,
   integer,
   json,
   numeric,
@@ -90,6 +91,7 @@ export const essays = myPgTable("essay", {
     .references(() => questions.id),
   question: text("question").notNull(),
   answer: text("correct_answer").notNull(),
+  isStrictEqual: boolean("is_strict_equal").default(false).notNull(),
 });
 
 export const essayRelations = relations(essays, ({ one, many }) => ({
