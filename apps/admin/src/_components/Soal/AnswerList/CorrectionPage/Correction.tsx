@@ -9,7 +9,6 @@ import {
   CardHeader,
   // CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +20,10 @@ import { api } from "~/utils/api";
 
 import "katex/dist/katex.min.css";
 import "react-quill/dist/quill.snow.css";
+
+import { Separator } from "@/components/ui/separator";
+
+import { UpdateEssayScore } from "./UpdateEssayScore";
 
 export const Correction = ({
   respondId,
@@ -203,9 +206,25 @@ export const Correction = ({
         </div>
 
         <div className="flex flex-col gap-3">
-          <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-            Esai
-          </h3>
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row sm:gap-0">
+            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+              Esai
+            </h3>
+
+            {essaysQuery.isLoading || essayScoresQuery.isLoading ? (
+              <Skeleton className="w-15 h-6" />
+            ) : !essaysQuery.isError && !essayScoresQuery.isError ? (
+              <span>
+                Jumlah Benar:{" "}
+                {essayScoresQuery.data
+                  .map(({ score }) => parseFloat(score))
+                  .reduce((curr, acc) => curr + acc)}{" "}
+                / {essaysQuery.data.length}
+              </span>
+            ) : (
+              <pre className="text-rose-600">N.A</pre>
+            )}
+          </div>
 
           <div className="flex flex-col gap-5">
             {essaysQuery.isLoading ? (
@@ -223,24 +242,44 @@ export const Correction = ({
                     dangerouslySetInnerHTML={{ __html: essay.question }}
                   />
                 </CardHeader>
-                <CardContent>
-                  <Textarea
-                    disabled
-                    value={essays.find((e) => e.essayId === essay.iqid)!.answer}
-                  />
+                <CardContent className="mb-3">
+                  <div className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-3">
+                      <p>Respon Peserta:</p>
+                      <Textarea
+                        disabled
+                        className="disabled:opacity-100"
+                        value={
+                          essays.find((e) => e.essayId === essay.iqid)!.answer
+                        }
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                      <p>Jawaban Benar:</p>
+
+                      <p dangerouslySetInnerHTML={{ __html: essay.answer }} />
+                    </div>
+                  </div>
                 </CardContent>
-                <CardFooter className="space-x-5">
+                <Separator />
+                <CardFooter className="space-x-5 p-6">
                   <p>Poin:</p>
-                  {essayScoresQuery.isLoading ? (
-                    <Skeleton className="h-10 w-full" />
+                  {essayScoresQuery.isLoading && !essayScoresQuery.data ? (
+                    <Skeleton className="h-30 w-full" />
                   ) : (
-                    <Input
-                      type="number"
-                      value={
+                    <UpdateEssayScore
+                      id={
+                        essayScoresQuery.data!.find(
+                          (d) => d.essayId === essay.iqid,
+                        )!.id
+                      }
+                      score={
                         essayScoresQuery.data!.find(
                           (d) => d.essayId === essay.iqid,
                         )!.score
                       }
+                      respondId={respondId}
                     />
                   )}
                 </CardFooter>

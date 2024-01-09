@@ -468,9 +468,10 @@ export const questionRouter = createTRPCRouter({
         const cacheKeys = await cache.keys("trpc-get-question-slug:*");
         if (cacheKeys.length > 0) await cache.del(cacheKeys);
       } catch (_) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Terjadi masalah terhadap konektivitas sistem cache",
+        console.error({
+          code: "REDIS_ERR",
+          message:
+            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
         });
       }
 
@@ -510,9 +511,10 @@ export const questionRouter = createTRPCRouter({
         const cacheKeys = await cache.keys("trpc-get-question-slug:*");
         if (cacheKeys.length > 0) await cache.del(cacheKeys);
       } catch (_) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Terjadi masalah terhadap konektivitas sistem cache",
+        console.error({
+          code: "REDIS_ERR",
+          message:
+            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
         });
       }
 
@@ -534,9 +536,10 @@ export const questionRouter = createTRPCRouter({
         const cacheKeys = await cache.keys("trpc-get-question-slug:*");
         if (cacheKeys.length > 0) await cache.del(cacheKeys);
       } catch (_) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Terjadi masalah terhadap konektivitas sistem cache",
+        console.error({
+          code: "REDIS_ERR",
+          message:
+            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
         });
       }
 
@@ -553,9 +556,10 @@ export const questionRouter = createTRPCRouter({
         const cacheKeys = await cache.keys("trpc-get-question-slug:*");
         if (cacheKeys.length > 0) await cache.del(cacheKeys);
       } catch (_) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Terjadi masalah terhadap konektivitas sistem cache",
+        console.error({
+          code: "REDIS_ERR",
+          message:
+            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
         });
       }
 
@@ -581,9 +585,10 @@ export const questionRouter = createTRPCRouter({
         const cacheKeys = await cache.keys("trpc-get-question-slug:*");
         if (cacheKeys.length > 0) await cache.del(cacheKeys);
       } catch (_) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Terjadi masalah terhadap konektivitas sistem cache",
+        console.error({
+          code: "REDIS_ERR",
+          message:
+            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
         });
       }
 
@@ -602,9 +607,10 @@ export const questionRouter = createTRPCRouter({
         const cacheKeys = await cache.keys("trpc-get-question-slug:*");
         if (cacheKeys.length > 0) await cache.del(cacheKeys);
       } catch (_) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Terjadi masalah terhadap konektivitas sistem cache",
+        console.error({
+          code: "REDIS_ERR",
+          message:
+            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
         });
       }
 
@@ -627,5 +633,24 @@ export const questionRouter = createTRPCRouter({
           score: true,
         },
       }),
+    ),
+
+  updateEssayScore: protectedProcedure
+    .input(
+      z.object({
+        score: z.number().min(0).max(1),
+        id: z.number(),
+      }),
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.db
+        .update(schema.studentRespondEssays)
+        .set({
+          score: input.score.toFixed(5).toString(),
+        })
+        .where(eq(schema.studentRespondEssays.id, input.id))
+        .returning({
+          score: schema.studentRespondEssays.score,
+        }),
     ),
 });
