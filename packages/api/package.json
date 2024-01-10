@@ -13,13 +13,14 @@
   },
   "dependencies": {
     "@enpitsu/auth": "workspace:^0.1.0",
-    "@enpitsu/db": "workspace:^0.1.0",
     "@enpitsu/cache": "workspace:^0.1.0",
+    "@enpitsu/db": "workspace:^0.1.0",
     "@enpitsu/token-generator": "workspace:^0.1.0",
     "@trpc/client": "^10.44.1",
     "@trpc/server": "^10.44.1",
     "string-similarity": "^4.0.4",
     "superjson": "2.2.1",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz",
     "zod": "^3.22.4"
   },
   "devDependencies": {

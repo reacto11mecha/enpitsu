@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
 import { ListRestart } from "lucide-react";
 
 import { api } from "~/utils/api";
@@ -25,7 +26,24 @@ export const RecalcEssayAnswer = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  const recalcMutationApi = api.question.recalcEssayScore.useMutation({});
+  const { toast } = useToast();
+
+  const recalcMutationApi = api.question.recalcEssayScore.useMutation({
+    onSuccess() {
+      toast({
+        title: "Berhasil dikalkulasi ulang!",
+        description: "Semua respon jawaban dari peserta berhasil terkalkulasi!",
+      });
+      setOpen(false);
+    },
+    onError(error) {
+      toast({
+        variant: "destructive",
+        title: "Operasi Gagal",
+        description: `Terjadi kesalahan, Error: ${error.message}`,
+      });
+    },
+  });
 
   return (
     <Dialog

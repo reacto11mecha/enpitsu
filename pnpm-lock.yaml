@@ -215,6 +215,9 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.3.6)
+      xlsx:
+        specifier: https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz
+        version: '@cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz'
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -609,6 +612,9 @@ importers:
       superjson:
         specifier: 2.2.1
         version: 2.2.1
+      xlsx:
+        specifier: https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz
+        version: '@cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz'
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -15406,3 +15412,11 @@ packages:
 
   /zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
+
+  '@cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz':
+    resolution: {tarball: https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz}
+    name: xlsx
+    version: 0.20.1
+    engines: {node: '>=0.8'}
+    hasBin: true
+    dev: false
