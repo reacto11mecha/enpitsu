@@ -745,4 +745,118 @@ export const questionRouter = createTRPCRouter({
         });
       }),
     ),
+
+  downloadStudentResponsesExcelById: protectedProcedure
+    .input(
+      z.object({
+        questionId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const specificQuestion = await ctx.db.query.questions.findFirst({
+        where: eq(schema.questions.id, input.questionId),
+        columns: {
+          title: true,
+        },
+        with: {
+          multipleChoices: {
+            columns: {
+              iqid: true,
+              correctAnswerOrder: true,
+            },
+          },
+          essays: {
+            columns: {
+              iqid: true,
+            },
+          },
+        },
+      });
+
+      if (!specificQuestion)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Tidak ada soal yang sesuai dengan permintaan anda!",
+        });
+
+      const responsesByQID = await ctx.db.query.studentResponds.findMany({
+        where: eq(schema.studentResponds.questionId, input.questionId),
+        columns: {
+          checkIn: true,
+          submittedAt: true,
+        },
+        with: {
+          student: {
+            columns: {
+              name: true,
+              room: true,
+            },
+            with: {
+              subgrade: {
+                columns: {
+                  id: true,
+                  label: true,
+                },
+                with: {
+                  grade: {
+                    columns: {
+                      id: true,
+                      label: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+
+          choices: {
+            columns: {
+              choiceId: true,
+              answer: true,
+            },
+          },
+
+          essays: {
+            columns: {
+              id: true,
+              score: true,
+            },
+          },
+        },
+      });
+
+      if (responsesByQID.length < 1)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Belum ada jawaban pada soal ini!",
+        });
+
+      const normalizedData = responsesByQID.map((response) => ({
+        name: response.student.name,
+        room: response.student.room,
+        checkIn: response.checkIn,
+        submittedAt: response.submittedAt,
+        choiceRightAnswered: specificQuestion.multipleChoices
+          .map((choice) => {
+            const currentChoice = response.choices.find(
+              (c) => c.choiceId === choice.iqid,
+            );
+
+            if (!currentChoice) return false;
+
+            return currentChoice.answer === choice.correctAnswerOrder;
+          })
+          .filter((a) => !!a).length,
+        essayScore: response.essays
+          .map((e) => parseFloat(e.score))
+          .reduce((curr, acc) => curr + acc, 0),
+      }));
+
+      return {
+        title: specificQuestion.title,
+        choiceLength: specificQuestion.multipleChoices.length,
+        essayLength: specificQuestion.essays.length,
+        data: normalizedData,
+      };
+    }),
 });

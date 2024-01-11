@@ -59,6 +59,7 @@ import {
 
 import { api } from "~/utils/api";
 import { DeleteStudentAnswer } from "./DeleteStudentAnswer";
+import { ExcelAnswerDownload } from "./ExcelAnswerDownload";
 import { RecalcEssayAnswer } from "./RecalcEssayAnswer";
 
 type BlocklistByQuestion =
@@ -214,11 +215,7 @@ export function DataTable({
       <p>Soal: {title}</p>
       <div className="mt-2 flex flex-col gap-2 pb-4 md:flex-row md:items-center">
         <RecalcEssayAnswer questionId={questionId} title={title} />
-
-        <Button>
-          <Sheet className="mr-2 h-4 md:w-4" />
-          Unduh nilai dalam excel
-        </Button>
+        <ExcelAnswerDownload questionId={questionId} title={title} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
