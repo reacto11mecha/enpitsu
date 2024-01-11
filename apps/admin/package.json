@@ -59,6 +59,7 @@
     "clsx": "^2.0.0",
     "csv-parse": "^5.5.3",
     "date-fns": "^3.0.1",
+    "exceljs": "^4.4.0",
     "jszip": "^3.10.1",
     "katex": "^0.16.9",
     "lucide-react": "^0.294.0",

@@ -60,6 +60,7 @@ import {
 
 import { api } from "~/utils/api";
 import { DeleteStudentAnswer } from "./AnswerList/DeleteStudentAnswer";
+import { AggregateExcelAnswerDownload } from "./AnswerList/ExcelAnswerDownload";
 
 type StudentAnswers = RouterOutputs["question"]["getStudentAnswers"][number];
 
@@ -217,10 +218,11 @@ export function DataTable() {
 
   return (
     <div className="w-full">
-      <div className="flex items-center pb-4">
+      <div className="mt-2 flex flex-col gap-2 pb-4 md:flex-row md:items-center">
+        <AggregateExcelAnswerDownload />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+            <Button variant="outline" className="md:ml-auto">
               Kolom-Kolom <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

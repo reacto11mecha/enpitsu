@@ -53,13 +53,12 @@ import {
   ChevronsRight,
   ListChecks,
   MoreHorizontal,
-  Sheet,
   Trash2,
 } from "lucide-react";
 
 import { api } from "~/utils/api";
 import { DeleteStudentAnswer } from "./DeleteStudentAnswer";
-import { ExcelAnswerDownload } from "./ExcelAnswerDownload";
+import { SpecificExcelAnswerDownload } from "./ExcelAnswerDownload";
 import { RecalcEssayAnswer } from "./RecalcEssayAnswer";
 
 type BlocklistByQuestion =
@@ -215,7 +214,7 @@ export function DataTable({
       <p>Soal: {title}</p>
       <div className="mt-2 flex flex-col gap-2 pb-4 md:flex-row md:items-center">
         <RecalcEssayAnswer questionId={questionId} title={title} />
-        <ExcelAnswerDownload questionId={questionId} title={title} />
+        <SpecificExcelAnswerDownload questionId={questionId} title={title} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -746,6 +746,115 @@ export const questionRouter = createTRPCRouter({
       }),
     ),
 
+  downloadStudentResponsesExcelAggregate: protectedProcedure.mutation(
+    async ({ ctx }) => {
+      const responsesByQID = await ctx.db.query.studentResponds.findMany({
+        columns: {
+          checkIn: true,
+          submittedAt: true,
+        },
+        with: {
+          question: {
+            columns: {
+              slug: true,
+            },
+          },
+          student: {
+            columns: {
+              name: true,
+              room: true,
+            },
+            with: {
+              subgrade: {
+                columns: {
+                  id: true,
+                  label: true,
+                },
+                with: {
+                  grade: {
+                    columns: {
+                      id: true,
+                      label: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+
+          choices: {
+            columns: {
+              choiceId: true,
+              answer: true,
+            },
+            with: {
+              choiceQuestion: {
+                columns: {
+                  correctAnswerOrder: true,
+                },
+              },
+            },
+          },
+
+          essays: {
+            columns: {
+              id: true,
+              score: true,
+            },
+          },
+        },
+      });
+
+      if (responsesByQID.length < 1)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Belum ada jawaban pada aplikasi ini!",
+        });
+
+      const normalizedData = responsesByQID.map((response) => ({
+        slug: response.question.slug,
+        name: response.student.name,
+        className: `${response.student.subgrade.grade.label} ${response.student.subgrade.label}`,
+        room: response.student.room,
+        checkIn: response.checkIn,
+        submittedAt: response.submittedAt,
+        choiceRightAnswered: response.choices
+          .map(
+            (choice) =>
+              choice.answer === choice.choiceQuestion.correctAnswerOrder,
+          )
+          .filter((a) => !!a).length,
+        choiceLength: response.choices.length,
+        essayScore: response.essays
+          .map((e) => parseFloat(e.score))
+          .reduce((curr, acc) => curr + acc, 0),
+        essayLength: response.essays.length,
+      }));
+
+      const sortedData = [...new Set(normalizedData.map((d) => d.slug))].map(
+        (slug) => {
+          const answers = normalizedData.filter((d) => d.slug === slug);
+
+          const sortedByClass = [...new Set(answers.map((d) => d.className))]
+            .sort((l, r) => l.localeCompare(r))
+            .flatMap((cn) =>
+              answers
+                .filter((a) => a.className === cn)
+                .sort((l, r) => l.name.localeCompare(r.name)),
+            )
+            .map(({ slug: _, ...rest }) => rest);
+
+          return {
+            slug,
+            data: sortedByClass,
+          };
+        },
+      );
+
+      return sortedData;
+    },
+  ),
+
   downloadStudentResponsesExcelById: protectedProcedure
     .input(
       z.object({
@@ -757,6 +866,7 @@ export const questionRouter = createTRPCRouter({
         where: eq(schema.questions.id, input.questionId),
         columns: {
           title: true,
+          slug: true,
         },
         with: {
           multipleChoices: {
@@ -833,6 +943,7 @@ export const questionRouter = createTRPCRouter({
 
       const normalizedData = responsesByQID.map((response) => ({
         name: response.student.name,
+        className: `${response.student.subgrade.grade.label} ${response.student.subgrade.label}`,
         room: response.student.room,
         checkIn: response.checkIn,
         submittedAt: response.submittedAt,
@@ -852,11 +963,20 @@ export const questionRouter = createTRPCRouter({
           .reduce((curr, acc) => curr + acc, 0),
       }));
 
+      const sortedData = [...new Set(normalizedData.map((d) => d.className))]
+        .sort((l, r) => l.localeCompare(r))
+        .flatMap((className) =>
+          normalizedData
+            .filter((data) => data.className === className)
+            .sort((l, r) => l.name.localeCompare(r.name)),
+        );
+
       return {
         title: specificQuestion.title,
+        slug: specificQuestion.slug,
         choiceLength: specificQuestion.multipleChoices.length,
         essayLength: specificQuestion.essays.length,
-        data: normalizedData,
+        data: sortedData,
       };
     }),
 });
