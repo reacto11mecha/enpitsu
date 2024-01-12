@@ -526,9 +526,9 @@ export const Questions = ({ question }: Props) => {
                             <FormItem>
                               <FormLabel>Jawaban</FormLabel>
                               <FormControl>
-                                <Editor
-                                  value={field.value}
-                                  setValue={field.onChange}
+                                <Textarea
+                                  placeholder="Masukan jawaban benar disini"
+                                  {...field}
                                 />
                               </FormControl>
                               <FormMessage />

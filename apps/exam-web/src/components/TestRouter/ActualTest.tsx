@@ -377,8 +377,8 @@ const Test = ({ data, initialData }: Props) => {
         closeBadInternet={closeBadInternet}
       />
 
-      <header className="fixed inset-x-0 top-0 flex w-full justify-center border-solid">
-        <div className="flex h-full w-full flex-wrap items-center justify-between gap-4 border border-b bg-white p-2 px-5 dark:bg-stone-900 sm:justify-center">
+      <header className="fixed inset-x-0 top-0 z-50 flex w-full justify-center border-solid">
+        <div className="flex h-full w-full flex-wrap items-center justify-center gap-2 border border-b bg-white p-2 px-5 dark:bg-stone-900 sm:justify-center sm:gap-4 md:justify-between">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

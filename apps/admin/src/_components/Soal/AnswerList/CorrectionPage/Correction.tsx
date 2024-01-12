@@ -176,7 +176,7 @@ export const Correction = ({
                   >
                     {choice.options.map((option, idx) => (
                       <div
-                        className={`flex h-10 items-center space-x-3 rounded px-2 ${
+                        className={`min-h-10 flex items-center space-x-3 rounded px-2 py-3 ${
                           option.order === choice.correctAnswerOrder
                             ? "bg-green-500/40 dark:bg-green-700/30"
                             : choices.find((c) => c.choiceId === choice.iqid)!
