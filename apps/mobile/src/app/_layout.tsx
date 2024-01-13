@@ -13,8 +13,6 @@ import config from "../../tamagui.config";
 SplashScreen.preventAutoHideAsync();
 
 const RootLayout = () => {
-  const [token] = useAtom(studentTokenAtom);
-
   const [loaded] = useFonts({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     Inter: require("@tamagui/font-inter/otf/Inter-Medium.otf"),
@@ -32,13 +30,6 @@ const RootLayout = () => {
   if (!loaded) {
     return null;
   }
-
-  if (token === "")
-    return (
-      <TamaguiProvider config={config}>
-        <InsertToken />
-      </TamaguiProvider>
-    );
 
   return (
     <TRPCProvider>

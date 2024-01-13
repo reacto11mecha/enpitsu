@@ -1,6 +1,6 @@
-import { atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 
-export const studentTokenAtom = atom<string>("");
+export const studentTokenAtom = atomWithStorage<string>("token", "");
 
 export interface TStudentAnswer {
   slug: string;
@@ -16,4 +16,7 @@ export interface TStudentAnswer {
   }[];
 }
 
-export const studentAnswerAtom = atom<TStudentAnswer[]>([]);
+export const studentAnswerAtom = atomWithStorage<TStudentAnswer[]>(
+  "studentAnswer",
+  [],
+);

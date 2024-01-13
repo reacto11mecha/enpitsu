@@ -51,10 +51,8 @@ const getBaseUrl = () => {
 export function TRPCProvider(props: { children: React.ReactNode }) {
   const [token] = useAtom(studentTokenAtom);
 
-  console.log(token);
-
   const [queryClient] = React.useState(() => new QueryClient());
-  const [trpcClient] = React.useState(() =>
+  const [trpcClient, setNewClient] = React.useState(() =>
     api.createClient({
       transformer: superjson,
       links: [
@@ -70,6 +68,10 @@ export function TRPCProvider(props: { children: React.ReactNode }) {
       ],
     }),
   );
+
+  React.useEffect(() => {
+    console.log(trpcClient);
+  }, [token]);
 
   return (
     <api.Provider client={trpcClient} queryClient={queryClient}>

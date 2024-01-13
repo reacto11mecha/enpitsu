@@ -1,6 +1,5 @@
 import React from "react";
 import { SafeAreaView } from "react-native";
-import { useAtom } from "jotai";
 import {
   Button,
   Card,
@@ -12,11 +11,9 @@ import {
   YStack,
 } from "tamagui";
 
-import { InsertToken } from "~/components/insert-token";
 import { api } from "~/lib/api";
-import { studentTokenAtom } from "~/lib/atom";
 
-const ActualIndex = () => {
+const Index = () => {
   const studentQuery = api.exam.getStudent.useQuery(undefined, {
     onError(error) {
       // toast({
@@ -69,14 +66,6 @@ const ActualIndex = () => {
       </YStack>
     </SafeAreaView>
   );
-};
-
-const Index = () => {
-  const [token] = useAtom(studentTokenAtom);
-
-  if (token === "") return <InsertToken />;
-
-  return <ActualIndex />;
 };
 
 export default Index;
