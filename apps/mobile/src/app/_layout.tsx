@@ -1,13 +1,14 @@
 import React, { useEffect } from "react";
 import { useFonts } from "expo-font";
-import { Slot, SplashScreen } from "expo-router";
+import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useAtom } from "jotai";
+import {
+  SpaceMono_400Regular,
+  SpaceMono_700Bold,
+} from "@expo-google-fonts/space-mono";
 import { TamaguiProvider } from "tamagui";
 
-import { InsertToken } from "~/components/insert-token";
 import { TRPCProvider } from "~/lib/api";
-import { studentTokenAtom } from "~/lib/atom";
 import config from "../../tamagui.config";
 
 SplashScreen.preventAutoHideAsync();
@@ -19,6 +20,8 @@ const RootLayout = () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     InterBold: require("@tamagui/font-inter/otf/Inter-Bold.otf"),
+
+    SpaceMono_400Regular,
   });
 
   useEffect(() => {
@@ -35,7 +38,7 @@ const RootLayout = () => {
     <TRPCProvider>
       <TamaguiProvider config={config}>
         <StatusBar style="dark" />
-        <Slot />
+        <Stack />
       </TamaguiProvider>
     </TRPCProvider>
   );

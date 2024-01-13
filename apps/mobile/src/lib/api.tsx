@@ -4,7 +4,7 @@ import type { AppRouter } from "@enpitsu/api";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
-import { useAtom } from "jotai";
+import { useAtomCallback } from "jotai/utils";
 import superjson from "superjson";
 
 import { studentTokenAtom } from "~/lib/atom";
@@ -49,29 +49,33 @@ const getBaseUrl = () => {
  */
 
 export function TRPCProvider(props: { children: React.ReactNode }) {
-  const [token] = useAtom(studentTokenAtom);
+  const getHeaders = useAtomCallback(
+    React.useCallback((get) => {
+      const token = get(studentTokenAtom);
 
-  const [queryClient] = React.useState(() => new QueryClient());
-  const [trpcClient, setNewClient] = React.useState(() =>
-    api.createClient({
-      transformer: superjson,
-      links: [
-        httpBatchLink({
-          url: `${getBaseUrl()}/api/trpc`,
-          headers() {
-            const headers = new Map<string, string>();
-            headers.set("x-trpc-source", "expo-react");
-            headers.set("authorization", `Student ${token}`);
-            return Object.fromEntries(headers);
-          },
-        }),
-      ],
-    }),
+      const headers = new Map<string, string>();
+
+      headers.set("x-trpc-source", "expo-react");
+      headers.set("authorization", `Student ${token}`);
+
+      return Object.fromEntries(headers);
+    }, []),
   );
 
-  React.useEffect(() => {
-    console.log(trpcClient);
-  }, [token]);
+  const [queryClient] = React.useState(() => new QueryClient());
+  const trpcClient = React.useMemo(
+    () =>
+      api.createClient({
+        transformer: superjson,
+        links: [
+          httpBatchLink({
+            url: `${getBaseUrl()}/api/trpc`,
+            headers: getHeaders,
+          }),
+        ],
+      }),
+    [getHeaders],
+  );
 
   return (
     <api.Provider client={trpcClient} queryClient={queryClient}>

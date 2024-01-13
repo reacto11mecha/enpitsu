@@ -74,6 +74,7 @@ export const InsertToken = () => {
                     <Input
                       w="100%"
                       placeholder="ABC12XX"
+                      fontFamily={"SpaceMono_400Regular"}
                       onBlur={onBlur}
                       onChangeText={(val) =>
                         val.trim().length <= 8 &&
