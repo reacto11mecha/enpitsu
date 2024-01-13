@@ -78,9 +78,7 @@
       "indexes": {
         "userId_idx": {
           "name": "userId_idx",
-          "columns": [
-            "userId"
-          ],
+          "columns": ["userId"],
           "isUnique": false
         }
       },
@@ -88,10 +86,7 @@
       "compositePrimaryKeys": {
         "enpitsu_account_provider_providerAccountId_pk": {
           "name": "enpitsu_account_provider_providerAccountId_pk",
-          "columns": [
-            "provider",
-            "providerAccountId"
-          ]
+          "columns": ["provider", "providerAccountId"]
         }
       },
       "uniqueConstraints": {}
@@ -122,9 +117,7 @@
       "indexes": {
         "userId_idx": {
           "name": "userId_idx",
-          "columns": [
-            "userId"
-          ],
+          "columns": ["userId"],
           "isUnique": false
         }
       },
@@ -245,9 +238,7 @@
       "indexes": {
         "token_idx": {
           "name": "token_idx",
-          "columns": [
-            "token"
-          ],
+          "columns": ["token"],
           "isUnique": true
         }
       },
@@ -256,12 +247,8 @@
           "name": "enpitsu_student_subgrade_id_enpitsu_subgrade_id_fk",
           "tableFrom": "enpitsu_student",
           "tableTo": "enpitsu_subgrade",
-          "columnsFrom": [
-            "subgrade_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["subgrade_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -326,12 +313,8 @@
           "name": "enpitsu_allowList_question_id_enpitsu_question_id_fk",
           "tableFrom": "enpitsu_allowList",
           "tableTo": "enpitsu_question",
-          "columnsFrom": [
-            "question_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["question_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -339,12 +322,8 @@
           "name": "enpitsu_allowList_subgrade_id_enpitsu_subgrade_id_fk",
           "tableFrom": "enpitsu_allowList",
           "tableTo": "enpitsu_subgrade",
-          "columnsFrom": [
-            "subgrade_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["subgrade_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -394,12 +373,8 @@
           "name": "enpitsu_essay_question_id_enpitsu_question_id_fk",
           "tableFrom": "enpitsu_essay",
           "tableTo": "enpitsu_question",
-          "columnsFrom": [
-            "question_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["question_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -448,12 +423,8 @@
           "name": "enpitsu_multipleChoice_question_id_enpitsu_question_id_fk",
           "tableFrom": "enpitsu_multipleChoice",
           "tableTo": "enpitsu_question",
-          "columnsFrom": [
-            "question_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["question_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -505,9 +476,7 @@
       "indexes": {
         "slug_idx": {
           "name": "slug_idx",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": true
         }
       },
@@ -550,12 +519,8 @@
           "name": "enpitsu_studentBlocklist_question_id_enpitsu_question_id_fk",
           "tableFrom": "enpitsu_studentBlocklist",
           "tableTo": "enpitsu_question",
-          "columnsFrom": [
-            "question_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["question_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -563,12 +528,8 @@
           "name": "enpitsu_studentBlocklist_student_id_enpitsu_student_id_fk",
           "tableFrom": "enpitsu_studentBlocklist",
           "tableTo": "enpitsu_student",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["student_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -612,12 +573,8 @@
           "name": "enpitsu_studentResponChoice_respond_id_enpitsu_studentRespond_id_fk",
           "tableFrom": "enpitsu_studentResponChoice",
           "tableTo": "enpitsu_studentRespond",
-          "columnsFrom": [
-            "respond_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["respond_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -625,12 +582,8 @@
           "name": "enpitsu_studentResponChoice_choice_id_enpitsu_multipleChoice_id_fk",
           "tableFrom": "enpitsu_studentResponChoice",
           "tableTo": "enpitsu_multipleChoice",
-          "columnsFrom": [
-            "choice_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["choice_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -679,12 +632,8 @@
           "name": "enpitsu_studentRespondEssay_respond_id_enpitsu_studentRespond_id_fk",
           "tableFrom": "enpitsu_studentRespondEssay",
           "tableTo": "enpitsu_studentRespond",
-          "columnsFrom": [
-            "respond_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["respond_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -692,12 +641,8 @@
           "name": "enpitsu_studentRespondEssay_essay_id_enpitsu_essay_id_fk",
           "tableFrom": "enpitsu_studentRespondEssay",
           "tableTo": "enpitsu_essay",
-          "columnsFrom": [
-            "essay_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["essay_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -746,12 +691,8 @@
           "name": "enpitsu_studentRespond_question_id_enpitsu_question_id_fk",
           "tableFrom": "enpitsu_studentRespond",
           "tableTo": "enpitsu_question",
-          "columnsFrom": [
-            "question_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["question_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -759,12 +700,8 @@
           "name": "enpitsu_studentRespond_student_id_enpitsu_student_id_fk",
           "tableFrom": "enpitsu_studentRespond",
           "tableTo": "enpitsu_student",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["student_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }

@@ -1,9 +1,14 @@
 import React from "react";
-import { Button, SafeAreaView, Text, View } from "react-native";
-import { useColorScheme } from "nativewind";
+import {
+  // Button,
+  SafeAreaView, // Text,
+  View,
+} from "react-native";
+
+// import { useColorScheme } from "nativewind";
 
 const Index = () => {
-  const { colorScheme, toggleColorScheme } = useColorScheme();
+  // const { colorScheme, toggleColorScheme } = useColorScheme();
 
   return (
     <SafeAreaView>

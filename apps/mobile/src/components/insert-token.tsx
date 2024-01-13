@@ -1,20 +1,13 @@
-import {
-  Alert,
-  Button,
-  SafeAreaView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Button, SafeAreaView, Text, TextInput, View } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useAtom } from "jotai";
+// import { useAtom } from "jotai";
 import { Controller, useForm } from "react-hook-form";
 
-import { studentTokenAtom } from "~/lib/atom";
+// import { studentTokenAtom } from "~/lib/atom";
 
 export const InsertToken = () => {
-  const [token, setToken] = useAtom(studentTokenAtom);
+  // const [token, setToken] = useAtom(studentTokenAtom);
 
   const {
     control,
@@ -25,7 +18,7 @@ export const InsertToken = () => {
       token: "",
     },
   });
-  const onSubmit = (data) => console.log(data);
+  const onSubmit = (data: { token: string }) => console.log(data);
 
   return (
     <>
