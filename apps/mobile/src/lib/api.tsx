@@ -4,7 +4,10 @@ import type { AppRouter } from "@enpitsu/api";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
+import { useAtom } from "jotai";
 import superjson from "superjson";
+
+import { studentTokenAtom } from "~/lib/atom";
 
 /**
  * A set of typesafe hooks for consuming your API.
@@ -26,6 +29,8 @@ const getBaseUrl = () => {
    * baseUrl to your production API URL.
    */
 
+  return "http://192.168.100.2:3000";
+
   const debuggerHost = Constants.expoConfig?.hostUri;
   const localhost = debuggerHost?.split(":")[0];
 
@@ -44,6 +49,10 @@ const getBaseUrl = () => {
  */
 
 export function TRPCProvider(props: { children: React.ReactNode }) {
+  const [token] = useAtom(studentTokenAtom);
+
+  console.log(token);
+
   const [queryClient] = React.useState(() => new QueryClient());
   const [trpcClient] = React.useState(() =>
     api.createClient({
@@ -54,6 +63,7 @@ export function TRPCProvider(props: { children: React.ReactNode }) {
           headers() {
             const headers = new Map<string, string>();
             headers.set("x-trpc-source", "expo-react");
+            headers.set("authorization", `Student ${token}`);
             return Object.fromEntries(headers);
           },
         }),

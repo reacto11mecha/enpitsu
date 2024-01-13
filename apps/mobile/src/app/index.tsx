@@ -1,18 +1,69 @@
 import React from "react";
+import { SafeAreaView } from "react-native";
 import {
-  // Button,
-  SafeAreaView, // Text,
-  View,
-} from "react-native";
+  Button,
+  Card,
+  H3,
+  Input,
+  Paragraph,
+  Spinner,
+  Text,
+  YStack,
+} from "tamagui";
 
-// import { useColorScheme } from "nativewind";
+import { api } from "~/lib/api";
 
 const Index = () => {
-  // const { colorScheme, toggleColorScheme } = useColorScheme();
+  const studentQuery = api.exam.getStudent.useQuery(undefined, {
+    onError(error) {
+      // toast({
+      //   duration: 9500,
+      //   variant: "destructive",
+      //   title: "Gagal mengambil data pribadi",
+      //   description: `Operasi mengambil data gagal, mohon coba lagi. Error: ${error.message === "Failed to fetch"
+      //     ? "Gagal meraih server"
+      //     : error.message
+      //     }`,
+      // });
+
+      console.log(error);
+    },
+  });
 
   return (
     <SafeAreaView>
-      <View className="flex h-full w-full items-center justify-center"></View>
+      <YStack h="100%" d="flex" jc="center" px={20}>
+        <Card elevate>
+          <Card.Header>
+            <YStack>
+              <YStack>
+                <H3>Sebelum Mengerjakan,</H3>
+
+                <Text>
+                  Pastikan identitas anda sudah benar dan sesuai dengan yang
+                  tertera pada kartu ujian.
+                </Text>
+              </YStack>
+
+              <YStack>
+                {studentQuery.isError ? (
+                  <></>
+                ) : (
+                  <>{studentQuery.isLoading ? <Spinner /> : <></>}</>
+                )}
+              </YStack>
+            </YStack>
+          </Card.Header>
+          <Card.Footer
+            px={15}
+            pb={20}
+            width="100%"
+            d="flex"
+            fd="col"
+            gap={10}
+          ></Card.Footer>
+        </Card>
+      </YStack>
     </SafeAreaView>
   );
 };

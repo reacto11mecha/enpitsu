@@ -1,34 +1,51 @@
-import React from "react";
-import { Stack } from "expo-router";
+import React, { useEffect } from "react";
+import { useFonts } from "expo-font";
+import { Slot, SplashScreen } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useAtom } from "jotai";
-import { useColorScheme } from "nativewind";
+import { TamaguiProvider } from "tamagui";
 
 import { InsertToken } from "~/components/insert-token";
 import { TRPCProvider } from "~/lib/api";
 import { studentTokenAtom } from "~/lib/atom";
+import config from "../../tamagui.config";
 
-import "../styles.css";
+SplashScreen.preventAutoHideAsync();
 
-// This is the main layout of t
 const RootLayout = () => {
-  const { colorScheme } = useColorScheme();
-
   const [token] = useAtom(studentTokenAtom);
 
-  if (token === "") return <InsertToken />;
+  const [loaded] = useFonts({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    Inter: require("@tamagui/font-inter/otf/Inter-Medium.otf"),
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    InterBold: require("@tamagui/font-inter/otf/Inter-Bold.otf"),
+  });
+
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
+
+  if (!loaded) {
+    return null;
+  }
+
+  if (token === "")
+    return (
+      <TamaguiProvider config={config}>
+        <InsertToken />
+      </TamaguiProvider>
+    );
 
   return (
     <TRPCProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: {
-            backgroundColor: colorScheme === "dark" ? "#0c0a09" : "#f5f5f4",
-          },
-        }}
-      />
-      <StatusBar />
+      <TamaguiProvider config={config}>
+        <StatusBar style="dark" />
+        <Slot />
+      </TamaguiProvider>
     </TRPCProvider>
   );
 };

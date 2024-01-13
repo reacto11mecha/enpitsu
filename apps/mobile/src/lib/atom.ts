@@ -1,6 +1,6 @@
 import { atom } from "jotai";
 
-export const studentTokenAtom = atom("");
+export const studentTokenAtom = atom<string>("");
 
 export interface TStudentAnswer {
   slug: string;

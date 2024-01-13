@@ -8,6 +8,15 @@ module.exports = function (api) {
       "nativewind/babel",
     ],
     plugins: [
+      "transform-inline-environment-variables",
+      [
+        "@tamagui/babel-plugin",
+        {
+          components: ["tamagui"],
+          config: "./tamagui.config.ts",
+          logTimings: true,
+        },
+      ],
       require.resolve("expo-router/babel"),
       require.resolve("react-native-reanimated/plugin"),
     ],
