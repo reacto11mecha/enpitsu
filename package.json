@@ -11,6 +11,7 @@
     "clean:workspaces": "turbo clean",
     "postinstall": "pnpm lint:ws",
     "db:push": "pnpm -F db push",
+    "db:generate": "pnpm -F db generate",
     "db:studio": "pnpm -F db studio",
     "dev": "turbo dev --parallel",
     "dev:admin": "turbo dev --scope admin",

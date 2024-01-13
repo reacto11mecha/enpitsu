@@ -11,7 +11,7 @@ if (!process.env.DATABASE_URL) {
 
 export default {
   schema: "./schema",
-  out: "./out",
+  out: "../db-migrate/migrations",
   driver: "pg",
   dbCredentials: {
     connectionString: process.env.DATABASE_URL,

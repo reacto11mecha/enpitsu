@@ -1,33 +1,42 @@
 {
-  "name": "@enpitsu/db",
+  "name": "@enpitsu/db-migrate",
   "version": "0.1.0",
   "private": true,
-  "main": "./index.ts",
-  "types": "./index.ts",
+  "type": "module",
+  "files": [
+    "dist",
+    "migrations/**"
+  ],
+  "bin": {
+    "db-migrate": "./dist/index.js"
+  },
   "license": "MIT",
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
     "lint": "eslint .",
-    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "format": "prettier --check \"**/*.{mjs,ts,md,json}\"",
     "push": "drizzle-kit push:pg",
     "generate": "drizzle-kit generate:pg",
+    "build": "tsup src/index.ts --format esm",
+    "migrate": "pnpm with-env tsx migrate/index.mts",
     "studio": "drizzle-kit studio",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
     "drizzle-orm": "^0.29.1",
-    "pg": "^8.11.3",
     "postgres": "^3.4.3"
   },
   "devDependencies": {
     "@enpitsu/eslint-config": "workspace:^0.2.0",
     "@enpitsu/prettier-config": "workspace:^0.1.0",
-    "@enpitsu/token-generator": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
     "dotenv-cli": "^7.3.0",
     "drizzle-kit": "^0.20.6",
     "eslint": "^8.55.0",
     "prettier": "^3.1.0",
+    "pg": "^8.11.3",
+    "tsup": "^8.0.1",
     "typescript": "^5.3.3"
   },
   "eslintConfig": {
