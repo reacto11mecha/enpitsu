@@ -1,6 +1,7 @@
 import React from "react";
 import { SafeAreaView, ToastAndroid } from "react-native";
 import { Link, Stack } from "expo-router";
+import { Settings as SettingsIcon } from "@tamagui/lucide-icons";
 import { useAtom } from "jotai";
 import {
   Button,
@@ -13,11 +14,25 @@ import {
   YStack,
 } from "tamagui";
 
+import { ScanOrInputQuestionSlug } from "~/components/IndexRouter/ScanOrInputQuestionSlug";
 import { api } from "~/lib/api";
 import { studentTokenAtom } from "~/lib/atom";
 
+const getState = (statusCode: string) => {
+  switch (statusCode) {
+    case "NOT_FOUND":
+    default:
+      return "Mohon perbaiki token anda di halaman pengaturan.";
+  }
+};
+
 const Index = () => {
   const [token] = useAtom(studentTokenAtom);
+
+  const [isCorrect, setCorrect] = React.useState(false);
+
+  const closeQuestionScan = React.useCallback(() => setCorrect(false), []);
+
   const studentQuery = api.exam.getStudent.useQuery(undefined, {
     onError(error) {
       if (error.data?.code === "UNAUTHORIZED" && token === "") {
@@ -27,8 +42,13 @@ const Index = () => {
           ToastAndroid.CENTER,
         );
       }
+
+      setCorrect(false);
     },
   });
+
+  if (!studentQuery.isError && isCorrect)
+    return <ScanOrInputQuestionSlug closeScanner={closeQuestionScan} />;
 
   return (
     <>
@@ -48,12 +68,22 @@ const Index = () => {
                 </YStack>
 
                 <YStack>
-                  {studentQuery.isError ? (
-                    <></>
+                  {studentQuery.isRefetching || studentQuery.isLoading ? (
+                    <Spinner size="large" />
                   ) : (
                     <>
-                      {studentQuery.isLoading ? (
-                        <Spinner size="large" />
+                      {studentQuery.isError ? (
+                        <YStack gap={10}>
+                          <Text color="red">
+                            Terjadi kesalahan, {studentQuery.error.message}{" "}
+                            {getState(studentQuery.error.data!.code)}
+                          </Text>
+                          <YStack>
+                            <Link href="/settings/" asChild>
+                              <Button icon={<SettingsIcon size={20} />} />
+                            </Link>
+                          </YStack>
+                        </YStack>
                       ) : (
                         <YStack gap={10}>
                           <YStack>
@@ -86,11 +116,16 @@ const Index = () => {
                             </XStack>
                           </YStack>
                           <YStack>
-                            <XStack gap={3}>
+                            <XStack gap={3} w="100%">
                               <Link href="/settings/" asChild>
-                                <Button>Pengaturan</Button>
+                                <Button
+                                  icon={<SettingsIcon size={20} />}
+                                  w="15%"
+                                />
                               </Link>
-                              <Button>Ya, sudah benar</Button>
+                              <Button w="85%" onPress={() => setCorrect(true)}>
+                                Ya, sudah benar
+                              </Button>
                             </XStack>
                           </YStack>
                         </YStack>
