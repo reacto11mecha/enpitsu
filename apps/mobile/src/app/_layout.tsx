@@ -2,10 +2,7 @@ import React, { useEffect } from "react";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import {
-  SpaceMono_400Regular,
-  SpaceMono_700Bold,
-} from "@expo-google-fonts/space-mono";
+import { SpaceMono_400Regular } from "@expo-google-fonts/space-mono";
 import { TamaguiProvider } from "tamagui";
 
 import { TRPCProvider } from "~/lib/api";
