@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Manrope as FontSans } from "next/font/google";
 import { redirect } from "next/navigation";
-import { auth } from "@enpitsu/auth";
+import { Button } from "@/components/ui/button";
+import { auth, signOut } from "@enpitsu/auth";
 
 import "~/styles/globals.css";
 
@@ -27,7 +28,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
 
   if (!session) return redirect("/login");
 
-  if (!session.accountAllowed)
+  if (!session.emailVerified)
     return (
       <html lang="en">
         <body
@@ -48,8 +49,22 @@ export default async function Layout(props: { children: React.ReactNode }) {
               </h2>
               <p className="text-center leading-7 [&:not(:first-child)]:mt-6">
                 Anda belum terverifikasi oleh tim IT, mohon hubungi orang yang
-                bersangkutan supaya anda bisa mengakses dashboard admin.
+                bersangkutan supaya anda bisa mengakses dashboard admin. Jika
+                ini salah maka keluar dan login kembali.
               </p>
+
+              <form
+                className="mt-2 flex w-full justify-center"
+                action={async () => {
+                  "use server";
+
+                  await signOut();
+                }}
+              >
+                <Button variant="outline" className="md:text-lg">
+                  Keluar
+                </Button>
+              </form>
             </div>
           </ThemeProvider>
           <Toaster />
