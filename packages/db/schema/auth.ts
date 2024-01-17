@@ -19,7 +19,7 @@ export const users = myPgTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
   name: varchar("name", { length: 255 }),
   email: varchar("email", { length: 255 }).notNull(),
-  accountAllowed: timestamp("accountAllowed", {
+  emailVerified: timestamp("emailVerified", {
     mode: "date",
   }),
   role: roleEnum("role").default("user").notNull(),
