@@ -27,6 +27,36 @@ export default async function Layout(props: { children: React.ReactNode }) {
 
   if (!session) return redirect("/login");
 
+  if (!session.accountAllowed)
+    return (
+      <html lang="en">
+        <body
+          className={cn(
+            "bg-background min-h-screen font-sans antialiased",
+            fontSans.variable,
+          )}
+        >
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="flex h-screen flex-col items-center justify-center p-2">
+              <h2 className="scroll-m-20 pb-2 text-center text-3xl font-semibold tracking-tight first:mt-0">
+                Anda Tidak Terverifikasi
+              </h2>
+              <p className="text-center leading-7 [&:not(:first-child)]:mt-6">
+                Anda belum terverifikasi oleh tim IT, mohon hubungi orang yang
+                bersangkutan supaya anda bisa mengakses dashboard admin.
+              </p>
+            </div>
+          </ThemeProvider>
+          <Toaster />
+        </body>
+      </html>
+    );
+
   return (
     <html lang="en">
       <body
