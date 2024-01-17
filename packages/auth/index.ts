@@ -21,6 +21,7 @@ declare module "next-auth" {
     user: {
       id: string;
       emailVerified: Date | null;
+      role: "admin" | "user";
     } & DefaultSession["user"];
   }
 }
@@ -54,6 +55,7 @@ export const {
         ...session.user,
         id: user.id,
         role: user.role,
+        emailVerified: user.emailVerified,
       },
     }),
   },

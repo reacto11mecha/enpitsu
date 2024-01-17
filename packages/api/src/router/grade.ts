@@ -1,14 +1,12 @@
 import { asc, eq, schema } from "@enpitsu/db";
 import { z } from "zod";
 
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { adminProcedure, createTRPCRouter } from "../trpc";
 
 export const gradeRouter = createTRPCRouter({
-  getGrades: protectedProcedure.query(({ ctx }) =>
-    ctx.db.query.grades.findMany(),
-  ),
+  getGrades: adminProcedure.query(({ ctx }) => ctx.db.query.grades.findMany()),
 
-  getSubgrades: protectedProcedure
+  getSubgrades: adminProcedure
     .input(
       z.object({
         gradeId: z.number(),
@@ -24,7 +22,7 @@ export const gradeRouter = createTRPCRouter({
       }),
     ),
 
-  getStudents: protectedProcedure
+  getStudents: adminProcedure
     .input(z.object({ subgradeId: z.number() }))
     .query(({ ctx, input }) =>
       ctx.db.query.students.findMany({
@@ -33,19 +31,19 @@ export const gradeRouter = createTRPCRouter({
       }),
     ),
 
-  getSubgrade: protectedProcedure.input(z.number()).query(({ ctx, input }) =>
+  getSubgrade: adminProcedure.input(z.number()).query(({ ctx, input }) =>
     ctx.db.query.subGrades.findFirst({
       where: eq(schema.subGrades.id, input),
     }),
   ),
 
-  createGrade: protectedProcedure
+  createGrade: adminProcedure
     .input(z.object({ label: z.string() }))
     .mutation(({ ctx, input }) => {
       return ctx.db.insert(schema.grades).values(input);
     }),
 
-  createSubgrade: protectedProcedure
+  createSubgrade: adminProcedure
     .input(
       z.object({
         gradeId: z.number(),
@@ -56,7 +54,7 @@ export const gradeRouter = createTRPCRouter({
       return ctx.db.insert(schema.subGrades).values(input);
     }),
 
-  createStudent: protectedProcedure
+  createStudent: adminProcedure
     .input(
       z.object({
         name: z.string(),
@@ -69,7 +67,7 @@ export const gradeRouter = createTRPCRouter({
       return ctx.db.insert(schema.students).values(input);
     }),
 
-  createStudentMany: protectedProcedure
+  createStudentMany: adminProcedure
     .input(
       z.array(
         z.object({
@@ -84,7 +82,7 @@ export const gradeRouter = createTRPCRouter({
       return ctx.db.insert(schema.students).values(input);
     }),
 
-  updateSubgrade: protectedProcedure
+  updateSubgrade: adminProcedure
     .input(
       z.object({
         id: z.number(),
@@ -98,7 +96,7 @@ export const gradeRouter = createTRPCRouter({
         .where(eq(schema.subGrades.id, input.id));
     }),
 
-  updateStudent: protectedProcedure
+  updateStudent: adminProcedure
     .input(
       z.object({
         id: z.number(),
@@ -118,7 +116,7 @@ export const gradeRouter = createTRPCRouter({
         .where(eq(schema.students.id, input.id));
     }),
 
-  deleteGrade: protectedProcedure
+  deleteGrade: adminProcedure
     .input(z.number())
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.transaction(async (tx) => {
@@ -144,7 +142,7 @@ export const gradeRouter = createTRPCRouter({
       });
     }),
 
-  deleteSubgrade: protectedProcedure
+  deleteSubgrade: adminProcedure
     .input(z.number())
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.transaction(async (tx) => {
@@ -158,7 +156,7 @@ export const gradeRouter = createTRPCRouter({
       });
     }),
 
-  deleteStudent: protectedProcedure
+  deleteStudent: adminProcedure
     .input(z.number())
     .mutation(async ({ ctx, input }) => {
       return ctx.db

@@ -28,7 +28,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
 
   if (!session) return redirect("/login");
 
-  if (!session.emailVerified)
+  if (!session.user.emailVerified)
     return (
       <html lang="en">
         <body
@@ -45,16 +45,17 @@ export default async function Layout(props: { children: React.ReactNode }) {
           >
             <div className="flex h-screen flex-col items-center justify-center p-2">
               <h2 className="scroll-m-20 pb-2 text-center text-3xl font-semibold tracking-tight first:mt-0">
-                Anda Tidak Terverifikasi
+                Anda Belum Terverifikasi
               </h2>
-              <p className="text-center leading-7 [&:not(:first-child)]:mt-6">
+              <p className="text-center leading-7 sm:w-[95%] md:w-[50%] [&:not(:first-child)]:mt-6">
                 Anda belum terverifikasi oleh tim IT, mohon hubungi orang yang
                 bersangkutan supaya anda bisa mengakses dashboard admin. Jika
-                ini salah maka keluar dan login kembali.
+                ini sudah terverifikasi maka refresh halaman ini atau keluar dan
+                login kembali.
               </p>
 
               <form
-                className="mt-2 flex w-full justify-center"
+                className="mt-5 flex w-full justify-center"
                 action={async () => {
                   "use server";
 

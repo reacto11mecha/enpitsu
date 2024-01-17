@@ -38,6 +38,10 @@ export const questionRouter = createTRPCRouter({
           },
         },
       },
+      where:
+        ctx.session.user.role !== "admin"
+          ? eq(schema.questions.authorId, ctx.session.user.id)
+          : undefined,
     }),
   ),
 
