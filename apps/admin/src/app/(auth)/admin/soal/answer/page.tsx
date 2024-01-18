@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { auth } from "@enpitsu/auth";
 import { count, db, schema } from "@enpitsu/db";
 
 import { DataTable } from "~/_components/Soal/AggregateAnswersStudent";
@@ -9,6 +10,10 @@ export default async function AggregateAnswersStudent() {
     .from(schema.subGrades);
 
   if (subgradeCount.at(0)!.value < 1) return redirect("/admin/baru");
+
+  const session = await auth();
+
+  if (session.user.role !== "admin") return redirect("/admin/soal");
 
   return (
     <div className="mt-5 flex flex-col gap-7 px-5 py-5 md:items-center">

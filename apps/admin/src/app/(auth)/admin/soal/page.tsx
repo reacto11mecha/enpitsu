@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { auth } from "@enpitsu/auth";
 import { count, db, schema } from "@enpitsu/db";
 
 import { DataTable } from "~/_components/Soal/DataTable";
 
 export default async function QuestionPage() {
+  const session = await auth();
+
   const subgradeCount = await db
     .select({ value: count() })
     .from(schema.subGrades);
@@ -27,9 +30,13 @@ export default async function QuestionPage() {
             </h4>
             <p className="text-muted-foreground">
               Tidak bisa membuat soal baru, belum ada{" "}
-              <Link className="underline" href="/admin/angkatan">
-                data angkatan atau rombongan belajarnya
-              </Link>
+              {session.user.role === "admin" ? (
+                <Link className="underline" href="/admin/angkatan">
+                  data angkatan atau rombongan belajarnya
+                </Link>
+              ) : (
+                <>data angkatan atau rombel, mohon hubungi administrator</>
+              )}
               .
             </p>
           </div>
@@ -39,7 +46,7 @@ export default async function QuestionPage() {
           </h4>
         )}
 
-        <DataTable countValue={countValue} />
+        <DataTable countValue={countValue} currUserRole={session!.user.role} />
       </div>
     </div>
   );

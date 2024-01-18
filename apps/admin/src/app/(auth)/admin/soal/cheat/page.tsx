@@ -1,6 +1,13 @@
+import { redirect } from "next/navigation";
+import { auth } from "@enpitsu/auth";
+
 import { DataTable } from "~/_components/Soal/AggregateCheatedStudents";
 
-export default function AggregateListPage() {
+export default async function AggregateListPage() {
+  const session = await auth();
+
+  if (session.user.role !== "admin") return redirect("/admin/soal");
+
   return (
     <div className="mt-5 flex flex-col gap-7 px-5 py-5 md:items-center">
       <div className="w-full md:w-[85%]">

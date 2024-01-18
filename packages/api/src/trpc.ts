@@ -129,7 +129,10 @@ export const publicProcedure = t.procedure;
 const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
   if (!ctx.session?.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
+  } else if (!ctx.session.user.emailVerified) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
   }
+
   return next({
     ctx: {
       // infers the `session` as non-nullable
@@ -151,6 +154,8 @@ export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
 
 const enforceUserIsAuthedAsAdmin = t.middleware(({ ctx, next }) => {
   if (!ctx.session?.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  } else if (!ctx.session.user.emailVerified) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   } else if (ctx.session.user.role !== "admin") {
     throw new TRPCError({ code: "UNAUTHORIZED" });

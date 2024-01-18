@@ -275,7 +275,13 @@ export const columns: ColumnDef<QuestionList>[] = [
   },
 ];
 
-export function DataTable({ countValue }: { countValue: number }) {
+export function DataTable({
+  countValue,
+  currUserRole,
+}: {
+  countValue: number;
+  currUserRole: "admin" | "user";
+}) {
   const questionsQuery = api.question.getQuestions.useQuery(undefined);
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -314,18 +320,22 @@ export function DataTable({ countValue }: { countValue: number }) {
                 <PlusSquare className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild className="w-fit">
-              <Link href="/admin/soal/cheat">
-                Data Kecurangan
-                <UserRoundX className="ml-2 h-4 md:w-4" />
-              </Link>
-            </Button>
-            <Button asChild className="w-fit">
-              <Link href="/admin/soal/answer">
-                Data Jawaban
-                <ClipboardCheck className="ml-2 h-4 md:w-4" />
-              </Link>
-            </Button>
+            {currUserRole === "admin" ? (
+              <>
+                <Button asChild className="w-fit">
+                  <Link href="/admin/soal/cheat">
+                    Data Kecurangan
+                    <UserRoundX className="ml-2 h-4 md:w-4" />
+                  </Link>
+                </Button>
+                <Button asChild className="w-fit">
+                  <Link href="/admin/soal/answer">
+                    Data Jawaban
+                    <ClipboardCheck className="ml-2 h-4 md:w-4" />
+                  </Link>
+                </Button>
+              </>
+            ) : null}
           </>
         )}
       </div>

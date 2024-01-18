@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
-import { badgeVariants } from "@/components/ui/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

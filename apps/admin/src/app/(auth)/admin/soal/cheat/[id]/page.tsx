@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { auth } from "@enpitsu/auth";
 import { db, eq, schema } from "@enpitsu/db";
 
 import { DataTable } from "~/_components/Soal/CheatedList/DataTable";
@@ -21,6 +22,10 @@ export default async function CheatedListPage({
   });
 
   if (!question) return redirect("/admin/soal");
+
+  const session = await auth();
+
+  console.log(session);
 
   return (
     <div className="mt-5 flex flex-col gap-7 px-5 py-5 md:items-center">

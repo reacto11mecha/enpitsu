@@ -3,7 +3,7 @@ import { and, asc, eq, schema } from "@enpitsu/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { adminProcedure, createTRPCRouter, protectedProcedure } from "../trpc";
 import { compareTwoStringLikability } from "../utils";
 
 export const questionRouter = createTRPCRouter({
@@ -58,7 +58,7 @@ export const questionRouter = createTRPCRouter({
     }),
   ),
 
-  getStudentBlocklists: protectedProcedure.query(({ ctx }) =>
+  getStudentBlocklists: adminProcedure.query(({ ctx }) =>
     ctx.db.query.studentBlocklists.findMany({
       columns: {
         id: true,
@@ -137,7 +137,7 @@ export const questionRouter = createTRPCRouter({
       }),
     ),
 
-  getStudentAnswers: protectedProcedure.query(({ ctx }) =>
+  getStudentAnswers: adminProcedure.query(({ ctx }) =>
     ctx.db.query.studentResponds.findMany({
       columns: {
         id: true,
