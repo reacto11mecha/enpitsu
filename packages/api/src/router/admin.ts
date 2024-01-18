@@ -6,7 +6,7 @@ import { and, eq, not, schema, sql } from "@enpitsu/db";
 
 import { adminProcedure, createTRPCRouter } from "../trpc";
 
-export const questionRouter = createTRPCRouter({
+export const adminRouter = createTRPCRouter({
   getPendingUser: adminProcedure.query(({ ctx }) =>
     ctx.db.query.users.findMany({
       where: and(
