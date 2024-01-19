@@ -1,4 +1,4 @@
-import { PendingUser } from "~/_components/Admin/PendingUser";
+import { PendingUser } from "~/_components/Admin/PendingUser/index";
 
 export default function AdminPage() {
   return (

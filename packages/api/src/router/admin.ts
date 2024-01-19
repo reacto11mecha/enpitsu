@@ -38,6 +38,9 @@ export const adminRouter = createTRPCRouter({
         return tx.transaction(async (tx2) => {
           await tx2.delete(schema.users).where(eq(schema.users.id, input.id));
           await tx2
+            .delete(schema.sessions)
+            .where(eq(schema.sessions.userId, input.id));
+          await tx2
             .delete(schema.accounts)
             .where(eq(schema.accounts.userId, input.id));
         });

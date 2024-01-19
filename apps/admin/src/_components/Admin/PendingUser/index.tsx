@@ -1,22 +1,10 @@
 "use client";
 
 import { useState } from "react";
-// import { Space_Mono } from "next/font/google";
 // import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // import { badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-// import { Checkbox } from "@/components/ui/checkbox";
-// import {
-//     DropdownMenu,
-//     DropdownMenuCheckboxItem,
-//     DropdownMenuContent,
-//     DropdownMenuItem,
-//     DropdownMenuLabel,
-//     DropdownMenuSeparator,
-//     DropdownMenuTrigger,
-// } from "@/components/ui/dropdown-menu";
-// import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -33,12 +21,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useToast } from "@/components/ui/use-toast";
 import type { RouterOutputs } from "@enpitsu/api";
 import type {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
-  VisibilityState,
 } from "@tanstack/react-table";
 import {
   flexRender,
@@ -90,8 +78,60 @@ export const columns: ColumnDef<PendingUserList>[] = [
     ),
   },
   {
-    accessorKey: "role",
-    header: "Role Sebagai",
+    id: "accept",
+    enableHiding: false,
+    cell: ({ row }) => {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const { toast } = useToast();
+      const apiUtils = api.useUtils();
+
+      const acceptUserMutation = api.admin.acceptPendingUser.useMutation({
+        onSuccess() {
+          toast({
+            title: "Berhasil menerima pengguna baru!",
+            description: "Pengguna berhasil di approve.",
+          });
+        },
+        async onSettled() {
+          await apiUtils.admin.getPendingUser.invalidate();
+        },
+      });
+      const rejectUserMutation = api.admin.rejectPendingUser.useMutation({
+        onSuccess() {
+          toast({
+            title: "Berhasil menolak pengguna!",
+            description: "Pengguna berhasil dihapus.",
+          });
+        },
+        async onSettled() {
+          await apiUtils.admin.getPendingUser.invalidate();
+        },
+      });
+
+      return (
+        <div className="space-x-5">
+          <Button
+            disabled={
+              rejectUserMutation.isLoading || acceptUserMutation.isLoading
+            }
+          >
+            Terima
+          </Button>
+
+          <Button
+            variant="destructive"
+            disabled={
+              acceptUserMutation.isLoading || rejectUserMutation.isLoading
+            }
+            onClick={() => {
+              rejectUserMutation.mutate({ id: row.original.id });
+            }}
+          >
+            Tolak
+          </Button>
+        </div>
+      );
+    },
   },
 ];
 
@@ -100,7 +140,6 @@ export function PendingUser() {
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
@@ -112,13 +151,11 @@ export function PendingUser() {
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     initialState: { pagination: { pageSize: 20 } },
     state: {
       sorting,
       columnFilters,
-      columnVisibility,
       rowSelection,
     },
   });
@@ -207,12 +244,6 @@ export function PendingUser() {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex flex-1 flex-row items-center">
-          <p className="text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} dari{" "}
-            {table.getFilteredRowModel().rows.length} baris dipilih.
-          </p>
-        </div>
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Baris per halaman</p>

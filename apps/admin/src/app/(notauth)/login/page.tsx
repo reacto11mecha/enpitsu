@@ -1,27 +1,28 @@
-import { cache as ReactCache } from "react";
+// import { cache as ReactCache } from "react";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { auth, signIn } from "@enpitsu/auth";
-import { cache } from "@enpitsu/cache";
+// import { cache } from "@enpitsu/cache";
 import { FcGoogle } from "react-icons/fc";
 
 // Check every 30 sec
-export const revalidate = 40;
+// export const revalidate = 40;
 
-const getStatus = ReactCache(async () => {
-  try {
-    const status = await cache.get("login-status");
+// const getStatus = ReactCache(async () => {
+//   try {
+//     const status = await cache.get("login-status");
 
-    // This is true because it actually a success connection
-    return status ? (JSON.parse(status) as boolean) : true;
-  } catch (_) {
-    // Need to be false because you need to check the status of the redis instance
-    return false;
-  }
-});
+//     // This is true because it actually a success connection
+//     return status ? (JSON.parse(status) as boolean) : true;
+//   } catch (_) {
+//     // Need to be false because you need to check the status of the redis instance
+//     return false;
+//   }
+// });
 
 export default async function LoginPage() {
-  const isAllowed = await getStatus();
+  // const isAllowed = await getStatus();
+  const isAllowed = true;
 
   if (!isAllowed) {
     return (
