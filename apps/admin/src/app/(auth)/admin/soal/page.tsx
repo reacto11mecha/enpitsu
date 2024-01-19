@@ -30,7 +30,7 @@ export default async function QuestionPage() {
             </h4>
             <p className="text-muted-foreground">
               Tidak bisa membuat soal baru, belum ada{" "}
-              {session.user.role === "admin" ? (
+              {session!.user.role === "admin" ? (
                 <Link className="underline" href="/admin/angkatan">
                   data angkatan atau rombongan belajarnya
                 </Link>

@@ -72,10 +72,13 @@ export const adminRouter = createTRPCRouter({
             message: "Pengguna sudah di approve!",
           });
 
-        return await tx.update(schema.users).set({
-          emailVerified: new Date(),
-          role: input.role,
-        });
+        return await tx
+          .update(schema.users)
+          .set({
+            emailVerified: new Date(),
+            role: input.role,
+          })
+          .where(eq(schema.users.id, input.id));
       }),
     ),
 });

@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
-// import Link from "next/link";
+import { useCallback, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// import { badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -37,22 +35,15 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  // ArrowUpDown,
-  // ChevronDown,
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronsLeft,
   ChevronsRight,
-  // ClipboardCheck,
-  // LayoutList,
-  // MoreHorizontal,
-  // PencilLine,
-  // PlusSquare,
-  // Trash2,
-  // UserRoundX,
+  Loader2,
 } from "lucide-react";
 
 import { api } from "~/utils/api";
+import { AcceptUser } from "./AcceptUser";
 
 type PendingUserList = RouterOutputs["admin"]["getPendingUser"][number];
 
@@ -85,22 +76,52 @@ export const columns: ColumnDef<PendingUserList>[] = [
       const { toast } = useToast();
       const apiUtils = api.useUtils();
 
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [isOpen, setOpen] = useState(false);
+
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const toggleOpen = useCallback(() => setOpen((prev) => !prev), []);
+
       const acceptUserMutation = api.admin.acceptPendingUser.useMutation({
         onSuccess() {
           toast({
             title: "Berhasil menerima pengguna baru!",
             description: "Pengguna berhasil di approve.",
           });
+
+          toggleOpen();
+        },
+        onError(error) {
+          toast({
+            variant: "destructive",
+            title: "Operasi Gagal",
+            description: `Terjadi kesalahan, Error: ${error.message}`,
+          });
         },
         async onSettled() {
           await apiUtils.admin.getPendingUser.invalidate();
         },
       });
+
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const triggerAcceptCallback = useCallback(
+        (data: { role: "user" | "admin" }) =>
+          acceptUserMutation.mutate({ id: row.original.id, role: data.role }),
+        [acceptUserMutation, row.original.id],
+      );
+
       const rejectUserMutation = api.admin.rejectPendingUser.useMutation({
         onSuccess() {
           toast({
             title: "Berhasil menolak pengguna!",
             description: "Pengguna berhasil dihapus.",
+          });
+        },
+        onError(error) {
+          toast({
+            variant: "destructive",
+            title: "Operasi Gagal",
+            description: `Terjadi kesalahan, Error: ${error.message}`,
           });
         },
         async onSettled() {
@@ -110,13 +131,15 @@ export const columns: ColumnDef<PendingUserList>[] = [
 
       return (
         <div className="space-x-5">
-          <Button
-            disabled={
+          <AcceptUser
+            onSubmit={triggerAcceptCallback}
+            isOpen={isOpen}
+            toggleOpen={toggleOpen}
+            isDisabled={
               rejectUserMutation.isLoading || acceptUserMutation.isLoading
             }
-          >
-            Terima
-          </Button>
+            isLoading={acceptUserMutation.isLoading}
+          />
 
           <Button
             variant="destructive"
@@ -127,6 +150,9 @@ export const columns: ColumnDef<PendingUserList>[] = [
               rejectUserMutation.mutate({ id: row.original.id });
             }}
           >
+            {rejectUserMutation.isLoading ? (
+              <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
+            ) : null}
             Tolak
           </Button>
         </div>
