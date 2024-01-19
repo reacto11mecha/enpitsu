@@ -1,4 +1,4 @@
-import { cache } from "@enpitsu/cache";
+// import { cache } from "@enpitsu/cache";
 import { and, eq, not, schema, sql } from "@enpitsu/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -17,7 +17,7 @@ export const adminRouter = createTRPCRouter({
 
   rejectPendingUser: adminProcedure
     .input(z.object({ id: z.string() }))
-    .mutate(({ ctx, input }) =>
+    .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
         const specificUser = await tx.query.users.findFirst({
           where: eq(schema.users.id, input.id),
@@ -35,7 +35,12 @@ export const adminRouter = createTRPCRouter({
             message: "Pengguna sudah di approve!",
           });
 
-        return tx.delete(schema.users).where(eq(schema.users.id, input.id));
+        return tx.transaction(async (tx2) => {
+          await tx2.delete(schema.users).where(eq(schema.users.id, input.id));
+          await tx2
+            .delete(schema.accounts)
+            .where(eq(schema.accounts.userId, input.id));
+        });
       }),
     ),
 
@@ -43,11 +48,10 @@ export const adminRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        role: z.string,
         role: z.enum(["admin", "user"]),
       }),
     )
-    .mutate(({ ctx, input }) =>
+    .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
         const specificUser = await tx.query.users.findFirst({
           where: eq(schema.users.id, input.id),
