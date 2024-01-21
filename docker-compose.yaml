@@ -29,7 +29,7 @@ services:
 
   web:
     container_name: enpitsu_admin
-    image: rmecha/enpitsu:docker
+    image: rmecha/enpitsu:main
     restart: always
     environment:
       VIRTUAL_HOST: ${ENPITSU_VIRTUAL_HOST}
