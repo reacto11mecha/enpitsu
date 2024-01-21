@@ -1,4 +1,6 @@
+import { AllRegisteredUser } from "~/_components/Admin/AllRegisteredUser";
 import { PendingUser } from "~/_components/Admin/PendingUser/index";
+import { ToggleCanLogin } from "~/_components/Admin/ToggleCanLogin";
 
 export default function AdminPage() {
   return (
@@ -10,20 +12,22 @@ export default function AdminPage() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-5 pb-10">
-        <div className="flex flex-col gap-3">
-          <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
-            Menunggu Persetujuan
-          </h4>
+      <ToggleCanLogin />
 
-          <PendingUser />
-        </div>
+      <div className="flex flex-col gap-3">
+        <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+          Seluruh Pengguna
+        </h4>
 
-        <div className="flex flex-col gap-3">
-          <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
-            Seluruh Pengguna
-          </h4>
-        </div>
+        <AllRegisteredUser />
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+          Menunggu Persetujuan
+        </h4>
+
+        <PendingUser />
       </div>
     </div>
   );

@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { createContext, useCallback, useContext, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
-import { badgeVariants } from "@/components/ui/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -69,6 +69,8 @@ const MonoFont = Space_Mono({
   subsets: ["latin"],
 });
 
+const RoleContext = createContext("");
+
 export const columns: ColumnDef<BlocklistByQuestion>[] = [
   {
     accessorKey: "studentName",
@@ -115,15 +117,29 @@ export const columns: ColumnDef<BlocklistByQuestion>[] = [
   {
     accessorKey: "StudentClass",
     header: "Kelas Asal",
-    cell: ({ row }) => (
-      <Link
-        className={badgeVariants({ variant: "secondary" })}
-        href={`/admin/angkatan/${row.original.student.subgrade.id}/kelola/${row.original.student.subgrade.grade.id}`}
-      >
-        {row.original.student.subgrade.grade.label}{" "}
-        {row.original.student.subgrade.label}
-      </Link>
-    ),
+    cell: ({ row }) => {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const currentUserRole = useContext(RoleContext);
+
+      return (
+        <>
+          {currentUserRole === "admin" ? (
+            <Link
+              className={badgeVariants({ variant: "secondary" })}
+              href={`/admin/angkatan/${row.original.student.subgrade.id}/kelola/${row.original.student.subgrade.grade.id}`}
+            >
+              {row.original.student.subgrade.grade.label}{" "}
+              {row.original.student.subgrade.label}
+            </Link>
+          ) : (
+            <Badge variant="secondary">
+              {row.original.student.subgrade.grade.label}{" "}
+              {row.original.student.subgrade.label}
+            </Badge>
+          )}
+        </>
+      );
+    },
   },
   {
     id: "actions",
@@ -181,9 +197,11 @@ export const columns: ColumnDef<BlocklistByQuestion>[] = [
 export function DataTable({
   questionId,
   title,
+  currUserRole,
 }: {
   questionId: number;
   title: string;
+  currUserRole: "admin" | "user";
 }) {
   const specificAnswerByQuestionQuery =
     api.question.getStudentAnswersByQuestion.useQuery({
@@ -210,189 +228,191 @@ export function DataTable({
   });
 
   return (
-    <div className="w-full">
-      <p>Soal: {title}</p>
-      <div className="mt-2 flex flex-col gap-2 pb-4 md:flex-row md:items-center">
-        <RecalcEssayAnswer questionId={questionId} title={title} />
-        <SpecificExcelAnswerDownload questionId={questionId} title={title} />
+    <RoleContext.Provider value={currUserRole}>
+      <div className="w-full">
+        <p>Soal: {title}</p>
+        <div className="mt-2 flex flex-col gap-2 pb-4 md:flex-row md:items-center">
+          <RecalcEssayAnswer questionId={questionId} title={title} />
+          <SpecificExcelAnswerDownload questionId={questionId} title={title} />
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="md:ml-auto">
-              Kolom-Kolom <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="md:ml-auto">
+                Kolom-Kolom <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
                   return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
                   );
                 })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {specificAnswerByQuestionQuery.isError ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Error: {specificAnswerByQuestionQuery.error.message}
-                </TableCell>
-              </TableRow>
-            ) : null}
-
-            {specificAnswerByQuestionQuery.isLoading &&
-            !specificAnswerByQuestionQuery.isError ? (
-              <>
-                {Array.from({ length: 10 }).map((_, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell colSpan={columns.length}>
-                      <Skeleton className="h-5 w-full" />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </>
-            ) : null}
-
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <>
-                {!specificAnswerByQuestionQuery.isLoading && (
-                  <>
-                    {!specificAnswerByQuestionQuery.isError && (
-                      <TableRow>
-                        <TableCell
-                          colSpan={columns.length}
-                          className="h-24 text-center"
-                        >
-                          Tidak ada data.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </>
-                )}
-              </>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex items-center space-x-6 lg:space-x-8">
-          <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Baris per halaman</p>
-            <Select
-              value={`${table.getState().pagination.pageSize}`}
-              onValueChange={(value: string) => {
-                table.setPageSize(Number(value));
-              }}
-            >
-              <SelectTrigger className="h-8 w-[70px]">
-                <SelectValue
-                  placeholder={table.getState().pagination.pageSize}
-                />
-              </SelectTrigger>
-              <SelectContent side="top">
-                {[20, 40, 60, 80, 100].map((pageSize) => (
-                  <SelectItem key={pageSize} value={`${pageSize}`}>
-                    {pageSize}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-            Halaman {table.getState().pagination.pageIndex + 1} dari{" "}
-            {table.getPageCount()}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <span className="sr-only">Go to first page</span>
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <span className="sr-only">Go to previous page</span>
-              <ChevronLeftIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <span className="sr-only">Go to next page</span>
-              <ChevronRightIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-            >
-              <span className="sr-only">Go to last page</span>
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {specificAnswerByQuestionQuery.isError ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    Error: {specificAnswerByQuestionQuery.error.message}
+                  </TableCell>
+                </TableRow>
+              ) : null}
+
+              {specificAnswerByQuestionQuery.isLoading &&
+              !specificAnswerByQuestionQuery.isError ? (
+                <>
+                  {Array.from({ length: 10 }).map((_, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell colSpan={columns.length}>
+                        <Skeleton className="h-5 w-full" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </>
+              ) : null}
+
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <>
+                  {!specificAnswerByQuestionQuery.isLoading && (
+                    <>
+                      {!specificAnswerByQuestionQuery.isError && (
+                        <TableRow>
+                          <TableCell
+                            colSpan={columns.length}
+                            className="h-24 text-center"
+                          >
+                            Tidak ada data.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="flex items-center space-x-6 lg:space-x-8">
+            <div className="flex items-center space-x-2">
+              <p className="text-sm font-medium">Baris per halaman</p>
+              <Select
+                value={`${table.getState().pagination.pageSize}`}
+                onValueChange={(value: string) => {
+                  table.setPageSize(Number(value));
+                }}
+              >
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue
+                    placeholder={table.getState().pagination.pageSize}
+                  />
+                </SelectTrigger>
+                <SelectContent side="top">
+                  {[20, 40, 60, 80, 100].map((pageSize) => (
+                    <SelectItem key={pageSize} value={`${pageSize}`}>
+                      {pageSize}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+              Halaman {table.getState().pagination.pageIndex + 1} dari{" "}
+              {table.getPageCount()}
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                className="hidden h-8 w-8 p-0 lg:flex"
+                onClick={() => table.setPageIndex(0)}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <span className="sr-only">Go to first page</span>
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                className="h-8 w-8 p-0"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <span className="sr-only">Go to previous page</span>
+                <ChevronLeftIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                className="h-8 w-8 p-0"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                <span className="sr-only">Go to next page</span>
+                <ChevronRightIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                className="hidden h-8 w-8 p-0 lg:flex"
+                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                disabled={!table.getCanNextPage()}
+              >
+                <span className="sr-only">Go to last page</span>
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </RoleContext.Provider>
   );
 }

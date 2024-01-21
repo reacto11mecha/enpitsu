@@ -1,4 +1,4 @@
-// import { cache } from "@enpitsu/cache";
+import { cache } from "@enpitsu/cache";
 import { and, eq, not, schema, sql } from "@enpitsu/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -6,6 +6,43 @@ import { z } from "zod";
 import { adminProcedure, createTRPCRouter } from "../trpc";
 
 export const adminRouter = createTRPCRouter({
+  // Can login status
+  getCanLoginStatus: adminProcedure.query(async () => {
+    try {
+      const status = await cache.get("login-status");
+
+      return status
+        ? { canLogin: JSON.parse(status) as boolean }
+        : { canLogin: true };
+    } catch (_) {
+      return { canLogin: false };
+    }
+  }),
+
+  updateCanLogin: adminProcedure
+    .input(z.object({ canLogin: z.boolean() }))
+    .mutation(async ({ input }) => {
+      try {
+        return await cache.set("login-status", JSON.stringify(input.canLogin));
+      } catch (_) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Gagal memperbarui status, website ini otomatis tidak bisa login karena masalah dengan konektivitas caching system.",
+        });
+      }
+    }),
+
+  getAllRegisteredUser: adminProcedure.query(({ ctx }) =>
+    ctx.db.query.users.findMany({
+      where: and(
+        sql`${schema.users.emailVerified} IS NOT NULL`,
+        not(eq(schema.users.id, ctx.session.user.id)),
+      ),
+    }),
+  ),
+
+  // user approval and rejection start from here
   getPendingUser: adminProcedure.query(({ ctx }) =>
     ctx.db.query.users.findMany({
       where: and(

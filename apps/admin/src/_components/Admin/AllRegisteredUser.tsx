@@ -1,18 +1,9 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { Space_Mono } from "next/font/google";
-import Link from "next/link";
-import { badgeVariants } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -34,7 +25,6 @@ import type {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
-  VisibilityState,
 } from "@tanstack/react-table";
 import {
   flexRender,
@@ -47,131 +37,65 @@ import {
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import {
-  ArrowUpRight,
-  ChevronDown,
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronsLeft,
   ChevronsRight,
-  MoreHorizontal,
-  Trash2,
 } from "lucide-react";
 
 import { api } from "~/utils/api";
-import { DeleteCheatedStudent } from "./CheatedList/DeleteCheatedStudent";
 
-type BlocklistByQuestion =
-  RouterOutputs["question"]["getStudentBlocklists"][number];
+type PendingUserList = RouterOutputs["admin"]["getAllRegisteredUser"][number];
 
 const MonoFont = Space_Mono({
   weight: "400",
   subsets: ["latin"],
 });
 
-export const columns: ColumnDef<BlocklistByQuestion>[] = [
+export const columns: ColumnDef<PendingUserList>[] = [
   {
-    accessorKey: "studentName",
-    header: "Nama Peserta",
-    cell: ({ row }) => <div>{row.original.student.name}</div>,
-  },
-  {
-    accessorKey: "title",
-    header: "Soal Ujian",
+    accessorKey: "user",
+    header: "Informasi Akun",
     cell: ({ row }) => (
-      <Button variant="ghost" asChild>
-        <Link href={`/admin/soal/cheat/${row.original.question.id}`}>
-          {row.original.question.title}
-          <ArrowUpRight className="ml-2 h-4 w-4" />
-        </Link>
-      </Button>
+      <div className="flex flex-row items-center gap-4">
+        <Avatar>
+          {row.original.image ? <AvatarImage src={row.original.image} /> : null}
+          <AvatarFallback className="uppercase">
+            {row.original.name ? row.original.name.slice(0, 2) : "N/A"}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col">
+          <p>{row.original.name ? row.original.name : "N/A"}</p>
+          <small className="text-muted-foreground">
+            {row.original.email ? row.original.email : "N/A"}
+          </small>
+        </div>
+      </div>
     ),
   },
   {
-    accessorKey: "room",
-    header: "Ruangan Peserta",
-    cell: ({ row }) => (
-      <pre className={MonoFont.className}>{row.original.student.room}</pre>
-    ),
-  },
-  {
-    accessorKey: "StudentClass",
-    header: "Kelas Asal",
-    cell: ({ row }) => (
-      <Link
-        className={badgeVariants({ variant: "secondary" })}
-        href={`/admin/angkatan/${row.original.student.subgrade.id}/kelola/${row.original.student.subgrade.grade.id}`}
-      >
-        {row.original.student.subgrade.grade.label}{" "}
-        {row.original.student.subgrade.label}
-      </Link>
-    ),
-  },
-  {
-    accessorKey: "time",
-    header: "Waktu Melakukan Kecurangan",
+    accessorKey: "emailVerified",
+    header: "Waktu Pengguna Terverifikasi",
     cell: ({ row }) => (
       <pre className={MonoFont.className}>
-        {format(row.getValue("time"), "dd MMMM yyyy, kk.mm", {
+        {format(row.getValue("emailVerified"), "dd MMMM yyyy, kk.mm", {
           locale: id,
         })}
       </pre>
     ),
   },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const cheat = row.original;
-
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const [openDelete, setOpenDelete] = useState(false);
-
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const closeDialog = useCallback(() => setOpenDelete((prev) => !prev), []);
-
-      return (
-        <>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-              <DropdownMenuItem
-                className="cursor-pointer text-rose-500 hover:text-rose-700 focus:text-rose-700"
-                onClick={() => setOpenDelete(true)}
-              >
-                <Trash2 className="mr-2 h-4 md:w-4" />
-                Hapus Status
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DeleteCheatedStudent
-            closeDialog={closeDialog}
-            id={cheat.id}
-            openDelete={openDelete}
-            questionTitle={cheat.question.title}
-            name={cheat.student.name}
-          />
-        </>
-      );
-    },
-  },
 ];
 
-export function DataTable() {
-  const blocklistsQuery = api.question.getStudentBlocklists.useQuery();
+export function AllRegisteredUser() {
+  const allRegisteredUserQuery =
+    api.admin.getAllRegisteredUser.useQuery(undefined);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
-    data: blocklistsQuery.data ?? [],
+    data: allRegisteredUserQuery.data ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -179,45 +103,17 @@ export function DataTable() {
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
     initialState: { pagination: { pageSize: 20 } },
     state: {
       sorting,
       columnFilters,
-      columnVisibility,
+      rowSelection,
     },
   });
 
   return (
     <div className="w-full">
-      <div className="flex items-center pb-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Kolom-Kolom <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -239,18 +135,19 @@ export function DataTable() {
             ))}
           </TableHeader>
           <TableBody>
-            {blocklistsQuery.isError ? (
+            {allRegisteredUserQuery.isError ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Error: {blocklistsQuery.error.message}
+                  Error: {allRegisteredUserQuery.error.message}
                 </TableCell>
               </TableRow>
             ) : null}
 
-            {blocklistsQuery.isLoading && !blocklistsQuery.isError ? (
+            {allRegisteredUserQuery.isLoading &&
+            !allRegisteredUserQuery.isError ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <TableRow key={idx}>
@@ -280,9 +177,9 @@ export function DataTable() {
               ))
             ) : (
               <>
-                {!blocklistsQuery.isLoading && (
+                {!allRegisteredUserQuery.isLoading && (
                   <>
-                    {!blocklistsQuery.isError && (
+                    {!allRegisteredUserQuery.isError && (
                       <TableRow>
                         <TableCell
                           colSpan={columns.length}

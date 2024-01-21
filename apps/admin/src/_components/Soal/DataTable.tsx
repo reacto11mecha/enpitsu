@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { badgeVariants } from "@/components/ui/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -76,6 +76,8 @@ const MonoFont = Space_Mono({
   weight: "400",
   subsets: ["latin"],
 });
+
+const RoleContext = createContext("");
 
 export const columns: ColumnDef<QuestionList>[] = [
   {
@@ -194,19 +196,30 @@ export const columns: ColumnDef<QuestionList>[] = [
   {
     accessorKey: "allowList",
     header: "Kelas Yang Diperbolehkan",
-    cell: ({ row }) => (
-      <div className="space-x-0.5 space-y-0.5">
-        {row.original.allowLists.map((allow) => (
-          <Link
-            className={badgeVariants({ variant: "secondary" })}
-            href={`/admin/angkatan/${allow.subgrade.gradeId}/kelola/${allow.subgradeId}`}
-            key={allow.id}
-          >
-            {allow.subgrade.grade.label} {allow.subgrade.label}
-          </Link>
-        ))}
-      </div>
-    ),
+    cell: ({ row }) => {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const currentUserRole = useContext(RoleContext);
+
+      return (
+        <div className="space-x-0.5 space-y-0.5">
+          {row.original.allowLists.map((allow) =>
+            currentUserRole === "admin" ? (
+              <Link
+                className={badgeVariants({ variant: "secondary" })}
+                href={`/admin/angkatan/${allow.subgrade.gradeId}/kelola/${allow.subgradeId}`}
+                key={allow.id}
+              >
+                {allow.subgrade.grade.label} {allow.subgrade.label}
+              </Link>
+            ) : (
+              <Badge variant="secondary" key={allow.id}>
+                {allow.subgrade.grade.label} {allow.subgrade.label}
+              </Badge>
+            ),
+          )}
+        </div>
+      );
+    },
   },
   {
     id: "actions",
@@ -310,239 +323,241 @@ export function DataTable({
   });
 
   return (
-    <div className="w-full">
-      <div className="space-x-2 pb-4">
-        {countValue > 0 && (
-          <>
-            <Button asChild className="w-fit">
-              <Link href="/admin/soal/baru">
-                Buat soal baru
-                <PlusSquare className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            {currUserRole === "admin" ? (
-              <>
-                <Button asChild className="w-fit">
-                  <Link href="/admin/soal/cheat">
-                    Data Kecurangan
-                    <UserRoundX className="ml-2 h-4 md:w-4" />
-                  </Link>
-                </Button>
-                <Button asChild className="w-fit">
-                  <Link href="/admin/soal/answer">
-                    Data Jawaban
-                    <ClipboardCheck className="ml-2 h-4 md:w-4" />
-                  </Link>
-                </Button>
-              </>
-            ) : null}
-          </>
-        )}
-      </div>
+    <RoleContext.Provider value={currUserRole}>
+      <div className="w-full">
+        <div className="space-x-2 pb-4">
+          {countValue > 0 && (
+            <>
+              <Button asChild className="w-fit">
+                <Link href="/admin/soal/baru">
+                  Buat soal baru
+                  <PlusSquare className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              {currUserRole === "admin" ? (
+                <>
+                  <Button asChild className="w-fit">
+                    <Link href="/admin/soal/cheat">
+                      Data Kecurangan
+                      <UserRoundX className="ml-2 h-4 md:w-4" />
+                    </Link>
+                  </Button>
+                  <Button asChild className="w-fit">
+                    <Link href="/admin/soal/answer">
+                      Data Jawaban
+                      <ClipboardCheck className="ml-2 h-4 md:w-4" />
+                    </Link>
+                  </Button>
+                </>
+              ) : null}
+            </>
+          )}
+        </div>
 
-      <div className="flex items-center pb-4">
-        <Input
-          placeholder="Filter berdasarkan judul soal..."
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
-          }
-          className="max-w-md"
-        />
-
-        {table.getFilteredSelectedRowModel().rows.length > 0 && (
-          <CreateQRCodes
-            selectedData={table
-              .getFilteredSelectedRowModel()
-              .rows.map((row) => ({
-                slug: row.original.slug,
-                title: row.original.title,
-              }))}
+        <div className="flex items-center pb-4">
+          <Input
+            placeholder="Filter berdasarkan judul soal..."
+            value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("title")?.setFilterValue(event.target.value)
+            }
+            className="max-w-md"
           />
-        )}
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Kolom-Kolom <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
+          {table.getFilteredSelectedRowModel().rows.length > 0 && (
+            <CreateQRCodes
+              selectedData={table
+                .getFilteredSelectedRowModel()
+                .rows.map((row) => ({
+                  slug: row.original.slug,
+                  title: row.original.title,
+                }))}
+            />
+          )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto">
+                Kolom-Kolom <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
                   return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
                   );
                 })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {questionsQuery.isError ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Error: {questionsQuery.error.message}
-                </TableCell>
-              </TableRow>
-            ) : null}
-
-            {questionsQuery.isLoading && !questionsQuery.isError ? (
-              <>
-                {Array.from({ length: 10 }).map((_, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell colSpan={columns.length}>
-                      <Skeleton className="h-5 w-full" />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </>
-            ) : null}
-
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <>
-                {!questionsQuery.isLoading && (
-                  <>
-                    {!questionsQuery.isError && (
-                      <TableRow>
-                        <TableCell
-                          colSpan={columns.length}
-                          className="h-24 text-center"
-                        >
-                          Tidak ada data.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </>
-                )}
-              </>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex flex-1 flex-row items-center">
-          <p className="text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} dari{" "}
-            {table.getFilteredRowModel().rows.length} baris dipilih.
-          </p>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {questionsQuery.isError ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    Error: {questionsQuery.error.message}
+                  </TableCell>
+                </TableRow>
+              ) : null}
+
+              {questionsQuery.isLoading && !questionsQuery.isError ? (
+                <>
+                  {Array.from({ length: 10 }).map((_, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell colSpan={columns.length}>
+                        <Skeleton className="h-5 w-full" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </>
+              ) : null}
+
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <>
+                  {!questionsQuery.isLoading && (
+                    <>
+                      {!questionsQuery.isError && (
+                        <TableRow>
+                          <TableCell
+                            colSpan={columns.length}
+                            className="h-24 text-center"
+                          >
+                            Tidak ada data.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </TableBody>
+          </Table>
         </div>
-        <div className="flex items-center space-x-6 lg:space-x-8">
-          <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Baris per halaman</p>
-            <Select
-              value={`${table.getState().pagination.pageSize}`}
-              onValueChange={(value: string) => {
-                table.setPageSize(Number(value));
-              }}
-            >
-              <SelectTrigger className="h-8 w-[70px]">
-                <SelectValue
-                  placeholder={table.getState().pagination.pageSize}
-                />
-              </SelectTrigger>
-              <SelectContent side="top">
-                {[20, 40, 60, 80, 100].map((pageSize) => (
-                  <SelectItem key={pageSize} value={`${pageSize}`}>
-                    {pageSize}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="text-muted-foreground flex flex-1 flex-row items-center">
+            <p className="text-sm">
+              {table.getFilteredSelectedRowModel().rows.length} dari{" "}
+              {table.getFilteredRowModel().rows.length} baris dipilih.
+            </p>
           </div>
-          <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-            Halaman {table.getState().pagination.pageIndex + 1} dari{" "}
-            {table.getPageCount()}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <span className="sr-only">Go to first page</span>
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <span className="sr-only">Go to previous page</span>
-              <ChevronLeftIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <span className="sr-only">Go to next page</span>
-              <ChevronRightIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-            >
-              <span className="sr-only">Go to last page</span>
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center space-x-6 lg:space-x-8">
+            <div className="flex items-center space-x-2">
+              <p className="text-sm font-medium">Baris per halaman</p>
+              <Select
+                value={`${table.getState().pagination.pageSize}`}
+                onValueChange={(value: string) => {
+                  table.setPageSize(Number(value));
+                }}
+              >
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue
+                    placeholder={table.getState().pagination.pageSize}
+                  />
+                </SelectTrigger>
+                <SelectContent side="top">
+                  {[20, 40, 60, 80, 100].map((pageSize) => (
+                    <SelectItem key={pageSize} value={`${pageSize}`}>
+                      {pageSize}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+              Halaman {table.getState().pagination.pageIndex + 1} dari{" "}
+              {table.getPageCount()}
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                className="hidden h-8 w-8 p-0 lg:flex"
+                onClick={() => table.setPageIndex(0)}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <span className="sr-only">Go to first page</span>
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                className="h-8 w-8 p-0"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <span className="sr-only">Go to previous page</span>
+                <ChevronLeftIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                className="h-8 w-8 p-0"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                <span className="sr-only">Go to next page</span>
+                <ChevronRightIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                className="hidden h-8 w-8 p-0 lg:flex"
+                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                disabled={!table.getCanNextPage()}
+              >
+                <span className="sr-only">Go to last page</span>
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </RoleContext.Provider>
   );
 }
