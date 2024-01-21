@@ -2,6 +2,7 @@ import React from "react";
 import { SafeAreaView } from "react-native";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "@tamagui/lucide-icons";
+import { useToastController } from "@tamagui/toast";
 import { Controller, useForm } from "react-hook-form";
 import { Button, Input, Label, Spinner, Text, XStack, YStack } from "tamagui";
 import type { z } from "zod";
@@ -16,6 +17,8 @@ export const ScanOrInputQuestionSlug = ({
 }: {
   closeScanner: () => void;
 }) => {
+  const toast = useToastController();
+
   const [isPrecautionOpen, setOpen] = React.useState(false);
 
   const getQuestionMutation = api.exam.getQuestion.useMutation({
@@ -23,14 +26,12 @@ export const ScanOrInputQuestionSlug = ({
       setOpen(true);
     },
     onError(error) {
-      // toast({
-      //   duration: 9500,
-      //   variant: "destructive",
-      //   description:
-      //     error.message === "Failed to fetch"
-      //       ? "Gagal meraih server"
-      //       : error.message,
-      // });
+      toast.show("Gagal mengerjakan soal", {
+        message:
+          error.message === "Failed to fetch"
+            ? "Gagal meraih server"
+            : error.message,
+      });
     },
   });
 

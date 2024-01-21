@@ -253,7 +253,7 @@ export const Precaution = ({
                   asChild
                   href={{
                     pathname: "/test/[id]",
-                    params: { id: data.id },
+                    params: { slug: data.slug },
                   }}
                 >
                   <Button disabled={!scrolledToBottom} onPress={close}>

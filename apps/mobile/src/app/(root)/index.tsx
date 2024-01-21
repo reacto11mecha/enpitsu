@@ -1,7 +1,8 @@
 import React from "react";
-import { SafeAreaView, ToastAndroid } from "react-native";
+import { SafeAreaView } from "react-native";
 import { Link, Stack } from "expo-router";
 import { Settings as SettingsIcon } from "@tamagui/lucide-icons";
+import { useToastController } from "@tamagui/toast";
 import { useAtom } from "jotai";
 import {
   Button,
@@ -27,6 +28,8 @@ const getState = (statusCode: string) => {
 };
 
 const Index = () => {
+  const toast = useToastController();
+
   const [token] = useAtom(studentTokenAtom);
 
   const [isCorrect, setCorrect] = React.useState(false);
@@ -36,11 +39,9 @@ const Index = () => {
   const studentQuery = api.exam.getStudent.useQuery(undefined, {
     onError(error) {
       if (error.data?.code === "UNAUTHORIZED" && token === "") {
-        ToastAndroid.showWithGravity(
-          "Mohon isi token anda!",
-          ToastAndroid.SHORT,
-          ToastAndroid.CENTER,
-        );
+        toast.show("Belum Ada Token", {
+          message: "Mohon isi token anda!",
+        });
       }
 
       setCorrect(false);
