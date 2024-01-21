@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cache } from "@enpitsu/cache";
 
-export async function GET() {
+async function handler() {
   try {
     const status = await cache.get("login-status");
 
@@ -15,3 +15,5 @@ export async function GET() {
     return NextResponse.json({ canLogin: false }, { status: 200 });
   }
 }
+
+export { handler as GET, handler as POST };
