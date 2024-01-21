@@ -30,11 +30,13 @@ import katex from "katex";
 import { ArrowLeft, Globe, Loader2 } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
+import { useWakeLock } from "react-screen-wake-lock";
 import { z } from "zod";
 
 import { ModeToggle } from "../mode-toggle";
 import { useToast } from "../ui/use-toast";
 import { DishonestyAlert } from "./DishonestyAlert";
+import { ScreenWakeLockFail } from "./ScreenWakeLockFail";
 import {
   formSchema,
   shuffleArray,
@@ -107,6 +109,7 @@ const Test = ({ data, initialData }: Props) => {
 
   const [dishonestyWarning, setDishonestyWarning] = useState(false);
   const [badInternetAlert, setBadInternet] = useState(false);
+  const [wakeLockError, setWakeLockError] = useState(false);
 
   const closeAlertCallback = useCallback(() => {
     setCanUpdateDishonesty(true);
@@ -118,6 +121,16 @@ const Test = ({ data, initialData }: Props) => {
       setBadInternet(false);
     }
   }, [isOnline]);
+  const closeWakeLock = useCallback(() => {
+    setCanUpdateDishonesty(true);
+    setWakeLockError(false);
+  }, []);
+
+  const { isSupported, request, release } = useWakeLock({
+    onError: () => {
+      setCanUpdateDishonesty(false);
+    },
+  });
 
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
@@ -266,6 +279,15 @@ const Test = ({ data, initialData }: Props) => {
         },
       ]);
 
+    if (isSupported) request();
+    else {
+      setCanUpdateDishonesty(false);
+      setWakeLockError(true);
+    }
+
+    return () => {
+      release();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -376,9 +398,10 @@ const Test = ({ data, initialData }: Props) => {
         open={badInternetAlert}
         closeBadInternet={closeBadInternet}
       />
+      <ScreenWakeLockFail open={wakeLockError} closeWakeLock={closeWakeLock} />
 
       <header className="fixed inset-x-0 top-0 z-50 flex w-full justify-center border-solid">
-        <div className="flex h-full w-full flex-wrap items-center justify-center justify-center gap-2 border border-b bg-white p-2 px-5 dark:bg-stone-900 sm:gap-4">
+        <div className="flex h-full w-full flex-wrap items-center justify-center gap-2 border border-b bg-white p-2 px-5 dark:bg-stone-900 sm:gap-4">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

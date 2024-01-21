@@ -83,13 +83,15 @@ export const columns: ColumnDef<PendingUserList>[] = [
       const toggleOpen = useCallback(() => setOpen((prev) => !prev), []);
 
       const acceptUserMutation = api.admin.acceptPendingUser.useMutation({
-        onSuccess() {
+        async onSuccess() {
           toast({
             title: "Berhasil menerima pengguna baru!",
             description: "Pengguna berhasil di approve.",
           });
 
           toggleOpen();
+
+          await apiUtils.admin.getAllRegisteredUser.invalidate();
         },
         onError(error) {
           toast({

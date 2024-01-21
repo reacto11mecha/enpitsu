@@ -78,7 +78,7 @@ export const AcceptUser = ({
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="w-2/3 space-y-6"
+                className="w-full space-y-6"
               >
                 <FormField
                   control={form.control}

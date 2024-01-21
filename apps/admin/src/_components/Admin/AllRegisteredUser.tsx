@@ -74,6 +74,15 @@ export const columns: ColumnDef<PendingUserList>[] = [
     ),
   },
   {
+    accessorKey: "role",
+    header: "Tingkatan Pengguna",
+    cell: ({ row }) => (
+      <p>
+        {row.getValue("role") === "admin" ? "Administrator" : "Pengguna Biasa"}
+      </p>
+    ),
+  },
+  {
     accessorKey: "emailVerified",
     header: "Waktu Pengguna Terverifikasi",
     cell: ({ row }) => (
