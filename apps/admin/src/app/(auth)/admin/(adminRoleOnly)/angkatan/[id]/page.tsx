@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { db, eq, schema } from "@enpitsu/db";
 
 import { DataTable } from "~/_components/Angkatan/SpecificGrade/DataTable";
+import { ExcelStudentsByGradeDownload } from "~/_components/Angkatan/SpecificGrade/ExcelStudentsDownload";
 
 export default async function DynamicAngkatan({
   params,
@@ -28,10 +29,12 @@ export default async function DynamicAngkatan({
         </p>
       </div>
 
-      <div className="flex flex-col gap-5 pb-10">
+      <div className="flex flex-col gap-3 pb-10">
         <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
           List Subkelas
         </h4>
+
+        <ExcelStudentsByGradeDownload gradeId={gradeId} />
 
         <DataTable currentGrade={specificGrade} />
       </div>

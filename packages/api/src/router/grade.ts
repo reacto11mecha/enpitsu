@@ -1,4 +1,5 @@
 import { asc, eq, schema } from "@enpitsu/db";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { adminProcedure, createTRPCRouter } from "../trpc";
@@ -162,5 +163,47 @@ export const gradeRouter = createTRPCRouter({
       return ctx.db
         .delete(schema.students)
         .where(eq(schema.students.id, input));
+    }),
+
+  downloadSpecificGradeExcel: adminProcedure
+    .input(z.object({ gradeId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const gradesData = await ctx.db.query.grades.findFirst({
+        where: eq(schema.grades.id, input.gradeId),
+        select: {
+          label: true,
+        },
+        with: {
+          subgrades: {
+            select: {
+              label: true,
+            },
+            with: {
+              students: {
+                select: {
+                  name: true,
+                  token: true,
+                  participantNumber: true,
+                  room: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!gradesData)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Data yang anda cari tidak ditemukan!",
+        });
+
+      if (gradesData.subgrades.length < 1)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Belum ada data kelas pada angkatan ini!",
+        });
+
+      return gradesData;
     }),
 });

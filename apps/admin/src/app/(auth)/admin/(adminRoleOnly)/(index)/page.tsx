@@ -1,4 +1,4 @@
-import { AllRegisteredUser } from "~/_components/Admin/AllRegisteredUser";
+import { AllRegisteredUser } from "~/_components/Admin/AllRegisteredUser/index";
 import { PendingUser } from "~/_components/Admin/PendingUser/index";
 import { ToggleCanLogin } from "~/_components/Admin/ToggleCanLogin";
 

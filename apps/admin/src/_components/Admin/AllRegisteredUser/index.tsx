@@ -2,8 +2,18 @@
 
 import { useState } from "react";
 import { Space_Mono } from "next/font/google";
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -41,6 +51,9 @@ import {
   ChevronRightIcon,
   ChevronsLeft,
   ChevronsRight,
+  MoreHorizontal,
+  PencilLine,
+  Trash2,
 } from "lucide-react";
 
 import { api } from "~/utils/api";
@@ -92,6 +105,44 @@ export const columns: ColumnDef<PendingUserList>[] = [
         })}
       </pre>
     ),
+  },
+  {
+    id: "actions",
+    enableHiding: false,
+    cell: ({ row }) => {
+      const question = row.original;
+
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [openDelete, setOpenDelete] = useState(false);
+
+      return (
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Buka menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+              <DropdownMenuItem className="cursor-pointer">
+                <PencilLine className="mr-2 h-4 md:w-4" />
+                Perbarui Tingkatan
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer text-rose-500 hover:text-rose-700 focus:text-rose-700"
+                onClick={() => setOpenDelete(true)}
+              >
+                <Trash2 className="mr-2 h-4 md:w-4" />
+                Hapus Pengguna
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      );
+    },
   },
 ];
 
