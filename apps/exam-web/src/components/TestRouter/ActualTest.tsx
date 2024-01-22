@@ -503,7 +503,7 @@ const Test = ({ data, initialData }: Props) => {
               </div>
             </div>
 
-            {essaysField.fields.length > 1 ? (
+            {essaysField.fields.length >= 1 ? (
               <div className="flex flex-col gap-3">
                 <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
                   Esai
