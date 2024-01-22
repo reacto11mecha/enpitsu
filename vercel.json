@@ -3,5 +3,5 @@
     "silent": true
   },
   "outputDirectory": "/dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
