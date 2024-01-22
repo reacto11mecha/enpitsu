@@ -2,7 +2,6 @@
   "github": {
     "silent": true
   },
-  "outputDirectory": "dist",
   "rewrites":  [
     {"source": "/(.*)", "destination": "/"}
   ]
