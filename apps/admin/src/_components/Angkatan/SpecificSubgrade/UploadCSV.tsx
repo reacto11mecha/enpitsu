@@ -63,6 +63,7 @@ export const UploadCSV = ({
   };
 }) => {
   const [open, setOpen] = useState(false);
+  const [readLock, setReadLock] = useState(false);
 
   const { toast } = useToast();
 
@@ -110,16 +111,21 @@ export const UploadCSV = ({
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setReadLock(true);
+
     const file = values.csv.item(0)!;
     const text = await file.text();
 
     parseCSV(text, { columns: true, trim: true }, (err, records) => {
-      if (err)
+      if (err) {
+        setReadLock(false);
         toast({
           variant: "destructive",
           title: "Gagal Membaca File",
           description: `Terjadi kesalahan, Error: ${err.message}`,
         });
+        return;
+      }
 
       const result = FileValueSchema.safeParse(records);
 
@@ -130,8 +136,12 @@ export const UploadCSV = ({
           description: `Mohon periksa kembali format file yang ingin di upload, masih ada kesalahan.`,
         });
 
+        setReadLock(false);
+
         return;
       }
+
+      setReadLock(false);
 
       createStudentManyMutation.mutate(
         result.data.map((val) => ({
@@ -148,7 +158,8 @@ export const UploadCSV = ({
     <Dialog
       open={open}
       onOpenChange={() => {
-        if (!createStudentManyMutation.isLoading) setOpen((prev) => !prev);
+        if (!createStudentManyMutation.isLoading || !readLock)
+          setOpen((prev) => !prev);
         form.reset();
       }}
     >
@@ -195,12 +206,20 @@ export const UploadCSV = ({
         </Form>
         <DialogFooter>
           <DialogClose asChild>
-            <Button type="button" variant="secondary">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={createStudentManyMutation.isLoading || readLock}
+            >
               Batal
             </Button>
           </DialogClose>
-          <Button type="submit" onClick={() => form.handleSubmit(onSubmit)()}>
-            {createStudentManyMutation.isLoading ? (
+          <Button
+            type="submit"
+            onClick={form.handleSubmit(onSubmit)}
+            disabled={createStudentManyMutation.isLoading || readLock}
+          >
+            {createStudentManyMutation.isLoading || readLock ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Tambah

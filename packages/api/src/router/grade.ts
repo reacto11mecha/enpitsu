@@ -206,4 +206,44 @@ export const gradeRouter = createTRPCRouter({
 
       return gradesData;
     }),
+
+  downloadSpecificSubgradeExcel: adminProcedure
+    .input(z.object({ subgradeId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const subgradeData = await ctx.db.query.subGrades.findFirst({
+        where: eq(schema.grades.id, input.subgradeId),
+        columns: {
+          label: true,
+        },
+        with: {
+          students: {
+            columns: {
+              name: true,
+              token: true,
+              participantNumber: true,
+              room: true,
+            },
+          },
+          grade: {
+            columns: {
+              label: true,
+            },
+          },
+        },
+      });
+
+      if (!subgradeData)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Data yang anda cari tidak ditemukan!",
+        });
+
+      if (subgradeData.students.length < 1)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Belum ada data peserta pada angkatan ini!",
+        });
+
+      return subgradeData;
+    }),
 });

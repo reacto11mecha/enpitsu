@@ -24,18 +24,16 @@ const ReusableDialog = ({
   onOpenChange,
   triggerDownload,
   isLoading,
-  title,
 }: {
   open: boolean;
   desc: string;
   onOpenChange: () => void;
   triggerDownload: () => void;
   isLoading: boolean;
-  title?: string;
 }) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogTrigger asChild>
-      <Button>
+      <Button className="w-full md:w-fit">
         <Sheet className="mr-2 h-4 md:w-4" />
         Unduh data peserta dalam excel
       </Button>
@@ -131,7 +129,85 @@ export const ExcelStudentsByGradeDownload = ({
   return (
     <ReusableDialog
       open={open}
-      desc="Download data angkatan ini dalam bentuk excel. Mohon tunggu jika proses ini berjalan lama."
+      desc="Unduh data angkatan ini dalam bentuk excel. Mohon tunggu jika proses ini berjalan lama."
+      onOpenChange={onOpenChange}
+      isLoading={excelMutationApi.isLoading}
+      triggerDownload={triggerDownload}
+    />
+  );
+};
+
+export const ExcelStudentsBySubgradeDownload = ({
+  subgradeId,
+}: {
+  subgradeId: number;
+}) => {
+  const [open, setOpen] = useState(false);
+
+  const { toast } = useToast();
+
+  const excelMutationApi = api.grade.downloadSpecificSubgradeExcel.useMutation({
+    async onSuccess(result) {
+      const workbook = new ExcelJS.Workbook();
+
+      workbook.created = new Date();
+
+      const worksheet = workbook.addWorksheet(
+        `${result.grade.label} ${result.label}`,
+      );
+
+      worksheet.addRow(["Nama", "Token", "Nomor Peserta", "Ruangan"]);
+
+      for (const student of result.students) {
+        worksheet.addRow([
+          student.name,
+          student.token,
+          student.participantNumber,
+          student.room,
+        ]);
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer();
+
+      const blob = new Blob([buffer]);
+      const url = URL.createObjectURL(blob);
+
+      const anchor = document.createElement("a");
+
+      anchor.href = url;
+      anchor.download = `Data Peserta-${+Date.now()}-Spesifik kelas ${
+        result.grade.label
+      } ${result.label}.xlsx`;
+
+      anchor.click();
+      anchor.remove();
+
+      setOpen(false);
+    },
+    onError(error) {
+      toast({
+        variant: "destructive",
+        title: "Operasi Gagal",
+        description: `Terjadi kesalahan, Error: ${error.message}`,
+      });
+    },
+  });
+
+  const onOpenChange = useCallback(() => {
+    if (!excelMutationApi.isLoading) setOpen((prev) => !prev);
+  }, [excelMutationApi.isLoading]);
+
+  const triggerDownload = useCallback(
+    () => excelMutationApi.mutate({ subgradeId }),
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  return (
+    <ReusableDialog
+      open={open}
+      desc="Unduh data kelas ini dalam bentuk excel. Mohon tunggu jika proses ini berjalan lama."
       onOpenChange={onOpenChange}
       isLoading={excelMutationApi.isLoading}
       triggerDownload={triggerDownload}

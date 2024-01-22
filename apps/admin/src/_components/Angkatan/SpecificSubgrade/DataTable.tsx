@@ -55,6 +55,7 @@ import {
 } from "lucide-react";
 
 import { api } from "~/utils/api";
+import { ExcelStudentsBySubgradeDownload } from "../ExcelStudentsDownload";
 import { AddStudent } from "./AddStudent";
 import { DeleteStudent } from "./DeleteStudent";
 import { UpdateStudent } from "./UpdateStudent";
@@ -200,9 +201,10 @@ export function DataTable({
 
   return (
     <div className="w-full">
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-3 md:flex-row">
         <AddStudent subgrade={subgrade} grade={grade} />
         <UploadCSV subgrade={subgrade} grade={grade} />
+        <ExcelStudentsBySubgradeDownload subgradeId={subgrade.id} />
       </div>
       <div className="flex items-center py-4">
         <Input

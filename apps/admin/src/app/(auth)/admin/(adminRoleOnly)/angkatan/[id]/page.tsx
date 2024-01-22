@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { db, eq, schema } from "@enpitsu/db";
 
+import { ExcelStudentsByGradeDownload } from "~/_components/Angkatan/ExcelStudentsDownload";
 import { DataTable } from "~/_components/Angkatan/SpecificGrade/DataTable";
-import { ExcelStudentsByGradeDownload } from "~/_components/Angkatan/SpecificGrade/ExcelStudentsDownload";
 
 export default async function DynamicAngkatan({
   params,
