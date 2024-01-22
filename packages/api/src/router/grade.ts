@@ -170,17 +170,17 @@ export const gradeRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const gradesData = await ctx.db.query.grades.findFirst({
         where: eq(schema.grades.id, input.gradeId),
-        select: {
+        columns: {
           label: true,
         },
         with: {
           subgrades: {
-            select: {
+            columns: {
               label: true,
             },
             with: {
               students: {
-                select: {
+                columns: {
                   name: true,
                   token: true,
                   participantNumber: true,
