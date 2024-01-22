@@ -448,7 +448,7 @@ const Test = ({ data, initialData }: Props) => {
                   <Card key={field.id} className="w-full">
                     <CardHeader>
                       <h3
-                        className="scroll-m-20 text-lg tracking-tight"
+                        className="no-copy scroll-m-20 text-lg tracking-tight"
                         dangerouslySetInnerHTML={{ __html: field.question }}
                       />
                     </CardHeader>
@@ -484,7 +484,7 @@ const Test = ({ data, initialData }: Props) => {
                                     />
                                     <Label
                                       htmlFor={`options.${field.iqid}.opt.${idx}`}
-                                      className="text-base font-normal"
+                                      className="no-copy text-base font-normal"
                                       dangerouslySetInnerHTML={{
                                         __html: option.answer,
                                       }}
@@ -503,49 +503,52 @@ const Test = ({ data, initialData }: Props) => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-                Esai
-              </h3>
+            {essaysField.fields.length > 1 ? (
+              <div className="flex flex-col gap-3">
+                <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+                  Esai
+                </h3>
 
-              <div className="flex flex-col gap-5">
-                {essaysField.fields.map((field, index) => (
-                  <Card key={field.iqid}>
-                    <CardHeader>
-                      <h3
-                        className="scroll-m-20 text-base tracking-tight"
-                        dangerouslySetInnerHTML={{ __html: field.question }}
-                      />
-                    </CardHeader>
-                    <CardContent>
-                      <FormField
-                        control={form.control}
-                        name={`essays.${index}.answer` as const}
-                        render={({ field: currentField }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Jawab disini"
-                                value={currentField.value}
-                                onChange={(e) => {
-                                  currentField.onChange(e.target.value);
-                                  essayDebounce({
-                                    iqid: field.iqid,
-                                    answer: e.target.value,
-                                  });
-                                }}
-                                disabled={submitAnswerMutation.isLoading}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  </Card>
-                ))}
+                <div className="flex flex-col gap-5">
+                  {essaysField.fields.map((field, index) => (
+                    <Card key={field.iqid}>
+                      <CardHeader>
+                        <h3
+                          className="no-copy scroll-m-20 text-base tracking-tight"
+                          dangerouslySetInnerHTML={{ __html: field.question }}
+                        />
+                      </CardHeader>
+                      <CardContent>
+                        <FormField
+                          control={form.control}
+                          name={`essays.${index}.answer` as const}
+                          render={({ field: currentField }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Jawab disini"
+                                  value={currentField.value}
+                                  onPaste={(e) => e.preventDefault()}
+                                  onChange={(e) => {
+                                    currentField.onChange(e.target.value);
+                                    essayDebounce({
+                                      iqid: field.iqid,
+                                      answer: e.target.value,
+                                    });
+                                  }}
+                                  disabled={submitAnswerMutation.isLoading}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : null}
 
             <div className="flex justify-end">
               <Button

@@ -74,3 +74,7 @@
     @apply dark:bg-background text-foreground bg-stone-200;
   }
 }
+
+.no-copy {
+  user-select: none;
+}
