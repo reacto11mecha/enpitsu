@@ -93,6 +93,12 @@ export const adminRouter = createTRPCRouter({
     )
     .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
+        if (ctx.session.user.id === input.id)
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "R u lost ur mind?",
+          });
+
         const specificUser = await tx.query.users.findFirst({
           where: eq(schema.users.id, input.id),
         });
@@ -113,6 +119,40 @@ export const adminRouter = createTRPCRouter({
           .update(schema.users)
           .set({
             emailVerified: new Date(),
+            role: input.role,
+          })
+          .where(eq(schema.users.id, input.id));
+      }),
+    ),
+
+  updateUserRole: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        role: z.enum(["admin", "user"]),
+      }),
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        if (ctx.session.user.id === input.id)
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Mana bisa begitu? Update role sendiri?",
+          });
+
+        const specificUser = await tx.query.users.findFirst({
+          where: eq(schema.users.id, input.id),
+        });
+
+        if (!specificUser)
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Pengguna yang dituju tidak ditemukan!",
+          });
+
+        return await tx
+          .update(schema.users)
+          .set({
             role: input.role,
           })
           .where(eq(schema.users.id, input.id));

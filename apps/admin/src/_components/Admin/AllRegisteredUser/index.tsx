@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -57,6 +57,7 @@ import {
 } from "lucide-react";
 
 import { api } from "~/utils/api";
+import { UpdateRole } from "./UpdateRole";
 
 type PendingUserList = RouterOutputs["admin"]["getAllRegisteredUser"][number];
 
@@ -110,10 +111,12 @@ export const columns: ColumnDef<PendingUserList>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const question = row.original;
+      const user = row.original;
 
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      const [openDelete, setOpenDelete] = useState(false);
+      const [openUpdate, setOpenUpdate] = useState(false);
+
+      const toggleOpen = useCallback(() => setOpenUpdate((prev) => !prev), []);
 
       return (
         <>
@@ -126,20 +129,22 @@ export const columns: ColumnDef<PendingUserList>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-              <DropdownMenuItem className="cursor-pointer">
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => setOpenUpdate(true)}
+              >
                 <PencilLine className="mr-2 h-4 md:w-4" />
                 Perbarui Tingkatan
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="cursor-pointer text-rose-500 hover:text-rose-700 focus:text-rose-700"
-                onClick={() => setOpenDelete(true)}
-              >
-                <Trash2 className="mr-2 h-4 md:w-4" />
-                Hapus Pengguna
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <UpdateRole
+            isOpen={openUpdate}
+            toggleOpen={toggleOpen}
+            currRole={user.role}
+            userId={user.id}
+          />
         </>
       );
     },
