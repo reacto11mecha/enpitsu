@@ -7,7 +7,7 @@ import { httpBatchLink } from "@trpc/client";
 import { useAtom } from "jotai";
 import { RefreshCw } from "lucide-react";
 import {
-  createBrowserRouter,
+  createHashRouter,
   Navigate,
   RouterProvider,
 } from "react-router-dom";
@@ -18,7 +18,7 @@ import { env } from "./env";
 const SetToken = lazy(() => import("@/components/set-token"));
 const TestRoute = lazy(() => import("./routes/TestRoute"));
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: "/",
     element: <IndexRoute />,
