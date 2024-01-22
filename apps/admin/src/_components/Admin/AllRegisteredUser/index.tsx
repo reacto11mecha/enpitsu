@@ -2,16 +2,13 @@
 
 import { useCallback, useState } from "react";
 import { Space_Mono } from "next/font/google";
-import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -53,7 +50,6 @@ import {
   ChevronsRight,
   MoreHorizontal,
   PencilLine,
-  Trash2,
 } from "lucide-react";
 
 import { api } from "~/utils/api";
@@ -116,6 +112,7 @@ export const columns: ColumnDef<PendingUserList>[] = [
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const [openUpdate, setOpenUpdate] = useState(false);
 
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       const toggleOpen = useCallback(() => setOpenUpdate((prev) => !prev), []);
 
       return (
