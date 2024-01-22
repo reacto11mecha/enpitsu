@@ -11,7 +11,7 @@ const defineConfig = (): ExpoConfig => ({
   splash: {
     image: "./assets/icon.png",
     resizeMode: "contain",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#15803D",
   },
   updates: {
     fallbackToCacheTimeout: 0,
@@ -25,7 +25,7 @@ const defineConfig = (): ExpoConfig => ({
     package: "rmecha.my.id.enpitsu",
     adaptiveIcon: {
       foregroundImage: "./assets/icon.png",
-      backgroundColor: "#1F104A",
+      backgroundColor: "#15803D",
     },
   },
   // extra: {

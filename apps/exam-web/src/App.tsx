@@ -6,11 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { useAtom } from "jotai";
 import { RefreshCw } from "lucide-react";
-import {
-  createHashRouter,
-  Navigate,
-  RouterProvider,
-} from "react-router-dom";
+import { createHashRouter, Navigate, RouterProvider } from "react-router-dom";
 import superjson from "superjson";
 
 import { env } from "./env";
