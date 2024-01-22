@@ -174,7 +174,7 @@ export const gradeRouter = createTRPCRouter({
           label: true,
         },
         with: {
-          subgrades: {
+          subGrades: {
             select: {
               label: true,
             },
