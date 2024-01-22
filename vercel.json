@@ -2,8 +2,7 @@
   "github": {
     "silent": true
   },
-  "framework": "vite",
-  "outputDirectory": "apps/exam-web/dist",
+  "outputDirectory": "dist",
   "rewrites":  [
     {"source": "/(.*)", "destination": "/"}
   ]
