@@ -14,13 +14,8 @@ export default async function QuestionItemsPage({
 
   const question = await db.query.questions.findFirst({
     where: eq(schema.questions.id, id),
-    with: {
-      multipleChoices: {
-        orderBy: (choice, { asc }) => [asc(choice.iqid)],
-      },
-      essays: {
-        orderBy: (essay, { asc }) => [asc(essay.iqid)],
-      },
+    columns: {
+      title: true,
     },
   });
 
@@ -37,7 +32,7 @@ export default async function QuestionItemsPage({
           </p>
         </div>
 
-        <Questions question={question} />
+        <Questions questionId={id} title={question.title} />
       </div>
     </div>
   );
