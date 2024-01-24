@@ -15,13 +15,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -35,7 +33,6 @@ import {
   ClipboardCheck,
   Loader2,
   X as NuhUh,
-  PlusCircle,
   RefreshCw,
   Trash2,
   Check as YuhUh,
@@ -127,7 +124,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
       // If the mutation fails, use the context-value from onMutate
       utils.question.getSpecificChoiceQuestion.setData(
         { choiceIqid },
-        ctx.prevData,
+        ctx!.prevData,
       );
     },
     async onSettled() {
@@ -148,8 +145,9 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
       });
 
       // Optimistically update the data with our new post
-      utils.question.getChoicesIdByQuestionId.setData({ questionId }, (old) =>
-        old.filter((dat) => dat.iqid !== deletedChoice.id),
+      utils.question.getChoicesIdByQuestionId.setData(
+        { questionId },
+        (old) => old?.filter((dat) => dat.iqid !== deletedChoice.id),
       );
 
       // Return the previous data so we can revert if something goes wrong
@@ -159,7 +157,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
       // If the mutation fails, use the context-value from onMutate
       utils.question.getChoicesIdByQuestionId.setData(
         { questionId },
-        ctx.prevData,
+        ctx!.prevData,
       );
     },
     async onSettled() {
@@ -168,8 +166,8 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
     },
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   const triggerUpdate = useDebounce(
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     form.handleSubmit((d) =>
       specificChoiceMutation.mutate({ ...d, iqid: choiceIqid }),
     ),
@@ -294,7 +292,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
                             defaultValue={String(currentField.value)}
                             className="flex flex-col space-y-1"
                           >
-                            {optionsField.fields.map((option) => (
+                            {form.getValues("options").map((option) => (
                               <FormItem
                                 key={`answer.${option.order}`}
                                 className="flex items-center space-x-3 space-y-0"
@@ -366,7 +364,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
               >
                 <span className="sr-only">Hapus pertanyaan</span>
                 {deleteChoiceMutation.isLoading ? (
-                  <Loader2 className="animate-spin" />
+                  <Loader2 className="h-6 w-6 animate-spin" />
                 ) : (
                   <Trash2 />
                 )}

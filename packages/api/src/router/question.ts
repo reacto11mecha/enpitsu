@@ -550,124 +550,128 @@ export const questionRouter = createTRPCRouter({
       }),
     ),
 
-  // // Semi realtime stuff begin from this line
-  // getMultipleChoices: protectedProcedure
-  //   .input(z.object({ questionId: z.number() }))
-  //   .query(({ ctx, input }) =>
-  //     ctx.db.query.multipleChoices.findMany({
-  //       where: eq(schema.multipleChoices.questionId, input.questionId),
-  //       orderBy: [asc(schema.multipleChoices.iqid)],
-  //     }),
-  //   ),
+  createNewChoice: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+        if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      } catch (_) {
+        console.error({
+          code: "REDIS_ERR",
+          message:
+            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+        });
+      }
 
-  // getEssays: protectedProcedure
-  //   .input(z.object({ questionId: z.number() }))
-  //   .query(({ ctx, input }) =>
-  //     ctx.db.query.essays.findMany({
-  //       where: eq(schema.essays.questionId, input.questionId),
-  //     }),
-  //   ),
-  // createChoice: protectedProcedure
-  //   .input(z.object({ questionId: z.number() }))
-  //   .mutation(async ({ ctx, input }) => {
-  //     try {
-  //       const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-  //       if (cacheKeys.length > 0) await cache.del(cacheKeys);
-  //     } catch (_) {
-  //       console.error({
-  //         code: "REDIS_ERR",
-  //         message:
-  //           "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
-  //       });
-  //     }
+      return await ctx.db.insert(schema.multipleChoices).values({
+        ...input,
+        question: "",
+        correctAnswerOrder: 0,
+        options: Array.from({ length: 5 }).map((_, idx) => ({
+          order: idx + 1,
+          answer: "",
+        })),
+      });
+    }),
 
-  //     return await ctx.db
-  //       .insert(schema.multipleChoices)
-  //       .values({
-  //         ...input,
-  //         question: "",
-  //         correctAnswerOrder: 0,
-  //         options: Array.from({ length: 5 }).map((_, idx) => ({
-  //           order: idx + 1,
-  //           answer: "",
-  //         })),
-  //       })
-  //       .returning();
-  //   }),
+  // Essay section
+  getEssaysIdByQuestionId: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .query(async ({ ctx, input }) =>
+      ctx.db.query.essays.findMany({
+        where: eq(schema.essays.questionId, input.questionId),
+        orderBy: [asc(schema.essays.iqid)],
+        columns: {
+          iqid: true,
+        },
+      }),
+    ),
 
-  // createEssay: protectedProcedure
-  //   .input(z.object({ questionId: z.number() }))
-  //   .mutation(async ({ ctx, input }) => {
-  //     try {
-  //       const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-  //       if (cacheKeys.length > 0) await cache.del(cacheKeys);
-  //     } catch (_) {
-  //       console.error({
-  //         code: "REDIS_ERR",
-  //         message:
-  //           "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
-  //       });
-  //     }
+  createNewEssay: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+        if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      } catch (_) {
+        console.error({
+          code: "REDIS_ERR",
+          message:
+            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+        });
+      }
 
-  //     return await ctx.db
-  //       .insert(schema.essays)
-  //       .values({
-  //         question: "",
-  //         answer: "",
-  //         questionId: input.questionId,
-  //       })
-  //       .returning();
-  //   }),
-  // updateEssay: protectedProcedure
-  //   .input(
-  //     z.object({
-  //       iqid: z.number(),
-  //       question: z.string(),
-  //       answer: z.string(),
-  //       isStrictEqual: z.boolean(),
-  //     }),
-  //   )
-  //   .mutation(async ({ ctx, input }) => {
-  //     try {
-  //       const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-  //       if (cacheKeys.length > 0) await cache.del(cacheKeys);
-  //     } catch (_) {
-  //       console.error({
-  //         code: "REDIS_ERR",
-  //         message:
-  //           "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
-  //       });
-  //     }
+      return await ctx.db.insert(schema.essays).values({
+        question: "",
+        answer: "",
+        questionId: input.questionId,
+      });
+    }),
 
-  //     return await ctx.db
-  //       .update(schema.essays)
-  //       .set({
-  //         question: input.question,
-  //         answer: input.answer,
-  //         isStrictEqual: input.isStrictEqual,
-  //       })
-  //       .where(eq(schema.essays.iqid, input.iqid));
-  //   }),
-  // deleteEssay: protectedProcedure
-  //   .input(z.object({ id: z.number() }))
-  //   .mutation(async ({ ctx, input }) => {
-  //     try {
-  //       const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-  //       if (cacheKeys.length > 0) await cache.del(cacheKeys);
-  //     } catch (_) {
-  //       console.error({
-  //         code: "REDIS_ERR",
-  //         message:
-  //           "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
-  //       });
-  //     }
+  getSpecificEssayQuestion: protectedProcedure
+    .input(z.object({ essayIqid: z.number() }))
+    .query(({ ctx, input }) =>
+      ctx.db.query.essays.findFirst({
+        where: eq(schema.essays.iqid, input.essayIqid),
+        columns: {
+          answer: true,
+          question: true,
+          isStrictEqual: true,
+        },
+      }),
+    ),
 
-  //     return await ctx.db
-  //       .delete(schema.essays)
-  //       .where(eq(schema.essays.iqid, input.id))
-  //       .returning({ iqid: schema.essays.iqid });
-  //   }),
-  // // ended at this line
+  updateSpecificEssay: protectedProcedure
+    .input(
+      z.object({
+        iqid: z.number(),
+        question: z.string(),
+        answer: z.string(),
+        isStrictEqual: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+        if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      } catch (_) {
+        console.error({
+          code: "REDIS_ERR",
+          message:
+            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+        });
+      }
+
+      return await ctx.db
+        .update(schema.essays)
+        .set({
+          question: input.question,
+          answer: input.answer,
+          isStrictEqual: input.isStrictEqual,
+        })
+        .where(eq(schema.essays.iqid, input.iqid));
+    }),
+
+  deleteSpecificEssay: protectedProcedure
+    .input(z.object({ essayIqid: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+        if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      } catch (_) {
+        console.error({
+          code: "REDIS_ERR",
+          message:
+            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+        });
+      }
+
+      return await ctx.db
+        .delete(schema.essays)
+        .where(eq(schema.essays.iqid, input.essayIqid));
+    }),
+  // ended at this line
 
   // Correction purpose endpoint started from this line below
   getEssaysScore: protectedProcedure
