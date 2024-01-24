@@ -24,6 +24,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Loader2,
@@ -60,6 +61,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
   questionNo: number;
   title: string;
 }) {
+  const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
@@ -77,6 +79,13 @@ export const EssayEditor = memo(function EssayEditorConstructor({
           form.setValue("isStrictEqual", data.isStrictEqual);
           console.log(data);
         }
+      },
+      onError() {
+        toast({
+          variant: "destructive",
+          title: `Gagal mengambil data soal nomor ${questionNo}`,
+          description: "Mohon refresh halaman ini",
+        });
       },
     },
   );
@@ -106,6 +115,12 @@ export const EssayEditor = memo(function EssayEditorConstructor({
         { essayIqid },
         ctx!.prevData,
       );
+
+      toast({
+        variant: "destructive",
+        title: "Gagal memperbarui soal",
+        description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
+      });
     },
     async onSettled() {
       // Sync with server once mutation has settled
@@ -139,6 +154,12 @@ export const EssayEditor = memo(function EssayEditorConstructor({
         { questionId },
         ctx!.prevData,
       );
+
+      toast({
+        variant: "destructive",
+        title: "Gagal menghapus soal",
+        description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
+      });
     },
     async onSettled() {
       // Sync with server once mutation has settled

@@ -28,6 +28,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ClipboardCheck,
@@ -74,6 +75,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
   questionNo: number;
   title: string;
 }) {
+  const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
@@ -97,6 +99,13 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
 
           form.setValue("correctAnswerOrder", data.correctAnswerOrder);
         }
+      },
+      onError() {
+        toast({
+          variant: "destructive",
+          title: `Gagal mengambil data soal nomor ${questionNo}`,
+          description: "Mohon refresh halaman ini",
+        });
       },
     },
   );
@@ -126,6 +135,12 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
         { choiceIqid },
         ctx!.prevData,
       );
+
+      toast({
+        variant: "destructive",
+        title: "Gagal memperbarui soal",
+        description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
+      });
     },
     async onSettled() {
       // Sync with server once mutation has settled
@@ -159,6 +174,12 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
         { questionId },
         ctx!.prevData,
       );
+
+      toast({
+        variant: "destructive",
+        title: "Gagal menghapus soal",
+        description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
+      });
     },
     async onSettled() {
       // Sync with server once mutation has settled

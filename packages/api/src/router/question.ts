@@ -674,6 +674,23 @@ export const questionRouter = createTRPCRouter({
   // ended at this line
 
   // Correction purpose endpoint started from this line below
+  getMultipleChoices: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .query(({ ctx, input }) =>
+      ctx.db.query.multipleChoices.findMany({
+        where: eq(schema.multipleChoices.questionId, input.questionId),
+        orderBy: [asc(schema.multipleChoices.iqid)],
+      }),
+    ),
+
+  getEssays: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .query(({ ctx, input }) =>
+      ctx.db.query.essays.findMany({
+        where: eq(schema.essays.questionId, input.questionId),
+      }),
+    ),
+
   getEssaysScore: protectedProcedure
     .input(z.object({ respondId: z.number() }))
     .query(({ ctx, input }) =>

@@ -1,32 +1,13 @@
 "use client";
 
-// import { useCallback, useEffect } from "react";
-// import { Roboto } from "next/font/google";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  // ClipboardCheck,
-  Loader2,
-  // X as NuhUh,
-  PlusCircle,
-  // RefreshCw,
-  // Trash2,
-  // Check as YuhUh,
-} from "lucide-react";
+import { Loader2, PlusCircle } from "lucide-react";
 
-// import { useFieldArray, useForm, useWatch } from "react-hook-form";
-// import { z } from "zod";
 import { api } from "~/utils/api";
 import { ChoiceEditor } from "./ChoiceEditor";
 import { EssayEditor } from "./EssayEditor";
 import { BasicLoading } from "./NewLoadingQuestion";
-
-// import {
-//   findEssayUpdate,
-//   findMultipleChoiceUpdate,
-//   useDebounce,
-// } from "./utils";
-// import type { Props } from "./utils";
 
 export const Questions = ({
   questionId,
@@ -72,7 +53,7 @@ export const Questions = ({
     onError(error) {
       toast({
         variant: "destructive",
-        title: `Gagal Membuat Soal PG`,
+        title: `Gagal Membuat Soal Esai`,
         description: `Terjadi kesalahan, coba lagi nanti. Error: ${error.message}`,
       });
     },
