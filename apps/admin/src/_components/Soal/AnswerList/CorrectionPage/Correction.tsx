@@ -218,7 +218,7 @@ export const Correction = ({
                 Jumlah Benar:{" "}
                 {essayScoresQuery.data
                   .map(({ score }) => parseFloat(score))
-                  .reduce((curr, acc) => curr + acc)}{" "}
+                  .reduce((curr, acc) => curr + acc, 0)}{" "}
                 / {essaysQuery.data.length}
               </span>
             ) : (
