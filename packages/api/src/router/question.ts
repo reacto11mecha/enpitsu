@@ -1,5 +1,5 @@
 import { cache } from "@enpitsu/cache";
-import { and, asc, eq, schema } from "@enpitsu/db";
+import { and, asc, count, eq, schema } from "@enpitsu/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -450,50 +450,33 @@ export const questionRouter = createTRPCRouter({
     ),
 
   // Semi realtime stuff begin from this line
-  getMultipleChoices: protectedProcedure
+  getChoicesIdByQuestionId: protectedProcedure
     .input(z.object({ questionId: z.number() }))
-    .query(({ ctx, input }) =>
+    .query(async ({ ctx, input }) =>
       ctx.db.query.multipleChoices.findMany({
         where: eq(schema.multipleChoices.questionId, input.questionId),
         orderBy: [asc(schema.multipleChoices.iqid)],
+        columns: {
+          iqid: true,
+        },
       }),
     ),
 
-  getEssays: protectedProcedure
-    .input(z.object({ questionId: z.number() }))
+  getSpecificChoiceQuestion: protectedProcedure
+    .input(z.object({ choiceIqid: z.number() }))
     .query(({ ctx, input }) =>
-      ctx.db.query.essays.findMany({
-        where: eq(schema.essays.questionId, input.questionId),
+      ctx.db.query.multipleChoices.findFirst({
+        where: eq(schema.multipleChoices.iqid, input.choiceIqid),
+        columns: {
+          iqid: true,
+          correctAnswerOrder: true,
+          options: true,
+          question: true,
+        },
       }),
     ),
-  createChoice: protectedProcedure
-    .input(z.object({ questionId: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-        if (cacheKeys.length > 0) await cache.del(cacheKeys);
-      } catch (_) {
-        console.error({
-          code: "REDIS_ERR",
-          message:
-            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
-        });
-      }
 
-      return await ctx.db
-        .insert(schema.multipleChoices)
-        .values({
-          ...input,
-          question: "",
-          correctAnswerOrder: 0,
-          options: Array.from({ length: 5 }).map((_, idx) => ({
-            order: idx + 1,
-            answer: "",
-          })),
-        })
-        .returning();
-    }),
-  updateChoice: protectedProcedure
+  updateSpecificChoice: protectedProcedure
     .input(
       z.object({
         iqid: z.number(),
@@ -530,31 +513,44 @@ export const questionRouter = createTRPCRouter({
           options: input.options,
           correctAnswerOrder: input.correctAnswerOrder,
         })
-        .where(eq(schema.multipleChoices.iqid, input.iqid))
-        .returning();
+        .where(eq(schema.multipleChoices.iqid, input.iqid));
     }),
 
-  deleteChoice: protectedProcedure
+  deleteSpecificChoice: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-        if (cacheKeys.length > 0) await cache.del(cacheKeys);
-      } catch (_) {
-        console.error({
-          code: "REDIS_ERR",
-          message:
-            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
-        });
-      }
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        try {
+          const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+          if (cacheKeys.length > 0) await cache.del(cacheKeys);
+        } catch (_) {
+          console.error({
+            code: "REDIS_ERR",
+            message:
+              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+          });
+        }
 
-      return await ctx.db
-        .delete(schema.multipleChoices)
-        .where(eq(schema.multipleChoices.iqid, input.id))
-        .returning({ iqid: schema.multipleChoices.iqid });
-    }),
+        const answerCount = await tx
+          .select({ value: count() })
+          .from(schema.studentRespondChoices)
+          .where(eq(schema.studentRespondChoices.choiceId, input.id));
 
-  createEssay: protectedProcedure
+        if (answerCount.at(0)!.value > 0)
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Sudah terdapat jawaban pada soal ini, maka tidak bisa dihapus",
+          });
+
+        return await tx
+          .delete(schema.multipleChoices)
+          .where(eq(schema.multipleChoices.iqid, input.id))
+          .returning({ iqid: schema.multipleChoices.iqid });
+      }),
+    ),
+
+  createNewChoice: protectedProcedure
     .input(z.object({ questionId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -568,16 +564,65 @@ export const questionRouter = createTRPCRouter({
         });
       }
 
-      return await ctx.db
-        .insert(schema.essays)
-        .values({
-          question: "",
+      return await ctx.db.insert(schema.multipleChoices).values({
+        ...input,
+        question: "",
+        correctAnswerOrder: 0,
+        options: Array.from({ length: 5 }).map((_, idx) => ({
+          order: idx + 1,
           answer: "",
-          questionId: input.questionId,
-        })
-        .returning();
+        })),
+      });
     }),
-  updateEssay: protectedProcedure
+
+  // Essay section
+  getEssaysIdByQuestionId: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .query(async ({ ctx, input }) =>
+      ctx.db.query.essays.findMany({
+        where: eq(schema.essays.questionId, input.questionId),
+        orderBy: [asc(schema.essays.iqid)],
+        columns: {
+          iqid: true,
+        },
+      }),
+    ),
+
+  createNewEssay: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
+        if (cacheKeys.length > 0) await cache.del(cacheKeys);
+      } catch (_) {
+        console.error({
+          code: "REDIS_ERR",
+          message:
+            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+        });
+      }
+
+      return await ctx.db.insert(schema.essays).values({
+        question: "",
+        answer: "",
+        questionId: input.questionId,
+      });
+    }),
+
+  getSpecificEssayQuestion: protectedProcedure
+    .input(z.object({ essayIqid: z.number() }))
+    .query(({ ctx, input }) =>
+      ctx.db.query.essays.findFirst({
+        where: eq(schema.essays.iqid, input.essayIqid),
+        columns: {
+          answer: true,
+          question: true,
+          isStrictEqual: true,
+        },
+      }),
+    ),
+
+  updateSpecificEssay: protectedProcedure
     .input(
       z.object({
         iqid: z.number(),
@@ -607,8 +652,9 @@ export const questionRouter = createTRPCRouter({
         })
         .where(eq(schema.essays.iqid, input.iqid));
     }),
-  deleteEssay: protectedProcedure
-    .input(z.object({ id: z.number() }))
+
+  deleteSpecificEssay: protectedProcedure
+    .input(z.object({ essayIqid: z.number() }))
     .mutation(async ({ ctx, input }) => {
       try {
         const cacheKeys = await cache.keys("trpc-get-question-slug:*");
@@ -623,12 +669,28 @@ export const questionRouter = createTRPCRouter({
 
       return await ctx.db
         .delete(schema.essays)
-        .where(eq(schema.essays.iqid, input.id))
-        .returning({ iqid: schema.essays.iqid });
+        .where(eq(schema.essays.iqid, input.essayIqid));
     }),
   // ended at this line
 
   // Correction purpose endpoint started from this line below
+  getMultipleChoices: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .query(({ ctx, input }) =>
+      ctx.db.query.multipleChoices.findMany({
+        where: eq(schema.multipleChoices.questionId, input.questionId),
+        orderBy: [asc(schema.multipleChoices.iqid)],
+      }),
+    ),
+
+  getEssays: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .query(({ ctx, input }) =>
+      ctx.db.query.essays.findMany({
+        where: eq(schema.essays.questionId, input.questionId),
+      }),
+    ),
+
   getEssaysScore: protectedProcedure
     .input(z.object({ respondId: z.number() }))
     .query(({ ctx, input }) =>
