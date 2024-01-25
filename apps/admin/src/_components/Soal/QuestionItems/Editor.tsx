@@ -31,6 +31,22 @@ const quillModules = {
 
     ["clean"],
   ],
+  clipboard: {
+    matchers: [
+      [
+        Node.ELEMENT_NODE,
+        (node, delta) => {
+          delta.ops = delta.ops.map((op) => {
+            return {
+              insert: op.insert,
+            };
+          });
+
+          return delta;
+        },
+      ],
+    ],
+  },
 } satisfies ReactQuillProps["modules"];
 
 export default function Editor({
