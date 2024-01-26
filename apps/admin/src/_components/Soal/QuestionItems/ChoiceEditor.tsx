@@ -263,7 +263,30 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
                           render={({ field: currentField }) => (
                             <FormItem>
                               <FormControl>
-                                <div className="flex flex-row items-center gap-3">
+                                <div
+                                  className="flex flex-row items-center gap-3"
+                                  onPaste={(e) => {
+                                    if (
+                                      currentField.value === "" &&
+                                      optIndex === 0
+                                    ) {
+                                      e.preventDefault();
+
+                                      const textArray = e.clipboardData
+                                        .getData("text")
+                                        .trim()
+                                        .split(/\r?\n/)
+                                        .filter((t) => t !== "");
+
+                                      optionsField.fields.forEach((_, idx) =>
+                                        form.setValue(
+                                          `options.${idx}.answer` as const,
+                                          textArray.at(idx) ?? "",
+                                        ),
+                                      );
+                                    }
+                                  }}
+                                >
                                   <Checkbox disabled className="rounded-full" />
 
                                   <Editor
