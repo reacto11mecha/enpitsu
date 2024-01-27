@@ -27,7 +27,14 @@ const TestPage = () => {
   if (questionQuery.isLoading)
     return (
       <SafeAreaView>
-        <YStack h="100%" d="flex" jc="center" ai="center" gap={20} px={20}>
+        <YStack
+          h="100%"
+          display="flex"
+          jc="center"
+          ai="center"
+          gap={20}
+          px={20}
+        >
           <Spinner size="large" color="$blue10" />
         </YStack>
       </SafeAreaView>
@@ -36,7 +43,14 @@ const TestPage = () => {
   if (questionQuery.isLoading)
     return (
       <SafeAreaView>
-        <YStack h="100%" d="flex" jc="center" ai="center" gap={20} px={20}>
+        <YStack
+          h="100%"
+          display="flex"
+          jc="center"
+          ai="center"
+          gap={20}
+          px={20}
+        >
           <Spinner size="large" color="$blue10" />
         </YStack>
       </SafeAreaView>
