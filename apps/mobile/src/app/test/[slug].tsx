@@ -4,6 +4,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useAtom } from "jotai";
 import { Spinner, YStack } from "tamagui";
 
+import { ActualTest } from "~/components/TestRouter/ActualTest";
 import { api } from "~/lib/api";
 import { studentAnswerAtom } from "~/lib/atom";
 
@@ -41,7 +42,7 @@ const TestPage = () => {
       </SafeAreaView>
     );
 
-  return <></>;
+  return <ActualTest data={questionQuery.data} initialData={initialAnswer} />;
 };
 
 export default TestPage;

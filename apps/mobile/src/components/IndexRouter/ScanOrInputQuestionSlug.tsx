@@ -58,22 +58,23 @@ export const ScanOrInputQuestionSlug = ({
 
   return (
     <SafeAreaView>
-      <YStack h="100%" d="flex" jc="center" ai="center" gap={20} px={20}>
+      <YStack h="100%" display="flex" jc="center" ai="center" gap={20} px={20}>
         <XStack>
           <Controller
             control={form.control}
             name="slug"
             render={({ field: { onChange, onBlur, value } }) => (
-              <YStack d="flex">
+              <YStack display="flex" width="100%">
                 <Label lineHeight={30} ml={3}>
                   Kode soal
                 </Label>
-                <XStack space="$2">
+                <XStack display="flex" gap={10} width="100%">
                   <Input
-                    w={getQuestionMutation.isLoading ? "65%" : "70%"}
+                    flex={1}
                     disabled={getQuestionMutation.isLoading}
                     placeholder="Masukan kode soal"
                     fontFamily={"SpaceMono_400Regular"}
+                    onPress={form.handleSubmit(onSubmit)}
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value}

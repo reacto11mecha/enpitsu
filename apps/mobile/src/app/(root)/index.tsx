@@ -15,6 +15,7 @@ import {
   YStack,
 } from "tamagui";
 
+import { Logout } from "~/components/IndexRouter/Logout";
 import { ScanOrInputQuestionSlug } from "~/components/IndexRouter/ScanOrInputQuestionSlug";
 import { api } from "~/lib/api";
 import { studentTokenAtom } from "~/lib/atom";
@@ -55,7 +56,7 @@ const Index = () => {
     <>
       <Stack screenOptions={{ headerShown: false }} />
       <SafeAreaView>
-        <YStack h="100%" d="flex" jc="center" px={20}>
+        <YStack h="100%" display="flex" jc="center" px={20}>
           <Card elevate>
             <Card.Header>
               <YStack gap={10}>
@@ -117,16 +118,14 @@ const Index = () => {
                             </XStack>
                           </YStack>
                           <YStack>
-                            <XStack gap={3} w="100%">
+                            <XStack gap={3} w="100%" display="flex">
                               <Link href="/settings/" asChild>
-                                <Button
-                                  icon={<SettingsIcon size={20} />}
-                                  w="15%"
-                                />
+                                <Button icon={<SettingsIcon size={20} />} />
                               </Link>
-                              <Button w="85%" onPress={() => setCorrect(true)}>
+                              <Button onPress={() => setCorrect(true)} flex={1}>
                                 Ya, sudah benar
                               </Button>
+                              <Logout />
                             </XStack>
                           </YStack>
                         </YStack>

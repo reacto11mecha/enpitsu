@@ -29,7 +29,7 @@ const getBaseUrl = () => {
    * baseUrl to your production API URL.
    */
 
-  return "https://enpitsu.manoedinata.me";
+  // return "https://enpitsu.manoedinata.me";
 
   const debuggerHost = Constants.expoConfig?.hostUri;
   const localhost = debuggerHost?.split(":")[0];

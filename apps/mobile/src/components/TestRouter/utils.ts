@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
-import type { TStudentAnswer } from "@/lib/atom";
 import type { RouterOutputs } from "@enpitsu/api";
 import { z } from "zod";
+
+import type { TStudentAnswer } from "~/lib/atom";
 
 export const formSchema = z.object({
   multipleChoices: z.array(
@@ -36,10 +37,10 @@ export type TFormSchema = z.infer<typeof formSchema>;
 
 type TData = RouterOutputs["exam"]["queryQuestion"];
 
-export type Props = {
+export interface Props {
   data: TData;
   initialData: TStudentAnswer[];
-};
+}
 
 type Timer = ReturnType<typeof setTimeout>;
 type SomeFunction = (...args: never) => void;
