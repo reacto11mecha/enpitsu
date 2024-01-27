@@ -9,7 +9,7 @@ import "react-quill/dist/quill.snow.css";
 
 window.katex = katex;
 
-const quillModules = {
+const quillModules: ReactQuillProps["modules"] = {
   toolbar: [
     [{ header: "1" }, { header: "2" }, { font: [] }],
 
@@ -31,7 +31,23 @@ const quillModules = {
 
     ["clean"],
   ],
-} satisfies ReactQuillProps["modules"];
+  clipboard: {
+    matchers: [
+      [
+        Node.ELEMENT_NODE,
+        (_node: unknown, delta: { ops: { insert: string }[] }) => {
+          delta.ops = delta.ops.map((op) => {
+            return {
+              insert: op.insert,
+            };
+          });
+
+          return delta;
+        },
+      ],
+    ],
+  },
+};
 
 export default function Editor({
   value,
