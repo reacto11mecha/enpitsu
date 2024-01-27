@@ -252,7 +252,7 @@ export const Precaution = ({
                   replace
                   asChild
                   href={{
-                    pathname: "/test/[id]",
+                    pathname: "/test/[slug]",
                     params: { slug: data.slug },
                   }}
                 >

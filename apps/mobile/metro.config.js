@@ -19,6 +19,11 @@ if (config.resolver) {
   ];
   // 3. Force Metro to resolve (sub)dependencies only from the `nodeModulesPaths`
   config.resolver.disableHierarchicalLookup = true;
+
+  // 4. Ignore next js standalone build
+  const _blocklist = config.resolver.blockList;
+
+  config.resolver.blockList = [_blocklist, /.next\/.*/];
 }
 
 module.exports = config;
