@@ -1,5 +1,5 @@
 import { cache } from "@enpitsu/cache";
-import { and, asc, count, eq, schema } from "@enpitsu/db";
+import { and, asc, count, desc, eq, schema } from "@enpitsu/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -64,6 +64,7 @@ export const questionRouter = createTRPCRouter({
         id: true,
         time: true,
       },
+      orderBy: [desc(schema.studentBlocklists.time)],
       with: {
         student: {
           columns: {
@@ -106,6 +107,7 @@ export const questionRouter = createTRPCRouter({
     .query(({ ctx, input }) =>
       ctx.db.query.studentBlocklists.findMany({
         where: eq(schema.studentBlocklists.questionId, input.questionId),
+        orderBy: [desc(schema.studentBlocklists.time)],
         columns: {
           id: true,
           time: true,
@@ -144,6 +146,7 @@ export const questionRouter = createTRPCRouter({
         checkIn: true,
         submittedAt: true,
       },
+      orderBy: [desc(schema.studentResponds.submittedAt)],
       with: {
         question: {
           columns: {
@@ -186,6 +189,7 @@ export const questionRouter = createTRPCRouter({
     .query(({ ctx, input }) =>
       ctx.db.query.studentResponds.findMany({
         where: eq(schema.studentResponds.questionId, input.questionId),
+        orderBy: [desc(schema.studentResponds.submittedAt)],
         columns: {
           id: true,
           checkIn: true,
