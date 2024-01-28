@@ -1,20 +1,20 @@
 import React from "react";
-import { SafeAreaView, ScrollView, View } from "react-native";
-import { WebView } from "react-native-webview";
+import { AppState, SafeAreaView, ScrollView, View } from "react-native";
 import { useKeepAwake } from "expo-keep-awake";
 import { router } from "expo-router";
+import { usePreventScreenCapture } from "expo-screen-capture";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNetInfo } from "@react-native-community/netinfo";
 import { FlashList } from "@shopify/flash-list";
 import { Home } from "@tamagui/lucide-icons";
 import { useToastController } from "@tamagui/toast";
 import { useAtom } from "jotai";
-import { useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import {
   AlertDialog,
-  // RadioGroup,
   Button,
-  Card,
   H3,
+  Spinner,
   Text,
   XStack,
   YStack,
@@ -22,24 +22,22 @@ import {
 
 import { api } from "~/lib/api";
 import { studentAnswerAtom } from "~/lib/atom";
-import {
-  formSchema,
-  shuffleArray,
-  // useDebounce
-} from "./utils";
+import { RenderChoiceQuestion } from "./Renderer";
+import { formSchema, shuffleArray, useDebounce } from "./utils";
 import type { Props, TFormSchema } from "./utils";
 
 function ActualTestConstructor({ data, initialData }: Props) {
   useKeepAwake();
+  usePreventScreenCapture();
 
-  // const [checkIn] = React.useState(
-  //   initialData.find((d) => d.slug === data.slug)?.checkIn
-  //     ? new Date(
-  //       initialData.find((d) => d.slug === data.slug)!
-  //         .checkIn as unknown as string,
-  //     )
-  //     : new Date(),
-  // );
+  const [checkIn] = React.useState(
+    initialData.find((d) => d.slug === data.slug)?.checkIn
+      ? new Date(
+          initialData.find((d) => d.slug === data.slug)!
+            .checkIn as unknown as string,
+        )
+      : new Date(),
+  );
 
   const toast = useToastController();
 
@@ -76,6 +74,21 @@ function ActualTestConstructor({ data, initialData }: Props) {
   const [dishonestyCount, setDishonestyCount] = React.useState(
     initialData.find((d) => d.slug === data.slug)?.dishonestCount ?? 0,
   );
+
+  const { isConnected } = useNetInfo();
+
+  const appState = React.useRef(AppState.currentState);
+  const [appStateVisible, setAppStateVisible] = React.useState(
+    appState.current,
+  );
+
+  // Toggle this initial state value for prod and dev
+  const canUpdateDishonesty = React.useRef(true);
+
+  console.log("canUpdateDishonesty", canUpdateDishonesty);
+
+  const [dishonestyWarning, setDishonestyWarning] = React.useState(false);
+  const [badInternetAlert, setBadInternet] = React.useState(false);
 
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
@@ -118,6 +131,109 @@ function ActualTestConstructor({ data, initialData }: Props) {
     control: form.control,
     name: "essays",
   });
+
+  // Increment dishonesty count up to 3 tab changes.
+  // The first two will ask kindly to not to cheat on their exam.
+  React.useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === "active" &&
+        canUpdateDishonesty.current
+      )
+        setDishonestyCount((prev) => {
+          console.log("visible now");
+          const newValue = ++prev;
+
+          if (newValue > 2) {
+            canUpdateDishonesty.current = false;
+          } else if (newValue < 3) {
+            canUpdateDishonesty.current = false;
+            setDishonestyWarning(true);
+          }
+
+          return newValue;
+        });
+
+      appState.current = nextAppState;
+      setAppStateVisible(appState.current);
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  // Track changes of user network status. User can turned on their
+  // internet connection and safely continue their exam like normal.
+  React.useEffect(() => {
+    if (!isConnected) {
+      canUpdateDishonesty.current = false;
+      setBadInternet(true);
+    }
+  }, [isConnected]);
+
+  const multipleChoiceDebounced = useDebounce(
+    (updatedData: { iqid: number; choosedAnswer: number }) => {
+      setStudentAnswers((prev) =>
+        prev.map((answer) =>
+          answer.slug === data.slug
+            ? {
+                ...answer,
+                multipleChoices: !answer.multipleChoices.find(
+                  (choice) => choice.iqid === updatedData.iqid,
+                )
+                  ? [...answer.multipleChoices, updatedData]
+                  : answer.multipleChoices.map((choice) =>
+                      choice.iqid === updatedData.iqid ? updatedData : choice,
+                    ),
+              }
+            : answer,
+        ),
+      );
+    },
+  );
+
+  const updateDishonestAtom = React.useCallback(
+    (count: number) => {
+      setStudentAnswers((prev) =>
+        prev.map((answer) =>
+          answer.slug === data.slug
+            ? { ...answer, dishonestCount: count }
+            : answer,
+        ),
+      );
+    },
+    [data.slug, setStudentAnswers],
+  );
+
+  React.useEffect(() => {
+    updateDishonestAtom(dishonestyCount);
+
+    if (dishonestyCount > 2) {
+      blocklistMutation.mutate({ questionId: data.id, time: new Date() });
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dishonestyCount]);
+
+  const onSubmit = (values: TFormSchema) => {
+    canUpdateDishonesty.current = false;
+
+    submitAnswerMutation.mutate({
+      multipleChoices: values.multipleChoices.map((choice) => ({
+        iqid: choice.iqid,
+        choosedAnswer: choice.choosedAnswer,
+      })),
+      essays: values.essays.map((essay) => ({
+        iqid: essay.iqid,
+        answer: essay.answer,
+      })),
+      questionId: data.id,
+      checkIn,
+      submittedAt: new Date(),
+    });
+  };
 
   return (
     <View>
@@ -248,16 +364,24 @@ function ActualTestConstructor({ data, initialData }: Props) {
               <FlashList
                 data={multipleChoicesField.fields}
                 renderItem={({ index, item }) => (
-                  <Card elevate size="$4" bordered mt={index > 0 ? 15 : 0}>
-                    <Card.Header padded>
-                      <WebView source={{ html: item.question }} />
-                      {/* <Paragraph theme="alt2">Now available</Paragraph> */}
-                    </Card.Header>
-                    <Card.Footer padded>
-                      {/* <XStack flex={1} /> */}
-                      {/* <Button borderRadius="$10">Purchase</Button> */}
-                    </Card.Footer>
-                  </Card>
+                  <Controller
+                    control={form.control}
+                    name={`multipleChoices.${index}.choosedAnswer`}
+                    render={({ field }) => (
+                      <RenderChoiceQuestion
+                        index={index}
+                        item={item}
+                        currPick={field.value}
+                        updateAnswer={(order: number) => {
+                          field.onChange(order);
+                          multipleChoiceDebounced({
+                            iqid: item.iqid,
+                            choosedAnswer: order,
+                          });
+                        }}
+                      />
+                    )}
+                  />
                 )}
                 estimatedItemSize={40}
               />
@@ -274,7 +398,7 @@ function ActualTestConstructor({ data, initialData }: Props) {
 
           <XStack>
             <XStack flex={1} />
-            <Button>Submit</Button>
+            <Button onPress={form.handleSubmit(onSubmit)}>Submit</Button>
           </XStack>
         </YStack>
       </ScrollView>

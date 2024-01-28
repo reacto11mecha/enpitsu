@@ -56,7 +56,7 @@ const TestPage = () => {
       </SafeAreaView>
     );
 
-  return <ActualTest data={questionQuery.data} initialData={initialAnswer} />;
+  return <ActualTest data={questionQuery.data!} initialData={initialAnswer} />;
 };
 
 export default TestPage;
