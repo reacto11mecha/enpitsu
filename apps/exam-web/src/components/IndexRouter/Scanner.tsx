@@ -104,7 +104,7 @@ export const ScannerWrapper = ({
           variant="outline"
           disabled={isDisabled}
         >
-          <ScanLine /> Scan QR
+          <ScanLine /> Pindai QR
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
