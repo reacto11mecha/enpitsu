@@ -8,6 +8,7 @@ export default defineConfig({
   plugins: [
     react(),
     legacy({
+      targets: ">0.09%, last 5 versions, not dead, Firefox ESR",
       renderLegacyChunks: true,
       modernPolyfills: true,
     }),
