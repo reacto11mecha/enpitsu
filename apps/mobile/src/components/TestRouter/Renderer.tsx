@@ -1,20 +1,23 @@
 import { useWindowDimensions } from "react-native";
 import RenderHtml from "react-native-render-html";
 import type { FieldArrayWithId } from "react-hook-form";
-import { Card, Label, RadioGroup, XStack } from "tamagui";
+import { Card, Label, RadioGroup, TextArea, XStack } from "tamagui";
 
 import type { TFormSchema } from "./utils";
 
-type TItem = FieldArrayWithId<TFormSchema, "multipleChoices", "id">;
+type TChoice = FieldArrayWithId<TFormSchema, "multipleChoices", "id">;
+type TEssay = FieldArrayWithId<TFormSchema, "essays", "id">;
 
 export function RenderChoiceQuestion({
   item,
   currPick,
+  disabled,
   index,
   updateAnswer,
 }: {
-  item: TItem;
+  item: TChoice;
   currPick: number;
+  disabled: boolean;
   index: number;
   updateAnswer: (order: number) => void;
 }) {
@@ -35,6 +38,7 @@ export function RenderChoiceQuestion({
       </Card.Header>
       <Card.Footer padded>
         <RadioGroup
+          disabled={disabled}
           value={String(currPick)}
           onValueChange={(val) => updateAnswer(parseInt(val))}
           gap="$2"
@@ -48,7 +52,11 @@ export function RenderChoiceQuestion({
                 <RadioGroup.Indicator />
               </RadioGroup.Item>
 
-              <Label htmlFor={`${index}.${option.order}`} width={width}>
+              <Label
+                htmlFor={`${index}.${option.order}`}
+                width={width}
+                disabled={disabled}
+              >
                 <RenderHtml
                   contentWidth={width}
                   source={{ html: option.answer }}
@@ -62,6 +70,48 @@ export function RenderChoiceQuestion({
             </XStack>
           ))}
         </RadioGroup>
+      </Card.Footer>
+    </Card>
+  );
+}
+
+export function RenderEssayQuestion({
+  item,
+  currAnswer,
+  disabled,
+  index,
+  updateAnswer,
+}: {
+  item: TEssay;
+  currAnswer: string;
+  disabled: boolean;
+  index: number;
+  updateAnswer: (answer: string) => void;
+}) {
+  const { width } = useWindowDimensions();
+
+  return (
+    <Card elevate size="$4" bordered mt={index > 0 ? 15 : 0}>
+      <Card.Header padded>
+        <RenderHtml
+          contentWidth={width}
+          source={{ html: item.question }}
+          tagsStyles={{
+            body: {
+              color: "white",
+            },
+          }}
+        />
+      </Card.Header>
+      <Card.Footer padded>
+        <TextArea
+          size="$4"
+          disabled={disabled}
+          width="100%"
+          borderWidth={2}
+          value={currAnswer}
+          onChangeText={updateAnswer}
+        />
       </Card.Footer>
     </Card>
   );

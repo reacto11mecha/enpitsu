@@ -24,21 +24,12 @@ const TestPage = () => {
     },
   );
 
-  if (questionQuery.isLoading)
-    return (
-      <SafeAreaView>
-        <YStack
-          h="100%"
-          display="flex"
-          jc="center"
-          ai="center"
-          gap={20}
-          px={20}
-        >
-          <Spinner size="large" color="$blue10" />
-        </YStack>
-      </SafeAreaView>
-    );
+  console.log(questionQuery.isRefetching);
+
+  const refetchQuestion = React.useCallback(
+    () => questionQuery.refetch(),
+    [questionQuery],
+  );
 
   if (questionQuery.isLoading)
     return (
@@ -56,7 +47,30 @@ const TestPage = () => {
       </SafeAreaView>
     );
 
-  return <ActualTest data={questionQuery.data!} initialData={initialAnswer} />;
+  if (questionQuery.isLoading)
+    return (
+      <SafeAreaView>
+        <YStack
+          h="100%"
+          display="flex"
+          jc="center"
+          ai="center"
+          gap={20}
+          px={20}
+        >
+          <Spinner size="large" color="$blue10" />
+        </YStack>
+      </SafeAreaView>
+    );
+
+  return (
+    <ActualTest
+      data={questionQuery.data!}
+      isRefetching={questionQuery.isRefetching}
+      refetch={refetchQuestion}
+      initialData={initialAnswer}
+    />
+  );
 };
 
 export default TestPage;

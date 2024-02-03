@@ -120,15 +120,11 @@ const PrecautionChildren = ({
               <H4>Soal Ujian</H4>
 
               <YStack>
-                <FlashList
-                  data={questionIdentity}
-                  renderItem={({ item }) => (
-                    <Text fontWeight="bold">
-                      {item.title}: <Text>{item.label}.</Text>
-                    </Text>
-                  )}
-                  estimatedItemSize={7}
-                />
+                {questionIdentity.map((question) => (
+                  <Text fontWeight="bold" key={question.title}>
+                    {question.title}: <Text>{question.label}.</Text>
+                  </Text>
+                ))}
               </YStack>
             </YStack>
 
@@ -136,15 +132,11 @@ const PrecautionChildren = ({
               <H4>Perilaku Aplikasi</H4>
 
               <YStack>
-                <FlashList
-                  data={appBehaviour}
-                  renderItem={({ item, index }) => (
-                    <Paragraph>
-                      <Text fontWeight="bold">{index + 1}</Text>. {item.label}
-                    </Paragraph>
-                  )}
-                  estimatedItemSize={4}
-                />
+                {appBehaviour.map((item, index) => (
+                  <Paragraph key={index}>
+                    <Text fontWeight="bold">{index + 1}</Text>. {item.label}
+                  </Paragraph>
+                ))}
               </YStack>
             </YStack>
 

@@ -1,5 +1,5 @@
 import React from "react";
-import Constants from "expo-constants";
+// import Constants from "expo-constants";
 import type { AppRouter } from "@enpitsu/api";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
@@ -29,18 +29,18 @@ const getBaseUrl = () => {
    * baseUrl to your production API URL.
    */
 
-  // return "https://enpitsu.manoedinata.me";
+  return "https://admin-osn.rmecha.my.id";
 
-  const debuggerHost = Constants.expoConfig?.hostUri;
-  const localhost = debuggerHost?.split(":")[0];
+  // const debuggerHost = Constants.expoConfig?.hostUri;
+  // const localhost = debuggerHost?.split(":")[0];
 
-  if (!localhost) {
-    // return "https://turbo.t3.gg";
-    throw new Error(
-      "Failed to get localhost. Please point to your production server.",
-    );
-  }
-  return `http://${localhost}:3000`;
+  // if (!localhost) {
+  //   // return "https://turbo.t3.gg";
+  //   throw new Error(
+  //     "Failed to get localhost. Please point to your production server.",
+  //   );
+  // }
+  // return `http://${localhost}:3000`;
 };
 
 /**

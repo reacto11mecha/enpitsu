@@ -1,32 +1,40 @@
 import React from "react";
-import { AppState, SafeAreaView, ScrollView, View } from "react-native";
+import {
+  AppState,
+  RefreshControl,
+  SafeAreaView,
+  ScrollView,
+  View,
+} from "react-native";
 import { useKeepAwake } from "expo-keep-awake";
-import { router } from "expo-router";
 import { usePreventScreenCapture } from "expo-screen-capture";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNetInfo } from "@react-native-community/netinfo";
 import { FlashList } from "@shopify/flash-list";
-import { Home } from "@tamagui/lucide-icons";
 import { useToastController } from "@tamagui/toast";
 import { useAtom } from "jotai";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import {
-  AlertDialog,
-  Button,
-  H3,
-  Spinner,
-  Text,
-  XStack,
-  YStack,
-} from "tamagui";
+import { Button, H3, Spinner, XStack, YStack } from "tamagui";
 
+import { useCountdown } from "~/hooks/useCountdown";
 import { api } from "~/lib/api";
 import { studentAnswerAtom } from "~/lib/atom";
-import { RenderChoiceQuestion } from "./Renderer";
+import {
+  BadInternetAlert,
+  DihonestyAlert,
+  DishonestyCountAlert,
+  GoHomeAlert,
+} from "./AllAlert";
+import { RenderChoiceQuestion, RenderEssayQuestion } from "./Renderer";
 import { formSchema, shuffleArray, useDebounce } from "./utils";
 import type { Props, TFormSchema } from "./utils";
 
-function ActualTestConstructor({ data, initialData }: Props) {
+function ActualTestConstructor({
+  data,
+  isRefetching,
+  refetch,
+  initialData,
+}: Props) {
   useKeepAwake();
   usePreventScreenCapture();
 
@@ -78,17 +86,23 @@ function ActualTestConstructor({ data, initialData }: Props) {
   const { isConnected } = useNetInfo();
 
   const appState = React.useRef(AppState.currentState);
-  const [appStateVisible, setAppStateVisible] = React.useState(
-    appState.current,
-  );
 
   // Toggle this initial state value for prod and dev
   const canUpdateDishonesty = React.useRef(true);
 
-  console.log("canUpdateDishonesty", canUpdateDishonesty);
-
   const [dishonestyWarning, setDishonestyWarning] = React.useState(false);
   const [badInternetAlert, setBadInternet] = React.useState(false);
+
+  const closeDishonestyAlert = React.useCallback(() => {
+    canUpdateDishonesty.current = true;
+    setDishonestyWarning(false);
+  }, []);
+  const closeBadInternet = React.useCallback(() => {
+    if (isConnected) {
+      canUpdateDishonesty.current = true;
+      setBadInternet(false);
+    }
+  }, [isConnected]);
 
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
@@ -132,9 +146,26 @@ function ActualTestConstructor({ data, initialData }: Props) {
     name: "essays",
   });
 
+  const { countdown, isEnded } = useCountdown(data.endedAt);
+
   // Increment dishonesty count up to 3 tab changes.
   // The first two will ask kindly to not to cheat on their exam.
   React.useEffect(() => {
+    setStudentAnswers((prev) =>
+      !prev.find((answer) => answer.slug === data.slug)
+        ? [
+            ...prev,
+            {
+              slug: data.slug,
+              checkIn,
+              dishonestCount: 0,
+              multipleChoices: [],
+              essays: [],
+            },
+          ]
+        : prev,
+    );
+
     const subscription = AppState.addEventListener("change", (nextAppState) => {
       if (
         appState.current.match(/inactive|background/) &&
@@ -142,7 +173,6 @@ function ActualTestConstructor({ data, initialData }: Props) {
         canUpdateDishonesty.current
       )
         setDishonestyCount((prev) => {
-          console.log("visible now");
           const newValue = ++prev;
 
           if (newValue > 2) {
@@ -156,18 +186,19 @@ function ActualTestConstructor({ data, initialData }: Props) {
         });
 
       appState.current = nextAppState;
-      setAppStateVisible(appState.current);
     });
 
     return () => {
       subscription.remove();
     };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Track changes of user network status. User can turned on their
   // internet connection and safely continue their exam like normal.
   React.useEffect(() => {
-    if (!isConnected) {
+    if (!isConnected && isConnected !== null) {
       canUpdateDishonesty.current = false;
       setBadInternet(true);
     }
@@ -235,9 +266,23 @@ function ActualTestConstructor({ data, initialData }: Props) {
     });
   };
 
+  if (submitAnswerMutation.isSuccess) return <SafeAreaView></SafeAreaView>;
+
+  if (dishonestyCount > 2) return <SafeAreaView></SafeAreaView>;
+
+  if (isEnded) return <SafeAreaView></SafeAreaView>;
+
   return (
     <View>
       <SafeAreaView>
+        <DihonestyAlert open={dishonestyWarning} close={closeDishonestyAlert} />
+
+        <BadInternetAlert
+          open={badInternetAlert}
+          close={closeBadInternet}
+          backOnline={isConnected}
+        />
+
         <YStack>
           <XStack
             display="flex"
@@ -246,116 +291,20 @@ function ActualTestConstructor({ data, initialData }: Props) {
             mt={30}
             mb={10}
           >
-            <AlertDialog>
-              <AlertDialog.Trigger asChild>
-                <Button icon={<Home size={20} />} />
-              </AlertDialog.Trigger>
-              <AlertDialog.Portal>
-                <AlertDialog.Overlay
-                  key="overlay"
-                  animation="quick"
-                  opacity={0.5}
-                  enterStyle={{ opacity: 0 }}
-                  exitStyle={{ opacity: 0 }}
-                />
-                <AlertDialog.Content
-                  bordered
-                  elevate
-                  key="content"
-                  animation={[
-                    "quick",
-                    {
-                      opacity: {
-                        overshootClamping: true,
-                      },
-                    },
-                  ]}
-                  enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-                  exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-                  x={0}
-                  scale={1}
-                  opacity={1}
-                  y={0}
-                >
-                  <YStack space>
-                    <AlertDialog.Title>Kembali ke beranda?</AlertDialog.Title>
-                    <AlertDialog.Description>
-                      Anda saat ini sedang mengerjakan soal. Jika anda kembali
-                      maka semua jawaban dan status kecurangan masih tetap
-                      tersimpan.
-                    </AlertDialog.Description>
+            <GoHomeAlert />
 
-                    <XStack justifyContent="flex-end" space="$2">
-                      <AlertDialog.Cancel asChild>
-                        <Button>Batal</Button>
-                      </AlertDialog.Cancel>
+            <Button>{countdown}</Button>
 
-                      <Button onPress={() => router.replace("/")}>
-                        Kembali
-                      </Button>
-                    </XStack>
-                  </YStack>
-                </AlertDialog.Content>
-              </AlertDialog.Portal>
-            </AlertDialog>
-
-            <Button>22:18:21</Button>
-
-            <AlertDialog>
-              <AlertDialog.Trigger asChild>
-                <Button>
-                  <Text>{dishonestyCount}</Text>
-                </Button>
-              </AlertDialog.Trigger>
-              <AlertDialog.Portal>
-                <AlertDialog.Overlay
-                  key="overlay"
-                  animation="quick"
-                  opacity={0.5}
-                  enterStyle={{ opacity: 0 }}
-                  exitStyle={{ opacity: 0 }}
-                />
-                <AlertDialog.Content
-                  bordered
-                  elevate
-                  key="content"
-                  animation={[
-                    "quick",
-                    {
-                      opacity: {
-                        overshootClamping: true,
-                      },
-                    },
-                  ]}
-                  enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-                  exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-                  x={0}
-                  scale={1}
-                  opacity={1}
-                  y={0}
-                >
-                  <YStack space>
-                    <AlertDialog.Title>Jumlah kecurangan</AlertDialog.Title>
-                    <AlertDialog.Description>
-                      Anda saat ini melakukan {dishonestyCount} kecurangan,
-                      lebih dari dua (2) kecurangan maka anda akan dinyatakan
-                      melakukan kecurangan.
-                    </AlertDialog.Description>
-
-                    <XStack justifyContent="flex-end" space="$2">
-                      <AlertDialog.Cancel asChild>
-                        <Button>Tutup</Button>
-                      </AlertDialog.Cancel>
-                    </XStack>
-                  </YStack>
-                </AlertDialog.Content>
-              </AlertDialog.Portal>
-            </AlertDialog>
+            <DishonestyCountAlert dishonestyCount={dishonestyCount} />
           </XStack>
         </YStack>
       </SafeAreaView>
 
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+        }
+      >
         <YStack display="flex" mb={100} gap={30} px={20}>
           {multipleChoicesField.fields.length > 0 ? (
             <YStack mt={15} display="flex" gap={20}>
@@ -371,6 +320,7 @@ function ActualTestConstructor({ data, initialData }: Props) {
                       <RenderChoiceQuestion
                         index={index}
                         item={item}
+                        disabled={submitAnswerMutation.isLoading}
                         currPick={field.value}
                         updateAnswer={(order: number) => {
                           field.onChange(order);
@@ -392,13 +342,40 @@ function ActualTestConstructor({ data, initialData }: Props) {
             <YStack mt={15} display="flex" gap={20}>
               <H3>Esai</H3>
 
-              <YStack></YStack>
+              <YStack>
+                <FlashList
+                  data={essaysField.fields}
+                  renderItem={({ index, item }) => (
+                    <Controller
+                      control={form.control}
+                      name={`essays.${index}.answer` as const}
+                      render={({ field }) => (
+                        <RenderEssayQuestion
+                          item={item}
+                          currAnswer={field.value}
+                          disabled={submitAnswerMutation.isLoading}
+                          index={index}
+                          updateAnswer={(answer) => {
+                            field.onChange(answer);
+                          }}
+                        />
+                      )}
+                    />
+                  )}
+                  estimatedItemSize={40}
+                />
+              </YStack>
             </YStack>
           ) : null}
 
           <XStack>
             <XStack flex={1} />
-            <Button onPress={form.handleSubmit(onSubmit)}>Submit</Button>
+            <Button
+              onPress={form.handleSubmit(onSubmit)}
+              disabled={submitAnswerMutation.isLoading}
+            >
+              {submitAnswerMutation.isLoading ? <Spinner /> : null} Submit
+            </Button>
           </XStack>
         </YStack>
       </ScrollView>

@@ -74,7 +74,6 @@ export const ScanOrInputQuestionSlug = ({
                     disabled={getQuestionMutation.isLoading}
                     placeholder="Masukan kode soal"
                     fontFamily={"SpaceMono_400Regular"}
-                    onPress={form.handleSubmit(onSubmit)}
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value}
