@@ -49,13 +49,15 @@ function ActualTestConstructor({
 
   const toast = useToastController();
 
-  const [studentAnswers, setStudentAnswers] = useAtom(studentAnswerAtom);
+  const [, setStudentAnswers] = useAtom(studentAnswerAtom);
 
   const blocklistMutation = api.exam.storeBlocklist.useMutation({
     onSuccess() {
-      setStudentAnswers(
-        studentAnswers.filter((answer) => answer.slug !== data.slug),
-      );
+      void setStudentAnswers(async (prev) => {
+        const prevAnswer = await prev;
+
+        return prevAnswer.filter((answer) => answer.slug !== data.slug);
+      });
     },
     onError(error) {
       toast.show("Operasi Gagal", {
@@ -67,9 +69,11 @@ function ActualTestConstructor({
 
   const submitAnswerMutation = api.exam.submitAnswer.useMutation({
     onSuccess() {
-      setStudentAnswers(
-        studentAnswers.filter((answer) => answer.slug !== data.slug),
-      );
+      void setStudentAnswers(async (prev) => {
+        const prevAnswer = await prev;
+
+        return prevAnswer.filter((answer) => answer.slug !== data.slug);
+      });
     },
     onError(error) {
       toast.show("Operasi Gagal", {
@@ -151,10 +155,12 @@ function ActualTestConstructor({
   // Increment dishonesty count up to 3 tab changes.
   // The first two will ask kindly to not to cheat on their exam.
   React.useEffect(() => {
-    setStudentAnswers((prev) =>
-      !prev.find((answer) => answer.slug === data.slug)
+    void setStudentAnswers(async (prev) => {
+      const prevAnswer = await prev;
+
+      return !prevAnswer.find((answer) => answer.slug === data.slug)
         ? [
-            ...prev,
+            ...prevAnswer,
             {
               slug: data.slug,
               checkIn,
@@ -163,8 +169,8 @@ function ActualTestConstructor({
               essays: [],
             },
           ]
-        : prev,
-    );
+        : prevAnswer;
+    });
 
     const subscription = AppState.addEventListener("change", (nextAppState) => {
       if (
@@ -206,8 +212,10 @@ function ActualTestConstructor({
 
   const multipleChoiceDebounced = useDebounce(
     (updatedData: { iqid: number; choosedAnswer: number }) => {
-      setStudentAnswers((prev) =>
-        prev.map((answer) =>
+      void setStudentAnswers(async (prev) => {
+        const prevAnswer = await prev;
+
+        return prevAnswer.map((answer) =>
           answer.slug === data.slug
             ? {
                 ...answer,
@@ -220,20 +228,45 @@ function ActualTestConstructor({
                     ),
               }
             : answer,
-        ),
-      );
+        );
+      });
+    },
+  );
+
+  const essayDebounce = useDebounce(
+    (updatedData: { iqid: number; answer: string }) => {
+      void setStudentAnswers(async (prev) => {
+        const prevAnswer = await prev;
+
+        return prevAnswer.map((answer) =>
+          answer.slug === data.slug
+            ? {
+                ...answer,
+                essays: !answer.essays.find(
+                  (choice) => choice.iqid === updatedData.iqid,
+                )
+                  ? [...answer.essays, updatedData]
+                  : answer.essays.map((essay) =>
+                      essay.iqid === updatedData.iqid ? updatedData : essay,
+                    ),
+              }
+            : answer,
+        );
+      });
     },
   );
 
   const updateDishonestAtom = React.useCallback(
     (count: number) => {
-      setStudentAnswers((prev) =>
-        prev.map((answer) =>
+      void setStudentAnswers(async (prev) => {
+        const prevAnswer = await prev;
+
+        return prevAnswer.map((answer) =>
           answer.slug === data.slug
             ? { ...answer, dishonestCount: count }
             : answer,
-        ),
-      );
+        );
+      });
     },
     [data.slug, setStudentAnswers],
   );
@@ -324,6 +357,7 @@ function ActualTestConstructor({
                         currPick={field.value}
                         updateAnswer={(order: number) => {
                           field.onChange(order);
+
                           multipleChoiceDebounced({
                             iqid: item.iqid,
                             choosedAnswer: order,
@@ -357,6 +391,11 @@ function ActualTestConstructor({
                           index={index}
                           updateAnswer={(answer) => {
                             field.onChange(answer);
+
+                            essayDebounce({
+                              iqid: item.iqid,
+                              answer,
+                            });
                           }}
                         />
                       )}
