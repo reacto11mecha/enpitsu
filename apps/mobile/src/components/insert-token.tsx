@@ -48,7 +48,7 @@ export const FirstTimeNoToken = () => {
       />
       <StatusBar />
       <SafeAreaView>
-        <YStack h="100%" d="flex" jc="center" px={20}>
+        <YStack h="100%" display="flex" jc="center" px={20}>
           <Card elevate>
             <Card.Header>
               <H3>Masukan Token</H3>
@@ -63,8 +63,8 @@ export const FirstTimeNoToken = () => {
               px={15}
               pb={20}
               width="100%"
-              d="flex"
-              fd="col"
+              display="flex"
+              fd="column"
               gap={10}
             >
               <YStack>
@@ -135,7 +135,7 @@ export const Settings = () => {
       />
       <StatusBar />
       <SafeAreaView>
-        <YStack h="100%" d="flex" jc="center" px={20}>
+        <YStack h="100%" display="flex" jc="center" px={20}>
           <Card elevate>
             <Card.Header>
               <H3>Pengaturan</H3>
@@ -149,8 +149,8 @@ export const Settings = () => {
               px={15}
               pb={20}
               width="100%"
-              d="flex"
-              fd="col"
+              display="flex"
+              fd="column"
               gap={10}
             >
               <YStack>
