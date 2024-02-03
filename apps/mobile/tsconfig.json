@@ -10,6 +10,7 @@
   },
   "include": [
     "src",
+    "modules",
     "*.ts",
     "index.tsx",
     "*.js",
