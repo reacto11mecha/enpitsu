@@ -1,4 +1,4 @@
-package your.bundle.identifier;
+package rmecha.my.id.enpitsu;
 
 import android.os.Build;
 import android.os.Bundle;

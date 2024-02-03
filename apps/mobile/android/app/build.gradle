@@ -81,9 +81,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace 'your.bundle.identifier'
+    namespace 'rmecha.my.id.enpitsu'
     defaultConfig {
-        applicationId 'your.bundle.identifier'
+        applicationId 'rmecha.my.id.enpitsu'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
