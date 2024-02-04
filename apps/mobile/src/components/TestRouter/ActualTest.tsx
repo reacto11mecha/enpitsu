@@ -38,13 +38,16 @@ function ActualTestConstructor({
   useKeepAwake();
   usePreventScreenCapture();
 
+  console.log(initialData);
+
   const [checkIn] = React.useState(
-    initialData.find((d) => d.slug === data.slug)?.checkIn
-      ? new Date(
-          initialData.find((d) => d.slug === data.slug)!
-            .checkIn as unknown as string,
-        )
-      : new Date(),
+    new Date(),
+    // initialData.find((d) => d.slug === data.slug)?.checkIn
+    //   ? new Date(
+    //       initialData.find((d) => d.slug === data.slug)!
+    //         .checkIn as unknown as string,
+    //     )
+    //   : new Date(),
   );
 
   const toast = useToastController();
@@ -84,7 +87,8 @@ function ActualTestConstructor({
   });
 
   const [dishonestyCount, setDishonestyCount] = React.useState(
-    initialData.find((d) => d.slug === data.slug)?.dishonestCount ?? 0,
+    // initialData.find((d) => d.slug === data.slug)?.dishonestCount ?? 0,
+    0,
   );
 
   const { isConnected } = useNetInfo();
@@ -113,27 +117,27 @@ function ActualTestConstructor({
     defaultValues: {
       multipleChoices: shuffleArray(
         data.multipleChoices.map((d) => {
-          const savedAnswer = initialData.find((d) => d.slug === data.slug);
+          // const savedAnswer = initialData.find((d) => d.slug === data.slug);
 
           return {
             ...d,
             options: shuffleArray(d.options),
-            choosedAnswer:
-              savedAnswer?.multipleChoices.find(
-                (choice) => choice.iqid === d.iqid,
-              )?.choosedAnswer ?? 0,
+            choosedAnswer: 0,
+            // savedAnswer?.multipleChoices.find(
+            //   (choice) => choice.iqid === d.iqid,
+            // )?.choosedAnswer ?? 0,
           };
         }),
       ),
       essays: shuffleArray(
         data.essays.map((d) => {
-          const savedAnswer = initialData.find((d) => d.slug === data.slug);
+          // const savedAnswer = initialData.find((d) => d.slug === data.slug);
 
           return {
             ...d,
-            answer:
-              savedAnswer?.essays.find((choice) => choice.iqid === d.iqid)
-                ?.answer ?? "",
+            answer: "",
+            // savedAnswer?.essays.find((choice) => choice.iqid === d.iqid)
+            // ?.answer ?? "",
           };
         }),
       ),

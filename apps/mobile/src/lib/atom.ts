@@ -11,8 +11,10 @@ const atomWithAsyncStorage = <T>(key: string, initialValue: T) => {
   // override setItem, expire in 2 weeks
   storage.setItem = (_, value, expireInHours = 336) => {
     // add expireAt to newValue
-    const expireAt = add(new Date(), { hours: expireInHours });
-    const updatedValue = { ...value, expireAt: formatISO(expireAt) };
+    // const expireAt = add(new Date(), { hours: expireInHours });
+    // const updatedValue = { ...value, expireAt: formatISO(expireAt) };
+
+    const updatedValue = value;
 
     // updatedValue is a JSON object -- createJSONStorage handles that for us
     // call original setItem with updatedValue

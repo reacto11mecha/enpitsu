@@ -53,6 +53,8 @@ export function TRPCProvider(props: { children: React.ReactNode }) {
     React.useCallback((get) => {
       const token = get(studentTokenAtom);
 
+      console.log("onCallback api", token);
+
       const headers = new Map<string, string>();
 
       headers.set("x-trpc-source", "expo-react");
