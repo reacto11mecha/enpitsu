@@ -120,10 +120,10 @@ export const Settings = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setToken(values.token);
-    router.replace("/");
-
+    await setToken(values.token);
     await apiUtils.exam.getStudent.invalidate();
+
+    router.replace("/");
   };
 
   return (
