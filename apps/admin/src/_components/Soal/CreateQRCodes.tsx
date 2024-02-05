@@ -55,15 +55,18 @@ export const CreateQRCodes = ({
             Berikut ini adalah QR code yang sudah anda pilih pada tabel list
             soal.
           </AlertDialogDescription>
-          <div className="mt-3 grid grid-cols-1 gap-4 overflow-y-scroll md:grid-cols-2">
+          <div className="mt-3 grid max-h-[60vh] grid-cols-1 gap-5 overflow-y-scroll md:grid-cols-2">
             {selectedData.map((data) => (
               <div
                 key={data.slug}
-                className="flex flex-col items-center text-center"
+                className="flex flex-col items-center gap-2 text-center"
               >
                 <ImageQR slug={data.slug} />
-                <p className="text-sm">{data.title}</p>
-                <pre className="text-xs">{data.slug}</pre>
+
+                <div className="flex flex-col items-center text-center">
+                  <p className="text-sm">{data.title}</p>
+                  <pre className="text-xs">{data.slug}</pre>
+                </div>
               </div>
             ))}
           </div>
