@@ -56,7 +56,12 @@ export function TRPCProvider(props: { children: React.ReactNode }) {
       const headers = new Map<string, string>();
 
       headers.set("x-trpc-source", "expo-react");
-      headers.set("authorization", `Student ${userToken.value.token}`);
+
+      // weird value from the storage when using useAtomCallback
+      headers.set(
+        "authorization",
+        `Student ${userToken.value?.token ?? userToken.token}`,
+      );
 
       return Object.fromEntries(headers);
     }, []),

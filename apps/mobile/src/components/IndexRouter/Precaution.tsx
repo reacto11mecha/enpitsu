@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { InView, IOScrollView } from "react-native-intersection-observer";
 import { Link } from "expo-router";
 import type { RouterOutputs } from "@enpitsu/api";
@@ -143,7 +143,7 @@ const PrecautionChildren = ({
             <YStack gap={5}>
               <H4>Tata Tertib</H4>
 
-              <YStack>
+              <YStack minHeight={10}>
                 <FlashList
                   data={codeOfConduct}
                   renderItem={({ item, index }) => (

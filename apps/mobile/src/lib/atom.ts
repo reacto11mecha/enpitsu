@@ -13,8 +13,10 @@ export const atomWithAsyncStorage = <T>(key: string, initialValue: T) => {
       // call original getItem
       const value = await storage.getItem(key, initialValue);
 
+      const valueKeys = Object.keys(value);
+
       // value is already a JSON object -- createJSONStorage handles that for us
-      return value;
+      return valueKeys.length > 1 ? value : { ...value, ...initialValue };
     },
     setItem: (_, value, expireInHours = 200) => {
       // add expireAt to newValue

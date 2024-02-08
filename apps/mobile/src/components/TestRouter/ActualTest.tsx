@@ -12,7 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNetInfo } from "@react-native-community/netinfo";
 import { FlashList } from "@shopify/flash-list";
 import { useToastController } from "@tamagui/toast";
-import { useAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { Button, H3, Spinner, XStack, YStack } from "tamagui";
 
@@ -29,37 +29,32 @@ import { RenderChoiceQuestion, RenderEssayQuestion } from "./Renderer";
 import { formSchema, shuffleArray, useDebounce } from "./utils";
 import type { Props, TFormSchema } from "./utils";
 
-function ActualTestConstructor({
-  data,
-  isRefetching,
-  refetch,
-  initialData,
-}: Props) {
+function ActualTestConstructor({ data, refetch, initialData }: Props) {
   useKeepAwake();
   usePreventScreenCapture();
 
-  console.log(initialData);
-
-  const [checkIn] = React
-    .useState
-    // initialData.find((d) => d.slug === data.slug)?.checkIn
-    //   ? new Date(
-    //       initialData.find((d) => d.slug === data.slug)!
-    //         .checkIn as unknown as string,
-    //     )
-    //   : new Date(),
-    ();
+  const [checkIn] = React.useState(
+    initialData.find((d) => d.slug === data.slug)?.checkIn
+      ? new Date(
+          initialData.find((d) => d.slug === data.slug)!
+            .checkIn as unknown as string,
+        )
+      : new Date(),
+  );
 
   const toast = useToastController();
 
-  const [, setStudentAnswers] = useAtom(studentAnswerAtom);
+  const setStudentAnswers = useSetAtom(studentAnswerAtom);
 
   const blocklistMutation = api.exam.storeBlocklist.useMutation({
     onSuccess() {
       void setStudentAnswers(async (prev) => {
-        const prevAnswer = await prev;
+        const original = await prev;
+        const currAnswers = original.answers;
 
-        return prevAnswer.filter((answer) => answer.slug !== data.slug);
+        return {
+          answers: currdAnswers.filter((answer) => answer.slug !== data.slug),
+        };
       });
     },
     onError(error) {
@@ -73,9 +68,12 @@ function ActualTestConstructor({
   const submitAnswerMutation = api.exam.submitAnswer.useMutation({
     onSuccess() {
       void setStudentAnswers(async (prev) => {
-        const prevAnswer = await prev;
+        const original = await prev;
+        const currAnswers = original.answers;
 
-        return prevAnswer.filter((answer) => answer.slug !== data.slug);
+        return {
+          answers: currdAnswers.filter((answer) => answer.slug !== data.slug),
+        };
       });
     },
     onError(error) {
@@ -87,8 +85,7 @@ function ActualTestConstructor({
   });
 
   const [dishonestyCount, setDishonestyCount] = React.useState(
-    // initialData.find((d) => d.slug === data.slug)?.dishonestCount ?? 0,
-    0,
+    initialData.find((d) => d.slug === data.slug)?.dishonestCount ?? 0,
   );
 
   const { isConnected } = useNetInfo();
@@ -117,27 +114,27 @@ function ActualTestConstructor({
     defaultValues: {
       multipleChoices: shuffleArray(
         data.multipleChoices.map((d) => {
-          // const savedAnswer = initialData.find((d) => d.slug === data.slug);
+          const savedAnswer = initialData.find((d) => d.slug === data.slug);
 
           return {
             ...d,
             options: shuffleArray(d.options),
-            choosedAnswer: 0,
-            // savedAnswer?.multipleChoices.find(
-            //   (choice) => choice.iqid === d.iqid,
-            // )?.choosedAnswer ?? 0,
+            choosedAnswer:
+              savedAnswer?.multipleChoices.find(
+                (choice) => choice.iqid === d.iqid,
+              )?.choosedAnswer ?? 0,
           };
         }),
       ),
       essays: shuffleArray(
         data.essays.map((d) => {
-          // const savedAnswer = initialData.find((d) => d.slug === data.slug);
+          const savedAnswer = initialData.find((d) => d.slug === data.slug);
 
           return {
             ...d,
-            answer: "",
-            // savedAnswer?.essays.find((choice) => choice.iqid === d.iqid)
-            // ?.answer ?? "",
+            answer:
+              savedAnswer?.essays.find((choice) => choice.iqid === d.iqid)
+                ?.answer ?? "",
           };
         }),
       ),
@@ -160,20 +157,23 @@ function ActualTestConstructor({
   // The first two will ask kindly to not to cheat on their exam.
   React.useEffect(() => {
     void setStudentAnswers(async (prev) => {
-      const prevAnswer = await prev;
+      const original = await prev;
+      const currAnswers = original.answers;
 
-      return !prevAnswer.find((answer) => answer.slug === data.slug)
-        ? [
-            ...prevAnswer,
-            {
-              slug: data.slug,
-              checkIn,
-              dishonestCount: 0,
-              multipleChoices: [],
-              essays: [],
-            },
-          ]
-        : prevAnswer;
+      return {
+        answers: !currAnswers.find((answer) => answer.slug === data.slug)
+          ? [
+              ...persistedAnswer.answers,
+              {
+                slug: data.slug,
+                checkIn,
+                dishonestCount: 0,
+                multipleChoices: [],
+                essays: [],
+              },
+            ]
+          : persistedAnswer.answers,
+      };
     });
 
     const subscription = AppState.addEventListener("change", (nextAppState) => {
@@ -217,22 +217,25 @@ function ActualTestConstructor({
   const multipleChoiceDebounced = useDebounce(
     (updatedData: { iqid: number; choosedAnswer: number }) => {
       void setStudentAnswers(async (prev) => {
-        const prevAnswer = await prev;
+        const original = await prev;
+        const currAnswers = original.answers;
 
-        return prevAnswer.map((answer) =>
-          answer.slug === data.slug
-            ? {
-                ...answer,
-                multipleChoices: !answer.multipleChoices.find(
-                  (choice) => choice.iqid === updatedData.iqid,
-                )
-                  ? [...answer.multipleChoices, updatedData]
-                  : answer.multipleChoices.map((choice) =>
-                      choice.iqid === updatedData.iqid ? updatedData : choice,
-                    ),
-              }
-            : answer,
-        );
+        return {
+          answers: currAnswers.map((answer) =>
+            answer.slug === data.slug
+              ? {
+                  ...answer,
+                  multipleChoices: !answer.multipleChoices.find(
+                    (choice) => choice.iqid === updatedData.iqid,
+                  )
+                    ? [...answer.multipleChoices, updatedData]
+                    : answer.multipleChoices.map((choice) =>
+                        choice.iqid === updatedData.iqid ? updatedData : choice,
+                      ),
+                }
+              : answer,
+          ),
+        };
       });
     },
   );
@@ -240,22 +243,25 @@ function ActualTestConstructor({
   const essayDebounce = useDebounce(
     (updatedData: { iqid: number; answer: string }) => {
       void setStudentAnswers(async (prev) => {
-        const prevAnswer = await prev;
+        const original = await prev;
+        const currAnswers = original.answers;
 
-        return prevAnswer.map((answer) =>
-          answer.slug === data.slug
-            ? {
-                ...answer,
-                essays: !answer.essays.find(
-                  (choice) => choice.iqid === updatedData.iqid,
-                )
-                  ? [...answer.essays, updatedData]
-                  : answer.essays.map((essay) =>
-                      essay.iqid === updatedData.iqid ? updatedData : essay,
-                    ),
-              }
-            : answer,
-        );
+        return {
+          answers: currAnswers.map((answer) =>
+            answer.slug === data.slug
+              ? {
+                  ...answer,
+                  essays: !answer.essays.find(
+                    (choice) => choice.iqid === updatedData.iqid,
+                  )
+                    ? [...answer.essays, updatedData]
+                    : answer.essays.map((essay) =>
+                        essay.iqid === updatedData.iqid ? updatedData : essay,
+                      ),
+                }
+              : answer,
+          ),
+        };
       });
     },
   );
@@ -263,13 +269,16 @@ function ActualTestConstructor({
   const updateDishonestAtom = React.useCallback(
     (count: number) => {
       void setStudentAnswers(async (prev) => {
-        const prevAnswer = await prev;
+        const original = await prev;
+        const currAnswers = original.answers;
 
-        return prevAnswer.map((answer) =>
-          answer.slug === data.slug
-            ? { ...answer, dishonestCount: count }
-            : answer,
-        );
+        return {
+          answers: currAnswers.map((answer) =>
+            answer.slug === data.slug
+              ? { ...answer, dishonestCount: count }
+              : answer,
+          ),
+        };
       });
     },
     [data.slug, setStudentAnswers],
@@ -339,7 +348,7 @@ function ActualTestConstructor({
 
       <ScrollView
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          <RefreshControl refreshing={false} onRefresh={refetch} />
         }
       >
         <YStack display="flex" mb={100} gap={30} px={20}>
@@ -347,32 +356,34 @@ function ActualTestConstructor({
             <YStack mt={15} display="flex" gap={20}>
               <H3>Pilihan ganda</H3>
 
-              <FlashList
-                data={multipleChoicesField.fields}
-                renderItem={({ index, item }) => (
-                  <Controller
-                    control={form.control}
-                    name={`multipleChoices.${index}.choosedAnswer`}
-                    render={({ field }) => (
-                      <RenderChoiceQuestion
-                        index={index}
-                        item={item}
-                        disabled={submitAnswerMutation.isLoading}
-                        currPick={field.value}
-                        updateAnswer={(order: number) => {
-                          field.onChange(order);
+              <YStack minHeight={35}>
+                <FlashList
+                  data={multipleChoicesField.fields}
+                  renderItem={({ index, item }) => (
+                    <Controller
+                      control={form.control}
+                      name={`multipleChoices.${index}.choosedAnswer`}
+                      render={({ field }) => (
+                        <RenderChoiceQuestion
+                          index={index}
+                          item={item}
+                          disabled={submitAnswerMutation.isLoading}
+                          currPick={field.value}
+                          updateAnswer={(order: number) => {
+                            field.onChange(order);
 
-                          multipleChoiceDebounced({
-                            iqid: item.iqid,
-                            choosedAnswer: order,
-                          });
-                        }}
-                      />
-                    )}
-                  />
-                )}
-                estimatedItemSize={40}
-              />
+                            multipleChoiceDebounced({
+                              iqid: item.iqid,
+                              choosedAnswer: order,
+                            });
+                          }}
+                        />
+                      )}
+                    />
+                  )}
+                  estimatedItemSize={40}
+                />
+              </YStack>
             </YStack>
           ) : null}
 
@@ -380,7 +391,7 @@ function ActualTestConstructor({
             <YStack mt={15} display="flex" gap={20}>
               <H3>Esai</H3>
 
-              <YStack>
+              <YStack minHeight={35}>
                 <FlashList
                   data={essaysField.fields}
                   renderItem={({ index, item }) => (

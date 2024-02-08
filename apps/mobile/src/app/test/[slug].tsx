@@ -1,7 +1,7 @@
 import React from "react";
 import { SafeAreaView } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { useAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import { Spinner, YStack } from "tamagui";
 
 import { ActualTest } from "~/components/TestRouter/ActualTest";
@@ -9,10 +9,11 @@ import { api } from "~/lib/api";
 import { studentAnswerAtom } from "~/lib/atom";
 
 const TestPage = () => {
-  const [initialAnswer] = useAtom(studentAnswerAtom);
+  const initialAnswer = useAtomValue(studentAnswerAtom);
 
   const { slug } = useLocalSearchParams();
 
+  const apiUtils = api.useUtils();
   const questionQuery = api.exam.queryQuestion.useQuery(
     {
       slug: (slug as string) ?? "",
@@ -25,11 +26,14 @@ const TestPage = () => {
   );
 
   const refetchQuestion = React.useCallback(
-    () => questionQuery.refetch(),
-    [questionQuery],
+    () =>
+      void apiUtils.exam.queryQuestion.invalidate({
+        slug: (slug as string) ?? "",
+      }),
+    [],
   );
 
-  if (questionQuery.isLoading)
+  if (questionQuery.isLoading || questionQuery.isRefetching)
     return (
       <SafeAreaView>
         <YStack
@@ -44,33 +48,14 @@ const TestPage = () => {
         </YStack>
       </SafeAreaView>
     );
-
-  if (questionQuery.isLoading)
-    return (
-      <SafeAreaView>
-        <YStack
-          h="100%"
-          display="flex"
-          jc="center"
-          ai="center"
-          gap={20}
-          px={20}
-        >
-          <Spinner size="large" color="$blue10" />
-        </YStack>
-      </SafeAreaView>
-    );
-
-  console.log(initialAnswer.answers);
 
   return (
     <ActualTest
       data={questionQuery.data!}
-      isRefetching={questionQuery.isRefetching}
-      refetch={refetchQuestion}
       initialData={initialAnswer.answers}
+      refetch={refetchQuestion}
     />
   );
 };
 
-export default TestPage;
+export default React.memo(TestPage);

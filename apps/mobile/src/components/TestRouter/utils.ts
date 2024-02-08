@@ -41,7 +41,6 @@ export interface Props {
   data: TData;
   isRefetching: boolean;
   refetch: () => void;
-  initialData: TStudentAnswer[];
 }
 
 type Timer = ReturnType<typeof setTimeout>;

@@ -1,5 +1,6 @@
 import { LogOut } from "@tamagui/lucide-icons";
 import { useAtom } from "jotai";
+import { RESET } from "jotai/utils";
 import { AlertDialog, Button, XStack, YStack } from "tamagui";
 
 import { studentAnswerAtom, studentTokenAtom } from "~/lib/atom";
@@ -8,7 +9,6 @@ export const Logout = () => {
   const [, setToken] = useAtom(studentTokenAtom);
   const [, setAnswers] = useAtom(studentAnswerAtom);
 
-  // return
   return (
     <AlertDialog>
       <AlertDialog.Trigger asChild>
@@ -54,8 +54,8 @@ export const Logout = () => {
 
               <Button
                 onPress={() => {
-                  setToken("");
-                  setAnswers([]);
+                  setToken(RESET);
+                  setAnswers(RESET);
                 }}
               >
                 Logout

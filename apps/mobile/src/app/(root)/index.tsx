@@ -20,7 +20,9 @@ import { ScanOrInputQuestionSlug } from "~/components/IndexRouter/ScanOrInputQue
 import { api } from "~/lib/api";
 import { studentTokenAtom } from "~/lib/atom";
 
-const getState = (statusCode: string) => {
+const getState = (statusCode: string | undefined) => {
+  if (!statusCode) return "Mohon perbaiki token anda di halaman pengaturan.";
+
   switch (statusCode) {
     case "NOT_FOUND":
     default:
@@ -31,7 +33,7 @@ const getState = (statusCode: string) => {
 const Index = () => {
   const toast = useToastController();
 
-  const [token] = useAtom(studentTokenAtom);
+  const [userToken] = useAtom(studentTokenAtom);
 
   const [isCorrect, setCorrect] = React.useState(false);
 
@@ -39,7 +41,10 @@ const Index = () => {
 
   const studentQuery = api.exam.getStudent.useQuery(undefined, {
     onError(error) {
-      if (error.data?.code === "UNAUTHORIZED" && token === "") {
+      if (
+        error.data?.code === "UNAUTHORIZED" &&
+        (!userToken.token || userToken.token === "")
+      ) {
         toast.show("Belum Ada Token", {
           message: "Mohon isi token anda!",
         });
@@ -78,7 +83,7 @@ const Index = () => {
                         <YStack gap={10}>
                           <Text color="red">
                             Terjadi kesalahan, {studentQuery.error.message}{" "}
-                            {getState(studentQuery.error.data!.code)}
+                            {getState(studentQuery.error.data?.code)}
                           </Text>
                           <YStack>
                             <Link href="/settings/" asChild>
