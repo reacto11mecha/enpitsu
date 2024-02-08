@@ -5,9 +5,9 @@ import { FirstTimeNoToken } from "~/components/insert-token";
 import { studentTokenAtom } from "~/lib/atom";
 
 export default function HomeLayout() {
-  const [token] = useAtom(studentTokenAtom);
+  const [userToken] = useAtom(studentTokenAtom);
 
-  if (token === "") return <FirstTimeNoToken />;
+  if (!userToken.token || userToken.token === "") return <FirstTimeNoToken />;
 
   return <Slot />;
 }

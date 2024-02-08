@@ -1,10 +1,38 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { add, formatISO } from "date-fns";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
 
-export const studentTokenAtom = atomWithStorage<string>(
+export const atomWithAsyncStorage = <T>(key: string, initialValue: T) => {
+  const storage = createJSONStorage<T>(() => AsyncStorage);
+
+  const overrideStorage = {
+    ...storage,
+
+    // override getItem and setItem
+    getItem: async () => {
+      // call original getItem
+      const value = await storage.getItem(key, initialValue);
+
+      // value is already a JSON object -- createJSONStorage handles that for us
+      return value;
+    },
+    setItem: (_, value, expireInHours = 200) => {
+      // add expireAt to newValue
+      const expireAt = add(new Date(), { hours: expireInHours });
+      const updatedValue = { ...value, expireAt: formatISO(expireAt) };
+
+      // updatedValue is a JSON object -- createJSONStorage handles that for us
+      // call original setItem with updatedValue
+      return storage.setItem(key, updatedValue);
+    },
+  };
+
+  return atomWithStorage(key, initialValue, overrideStorage);
+};
+
+export const studentTokenAtom = atomWithAsyncStorage<{ token: string }>(
   "token",
-  "",
-  createJSONStorage(() => AsyncStorage),
+  { token: "" },
 );
 
 export interface TStudentAnswer {
@@ -21,8 +49,11 @@ export interface TStudentAnswer {
   }[];
 }
 
-export const studentAnswerAtom = atomWithStorage<TStudentAnswer[]>(
+export interface TAnswers {
+  answers: TStudentAnswer[];
+}
+
+export const studentAnswerAtom = atomWithAsyncStorage<TAnswers>(
   "studentAnswer",
-  [],
-  createJSONStorage(() => AsyncStorage),
+  { answers: [] },
 );

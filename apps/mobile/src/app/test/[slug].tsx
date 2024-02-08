@@ -24,8 +24,6 @@ const TestPage = () => {
     },
   );
 
-  console.log(questionQuery.isRefetching);
-
   const refetchQuestion = React.useCallback(
     () => questionQuery.refetch(),
     [questionQuery],
@@ -63,12 +61,14 @@ const TestPage = () => {
       </SafeAreaView>
     );
 
+  console.log(initialAnswer.answers);
+
   return (
     <ActualTest
       data={questionQuery.data!}
       isRefetching={questionQuery.isRefetching}
       refetch={refetchQuestion}
-      initialData={initialAnswer}
+      initialData={initialAnswer.answers}
     />
   );
 };

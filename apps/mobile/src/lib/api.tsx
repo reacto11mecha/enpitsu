@@ -51,12 +51,12 @@ const getBaseUrl = () => {
 export function TRPCProvider(props: { children: React.ReactNode }) {
   const getHeaders = useAtomCallback(
     React.useCallback((get) => {
-      const token = get(studentTokenAtom);
+      const userToken = get(studentTokenAtom);
 
       const headers = new Map<string, string>();
 
       headers.set("x-trpc-source", "expo-react");
-      headers.set("authorization", `Student ${token.value}`);
+      headers.set("authorization", `Student ${userToken.value.token}`);
 
       return Object.fromEntries(headers);
     }, []),

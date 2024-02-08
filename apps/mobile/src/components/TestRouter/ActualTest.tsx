@@ -40,15 +40,15 @@ function ActualTestConstructor({
 
   console.log(initialData);
 
-  const [checkIn] = React.useState(
-    new Date(),
+  const [checkIn] = React
+    .useState
     // initialData.find((d) => d.slug === data.slug)?.checkIn
     //   ? new Date(
     //       initialData.find((d) => d.slug === data.slug)!
     //         .checkIn as unknown as string,
     //     )
     //   : new Date(),
-  );
+    ();
 
   const toast = useToastController();
 
