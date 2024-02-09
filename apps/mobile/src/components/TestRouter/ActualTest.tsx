@@ -109,9 +109,9 @@ const RealActualTest = React.memo(function ActualTest({
           };
         }),
       ),
-
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }),
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
@@ -458,9 +458,10 @@ function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
     [submitAnswerMutation.isLoading],
   );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const submitAnswer = React.useCallback(
     (params: TSubmitAnswerParam) => submitAnswerMutation.mutate(params),
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
@@ -473,9 +474,10 @@ function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
     [],
   );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const submitCheated = React.useCallback(
     (params: TSubmitCheatParam) => blocklistMutation.mutate(params),
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
