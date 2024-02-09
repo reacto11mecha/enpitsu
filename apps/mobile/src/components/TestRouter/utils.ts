@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import type { RouterOutputs } from "@enpitsu/api";
+import type { SetStateAction } from "react";
+import type { RouterInputs, RouterOutputs } from "@enpitsu/api";
 import { z } from "zod";
 
 import type { TStudentAnswer } from "~/lib/atom";
@@ -34,13 +35,24 @@ export const formSchema = z.object({
 });
 
 export type TFormSchema = z.infer<typeof formSchema>;
+export type TSubmitAnswerParam = RouterInputs["exam"]["submitAnswer"];
+export type TSubmitCheatParam = RouterInputs["exam"]["storeBlocklist"];
 
 type TData = RouterOutputs["exam"]["queryQuestion"];
 
-export interface Props {
+export interface TPropsWrapper {
   data: TData;
-  isRefetching: boolean;
+  initialData: TStudentAnswer[];
   refetch: () => void;
+}
+export interface TPropsRealTest extends TPropsWrapper {
+  isSubmitLoading: boolean;
+  submitAnswer: (params: TSubmitAnswerParam) => void;
+
+  currDishonestCount: number;
+  updateDishonestCount: (count: SetStateAction<number>) => void;
+
+  submitCheated: (params: TSubmitCheatParam) => void;
 }
 
 type Timer = ReturnType<typeof setTimeout>;

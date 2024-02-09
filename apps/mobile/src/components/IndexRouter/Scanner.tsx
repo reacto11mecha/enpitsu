@@ -96,8 +96,13 @@ export const ScannerWrapper = ({
     <YStack w="100%">
       <AlertDialog open={open} onOpenChange={() => setOpen((prev) => !prev)}>
         <AlertDialog.Trigger asChild>
-          <Button w="100%" icon={<ScanLine size={20} />} disabled={isDisabled}>
-            Scan QR
+          <Button
+            variant="outlined"
+            w="100%"
+            icon={<ScanLine size={20} />}
+            disabled={isDisabled}
+          >
+            Pindai QR
           </Button>
         </AlertDialog.Trigger>
 

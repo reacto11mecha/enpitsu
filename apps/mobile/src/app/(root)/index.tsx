@@ -123,11 +123,18 @@ const Index = () => {
                             </XStack>
                           </YStack>
                           <YStack>
-                            <XStack gap={3} w="100%" display="flex">
+                            <XStack gap={5} w="100%" display="flex">
                               <Link href="/settings/" asChild>
-                                <Button icon={<SettingsIcon size={20} />} />
+                                <Button
+                                  variant="outlined"
+                                  icon={<SettingsIcon size={20} />}
+                                />
                               </Link>
-                              <Button onPress={() => setCorrect(true)} flex={1}>
+                              <Button
+                                themeInverse
+                                onPress={() => setCorrect(true)}
+                                flex={1}
+                              >
                                 Ya, sudah benar
                               </Button>
                               <Logout />

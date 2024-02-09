@@ -12,7 +12,7 @@ export const Logout = () => {
   return (
     <AlertDialog>
       <AlertDialog.Trigger asChild>
-        <Button icon={<LogOut size={20} />} marginRight="20px" />
+        <Button variant="outlined" icon={<LogOut size={20} />} />
       </AlertDialog.Trigger>
       <AlertDialog.Portal>
         <AlertDialog.Overlay
@@ -54,8 +54,8 @@ export const Logout = () => {
 
               <Button
                 onPress={() => {
-                  setToken(RESET);
-                  setAnswers(RESET);
+                  void setToken(RESET);
+                  void setAnswers(RESET);
                 }}
               >
                 Logout

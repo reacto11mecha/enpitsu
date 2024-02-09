@@ -79,8 +79,11 @@ export const ScanOrInputQuestionSlug = ({
                     value={value}
                   />
                   <Button
+                    themeInverse
+                    textAlign="center"
                     disabled={getQuestionMutation.isLoading}
                     onPress={form.handleSubmit(onSubmit)}
+                    opacity={getQuestionMutation.isLoading ? 0.5 : 1}
                     icon={getQuestionMutation.isLoading ? <Spinner /> : <></>}
                   >
                     Kerjakan
@@ -102,7 +105,11 @@ export const ScanOrInputQuestionSlug = ({
         />
 
         <XStack>
-          <Button icon={<ArrowLeft size={20} />} onPress={closeScanner} />
+          <Button
+            variant="outlined"
+            icon={<ArrowLeft size={20} />}
+            onPress={closeScanner}
+          />
         </XStack>
       </YStack>
 

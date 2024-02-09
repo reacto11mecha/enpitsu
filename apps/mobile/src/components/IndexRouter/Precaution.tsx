@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView } from "react-native";
 import { InView, IOScrollView } from "react-native-intersection-observer";
 import { Link } from "expo-router";
 import type { RouterOutputs } from "@enpitsu/api";
@@ -143,7 +143,7 @@ const PrecautionChildren = ({
             <YStack gap={5}>
               <H4>Tata Tertib</H4>
 
-              <YStack minHeight={10}>
+              <YStack minHeight={50}>
                 <FlashList
                   data={codeOfConduct}
                   renderItem={({ item, index }) => (
@@ -236,7 +236,7 @@ export const Precaution = ({
 
             <XStack justifyContent="flex-end" space="$2">
               <AlertDialog.Cancel asChild>
-                <Button>Batal</Button>
+                <Button variant="outlined">Batal</Button>
               </AlertDialog.Cancel>
 
               {data ? (
@@ -248,7 +248,12 @@ export const Precaution = ({
                     params: { slug: data.slug },
                   }}
                 >
-                  <Button disabled={!scrolledToBottom} onPress={close}>
+                  <Button
+                    themeInverse
+                    disabled={!scrolledToBottom}
+                    opacity={!scrolledToBottom ? 0.5 : 1}
+                    onPress={close}
+                  >
                     Kerjakan
                   </Button>
                 </Link>

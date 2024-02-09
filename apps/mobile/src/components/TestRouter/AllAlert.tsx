@@ -5,7 +5,7 @@ import { AlertDialog, Button, Text, XStack, YStack } from "tamagui";
 export const GoHomeAlert = () => (
   <AlertDialog>
     <AlertDialog.Trigger asChild>
-      <Button icon={<Home size={20} />} />
+      <Button variant="outlined" icon={<Home size={20} />} />
     </AlertDialog.Trigger>
     <AlertDialog.Portal>
       <AlertDialog.Overlay
@@ -43,10 +43,12 @@ export const GoHomeAlert = () => (
 
           <XStack justifyContent="flex-end" space="$2">
             <AlertDialog.Cancel asChild>
-              <Button>Batal</Button>
+              <Button variant="outlined">Batal</Button>
             </AlertDialog.Cancel>
 
-            <Button onPress={() => router.replace("/")}>Kembali</Button>
+            <Button themeInverse onPress={() => router.replace("/")}>
+              Kembali
+            </Button>
           </XStack>
         </YStack>
       </AlertDialog.Content>
@@ -61,7 +63,7 @@ export const DishonestyCountAlert = ({
 }) => (
   <AlertDialog>
     <AlertDialog.Trigger asChild>
-      <Button>
+      <Button variant="outlined">
         <Text>{dishonestyCount}</Text>
       </Button>
     </AlertDialog.Trigger>
@@ -102,7 +104,7 @@ export const DishonestyCountAlert = ({
 
           <XStack justifyContent="flex-end" space="$2">
             <AlertDialog.Cancel asChild>
-              <Button>Tutup</Button>
+              <Button variant="outlined">Tutup</Button>
             </AlertDialog.Cancel>
           </XStack>
         </YStack>
@@ -162,7 +164,9 @@ export const DihonestyAlert = ({
 
           <XStack justifyContent="flex-end" space="$2">
             <AlertDialog.Cancel asChild>
-              <Button>Saya sudah siap!</Button>
+              <Button width="100$" themeInverse>
+                Saya sudah siap!
+              </Button>
             </AlertDialog.Cancel>
           </XStack>
         </YStack>
@@ -230,7 +234,11 @@ export const BadInternetAlert = ({
 
           <XStack justifyContent="flex-end" space="$2">
             <AlertDialog.Cancel asChild>
-              <Button disabled={!backOnline}>
+              <Button
+                disabled={!backOnline}
+                themeInverse
+                opacity={!backOnline ? 0.5 : 1}
+              >
                 {backOnline
                   ? "Saya sudah siap!"
                   : "Koneksi anda masih terputus :("}

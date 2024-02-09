@@ -7,6 +7,7 @@ import {
   View,
 } from "react-native";
 import { useKeepAwake } from "expo-keep-awake";
+import { Link } from "expo-router";
 import { usePreventScreenCapture } from "expo-screen-capture";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNetInfo } from "@react-native-community/netinfo";
@@ -14,7 +15,7 @@ import { FlashList } from "@shopify/flash-list";
 import { useToastController } from "@tamagui/toast";
 import { useSetAtom } from "jotai";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { Button, H3, Spinner, XStack, YStack } from "tamagui";
+import { Button, H3, Spinner, Text, XStack, YStack } from "tamagui";
 
 import { useCountdown } from "~/hooks/useCountdown";
 import { api } from "~/lib/api";
@@ -27,11 +28,27 @@ import {
 } from "./AllAlert";
 import { RenderChoiceQuestion, RenderEssayQuestion } from "./Renderer";
 import { formSchema, shuffleArray, useDebounce } from "./utils";
-import type { Props, TFormSchema } from "./utils";
+import type {
+  TFormSchema,
+  TPropsRealTest,
+  TPropsWrapper,
+  TSubmitAnswerParam,
+  TSubmitCheatParam,
+} from "./utils";
 
-function ActualTestConstructor({ data, refetch, initialData }: Props) {
-  useKeepAwake();
+const RealActualTest = React.memo(function ActualTest({
+  data,
+  refetch,
+  initialData,
+  isSubmitLoading,
+  submitAnswer,
+  currDishonestCount,
+  updateDishonestCount,
+  submitCheated,
+}: TPropsRealTest) {
   usePreventScreenCapture();
+
+  const setStudentAnswers = useSetAtom(studentAnswerAtom);
 
   const [checkIn] = React.useState(
     initialData.find((d) => d.slug === data.slug)?.checkIn
@@ -40,52 +57,6 @@ function ActualTestConstructor({ data, refetch, initialData }: Props) {
             .checkIn as unknown as string,
         )
       : new Date(),
-  );
-
-  const toast = useToastController();
-
-  const setStudentAnswers = useSetAtom(studentAnswerAtom);
-
-  const blocklistMutation = api.exam.storeBlocklist.useMutation({
-    onSuccess() {
-      void setStudentAnswers(async (prev) => {
-        const original = await prev;
-        const currAnswers = original.answers;
-
-        return {
-          answers: currdAnswers.filter((answer) => answer.slug !== data.slug),
-        };
-      });
-    },
-    onError(error) {
-      toast.show("Operasi Gagal", {
-        message: `Gagal menyimpan status kecurangan. Error: ${error.message}`,
-      });
-    },
-    retry: false,
-  });
-
-  const submitAnswerMutation = api.exam.submitAnswer.useMutation({
-    onSuccess() {
-      void setStudentAnswers(async (prev) => {
-        const original = await prev;
-        const currAnswers = original.answers;
-
-        return {
-          answers: currdAnswers.filter((answer) => answer.slug !== data.slug),
-        };
-      });
-    },
-    onError(error) {
-      toast.show("Operasi Gagal", {
-        message: `Gagal menyimpan jawaban. Error: ${error.message}`,
-      });
-    },
-    retry: false,
-  });
-
-  const [dishonestyCount, setDishonestyCount] = React.useState(
-    initialData.find((d) => d.slug === data.slug)?.dishonestCount ?? 0,
   );
 
   const { isConnected } = useNetInfo();
@@ -109,9 +80,8 @@ function ActualTestConstructor({ data, refetch, initialData }: Props) {
     }
   }, [isConnected]);
 
-  const form = useForm<TFormSchema>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
+  const defaultFormValues = React.useMemo(
+    () => ({
       multipleChoices: shuffleArray(
         data.multipleChoices.map((d) => {
           const savedAnswer = initialData.find((d) => d.slug === data.slug);
@@ -126,6 +96,7 @@ function ActualTestConstructor({ data, refetch, initialData }: Props) {
           };
         }),
       ),
+
       essays: shuffleArray(
         data.essays.map((d) => {
           const savedAnswer = initialData.find((d) => d.slug === data.slug);
@@ -138,7 +109,15 @@ function ActualTestConstructor({ data, refetch, initialData }: Props) {
           };
         }),
       ),
-    },
+
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }),
+    [],
+  );
+
+  const form = useForm<TFormSchema>({
+    resolver: zodResolver(formSchema),
+    defaultValues: defaultFormValues,
   });
 
   const multipleChoicesField = useFieldArray({
@@ -153,36 +132,16 @@ function ActualTestConstructor({ data, refetch, initialData }: Props) {
 
   const { countdown, isEnded } = useCountdown(data.endedAt);
 
-  // Increment dishonesty count up to 3 tab changes.
+  // Increment dishonesty count up to 3 app changes.
   // The first two will ask kindly to not to cheat on their exam.
   React.useEffect(() => {
-    void setStudentAnswers(async (prev) => {
-      const original = await prev;
-      const currAnswers = original.answers;
-
-      return {
-        answers: !currAnswers.find((answer) => answer.slug === data.slug)
-          ? [
-              ...persistedAnswer.answers,
-              {
-                slug: data.slug,
-                checkIn,
-                dishonestCount: 0,
-                multipleChoices: [],
-                essays: [],
-              },
-            ]
-          : persistedAnswer.answers,
-      };
-    });
-
     const subscription = AppState.addEventListener("change", (nextAppState) => {
       if (
         appState.current.match(/inactive|background/) &&
         nextAppState === "active" &&
         canUpdateDishonesty.current
       )
-        setDishonestyCount((prev) => {
+        updateDishonestCount((prev) => {
           const newValue = ++prev;
 
           if (newValue > 2) {
@@ -191,6 +150,23 @@ function ActualTestConstructor({ data, refetch, initialData }: Props) {
             canUpdateDishonesty.current = false;
             setDishonestyWarning(true);
           }
+
+          if (newValue > 0)
+            void setStudentAnswers(async (prev) => {
+              const original = await prev;
+              const currAnswers = original.answers;
+
+              return {
+                answers: currAnswers.map((answer) =>
+                  answer.slug === data.slug
+                    ? { ...answer, dishonestCount: newValue }
+                    : answer,
+                ),
+              };
+            });
+
+          if (newValue > 2)
+            submitCheated({ questionId: data.id, time: new Date() });
 
           return newValue;
         });
@@ -266,38 +242,10 @@ function ActualTestConstructor({ data, refetch, initialData }: Props) {
     },
   );
 
-  const updateDishonestAtom = React.useCallback(
-    (count: number) => {
-      void setStudentAnswers(async (prev) => {
-        const original = await prev;
-        const currAnswers = original.answers;
-
-        return {
-          answers: currAnswers.map((answer) =>
-            answer.slug === data.slug
-              ? { ...answer, dishonestCount: count }
-              : answer,
-          ),
-        };
-      });
-    },
-    [data.slug, setStudentAnswers],
-  );
-
-  React.useEffect(() => {
-    updateDishonestAtom(dishonestyCount);
-
-    if (dishonestyCount > 2) {
-      blocklistMutation.mutate({ questionId: data.id, time: new Date() });
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dishonestyCount]);
-
   const onSubmit = (values: TFormSchema) => {
     canUpdateDishonesty.current = false;
 
-    submitAnswerMutation.mutate({
+    submitAnswer({
       multipleChoices: values.multipleChoices.map((choice) => ({
         iqid: choice.iqid,
         choosedAnswer: choice.choosedAnswer,
@@ -312,11 +260,29 @@ function ActualTestConstructor({ data, refetch, initialData }: Props) {
     });
   };
 
-  if (submitAnswerMutation.isSuccess) return <SafeAreaView></SafeAreaView>;
+  if (isEnded)
+    return (
+      <SafeAreaView>
+        <YStack
+          h="100%"
+          display="flex"
+          jc="center"
+          ai="center"
+          gap={20}
+          px={20}
+        >
+          <H3>Waktu Habis</H3>
+          <Text textAlign="center">
+            Waktu ulangan sudah selesai, anda tidak bisa mengerjakan soal ini
+            lagi.
+          </Text>
 
-  if (dishonestyCount > 2) return <SafeAreaView></SafeAreaView>;
-
-  if (isEnded) return <SafeAreaView></SafeAreaView>;
+          <Link href="/" replace asChild>
+            <Button variant="outlined">Ke halaman depan</Button>
+          </Link>
+        </YStack>
+      </SafeAreaView>
+    );
 
   return (
     <View>
@@ -339,9 +305,9 @@ function ActualTestConstructor({ data, refetch, initialData }: Props) {
           >
             <GoHomeAlert />
 
-            <Button>{countdown}</Button>
+            <Button variant="outlined">{countdown}</Button>
 
-            <DishonestyCountAlert dishonestyCount={dishonestyCount} />
+            <DishonestyCountAlert dishonestyCount={currDishonestCount} />
           </XStack>
         </YStack>
       </SafeAreaView>
@@ -367,7 +333,7 @@ function ActualTestConstructor({ data, refetch, initialData }: Props) {
                         <RenderChoiceQuestion
                           index={index}
                           item={item}
-                          disabled={submitAnswerMutation.isLoading}
+                          disabled={isSubmitLoading}
                           currPick={field.value}
                           updateAnswer={(order: number) => {
                             field.onChange(order);
@@ -402,7 +368,7 @@ function ActualTestConstructor({ data, refetch, initialData }: Props) {
                         <RenderEssayQuestion
                           item={item}
                           currAnswer={field.value}
-                          disabled={submitAnswerMutation.isLoading}
+                          disabled={isSubmitLoading}
                           index={index}
                           updateAnswer={(answer) => {
                             field.onChange(answer);
@@ -425,19 +391,180 @@ function ActualTestConstructor({ data, refetch, initialData }: Props) {
           <XStack>
             <XStack flex={1} />
             <Button
+              chromeless
               onPress={form.handleSubmit(onSubmit)}
-              disabled={submitAnswerMutation.isLoading}
+              disabled={isSubmitLoading}
             >
-              {submitAnswerMutation.isLoading ? <Spinner /> : null} Submit
+              {isSubmitLoading ? <Spinner /> : null} SUBMIT
             </Button>
           </XStack>
         </YStack>
       </ScrollView>
     </View>
   );
+});
+
+function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
+  useKeepAwake();
+
+  const toast = useToastController();
+
+  const setStudentAnswers = useSetAtom(studentAnswerAtom);
+
+  const blocklistMutation = api.exam.storeBlocklist.useMutation({
+    onSuccess() {
+      void setStudentAnswers(async (prev) => {
+        const original = await prev;
+        const currAnswers = original.answers;
+
+        return {
+          answers: currAnswers.filter((answer) => answer.slug !== data.slug),
+        };
+      });
+    },
+    onError(error) {
+      toast.show("Operasi Gagal", {
+        message: `Gagal menyimpan status kecurangan. Error: ${error.message}`,
+      });
+    },
+    retry: false,
+  });
+
+  const submitAnswerMutation = api.exam.submitAnswer.useMutation({
+    onSuccess() {
+      void setStudentAnswers(async (prev) => {
+        const original = await prev;
+        const currAnswers = original.answers;
+
+        return {
+          answers: currAnswers.filter((answer) => answer.slug !== data.slug),
+        };
+      });
+    },
+    onError(error) {
+      toast.show("Operasi Gagal", {
+        message: `Gagal menyimpan jawaban. Error: ${error.message}`,
+      });
+    },
+    retry: false,
+  });
+
+  const [dishonestyCount, setDishonestyCount] = React.useState(
+    initialData.find((d) => d.slug === data.slug)?.dishonestCount ?? 0,
+  );
+
+  const isSubmitLoading = React.useMemo(
+    () => submitAnswerMutation.isLoading,
+    [submitAnswerMutation.isLoading],
+  );
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const submitAnswer = React.useCallback(
+    (params: TSubmitAnswerParam) => submitAnswerMutation.mutate(params),
+    [],
+  );
+
+  const currDishonestCount = React.useMemo(
+    () => dishonestyCount,
+    [dishonestyCount],
+  );
+  const updateDishonestCount = React.useCallback(
+    (count: React.SetStateAction<number>) => setDishonestyCount(count),
+    [],
+  );
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const submitCheated = React.useCallback(
+    (params: TSubmitCheatParam) => blocklistMutation.mutate(params),
+    [],
+  );
+
+  if (submitAnswerMutation.isSuccess)
+    return (
+      <SafeAreaView>
+        <YStack
+          h="100%"
+          display="flex"
+          jc="center"
+          ai="center"
+          gap={20}
+          px={20}
+        >
+          <H3>Berhasil Submit</H3>
+          <Text textAlign="center">
+            Jawaban berhasil terkirim, anda bisa menunjukan ini ke pengawas
+            ruangan bahwa jawaban anda sudah di submit dengan aman. Screenshot
+            bukti ini untuk berjaga-jaga.
+          </Text>
+
+          <Text>Kode Soal: {data.slug}</Text>
+
+          <Link href="/" replace asChild>
+            <Button variant="outlined">Ke halaman depan</Button>
+          </Link>
+        </YStack>
+      </SafeAreaView>
+    );
+
+  if (dishonestyCount > 2)
+    return (
+      <SafeAreaView>
+        <YStack
+          h="100%"
+          display="flex"
+          jc="center"
+          ai="center"
+          gap={20}
+          px={20}
+        >
+          <H3>Anda Melakukan Kecurangan</H3>
+          <Text textAlign="center">
+            Anda sudah tiga kali beralih dari aplikasi ini,{" "}
+            {!blocklistMutation.isLoading && blocklistMutation.isSuccess ? (
+              <>
+                kami berhasil menyimpan status anda sudah melakukan kecurangan.
+                Anda akan terlihat oleh panitia sudah melakukan kecurangan, lain
+                kali jangan di ulangi lagi.
+              </>
+            ) : (
+              <>
+                {blocklistMutation.isError ? (
+                  <>
+                    kami gagal menyimpan status kecurangan anda, anda bisa
+                    logout untuk me-reset status kecurangan pada browser
+                    perangkat anda dan login kembali.
+                  </>
+                ) : (
+                  <>kami sedang menyimpan status kecurangan anda...</>
+                )}
+              </>
+            )}
+          </Text>
+
+          <Text>Kode Soal: {data.slug}</Text>
+
+          <Link href="/" replace asChild>
+            <Button variant="outlined">Ke halaman depan</Button>
+          </Link>
+        </YStack>
+      </SafeAreaView>
+    );
+
+  return (
+    <RealActualTest
+      data={data}
+      refetch={refetch}
+      initialData={initialData}
+      isSubmitLoading={isSubmitLoading}
+      submitAnswer={submitAnswer}
+      currDishonestCount={currDishonestCount}
+      updateDishonestCount={updateDishonestCount}
+      submitCheated={submitCheated}
+    />
+  );
 }
 
 export const ActualTest = React.memo(
-  ActualTestConstructor,
+  TestWrapper,
   (prev, next) => JSON.stringify(prev.data) === JSON.stringify(next.data),
 );
