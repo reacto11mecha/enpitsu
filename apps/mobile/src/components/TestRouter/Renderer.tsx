@@ -1,12 +1,33 @@
-import { useWindowDimensions } from "react-native";
+import { useWindowDimensions, View, useColorScheme } from "react-native";
 import RenderHtml from "react-native-render-html";
+import { WebView } from 'react-native-webview';
 import type { FieldArrayWithId } from "react-hook-form";
-import { Card, Label, RadioGroup, TextArea, XStack } from "tamagui";
+import { Card, Label, RadioGroup, TextArea, Text, XStack } from "tamagui";
 
 import type { TFormSchema } from "./utils";
 
 type TChoice = FieldArrayWithId<TFormSchema, "multipleChoices", "id">;
 type TEssay = FieldArrayWithId<TFormSchema, "essays", "id">;
+
+const pageBuilder = (content: string) => `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    * {
+      color: white;
+      background-color: transparent;
+    }
+  </style>
+</head>
+<body className="text-white">
+  ${content}
+</body>
+</html>`
 
 export function RenderChoiceQuestion({
   item,
@@ -21,20 +42,17 @@ export function RenderChoiceQuestion({
   index: number;
   updateAnswer: (order: number) => void;
 }) {
-  const { width } = useWindowDimensions();
+  const colorScheme = useColorScheme();
 
   return (
     <Card elevate size="$4" bordered mt={index > 0 ? 15 : 0}>
-      <Card.Header padded>
-        <RenderHtml
-          contentWidth={width}
-          source={{ html: item.question }}
-          tagsStyles={{
-            body: {
-              color: "white",
-            },
-          }}
-        />
+      <Card.Header padded display="flex">
+        <View style={{ flex: 1, flexGrow: 1, height: 30 }}>
+          <WebView 
+            style={{ backgroundColor: "transparent" }}
+            source={{ html: pageBuilder(item.question) }}
+          />
+        </View>
       </Card.Header>
       <Card.Footer padded>
         <RadioGroup
@@ -54,18 +72,17 @@ export function RenderChoiceQuestion({
 
               <Label
                 htmlFor={`${index}.${option.order}`}
-                width={width}
+                width="100%"
                 disabled={disabled}
               >
-                <RenderHtml
-                  contentWidth={width}
-                  source={{ html: option.answer }}
-                  tagsStyles={{
-                    body: {
-                      color: "white",
-                    },
-                  }}
-                />
+        <View style={{ width: "100%"}}>
+          <WebView 
+            automaticallyAdjustContentInsets={false}
+            originWhitelist={['*']}
+            scrollEnabled={false}
+            source={{ html: option.answer }}
+          />
+        </View>
               </Label>
             </XStack>
           ))}
