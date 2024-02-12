@@ -1,9 +1,9 @@
 import { cache } from "@enpitsu/cache";
 import {
-  and,
   eq,
-  preparedBlocklistGetCount,
   preparedQuestionSelect,
+  preparedStudentHasAnswered,
+  preparedStudentIsCheated,
   schema,
 } from "@enpitsu/db";
 import { TRPCError } from "@trpc/server";
@@ -18,21 +18,26 @@ type TQuestion = NonNullable<
 >;
 
 const getQuestionPrecheck = async (student: TStudent, question: TQuestion) => {
-  const { allowLists, responds, ...sendedData } = question;
+  const { allowLists, ...sendedData } = question;
 
-  const cheatedCount = await preparedBlocklistGetCount.execute({
+  const isCheated = await preparedStudentIsCheated.execute({
     questionId: question.id,
     studentId: student.id,
   });
 
-  if (cheatedCount.at(0)!.value > 0)
+  if (isCheated)
     throw new TRPCError({
       code: "BAD_REQUEST",
       message:
         "Anda sudah melakukan kecurangan, data kecurangan sudah direkam dan anda tidak bisa lagi mengerjakan soal ini.",
     });
 
-  if (responds.find((respond) => respond.studentId === student.id))
+  const alreadyHasAnswer = await preparedStudentHasAnswered.execute({
+    questionId: question.id,
+    studentId: student.id,
+  });
+
+  if (alreadyHasAnswer)
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "Anda sudah mengerjakan soal ini!",
@@ -103,13 +108,14 @@ export const examRouter = createTRPCRouter({
           `trpc-get-question-slug-${input.slug}`,
           JSON.stringify(question),
           "EX",
-          5 * 10,
+          25 * 10,
         );
       } catch (_) {
         console.error(
           JSON.stringify({
             time: Date.now().valueOf(),
             msg: "Failed to set cache question data, continuing without cache write",
+            endpoint: "exam.getQuestion",
             studentToken: ctx.studentToken,
             ...input,
           }),
@@ -138,8 +144,9 @@ export const examRouter = createTRPCRouter({
         console.error(
           JSON.stringify({
             time: Date.now().valueOf(),
+            endpoint: "exam.queryQuestion",
             msg: "Failed to get cached question data, fallback to database request",
-            ...input,
+            input,
           }),
         );
       }
@@ -159,15 +166,18 @@ export const examRouter = createTRPCRouter({
           `trpc-get-question-slug-${input.slug}`,
           JSON.stringify(question),
           "EX",
-          5 * 10,
+
+          // 2 hours
+          2 * 60 * 60,
         );
       } catch (_) {
         console.error(
           JSON.stringify({
             time: Date.now().valueOf(),
             msg: "Failed to set cache question data, continuing without cache write",
+            endpoint: "exam.queryQuestion",
             studentToken: ctx.studentToken,
-            ...input,
+            input,
           }),
         );
       }
@@ -222,11 +232,9 @@ export const examRouter = createTRPCRouter({
               "Soal ini sudah melewati waktu ujian, tidak bisa mengumpulkan jawaban lagi.",
           });
 
-        const isCheated = await tx.query.studentBlocklists.findFirst({
-          where: and(
-            eq(schema.studentBlocklists.studentId, ctx.student.id),
-            eq(schema.studentBlocklists.questionId, input.questionId),
-          ),
+        const isCheated = await preparedStudentIsCheated.execute({
+          questionId: input.questionId,
+          studentId: ctx.student.id,
         });
 
         if (isCheated)
@@ -236,11 +244,9 @@ export const examRouter = createTRPCRouter({
               "Tidak bisa mengumpulkan jawaban, anda sudah melakukan kecurangan.",
           });
 
-        const alreadyHasAnswer = await tx.query.studentResponds.findFirst({
-          where: and(
-            eq(schema.studentResponds.studentId, ctx.student.id),
-            eq(schema.studentResponds.questionId, input.questionId),
-          ),
+        const alreadyHasAnswer = await preparedStudentHasAnswered.execute({
+          questionId: input.questionId,
+          studentId: ctx.student.id,
         });
 
         if (alreadyHasAnswer)
@@ -303,29 +309,18 @@ export const examRouter = createTRPCRouter({
             }
           }
         });
-
-        try {
-          await cache.del(`trpc-get-question-slug-${question.slug}`);
-        } catch (_) {
-          console.error(
-            JSON.stringify({
-              time: Date.now().valueOf(),
-              msg: "Failed to remove cached question data, continuing operation",
-            }),
-          );
-        }
       }),
     ),
 
   storeBlocklist: studentProcedure
     .input(z.object({ questionId: z.number(), time: z.date() }))
     .mutation(async ({ ctx, input }) => {
-      const count = await preparedBlocklistGetCount.execute({
+      const isCheated = await preparedStudentIsCheated.execute({
         questionId: input.questionId,
         studentId: ctx.student.id,
       });
 
-      if (count.at(0)!.value > 0)
+      if (isCheated)
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Data kecurangan yang sama sudah terekam sebelumnya.",

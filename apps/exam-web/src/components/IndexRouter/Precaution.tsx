@@ -28,9 +28,14 @@ const PrecautionChildren = ({
   const refEl = useRef<HTMLLIElement>(null!);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      setScrollBottom(entry?.isIntersecting ?? false);
-    });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setScrollBottom(entry?.isIntersecting ?? false);
+      },
+      {
+        threshold: 1.0,
+      },
+    );
 
     observer.observe(refEl.current);
 
@@ -95,7 +100,7 @@ const PrecautionChildren = ({
           </li>
           <li>
             Jika waktu sudah menyentuh waktu selesai, maka anda tidak bisa
-            mengumpulkan jawaban anda bagaimanapun caaranya.
+            mengumpulkan jawaban anda bagaimanapun caranya.
           </li>
         </ul>
       </div>

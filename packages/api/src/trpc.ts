@@ -197,6 +197,7 @@ const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
       JSON.stringify({
         time: Date.now().valueOf(),
         msg: "Failed to get cached student data, fallback to database request",
+        endpoint: "enforceUserIsStudent middleware",
         studentToken: ctx.studentToken,
       }),
     );
@@ -216,13 +217,15 @@ const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
       `student-trpc-token-${ctx.studentToken}`,
       JSON.stringify(studentInfo),
       "EX",
-      10 * 60,
+      // 2 weeks cache
+      14 * 24 * 60 * 60,
     );
   } catch (_) {
     console.error(
       JSON.stringify({
         time: Date.now().valueOf(),
         msg: "Failed to set cache student data, continuing without writing cache",
+        endpoint: "enforceUserIsStudent middleware",
         studentToken: ctx.studentToken,
       }),
     );

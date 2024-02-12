@@ -11,12 +11,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { studentAnswerAtom, studentTokenAtom } from "@/lib/atom";
-import { useAtom } from "jotai";
+import { useSetAtom } from "jotai";
+import { RESET } from "jotai/utils";
 import { LogOut } from "lucide-react";
 
 export const Logout = () => {
-  const [, setToken] = useAtom(studentTokenAtom);
-  const [, setAnswers] = useAtom(studentAnswerAtom);
+  const setToken = useSetAtom(studentTokenAtom);
+  const setAnswers = useSetAtom(studentAnswerAtom);
 
   return (
     <AlertDialog>
@@ -36,8 +37,8 @@ export const Logout = () => {
           <AlertDialogCancel>Batal</AlertDialogCancel>
           <AlertDialogAction
             onClick={() => {
-              setToken("");
-              setAnswers([]);
+              setToken(RESET);
+              setAnswers(RESET);
             }}
           >
             Logout

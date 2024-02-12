@@ -331,15 +331,30 @@ export const questionRouter = createTRPCRouter({
     )
     .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
-        await tx
-          .update(schema.questions)
-          .set({
-            title: input.title,
-            slug: input.slug,
-            startedAt: input.startedAt,
-            endedAt: input.endedAt,
-          })
-          .where(eq(schema.questions.id, input.id));
+        try {
+          await tx
+            .update(schema.questions)
+            .set({
+              title: input.title,
+              slug: input.slug,
+              startedAt: input.startedAt,
+              endedAt: input.endedAt,
+            })
+            .where(eq(schema.questions.id, input.id));
+        } catch (e) {
+          // @ts-expect-error unknown error value
+          if (e.code === "23505" && e.constraint_name === "slug_idx")
+            throw new TRPCError({
+              code: "CONFLICT",
+              message:
+                "Sudah ada kode soal dengan nama yang sama, mohon di ubah",
+            });
+          else
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Terjadi kesalahan internal, mohon coba lagi nanti",
+            });
+        }
 
         const currentAllowList = await tx.query.allowLists.findMany({
           where: eq(schema.allowLists.questionId, input.id),
