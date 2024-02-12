@@ -35,8 +35,11 @@ import { z } from "zod";
 
 import { ModeToggle } from "../mode-toggle";
 import { useToast } from "../ui/use-toast";
-import { DishonestyAlert } from "./DishonestyAlert";
-import { ScreenWakeLockFail } from "./ScreenWakeLockFail";
+import {
+  BadInternetAlert,
+  DishonestyAlert,
+  ScreenWakeLockFail,
+} from "./AllAlert";
 import {
   formSchema,
   shuffleArray,
@@ -47,8 +50,6 @@ import {
 
 import "katex/dist/katex.min.css";
 import "react-quill/dist/quill.snow.css";
-
-import { BadInternetAlert } from "./BadInternetAlert";
 
 window.katex = katex;
 

@@ -1,4 +1,4 @@
-import { and, count, eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
@@ -17,16 +17,29 @@ export const db = drizzle(postgres(process.env.DATABASE_URL!), {
 });
 
 // Prepared statement stuff
-export const preparedBlocklistGetCount = db
-  .select({ value: count() })
-  .from(schema.studentBlocklists)
-  .where(
-    and(
-      eq(schema.studentBlocklists.questionId, sql.placeholder("questionId")),
+export const preparedStudentIsCheated = db.query.studentBlocklists
+  .findFirst({
+    where: and(
       eq(schema.studentBlocklists.studentId, sql.placeholder("studentId")),
+      eq(schema.studentBlocklists.questionId, sql.placeholder("questionId")),
     ),
-  )
-  .prepare("blocklistCountPrepared");
+    columns: {
+      time: true,
+    },
+  })
+  .prepare("studentCheated");
+
+export const preparedStudentHasAnswered = db.query.studentResponds
+  .findFirst({
+    columns: {
+      submittedAt: true,
+    },
+    where: and(
+      eq(schema.studentResponds.studentId, sql.placeholder("studentId")),
+      eq(schema.studentResponds.questionId, sql.placeholder("questionId")),
+    ),
+  })
+  .prepare("studentHasAnswered");
 
 export const preparedQuestionSelect = db.query.questions
   .findFirst({
@@ -50,11 +63,6 @@ export const preparedQuestionSelect = db.query.questions
           iqid: true,
           question: true,
           options: true,
-        },
-      },
-      responds: {
-        columns: {
-          studentId: true,
         },
       },
       essays: {
@@ -94,4 +102,4 @@ export const preparedGetStudent = db.query.students
       },
     },
   })
-  .prepare("prepareForGetStudent");
+  .prepare("getStudentDatas");

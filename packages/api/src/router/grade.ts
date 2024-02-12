@@ -1,3 +1,4 @@
+import { cache } from "@enpitsu/cache";
 import { asc, eq, schema } from "@enpitsu/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -90,12 +91,35 @@ export const gradeRouter = createTRPCRouter({
         label: z.string(),
       }),
     )
-    .mutation(({ ctx, input }) => {
-      return ctx.db
-        .update(schema.subGrades)
-        .set({ label: input.label })
-        .where(eq(schema.subGrades.id, input.id));
-    }),
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        try {
+          const allStudents = await tx.query.students.findMany({
+            where: eq(schema.students.subgradeId, input.id),
+            columns: {
+              token: true,
+            },
+          });
+
+          for (const student of allStudents)
+            await cache.del(`student-trpc-token-${student.token}`);
+        } catch (_) {
+          console.error(
+            JSON.stringify({
+              time: Date.now().valueOf(),
+              msg: "Failed to remove cached student data, still continuing operation without cache removal",
+              endpoint: "grade.updateSubgrade",
+              data: input,
+            }),
+          );
+        }
+
+        return await tx
+          .update(schema.subGrades)
+          .set({ label: input.label })
+          .where(eq(schema.subGrades.id, input.id));
+      }),
+    ),
 
   updateStudent: adminProcedure
     .input(
@@ -123,6 +147,16 @@ export const gradeRouter = createTRPCRouter({
       return await ctx.db.transaction(async (tx) => {
         const subgrades = await tx.query.subGrades.findMany({
           where: eq(schema.subGrades.gradeId, input),
+          columns: {
+            id: true,
+          },
+          with: {
+            students: {
+              columns: {
+                token: true,
+              },
+            },
+          },
         });
 
         await tx.delete(schema.grades).where(eq(schema.grades.id, input));
@@ -138,6 +172,20 @@ export const gradeRouter = createTRPCRouter({
             await tx2
               .delete(schema.allowLists)
               .where(eq(schema.allowLists.subgradeId, subgrade.id));
+
+            try {
+              for (const { token } of subgrade.students)
+                await cache.del(`student-trpc-token-${token}`);
+            } catch (_) {
+              console.error(
+                JSON.stringify({
+                  time: Date.now().valueOf(),
+                  msg: "Failed to remove cached student data, still continuing operation without cache removal",
+                  endpoint: "grade.deleteGrade",
+                  input,
+                }),
+              );
+            }
           }
         });
       });
@@ -145,8 +193,8 @@ export const gradeRouter = createTRPCRouter({
 
   deleteSubgrade: adminProcedure
     .input(z.number())
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.db.transaction(async (tx) => {
+    .mutation(async ({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
         await tx.delete(schema.subGrades).where(eq(schema.subGrades.id, input));
         await tx
           .delete(schema.students)
@@ -154,8 +202,8 @@ export const gradeRouter = createTRPCRouter({
         await tx
           .delete(schema.allowLists)
           .where(eq(schema.allowLists.subgradeId, input));
-      });
-    }),
+      }),
+    ),
 
   deleteStudent: adminProcedure
     .input(z.number())
