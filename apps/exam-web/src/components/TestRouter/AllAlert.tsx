@@ -1,6 +1,7 @@
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -8,6 +9,57 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Home } from "lucide-react";
+import { Link } from "react-router-dom";
+
+export const GoToHome = () => (
+  <AlertDialog>
+    <AlertDialogTrigger asChild>
+      <Button variant="outline">
+        <Home />
+      </Button>
+    </AlertDialogTrigger>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Kembali ke beranda?</AlertDialogTitle>
+        <AlertDialogDescription>
+          Anda saat ini sedang mengerjakan soal. Jika anda kembali maka semua
+          jawaban dan status kecurangan masih tetap tersimpan.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Batal</AlertDialogCancel>
+        <AlertDialogAction asChild>
+          <Link to="/" replace>
+            Kembali
+          </Link>
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
+export const DishonestyCountAlert = ({ dishonestyCount }) => (
+  <AlertDialog>
+    <AlertDialogTrigger asChild>
+      <Button variant="outline">{dishonestyCount}</Button>
+    </AlertDialogTrigger>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Jumlah kecurangan</AlertDialogTitle>
+        <AlertDialogDescription>
+          Anda saat ini melakukan {dishonestyCount} kali kecurangan, melakukan
+          tiga (3) kali kecurangan maka anda akan dinyatakan melakukan
+          kecurangan.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Tutup</AlertDialogCancel>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
 
 export const BadInternetAlert = ({
   open,
