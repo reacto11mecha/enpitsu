@@ -147,20 +147,16 @@ const PrecautionChildren = ({
                 <FlashList
                   data={codeOfConduct}
                   renderItem={({ item, index }) => (
-                    <InView
-                      onChange={(inView: boolean) => {
-                        if (index === 8) {
-                          setScrollBottom(inView);
-                        }
-                      }}
-                    >
-                      <Paragraph>
-                        <Text fontWeight="bold">{index + 1}</Text>. {item.label}
-                      </Paragraph>
-                    </InView>
+                    <Paragraph>
+                      <Text fontWeight="bold">{index + 1}</Text>. {item.label}
+                    </Paragraph>
                   )}
                   estimatedItemSize={10}
                 />
+
+                <InView onChange={(inView: boolean) => setScrollBottom(inView)}>
+                  <YStack display="flex" width="100%" height={10} />
+                </InView>
               </YStack>
             </YStack>
           </YStack>

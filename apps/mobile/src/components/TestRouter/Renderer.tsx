@@ -1,33 +1,40 @@
-import { useWindowDimensions, View, useColorScheme } from "react-native";
+import { useColorScheme, View } from "react-native";
 import RenderHtml from "react-native-render-html";
-import { WebView } from 'react-native-webview';
+import { WebView } from "react-native-webview";
 import type { FieldArrayWithId } from "react-hook-form";
-import { Card, Label, RadioGroup, TextArea, Text, XStack } from "tamagui";
+import { Card, Label, RadioGroup, Text, TextArea, XStack } from "tamagui";
 
 import type { TFormSchema } from "./utils";
 
 type TChoice = FieldArrayWithId<TFormSchema, "multipleChoices", "id">;
 type TEssay = FieldArrayWithId<TFormSchema, "essays", "id">;
 
-const pageBuilder = (content: string) => `<!DOCTYPE html>
-<html>
+const pageBuilder = (content: string, colorMode: string) => `<!DOCTYPE html>
+<html class="${colorMode}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <style>
-    * {
-      color: white;
-      background-color: transparent;
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
     }
-  </style>
+  </script>
 </head>
-<body className="text-white">
+<body class="dark:text-white">
   ${content}
 </body>
-</html>`
+</html>`;
+
+const webViewScript = `
+  setTimeout(function() { 
+    window.ReactNativeWebView.postMessage(
+      Math.max(document.documentElement.clientHeight, document.documentElement.scrollHeight, document.body.clientHeight, document.body.scrollHeight)
+    ); 
+  }, 900);
+`;
 
 export function RenderChoiceQuestion({
   item,
@@ -44,13 +51,20 @@ export function RenderChoiceQuestion({
 }) {
   const colorScheme = useColorScheme();
 
+  const [height, setHeight] = React.useState(0);
+
   return (
     <Card elevate size="$4" bordered mt={index > 0 ? 15 : 0}>
       <Card.Header padded display="flex">
-        <View style={{ flex: 1, flexGrow: 1, height: 30 }}>
-          <WebView 
+        <View style={{ flex: 1, flexGrow: 1, height }}>
+          <WebView
+            scrollEnabled={false}
+            onMessage={(event) => {
+              setHeight(parseInt(event.nativeEvent.data));
+            }}
+            injectedJavaScript={webViewScript}
             style={{ backgroundColor: "transparent" }}
-            source={{ html: pageBuilder(item.question) }}
+            source={{ html: pageBuilder(item.question, colorScheme) }}
           />
         </View>
       </Card.Header>
@@ -68,22 +82,16 @@ export function RenderChoiceQuestion({
                 id={`${index}.${option.order}`}
               >
                 <RadioGroup.Indicator />
+                <View
+                  style={{ height: 1200, flex: 1, flexGrow: 1, width: "100%" }}
+                >
+                  <WebView
+                    scrollEnabled={false}
+                    style={{ backgroundColor: "transparent" }}
+                    source={{ html: pageBuilder(option.answer, colorScheme) }}
+                  />
+                </View>
               </RadioGroup.Item>
-
-              <Label
-                htmlFor={`${index}.${option.order}`}
-                width="100%"
-                disabled={disabled}
-              >
-        <View style={{ width: "100%"}}>
-          <WebView 
-            automaticallyAdjustContentInsets={false}
-            originWhitelist={['*']}
-            scrollEnabled={false}
-            source={{ html: option.answer }}
-          />
-        </View>
-              </Label>
             </XStack>
           ))}
         </RadioGroup>
@@ -105,20 +113,23 @@ export function RenderEssayQuestion({
   index: number;
   updateAnswer: (answer: string) => void;
 }) {
-  const { width } = useWindowDimensions();
+  const colorScheme = useColorScheme();
+
+  const [height, setHeight] = React.useState(0);
 
   return (
     <Card elevate size="$4" bordered mt={index > 0 ? 15 : 0}>
       <Card.Header padded>
-        <RenderHtml
-          contentWidth={width}
-          source={{ html: item.question }}
-          tagsStyles={{
-            body: {
-              color: "white",
-            },
-          }}
-        />
+        <View style={{ flex: 1, flexGrow: 1, height }}>
+          <WebView
+            onMessage={(event) => {
+              setHeight(parseInt(event.nativeEvent.data));
+            }}
+            injectedJavaScript={webViewScript}
+            style={{ backgroundColor: "transparent" }}
+            source={{ html: pageBuilder(item.question, colorScheme) }}
+          />
+        </View>
       </Card.Header>
       <Card.Footer padded>
         <TextArea
