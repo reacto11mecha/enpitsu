@@ -84,7 +84,7 @@ export const ScanOrInputQuestionSlug = ({
                     disabled={getQuestionMutation.isLoading}
                     onPress={form.handleSubmit(onSubmit)}
                     opacity={getQuestionMutation.isLoading ? 0.5 : 1}
-                    icon={getQuestionMutation.isLoading ? <Spinner /> : <></>}
+                    icon={getQuestionMutation.isLoading ? <Spinner /> : null}
                   >
                     Kerjakan
                   </Button>
@@ -99,10 +99,16 @@ export const ScanOrInputQuestionSlug = ({
           />
         </XStack>
 
-        <ScannerWrapper
-          sendMutate={sendMutate}
-          isDisabled={getQuestionMutation.isLoading}
-        />
+        <YStack display="flex" width="100%" gap={5}>
+          <Text textAlign="center" opacity={0.8}>
+            atau
+          </Text>
+
+          <ScannerWrapper
+            sendMutate={sendMutate}
+            isDisabled={getQuestionMutation.isLoading}
+          />
+        </YStack>
 
         <XStack>
           <Button

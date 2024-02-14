@@ -55,33 +55,6 @@ export interface TPropsRealTest extends TPropsWrapper {
   submitCheated: (params: TSubmitCheatParam) => void;
 }
 
-type Timer = ReturnType<typeof setTimeout>;
-type SomeFunction = (...args: never) => void;
-
-export function useDebounce<Func extends SomeFunction>(
-  func: Func,
-  delay = 250,
-) {
-  const timer = useRef<Timer>();
-
-  useEffect(() => {
-    return () => {
-      if (!timer.current) return;
-      clearTimeout(timer.current);
-    };
-  }, []);
-
-  const debouncedFunction = ((...args) => {
-    const newTimer = setTimeout(() => {
-      func(...args);
-    }, delay);
-    clearTimeout(timer.current);
-    timer.current = newTimer;
-  }) as Func;
-
-  return debouncedFunction;
-}
-
 export function shuffleArray<T>(array: T[]): T[] {
   const shuffledArray = [...array] as T[];
 

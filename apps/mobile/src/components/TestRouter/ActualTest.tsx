@@ -16,6 +16,7 @@ import { useToastController } from "@tamagui/toast";
 import { useSetAtom } from "jotai";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { Button, H3, Spinner, Text, XStack, YStack } from "tamagui";
+import { useDebounceCallback } from "usehooks-ts";
 
 import { useCountdown } from "~/hooks/useCountdown";
 import { api } from "~/lib/api";
@@ -27,7 +28,7 @@ import {
   GoHomeAlert,
 } from "./AllAlert";
 import { RenderChoiceQuestion, RenderEssayQuestion } from "./Renderer";
-import { formSchema, shuffleArray, useDebounce } from "./utils";
+import { formSchema, shuffleArray } from "./utils";
 import type {
   TFormSchema,
   TPropsRealTest,
@@ -35,6 +36,22 @@ import type {
   TSubmitAnswerParam,
   TSubmitCheatParam,
 } from "./utils";
+
+const ContainerizedCountdown = React.memo(function Countdown({
+  endedAt,
+  setEnded,
+}: {
+  endedAt: Date;
+  setEnded: (ended: boolean) => void;
+}) {
+  const { isEnded, countdown } = useCountdown(endedAt);
+
+  React.useEffect(() => {
+    if (isEnded) setEnded(true);
+  }, [isEnded]);
+
+  return <Button variant="outlined">{countdown}</Button>;
+});
 
 const RealActualTest = React.memo(function ActualTest({
   data,
@@ -58,6 +75,7 @@ const RealActualTest = React.memo(function ActualTest({
         )
       : new Date(),
   );
+  const [isEnded, setEnded] = React.useState(false);
 
   const { isConnected } = useNetInfo();
 
@@ -79,6 +97,10 @@ const RealActualTest = React.memo(function ActualTest({
       setBadInternet(false);
     }
   }, [isConnected]);
+
+  const updateIsEnded = React.useCallback((isEnded: boolean) =>
+    setEnded(isEnded),
+  );
 
   const defaultFormValues = React.useMemo(
     () => ({
@@ -129,8 +151,6 @@ const RealActualTest = React.memo(function ActualTest({
     control: form.control,
     name: "essays",
   });
-
-  const { countdown, isEnded } = useCountdown(data.endedAt);
 
   // Increment dishonesty count up to 3 app changes.
   // The first two will ask kindly to not to cheat on their exam.
@@ -190,7 +210,7 @@ const RealActualTest = React.memo(function ActualTest({
     }
   }, [isConnected]);
 
-  const multipleChoiceDebounced = useDebounce(
+  const multipleChoiceDebounced = useDebounceCallback(
     (updatedData: { iqid: number; choosedAnswer: number }) => {
       void setStudentAnswers(async (prev) => {
         const original = await prev;
@@ -214,9 +234,10 @@ const RealActualTest = React.memo(function ActualTest({
         };
       });
     },
+    250,
   );
 
-  const essayDebounce = useDebounce(
+  const essayDebounce = useDebounceCallback(
     (updatedData: { iqid: number; answer: string }) => {
       void setStudentAnswers(async (prev) => {
         const original = await prev;
@@ -240,6 +261,7 @@ const RealActualTest = React.memo(function ActualTest({
         };
       });
     },
+    250,
   );
 
   const onSubmit = (values: TFormSchema) => {
@@ -305,7 +327,10 @@ const RealActualTest = React.memo(function ActualTest({
           >
             <GoHomeAlert />
 
-            <Button variant="outlined">{countdown}</Button>
+            <ContainerizedCountdown
+              endedAt={data.endedAt}
+              setEnded={updateIsEnded}
+            />
 
             <DishonestyCountAlert dishonestyCount={currDishonestCount} />
           </XStack>

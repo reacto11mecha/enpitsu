@@ -99,7 +99,9 @@ export const ScannerWrapper = ({
           <Button
             variant="outlined"
             w="100%"
+            h="$10"
             icon={<ScanLine size={20} />}
+            opacity={isDisabled ? 0.5 : 1}
             disabled={isDisabled}
           >
             Pindai QR

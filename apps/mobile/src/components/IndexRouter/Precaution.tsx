@@ -232,7 +232,12 @@ export const Precaution = ({
 
             <XStack justifyContent="flex-end" space="$2">
               <AlertDialog.Cancel asChild>
-                <Button variant="outlined">Batal</Button>
+                <Button
+                  onPress={() => setScrollBottom(false)}
+                  variant="outlined"
+                >
+                  Batal
+                </Button>
               </AlertDialog.Cancel>
 
               {data ? (
