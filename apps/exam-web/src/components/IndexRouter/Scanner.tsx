@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScanLine } from "lucide-react";
 import QrScanner from "qr-scanner";
+import slugify from "slugify";
 
 import { formSchema } from "./schema";
 
@@ -39,7 +40,14 @@ const Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
           setError(null);
 
           qrScanner.stop();
-          mutate(slug);
+
+          mutate(
+            slugify(slug, {
+              trim: false,
+              strict: true,
+              remove: /[*+~.()'"!:@]/g,
+            }).toUpperCase(),
+          );
         }
       },
       {
