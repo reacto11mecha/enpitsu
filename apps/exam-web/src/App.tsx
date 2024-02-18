@@ -60,13 +60,8 @@ export default function App() {
 
       const headers = new Map<string, string>();
 
-      headers.set("x-trpc-source", "expo-react");
-
-      headers.set(
-        "authorization",
-
-        `Student ${userToken}`,
-      );
+      headers.set("x-trpc-source", "exam-web");
+      headers.set("authorization", `Student ${userToken}`);
 
       return Object.fromEntries(headers);
     }, []),

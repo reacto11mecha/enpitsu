@@ -40,7 +40,11 @@ export const GoToHome = () => (
   </AlertDialog>
 );
 
-export const DishonestyCountAlert = ({ dishonestyCount }) => (
+export const DishonestyCountAlert = ({
+  dishonestyCount,
+}: {
+  dishonestyCount: number;
+}) => (
   <AlertDialog>
     <AlertDialogTrigger asChild>
       <Button variant="outline">{dishonestyCount}</Button>

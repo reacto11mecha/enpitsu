@@ -77,7 +77,14 @@ const NonInitVer = () => {
                     <FormItem>
                       <FormLabel>Token</FormLabel>
                       <FormControl>
-                        <Input placeholder="ABC12XX" {...field} />
+                        <Input
+                          placeholder="ABC12XX"
+                          onChange={(el) =>
+                            el.target.value.trim().length <= 8 &&
+                            field.onChange(el.target.value.toUpperCase().trim())
+                          }
+                          value={field.value}
+                        />
                       </FormControl>
                       <FormDescription>
                         Token yang tertera pada kartu ujian.
@@ -149,7 +156,14 @@ const InitVersion = () => {
                     <FormItem>
                       <FormLabel>Token</FormLabel>
                       <FormControl>
-                        <Input placeholder="ABC12XX" {...field} />
+                        <Input
+                          placeholder="ABC12XX"
+                          onChange={(el) =>
+                            el.target.value.trim().length <= 8 &&
+                            field.onChange(el.target.value.toUpperCase().trim())
+                          }
+                          value={field.value}
+                        />
                       </FormControl>
                       <FormDescription>
                         Token yang tertera pada kartu ujian.
