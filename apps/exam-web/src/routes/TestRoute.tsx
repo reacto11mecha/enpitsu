@@ -2,12 +2,12 @@ import { ActualTest } from "@/components/TestRouter/ActualTest";
 import { Button } from "@/components/ui/button";
 import { studentAnswerAtom } from "@/lib/atom";
 import { api } from "@/utils/api";
-import { useAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
 export default function TestRoute() {
-  const [initialAnswer] = useAtom(studentAnswerAtom);
+  const initialAnswer = useAtomValue(studentAnswerAtom);
 
   const { slug } = useParams<{ slug: string }>();
 

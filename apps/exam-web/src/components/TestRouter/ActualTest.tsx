@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
@@ -13,24 +13,19 @@ import {
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useNetworkState } from "@/hooks/useNetworkState";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { studentAnswerAtom } from "@/lib/atom";
 import { api } from "@/utils/api";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import katex from "katex";
-import { ArrowLeft, Globe, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { useWakeLock } from "react-screen-wake-lock";
+import { useDebounceCallback } from "usehooks-ts";
 import { z } from "zod";
 
 import { ModeToggle } from "../mode-toggle";
@@ -45,7 +40,6 @@ import {
 import {
   formSchema,
   shuffleArray,
-  useDebounce,
   type Props,
   type TFormSchema,
 } from "./utils";
@@ -54,6 +48,22 @@ import "katex/dist/katex.min.css";
 import "react-quill/dist/quill.snow.css";
 
 window.katex = katex;
+
+export const CountdownIsolation = memo(function Countdown({
+  endedAt,
+  theEndHasCome,
+}: {
+  endedAt: Date;
+  theEndHasCome: () => void;
+}) {
+  const { countdown, isEnded } = useCountdown(endedAt);
+
+  useEffect(() => {
+    if (isEnded) theEndHasCome();
+  }, [isEnded, theEndHasCome]);
+
+  return <Button variant="outline">{countdown}</Button>;
+});
 
 const Test = ({ data, initialData }: Props) => {
   const [checkIn] = useState(
@@ -64,15 +74,16 @@ const Test = ({ data, initialData }: Props) => {
         )
       : new Date(),
   );
+  const [isEnded, setEnded] = useState(false);
 
   const { toast } = useToast();
 
-  const [studentAnswers, setStudentAnswers] = useAtom(studentAnswerAtom);
+  const setStudentAnswers = useSetAtom(studentAnswerAtom);
 
   const blocklistMutation = api.exam.storeBlocklist.useMutation({
     onSuccess() {
-      setStudentAnswers(
-        studentAnswers.filter((answer) => answer.slug !== data.slug),
+      setStudentAnswers((prev) =>
+        prev.filter((answer) => answer.slug !== data.slug),
       );
     },
     onError(error) {
@@ -86,8 +97,8 @@ const Test = ({ data, initialData }: Props) => {
   });
   const submitAnswerMutation = api.exam.submitAnswer.useMutation({
     onSuccess() {
-      setStudentAnswers(
-        studentAnswers.filter((answer) => answer.slug !== data.slug),
+      setStudentAnswers((prev) =>
+        prev.filter((answer) => answer.slug !== data.slug),
       );
     },
     onError(error) {
@@ -128,6 +139,7 @@ const Test = ({ data, initialData }: Props) => {
     setCanUpdateDishonesty(true);
     setWakeLockError(false);
   }, []);
+  const theEndHasCome = useCallback(() => setEnded(true), []);
 
   const { isSupported, request, release } = useWakeLock({
     onError: () => {
@@ -135,9 +147,8 @@ const Test = ({ data, initialData }: Props) => {
     },
   });
 
-  const form = useForm<TFormSchema>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
+  const defaultFormValues = useMemo(
+    () => ({
       multipleChoices: shuffleArray(
         data.multipleChoices.map((d) => {
           const savedAnswer = initialData.find((d) => d.slug === data.slug);
@@ -164,7 +175,13 @@ const Test = ({ data, initialData }: Props) => {
           };
         }),
       ),
-    },
+    }),
+    [data.essays, data.multipleChoices, data.slug, initialData],
+  );
+
+  const form = useForm<TFormSchema>({
+    resolver: zodResolver(formSchema),
+    defaultValues: defaultFormValues,
   });
 
   const multipleChoicesField = useFieldArray({
@@ -176,8 +193,6 @@ const Test = ({ data, initialData }: Props) => {
     control: form.control,
     name: "essays",
   });
-
-  const { countdown, isEnded } = useCountdown(data.endedAt);
 
   // Increment dishonesty count up to 3 tab changes.
   // The first two will ask kindly to not to cheat on their exam.
@@ -205,58 +220,61 @@ const Test = ({ data, initialData }: Props) => {
     }
   }, [isOnline]);
 
-  const multipleChoiceDebounced = useDebounce(
+  console.log("rerender ????");
+
+  const multipleChoiceDebounced = useDebounceCallback(
     (updatedData: { iqid: number; choosedAnswer: number }) => {
-      const updatedAnswers = studentAnswers.map((answer) =>
-        answer.slug === data.slug
-          ? {
-              ...answer,
-              multipleChoices: !answer.multipleChoices.find(
-                (choice) => choice.iqid === updatedData.iqid,
-              )
-                ? [...answer.multipleChoices, updatedData]
-                : answer.multipleChoices.map((choice) =>
-                    choice.iqid === updatedData.iqid ? updatedData : choice,
-                  ),
-            }
-          : answer,
+      setStudentAnswers((prev) =>
+        prev.map((answer) =>
+          answer.slug === data.slug
+            ? {
+                ...answer,
+                multipleChoices: !answer.multipleChoices.find(
+                  (choice) => choice.iqid === updatedData.iqid,
+                )
+                  ? [...answer.multipleChoices, updatedData]
+                  : answer.multipleChoices.map((choice) =>
+                      choice.iqid === updatedData.iqid ? updatedData : choice,
+                    ),
+              }
+            : answer,
+        ),
       );
-
-      setStudentAnswers(updatedAnswers);
     },
+    250,
   );
-  const essayDebounce = useDebounce(
+  const essayDebounce = useDebounceCallback(
     (updatedData: { iqid: number; answer: string }) => {
-      const updatedAnswers = studentAnswers.map((answer) =>
-        answer.slug === data.slug
-          ? {
-              ...answer,
-              essays: !answer.essays.find(
-                (choice) => choice.iqid === updatedData.iqid,
-              )
-                ? [...answer.essays, updatedData]
-                : answer.essays.map((essay) =>
-                    essay.iqid === updatedData.iqid ? updatedData : essay,
-                  ),
-            }
-          : answer,
+      setStudentAnswers((prev) =>
+        prev.map((answer) =>
+          answer.slug === data.slug
+            ? {
+                ...answer,
+                essays: !answer.essays.find(
+                  (choice) => choice.iqid === updatedData.iqid,
+                )
+                  ? [...answer.essays, updatedData]
+                  : answer.essays.map((essay) =>
+                      essay.iqid === updatedData.iqid ? updatedData : essay,
+                    ),
+              }
+            : answer,
+        ),
       );
-
-      setStudentAnswers(updatedAnswers);
     },
+    250,
   );
 
   const updateDishonestAtom = useCallback(
-    (count: number) => {
-      const updatedAnswers = studentAnswers.map((answer) =>
-        answer.slug === data.slug
-          ? { ...answer, dishonestCount: count }
-          : answer,
-      );
-
-      setStudentAnswers(updatedAnswers);
-    },
-    [data.slug, setStudentAnswers, studentAnswers],
+    (count: number) =>
+      setStudentAnswers((prev) =>
+        prev.map((answer) =>
+          answer.slug === data.slug
+            ? { ...answer, dishonestCount: count }
+            : answer,
+        ),
+      ),
+    [data.slug, setStudentAnswers],
   );
 
   useEffect(() => {
@@ -270,17 +288,20 @@ const Test = ({ data, initialData }: Props) => {
   }, [dishonestyCount]);
 
   useEffect(() => {
-    if (!studentAnswers.find((answer) => answer.slug === data.slug))
-      setStudentAnswers([
-        ...studentAnswers,
-        {
-          slug: data.slug,
-          checkIn,
-          dishonestCount: 0,
-          multipleChoices: [],
-          essays: [],
-        },
-      ]);
+    setStudentAnswers((prev) =>
+      !prev.find((answer) => answer.slug === data.slug)
+        ? [
+            ...prev,
+            {
+              slug: data.slug,
+              checkIn,
+              dishonestCount: 0,
+              multipleChoices: [],
+              essays: [],
+            },
+          ]
+        : prev,
+    );
 
     if (isSupported) request();
     else {
@@ -294,23 +315,26 @@ const Test = ({ data, initialData }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    setCanUpdateDishonesty(false);
+  const onSubmit = useCallback(
+    (values: z.infer<typeof formSchema>) => {
+      setCanUpdateDishonesty(false);
 
-    submitAnswerMutation.mutate({
-      multipleChoices: values.multipleChoices.map((choice) => ({
-        iqid: choice.iqid,
-        choosedAnswer: choice.choosedAnswer,
-      })),
-      essays: values.essays.map((essay) => ({
-        iqid: essay.iqid,
-        answer: essay.answer,
-      })),
-      questionId: data.id,
-      checkIn,
-      submittedAt: new Date(),
-    });
-  };
+      submitAnswerMutation.mutate({
+        multipleChoices: values.multipleChoices.map((choice) => ({
+          iqid: choice.iqid,
+          choosedAnswer: choice.choosedAnswer,
+        })),
+        essays: values.essays.map((essay) => ({
+          iqid: essay.iqid,
+          answer: essay.answer,
+        })),
+        questionId: data.id,
+        checkIn,
+        submittedAt: new Date(),
+      });
+    },
+    [checkIn, data.id, submitAnswerMutation],
+  );
 
   if (submitAnswerMutation.isSuccess)
     return (
@@ -409,7 +433,10 @@ const Test = ({ data, initialData }: Props) => {
 
           <DishonestyCountAlert dishonestyCount={dishonestyCount} />
 
-          <Button variant="outline">{countdown}</Button>
+          <CountdownIsolation
+            endedAt={data.endedAt}
+            theEndHasCome={theEndHasCome}
+          />
 
           <ModeToggle size="default" />
         </div>
