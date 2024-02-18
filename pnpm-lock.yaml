@@ -170,6 +170,9 @@ importers:
       sharp:
         specifier: ^0.33.2
         version: 0.33.2
+      slugify:
+        specifier: ^1.6.6
+        version: 1.6.6
       string-similarity:
         specifier: ^4.0.4
         version: 4.0.4

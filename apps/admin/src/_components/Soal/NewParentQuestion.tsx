@@ -20,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format, startOfDay } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import slugify from "slugify";
 import { z } from "zod";
 
 import { api } from "~/utils/api";
@@ -125,7 +126,16 @@ export const NewParentQuestion = () => {
               <FormLabel>Kode Soal</FormLabel>
               <FormControl>
                 <Input
-                  {...field}
+                  value={field.value}
+                  onChange={(el) =>
+                    field.onChange(
+                      slugify(el.target.value, {
+                        trim: false,
+                        strict: true,
+                        remove: /[*+~.()'"!:@]/g,
+                      }).toUpperCase(),
+                    )
+                  }
                   autoComplete="off"
                   placeholder="MATWA-XII"
                   disabled={
