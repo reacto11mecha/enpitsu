@@ -1,10 +1,10 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
 import { studentTokenAtom } from "@/lib/atom";
 import IndexRoute from "@/routes/IndexRoute";
 import { api } from "@/utils/api";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
-import { useAtom } from "jotai";
+import { useAtomCallback } from "jotai/utils";
 import { RefreshCw } from "lucide-react";
 import { createHashRouter, Navigate, RouterProvider } from "react-router-dom";
 import superjson from "superjson";
@@ -54,7 +54,18 @@ const router = createHashRouter([
 ]);
 
 export default function App() {
-  const [token] = useAtom(studentTokenAtom);
+  const getHeaders = useAtomCallback(
+    useCallback((get) => {
+      const userToken = get(studentTokenAtom);
+
+      const headers = new Map<string, string>();
+
+      headers.set("x-trpc-source", "exam-web");
+      headers.set("authorization", `Student ${userToken}`);
+
+      return Object.fromEntries(headers);
+    }, []),
+  );
 
   const [queryClient] = useState(() => new QueryClient());
   const [trpcClient] = useState(() =>
@@ -62,11 +73,7 @@ export default function App() {
       links: [
         httpBatchLink({
           url: env.VITE_TRPC_URL,
-          async headers() {
-            return {
-              authorization: `Student ${token}`,
-            };
-          },
+          headers: getHeaders,
         }),
       ],
       transformer: superjson,

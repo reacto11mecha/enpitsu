@@ -61,6 +61,7 @@ export function TRPCProvider(props: { children: React.ReactNode }) {
         "authorization",
 
         // @ts-expect-error weird value from the storage when using useAtomCallback
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         `Student ${userToken.value?.token ?? userToken.token}`,
       );
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +15,7 @@ import type { RouterOutputs } from "@enpitsu/api";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 import { Link } from "react-router-dom";
+import { useIntersectionObserver } from "usehooks-ts";
 
 type TData = RouterOutputs["exam"]["getQuestion"] | undefined;
 
@@ -25,24 +26,11 @@ const PrecautionChildren = ({
   data: TData;
   setScrollBottom: (scrolled: boolean) => void;
 }) => {
-  const refEl = useRef<HTMLLIElement>(null!);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setScrollBottom(entry?.isIntersecting ?? false);
-      },
-      {
-        threshold: 1.0,
-      },
-    );
-
-    observer.observe(refEl.current);
-
-    return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  const { ref } = useIntersectionObserver({
+    threshold: 1,
+    onChange: setScrollBottom,
+  });
+  
   return (
     <div className="mt-8 max-h-72 w-auto space-y-5 overflow-y-scroll p-2 text-start">
       <div className="space-y-1">
@@ -135,7 +123,7 @@ const PrecautionChildren = ({
           <li>
             Peserta tidak boleh mencontek atau membantu peserta lain mencontek.
           </li>
-          <li ref={refEl}>
+          <li ref={ref}>
             Peserta yang melanggar tata tertib akan dikenakan sanksi sesuai
             dengan peraturan yang berlaku.
           </li>

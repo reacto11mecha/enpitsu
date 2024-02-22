@@ -14,6 +14,7 @@ import { api } from "@/utils/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import slugify from "slugify";
 import { z } from "zod";
 
 import { ModeToggle } from "../mode-toggle";
@@ -84,7 +85,16 @@ export const ScanOrInputQuestionSlug = ({
                         placeholder="Masukan kode soal"
                         autoComplete="off"
                         autoCorrect="off"
-                        {...field}
+                        value={field.value}
+                        onChange={(el) =>
+                          field.onChange(
+                            slugify(el.target.value, {
+                              trim: false,
+                              strict: true,
+                              remove: /[*+~.()'"!:@]/g,
+                            }).toUpperCase(),
+                          )
+                        }
                       />
                       <Button
                         type="submit"
