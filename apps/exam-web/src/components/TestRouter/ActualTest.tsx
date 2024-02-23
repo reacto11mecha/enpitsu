@@ -220,8 +220,6 @@ const Test = ({ data, initialData }: Props) => {
     }
   }, [isOnline]);
 
-  console.log("rerender ????");
-
   const multipleChoiceDebounced = useDebounceCallback(
     (updatedData: { iqid: number; choosedAnswer: number }) => {
       setStudentAnswers((prev) =>
@@ -338,14 +336,19 @@ const Test = ({ data, initialData }: Props) => {
 
   if (submitAnswerMutation.isSuccess)
     return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center gap-3 p-3">
-        <h2 className="font-monospace scroll-m-20 pb-2 text-center text-3xl font-semibold tracking-tight text-green-600 first:mt-0 dark:text-green-500">
-          Berhasil Submit
-        </h2>
-        <p className="text-center text-lg md:w-[75%]">
-          Jawaban anda sudah di simpan, anda bisa menunjukan ini ke pengawas
-          ruangan bahwa jawaban anda sudah di submit dengan aman.
-        </p>
+      <div className="flex h-screen w-screen flex-col items-center justify-center gap-6 p-3">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <h2 className="font-monospace scroll-m-20 text-center text-3xl font-semibold tracking-tight text-green-600 first:mt-0 dark:text-green-500">
+            Berhasil Submit
+          </h2>
+          <p className="text-center text-lg md:w-[75%]">
+            Jawaban berhasil terkirim, anda bisa menunjukan ini ke pengawas
+            ruangan bahwa jawaban anda telah di submit dengan aman. Screenshot
+            bukti ini untuk berjaga-berjaga.
+          </p>
+        </div>
+
+        <p>Kode soal: {data.slug}</p>
 
         <Button variant="outline" size="icon" asChild>
           <Link to="/">
@@ -385,8 +388,13 @@ const Test = ({ data, initialData }: Props) => {
           )}
         </p>
 
-        <Button variant="outline" size="icon" asChild>
-          <Link to="/">
+        <Button
+          variant="outline"
+          size="icon"
+          asChild
+          disabled={blocklistMutation.isLoading}
+        >
+          <Link to="/" aria-disabled={blocklistMutation.isLoading}>
             <ArrowLeft />
             <span className="sr-only">Kembali ke halaman depan</span>
           </Link>
@@ -427,7 +435,7 @@ const Test = ({ data, initialData }: Props) => {
       />
       <ScreenWakeLockFail open={wakeLockError} closeWakeLock={closeWakeLock} />
 
-      <header className="fixed inset-x-0 top-0 z-50 flex w-full justify-center border-solid">
+      <header className="no-copy fixed inset-x-0 top-0 z-50 flex w-full justify-center border-solid">
         <div className="flex h-full w-full flex-wrap items-center justify-center gap-2 border border-b bg-white p-2 px-5 dark:bg-stone-900 sm:gap-4">
           <GoToHome />
 
@@ -445,7 +453,7 @@ const Test = ({ data, initialData }: Props) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex justify-center px-4 pb-16 pt-20"
+          className="no-copy flex justify-center px-4 pb-16 pt-20"
         >
           <div className="flex w-full max-w-lg flex-col gap-8">
             <div className="flex flex-col gap-4">
