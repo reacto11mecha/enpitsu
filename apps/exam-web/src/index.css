@@ -78,3 +78,19 @@
 .no-copy {
   user-select: none;
 }
+
+.actual-question .ql-align-center {
+  @apply text-center;
+}
+
+.actual-question .ql-align-right {
+  @apply text-right;
+}
+
+.actual-question ol {
+  @apply list-decimal pl-8 md:pl-10;
+}
+
+.actual-question ul {
+  @apply list-disc pl-8 md:pl-10;
+}

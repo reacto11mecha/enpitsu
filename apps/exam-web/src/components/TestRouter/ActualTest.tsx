@@ -4,10 +4,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Form,
   FormControl,
-  // FormDescription,
   FormField,
   FormItem,
-  // FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
@@ -466,7 +464,7 @@ const Test = ({ data, initialData }: Props) => {
                   <Card key={field.id} className="w-full">
                     <CardHeader>
                       <h3
-                        className="no-copy scroll-m-20 text-lg tracking-tight"
+                        className="no-copy actual-question scroll-m-20 text-lg tracking-tight"
                         dangerouslySetInnerHTML={{ __html: field.question }}
                       />
                     </CardHeader>

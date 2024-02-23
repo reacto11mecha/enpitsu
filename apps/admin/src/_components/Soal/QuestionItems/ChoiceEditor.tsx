@@ -267,11 +267,13 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
                                   className="flex flex-row items-center gap-3"
                                   onPaste={(e) => {
                                     if (
-                                      optionsField.fields.every(
-                                        (field) =>
-                                          field.answer === "" ||
-                                          field.answer === "<p><br></p>",
-                                      )
+                                      form
+                                        .getValues("options")
+                                        .every(
+                                          (field) =>
+                                            field.answer === "" ||
+                                            field.answer === "<p><br></p>",
+                                        )
                                     ) {
                                       e.preventDefault();
 
