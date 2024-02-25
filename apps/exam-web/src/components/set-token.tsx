@@ -78,6 +78,7 @@ const NonInitVer = () => {
                       <FormLabel>Token</FormLabel>
                       <FormControl>
                         <Input
+                          className="font-space"
                           placeholder="ABC12XX"
                           onChange={(el) =>
                             el.target.value.trim().length <= 8 &&
@@ -157,6 +158,7 @@ const InitVersion = () => {
                       <FormLabel>Token</FormLabel>
                       <FormControl>
                         <Input
+                          className="font-space"
                           placeholder="ABC12XX"
                           onChange={(el) =>
                             el.target.value.trim().length <= 8 &&

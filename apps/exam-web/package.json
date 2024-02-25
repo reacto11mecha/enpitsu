@@ -15,6 +15,7 @@
   "dependencies": {
     "@enpitsu/api": "workspace:^0.1.0",
     "@enpitsu/token-generator": "workspace:^0.1.0",
+    "@fontsource/space-mono": "^5.0.18",
     "@hookform/resolvers": "^3.3.2",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-dropdown-menu": "^2.0.6",

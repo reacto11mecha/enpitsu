@@ -346,7 +346,9 @@ const Test = ({ data, initialData }: Props) => {
           </p>
         </div>
 
-        <p>Kode soal: {data.slug}</p>
+        <p>
+          Kode soal: <span className="font-space">{data.slug}</span>
+        </p>
 
         <Button variant="outline" size="icon" asChild>
           <Link to="/">

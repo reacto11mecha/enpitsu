@@ -274,6 +274,9 @@ importers:
       '@enpitsu/token-generator':
         specifier: workspace:^0.1.0
         version: link:../../packages/token-generator
+      '@fontsource/space-mono':
+        specifier: ^5.0.18
+        version: 5.0.18
       '@hookform/resolvers':
         specifier: ^3.3.2
         version: 3.3.2(react-hook-form@7.49.0)
@@ -4647,6 +4650,10 @@ packages:
 
   /@floating-ui/utils@0.2.1:
     resolution: {integrity: sha512-9TANp6GPoMtYzQdt54kfAyMmz1+osLlXdg2ENroU7zzrtflTLrrC/lgrIfaSe+Wu0b89GKccT7vxXA0MoAIO+Q==}
+    dev: false
+
+  /@fontsource/space-mono@5.0.18:
+    resolution: {integrity: sha512-2GKT0pokkncXbYF675JcxexjTwVGD2jX+a9rof9wgI+IuyMk0CNsZFBNuSDDsJoTfZpJjA2GCVaEr7f/bgp35A==}
     dev: false
 
   /@gar/promisify@1.1.3:

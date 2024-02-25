@@ -7,6 +7,8 @@ import { RefreshCw } from "lucide-react";
 
 import App from "./App";
 
+import "@fontsource/space-mono/400.css";
+
 const SetToken = lazy(() => import("@/components/set-token"));
 
 export default function Provider() {

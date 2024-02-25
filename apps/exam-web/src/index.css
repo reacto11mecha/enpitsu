@@ -94,3 +94,7 @@
 .actual-question ul {
   @apply list-disc pl-8 md:pl-10;
 }
+
+.spacemono-font {
+  font-family: "Space Mono", monospace;
+}

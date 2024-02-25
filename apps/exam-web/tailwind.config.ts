@@ -11,6 +11,9 @@ const config = {
   ],
   prefix: "",
   theme: {
+    fontFamily: {
+      space: ["Space Mono", "monospace"],
+    },
     container: {
       center: true,
       padding: "2rem",
