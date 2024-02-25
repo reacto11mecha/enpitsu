@@ -513,35 +513,77 @@ export const questionRouter = createTRPCRouter({
         correctAnswerOrder: z.number(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-        if (cacheKeys.length > 0) await cache.del(cacheKeys);
-      } catch (_) {
-        console.error({
-          code: "REDIS_ERR",
-          message:
-            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
-        });
-      }
+    .mutation(async ({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        const currentChoiceData = await tx
+          .select({
+            questionId: schema.multipleChoices.questionId,
+          })
+          .from(schema.multipleChoices)
+          .where(eq(schema.multipleChoices.iqid, input.iqid))
+          .for("update");
 
-      return await ctx.db
-        .update(schema.multipleChoices)
-        .set({
-          question: input.question,
-          options: input.options,
-          correctAnswerOrder: input.correctAnswerOrder,
-        })
-        .where(eq(schema.multipleChoices.iqid, input.iqid));
-    }),
+        if (currentChoiceData.length < 1 || !currentChoiceData?.at(0))
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Soal tidak ditemukan!",
+          });
+
+        const parentQuestion = await tx.query.questions.findFirst({
+          where: eq(schema.questions.id, currentChoiceData.at(0)!.questionId),
+          columns: {
+            slug: true,
+          },
+        });
+
+        try {
+          await cache.del(`trpc-get-question-slug-${parentQuestion!.slug}`);
+        } catch (_) {
+          console.error({
+            code: "REDIS_ERR",
+            message:
+              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+          });
+        }
+
+        return await tx
+          .update(schema.multipleChoices)
+          .set({
+            question: input.question,
+            options: input.options,
+            correctAnswerOrder: input.correctAnswerOrder,
+          })
+          .where(eq(schema.multipleChoices.iqid, input.iqid));
+      }),
+    ),
 
   deleteSpecificChoice: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
+        const currentChoiceData = await tx
+          .select({
+            questionId: schema.multipleChoices.questionId,
+          })
+          .from(schema.multipleChoices)
+          .where(eq(schema.multipleChoices.iqid, input.id))
+          .for("update");
+
+        if (currentChoiceData.length < 1 || !currentChoiceData?.at(0))
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Soal tidak ditemukan!",
+          });
+
+        const parentQuestion = await tx.query.questions.findFirst({
+          where: eq(schema.questions.id, currentChoiceData.at(0)!.questionId),
+          columns: {
+            slug: true,
+          },
+        });
+
         try {
-          const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-          if (cacheKeys.length > 0) await cache.del(cacheKeys);
+          await cache.del(`trpc-get-question-slug-${parentQuestion!.slug}`);
         } catch (_) {
           console.error({
             code: "REDIS_ERR",
@@ -571,28 +613,42 @@ export const questionRouter = createTRPCRouter({
 
   createNewChoice: protectedProcedure
     .input(z.object({ questionId: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-        if (cacheKeys.length > 0) await cache.del(cacheKeys);
-      } catch (_) {
-        console.error({
-          code: "REDIS_ERR",
-          message:
-            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+    .mutation(async ({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        const parentQuestion = await tx.query.questions.findFirst({
+          where: eq(schema.questions.id, input.questionId),
+          columns: {
+            slug: true,
+          },
         });
-      }
 
-      return await ctx.db.insert(schema.multipleChoices).values({
-        ...input,
-        question: "",
-        correctAnswerOrder: 0,
-        options: Array.from({ length: 5 }).map((_, idx) => ({
-          order: idx + 1,
-          answer: "",
-        })),
-      });
-    }),
+        if (!parentQuestion)
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Mata pelajaran dari soal ini tidak ditemukan!",
+          });
+
+        try {
+          await cache.del(`trpc-get-question-slug-${parentQuestion.slug}`);
+        } catch (_) {
+          console.error({
+            code: "REDIS_ERR",
+            message:
+              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+          });
+        }
+
+        return await tx.insert(schema.multipleChoices).values({
+          ...input,
+          question: "",
+          correctAnswerOrder: 0,
+          options: Array.from({ length: 5 }).map((_, idx) => ({
+            order: idx + 1,
+            answer: "",
+          })),
+        });
+      }),
+    ),
 
   // Essay section
   getEssaysIdByQuestionId: protectedProcedure
