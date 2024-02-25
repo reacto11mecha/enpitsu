@@ -274,6 +274,9 @@ importers:
       '@enpitsu/token-generator':
         specifier: workspace:^0.1.0
         version: link:../../packages/token-generator
+      '@fontsource/ibm-plex-mono':
+        specifier: ^5.0.8
+        version: 5.0.8
       '@fontsource/space-mono':
         specifier: ^5.0.18
         version: 5.0.18
@@ -4650,6 +4653,10 @@ packages:
 
   /@floating-ui/utils@0.2.1:
     resolution: {integrity: sha512-9TANp6GPoMtYzQdt54kfAyMmz1+osLlXdg2ENroU7zzrtflTLrrC/lgrIfaSe+Wu0b89GKccT7vxXA0MoAIO+Q==}
+    dev: false
+
+  /@fontsource/ibm-plex-mono@5.0.8:
+    resolution: {integrity: sha512-AoR7K2YtlGKy3LApyLYjqjyz0o8XtkRvbB/juMsGSGNayBBAly140ykZls+VxcXjZSLQpp2RyxKo6lYOuHPmUw==}
     dev: false
 
   /@fontsource/space-mono@5.0.18:

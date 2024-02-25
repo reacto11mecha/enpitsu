@@ -13,6 +13,7 @@ const config = {
   theme: {
     fontFamily: {
       space: ["Space Mono", "monospace"],
+      ibm: ["IBM Plex Mono", "monospace"],
     },
     container: {
       center: true,
