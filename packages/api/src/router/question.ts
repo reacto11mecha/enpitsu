@@ -665,24 +665,41 @@ export const questionRouter = createTRPCRouter({
 
   createNewEssay: protectedProcedure
     .input(z.object({ questionId: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-        if (cacheKeys.length > 0) await cache.del(cacheKeys);
-      } catch (_) {
-        console.error({
-          code: "REDIS_ERR",
-          message:
-            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
-        });
-      }
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        const currentParentQuestion = await tx
+          .select({
+            slug: schema.questions.slug,
+          })
+          .from(schema.questions)
+          .where(eq(schema.questions.id, input.questionId))
+          .for("update");
 
-      return await ctx.db.insert(schema.essays).values({
-        question: "",
-        answer: "",
-        questionId: input.questionId,
-      });
-    }),
+        if (!currentQuestion || !currentQuestion?.at(0))
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Gagal membuat soal baru, mata pelajaran tidak ditemukan",
+          });
+
+        try {
+          await cache.del(
+            `trpc-get-question-slug-${currentParentQuestion!.slug}`,
+          );
+        } catch (_) {
+          console.error({
+            code: "REDIS_ERR",
+            message:
+              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+          });
+        }
+
+        return await tx.insert(schema.essays).values({
+          question: "",
+          answer: "",
+          questionId: input.questionId,
+        });
+      }),
+    ),
 
   getSpecificEssayQuestion: protectedProcedure
     .input(z.object({ essayIqid: z.number() }))
@@ -706,46 +723,90 @@ export const questionRouter = createTRPCRouter({
         isStrictEqual: z.boolean(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-        if (cacheKeys.length > 0) await cache.del(cacheKeys);
-      } catch (_) {
-        console.error({
-          code: "REDIS_ERR",
-          message:
-            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
-        });
-      }
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        const currentEssayData = await tx
+          .select({
+            questionId: schema.essays.questionId,
+          })
+          .from(schema.essays)
+          .where(eq(schema.essays.iqid, input.iqid))
+          .for("update");
 
-      return await ctx.db
-        .update(schema.essays)
-        .set({
-          question: input.question,
-          answer: input.answer,
-          isStrictEqual: input.isStrictEqual,
-        })
-        .where(eq(schema.essays.iqid, input.iqid));
-    }),
+        if (currentEssayData.length < 1 || !currentEssayData?.at(0))
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Soal tidak ditemukan!",
+          });
+
+        const parentQuestion = await tx.query.questions.findFirst({
+          where: eq(schema.questions.id, currentEssayData.at(0)!.questionId),
+          columns: {
+            slug: true,
+          },
+        });
+
+        try {
+          await cache.del(`trpc-get-question-slug-${parentQuestion!.slug}`);
+        } catch (_) {
+          console.error({
+            code: "REDIS_ERR",
+            message:
+              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+          });
+        }
+
+        return await tx
+          .update(schema.essays)
+          .set({
+            question: input.question,
+            answer: input.answer,
+            isStrictEqual: input.isStrictEqual,
+          })
+          .where(eq(schema.essays.iqid, input.iqid));
+      }),
+    ),
 
   deleteSpecificEssay: protectedProcedure
     .input(z.object({ essayIqid: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const cacheKeys = await cache.keys("trpc-get-question-slug:*");
-        if (cacheKeys.length > 0) await cache.del(cacheKeys);
-      } catch (_) {
-        console.error({
-          code: "REDIS_ERR",
-          message:
-            "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
-        });
-      }
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        const currentEssayData = await tx
+          .select({
+            questionId: schema.essays.questionId,
+          })
+          .from(schema.essays)
+          .where(eq(schema.essays.iqid, input.essayIqid))
+          .for("update");
 
-      return await ctx.db
-        .delete(schema.essays)
-        .where(eq(schema.essays.iqid, input.essayIqid));
-    }),
+        if (currentEssayData.length < 1 || !currentEssayData?.at(0))
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Soal tidak ditemukan!",
+          });
+
+        const parentQuestion = await tx.query.questions.findFirst({
+          where: eq(schema.questions.id, currentEssayData.at(0)!.questionId),
+          columns: {
+            slug: true,
+          },
+        });
+
+        try {
+          await cache.del(`trpc-get-question-slug-${parentQuestion!.slug}`);
+        } catch (_) {
+          console.error({
+            code: "REDIS_ERR",
+            message:
+              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+          });
+        }
+
+        return await tx
+          .delete(schema.essays)
+          .where(eq(schema.essays.iqid, input.essayIqid));
+      }),
+    ),
   // ended at this line
 
   // Correction purpose endpoint started from this line below
