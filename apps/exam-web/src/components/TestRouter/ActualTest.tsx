@@ -117,7 +117,7 @@ const Test = ({ data, initialData }: Props) => {
   const { isOnline } = useNetworkState();
 
   // Toggle this initial state value for prod and dev
-  const [canUpdateDishonesty, setCanUpdateDishonesty] = useState(true);
+  const [canUpdateDishonesty, setCanUpdateDishonesty] = useState(false);
 
   const [dishonestyWarning, setDishonestyWarning] = useState(false);
   const [badInternetAlert, setBadInternet] = useState(false);

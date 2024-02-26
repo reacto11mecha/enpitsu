@@ -87,6 +87,25 @@
   @apply text-right;
 }
 
+.actual-question .ql-size-large {
+  @apply text-xl;
+}
+
+.actual-question .ql-size-huge {
+  @apply text-3xl;
+}
+
+.actual-question .ql-font-monospace {
+  @apply font-space;
+}
+
+.actual-question .ql-font-serif {
+  font-family:
+    Georgia,
+    Times New Roman,
+    serif;
+}
+
 .actual-question ol {
   @apply list-decimal pl-8 md:pl-10;
 }
