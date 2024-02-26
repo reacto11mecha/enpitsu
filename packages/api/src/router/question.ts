@@ -675,7 +675,7 @@ export const questionRouter = createTRPCRouter({
           .where(eq(schema.questions.id, input.questionId))
           .for("update");
 
-        if (!currentQuestion || !currentQuestion?.at(0))
+        if (currentParentQuestion.length < 1 || !currentParentQuestion?.at(0))
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Gagal membuat soal baru, mata pelajaran tidak ditemukan",
@@ -683,7 +683,7 @@ export const questionRouter = createTRPCRouter({
 
         try {
           await cache.del(
-            `trpc-get-question-slug-${currentParentQuestion!.slug}`,
+            `trpc-get-question-slug-${currentParentQuestion?.at(0)!.slug}`,
           );
         } catch (_) {
           console.error({
