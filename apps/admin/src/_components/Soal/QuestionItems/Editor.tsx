@@ -1,6 +1,8 @@
 "use client";
 
 import katex from "katex";
+// @ts-expect-error there's actually a type for this package, but dont know why this still yell for a missing type
+import Delta from "quill-delta";
 import ReactQuill from "react-quill";
 import type { ReactQuillProps } from "react-quill";
 
@@ -31,18 +33,21 @@ const quillModules: ReactQuillProps["modules"] = {
 
     ["clean"],
   ],
+
   clipboard: {
     matchers: [
       [
         Node.ELEMENT_NODE,
-        (_node: unknown, delta: { ops: { insert: string }[] }) => {
-          delta.ops = delta.ops.map((op) => {
-            return {
-              insert: op.insert,
-            };
-          });
-
-          return delta;
+        // @ts-expect-error don't know what to type here
+        function (_node, delta) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+          return delta.compose(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            new Delta().retain(delta.length(), {
+              color: false,
+              background: false,
+            }),
+          );
         },
       ],
     ],
