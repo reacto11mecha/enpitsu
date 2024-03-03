@@ -1,16 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import katex from "katex";
-// @ts-expect-error there's actually a type for this package, but dont know why this still yell for a missing type
-import Delta from "quill-delta";
-import ReactQuill from "react-quill";
-import type { ReactQuillProps } from "react-quill";
-
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -19,10 +10,16 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import katex from "katex";
+// @ts-expect-error there's actually a type for this package, but dont know why this still yell for a missing type
+import Delta from "quill-delta";
+import { useForm } from "react-hook-form";
+import ReactQuill from "react-quill";
+import type { ReactQuillProps } from "react-quill";
+import { z } from "zod";
 
 import "katex/dist/katex.min.css";
 import "react-quill/dist/quill.snow.css";
@@ -42,7 +39,7 @@ class AudioBlot extends Embed {
 
     node.setAttribute("src", url);
     node.setAttribute("controls", "");
-    node.setAttribute("controlsList", "nodownload")
+    node.setAttribute("controlsList", "nodownload");
 
     node.style.width = "100%";
 
@@ -59,7 +56,6 @@ AudioBlot.tagName = "audio";
 Quill.register(AudioBlot);
 
 window.katex = katex;
-
 
 const quillModules: ReactQuillProps["modules"] = {
   toolbar: [
@@ -105,19 +101,22 @@ const quillModules: ReactQuillProps["modules"] = {
 };
 
 const formSchema = z.object({
-  audio: z.instanceof(FileList, { message: "Dibutuhkan file audio (mp3, ogg, wav)" })
-    .refine((files) => files.length > 0, `Dibutuhkan file audio (mp3, ogg, wav)`)
+  audio: z
+    .instanceof(FileList, { message: "Dibutuhkan file audio (mp3, ogg, wav)" })
+    .refine(
+      (files) => files.length > 0,
+      `Dibutuhkan file audio (mp3, ogg, wav)`,
+    )
     .refine(
       (files) => files.length <= 1,
       `Hanya diperbolehkan upload 1 file audio saja!`,
-    )
-})
-
+    ),
+});
 
 export default function Editor({
   value,
   setValue,
-  needAudioInput
+  needAudioInput,
 }: {
   value: ReactQuill.Value | undefined;
   setValue: (val: string) => void;
@@ -132,7 +131,7 @@ export default function Editor({
   function onSubmit(values: z.infer<typeof formSchema>) {
     const reader = new FileReader();
 
-    reader.addEventListener('load', (e) => {
+    reader.addEventListener("load", (e) => {
       if (quillRef.current) {
         quillRef.current
           .getEditor()
@@ -143,11 +142,11 @@ export default function Editor({
             "user",
           );
 
-        form.reset()
+        form.reset();
       }
     });
 
-    const audioItem = values.audio.item(0)
+    const audioItem = values.audio.item(0);
 
     if (audioItem) reader.readAsDataURL(audioItem);
   }
@@ -162,32 +161,36 @@ export default function Editor({
         onChange={setValue}
       />
 
-      {needAudioInput ? <div className="flex w-full">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
-            <FormField
-              control={form.control}
-              name="audio"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Audio</FormLabel>
-                  <FormControl>
-                    <div className="flex flex-row gap-5">
-                      <Input type="file" {...form.register("audio")} />
-                      <Button type="submit">Tambah Audio</Button>
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    Masukan audio yang ingin ditambahkan.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
-      </div> : null}
-
+      {needAudioInput ? (
+        <div className="flex w-full">
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="w-full space-y-8"
+            >
+              <FormField
+                control={form.control}
+                name="audio"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Audio</FormLabel>
+                    <FormControl>
+                      <div className="flex flex-row gap-5">
+                        <Input type="file" {...form.register("audio")} />
+                        <Button type="submit">Tambah Audio</Button>
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      Masukan audio yang ingin ditambahkan.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
+        </div>
+      ) : null}
     </div>
   );
 }
