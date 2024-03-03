@@ -230,7 +230,11 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
                 <FormItem>
                   <FormLabel>Pertanyaan</FormLabel>
                   <FormControl>
-                    <Editor value={field.value} setValue={field.onChange} />
+                    <Editor
+                      needAudioInput
+                      value={field.value}
+                      setValue={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
