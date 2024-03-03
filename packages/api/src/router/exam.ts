@@ -83,12 +83,13 @@ export const examRouter = createTRPCRouter({
 
           return sendedData;
         }
-      } catch (_) {
+      } catch (error) {
         console.error(
           JSON.stringify({
             time: Date.now().valueOf(),
             msg: "Failed to get cached question data, fallback to database request",
             ...input,
+            error,
           }),
         );
       }
@@ -140,13 +141,14 @@ export const examRouter = createTRPCRouter({
 
           return sendedData;
         }
-      } catch (_) {
+      } catch (error) {
         console.error(
           JSON.stringify({
             time: Date.now().valueOf(),
             endpoint: "exam.queryQuestion",
             msg: "Failed to get cached question data, fallback to database request",
             input,
+            error,
           }),
         );
       }
