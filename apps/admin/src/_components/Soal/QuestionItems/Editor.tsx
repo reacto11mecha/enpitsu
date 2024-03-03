@@ -30,8 +30,8 @@ const Quill = ReactQuill.Quill;
 const Embed = Quill.import("blots/block/embed");
 
 class AudioBlot extends Embed {
-  static blotName: string;
-  static tagName: string;
+  static blotName = "audio";
+  static tagName = "audio";
 
   static create(url: string) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -50,8 +50,6 @@ class AudioBlot extends Embed {
     return node.getAttribute("src");
   }
 }
-AudioBlot.blotName = "audio";
-AudioBlot.tagName = "audio";
 
 Quill.register(AudioBlot);
 
@@ -102,15 +100,12 @@ const quillModules: ReactQuillProps["modules"] = {
 
 const formSchema = z.object({
   audio: z
-    .instanceof(FileList, { message: "Dibutuhkan file audio (mp3, ogg, wav)" })
-    .refine(
-      (files) => files.length > 0,
-      `Dibutuhkan file audio (mp3, ogg, wav)`,
-    )
-    .refine(
-      (files) => files.length <= 1,
-      `Hanya diperbolehkan upload 1 file audio saja!`,
-    ),
+    .string()
+    .url()
+    .min(1, { message: "Link diperlukan jika ingin menambahkan audio" })
+    .endsWith(".mp3", {
+      message: "Ekstensi file harus memiliki akhiran .mp3!",
+    }),
 });
 
 export default function Editor({
@@ -126,33 +121,28 @@ export default function Editor({
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      audio: "",
+    },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const reader = new FileReader();
+    if (quillRef.current) {
+      quillRef.current
+        .getEditor()
+        .insertEmbed(
+          quillRef.current.selection?.index ?? 0,
+          "audio",
+          values.audio,
+          "user",
+        );
 
-    reader.addEventListener("load", (e) => {
-      if (quillRef.current) {
-        quillRef.current
-          .getEditor()
-          .insertEmbed(
-            quillRef.current.selection?.index ?? 0,
-            "audio",
-            e.target?.result,
-            "user",
-          );
-
-        form.reset();
-      }
-    });
-
-    const audioItem = values.audio.item(0);
-
-    if (audioItem) reader.readAsDataURL(audioItem);
+      form.reset();
+    }
   }
 
   return (
-    <div className="flex w-full flex-col gap-2">
+    <div className="flex w-full flex-col gap-3">
       <ReactQuill
         ref={quillRef}
         theme="snow"
@@ -176,12 +166,17 @@ export default function Editor({
                     <FormLabel>Audio</FormLabel>
                     <FormControl>
                       <div className="flex flex-row gap-5">
-                        <Input type="file" {...form.register("audio")} />
+                        <Input
+                          type="url"
+                          placeholder="Masukan full link | https://example.com/audio.mp3"
+                          {...form.register("audio")}
+                        />
                         <Button type="submit">Tambah Audio</Button>
                       </div>
                     </FormControl>
                     <FormDescription>
-                      Masukan audio yang ingin ditambahkan.
+                      Masukan audio yang ingin ditambahkan, wajib memiliki
+                      ekstensi mp3.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
