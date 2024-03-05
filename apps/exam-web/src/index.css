@@ -87,6 +87,10 @@
   @apply text-right;
 }
 
+.actual-question .ql-align-justify {
+  @apply text-justify;
+}
+
 .actual-question .ql-size-large {
   @apply text-xl;
 }

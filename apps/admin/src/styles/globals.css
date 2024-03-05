@@ -90,3 +90,39 @@
 .ql-editing input {
   @apply dark:text-stone-50;
 }
+
+.ql-toolbar .ql-font span[data-label="Sans Serif"]::before {
+  font-family: "Sans Serif";
+}
+
+.ql-toolbar .ql-font span[data-label="Inconsolata"]::before {
+  font-family: "Inconsolata";
+}
+
+.ql-toolbar .ql-font span[data-label="Roboto"]::before {
+  font-family: "Roboto";
+}
+
+.ql-toolbar .ql-font span[data-label="Mirza"]::before {
+  font-family: "Mirza";
+}
+
+.ql-toolbar .ql-font span[data-label="Arial"]::before {
+  font-family: "Arial";
+}
+
+.ql-font-inconsolata {
+  font-family: "Inconsolata";
+}
+
+.ql-font-roboto {
+  font-family: "Roboto";
+}
+
+.ql-font-mirza {
+  font-family: "Mirza";
+}
+
+.ql-font-arial {
+  font-family: "Arial";
+}

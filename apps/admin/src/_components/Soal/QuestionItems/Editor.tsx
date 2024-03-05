@@ -26,6 +26,12 @@ import "react-quill/dist/quill.snow.css";
 
 const Quill = ReactQuill.Quill;
 
+const font = Quill.import('attributors/style/font');
+
+font.whitelist = ['asap', 'podkova'];
+
+Quill.register(font)
+
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const Embed = Quill.import("blots/block/embed");
 
@@ -57,7 +63,7 @@ window.katex = katex;
 
 const quillModules: ReactQuillProps["modules"] = {
   toolbar: [
-    [{ header: "1" }, { header: "2" }, { font: [] }],
+    [{ header: "1" }, { header: "2" }, { font: [] }, "font"],
 
     [{ size: [] }],
 
