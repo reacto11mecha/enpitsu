@@ -75,6 +75,18 @@
   }
 }
 
+@font-face {
+  font-family: "LPMQ";
+  src: url(@/fonts/LPMQ-IsepMisbah.ttf) format("truetype");
+  font-weight: 400;
+  font-weight: normal;
+  font-display: swap;
+}
+
+.ql-font-lpmqisepmisbah {
+  @apply font-lpmq text-right text-3xl leading-[4.5rem];
+}
+
 .no-copy {
   user-select: none;
 }

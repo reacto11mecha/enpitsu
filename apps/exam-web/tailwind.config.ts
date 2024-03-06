@@ -14,6 +14,7 @@ const config = {
     fontFamily: {
       space: ["Space Mono", "monospace"],
       ibm: ["IBM Plex Mono", "monospace"],
+      lpmq: ["LPMQ", "Traditional Arabic", "Tahoma", "sans-serif"],
     },
     container: {
       center: true,
