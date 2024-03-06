@@ -84,6 +84,7 @@
 }
 
 .ql-font-lpmqisepmisbah {
+  direction: rtl;
   @apply font-lpmq text-right text-3xl leading-[4.5rem];
 }
 
