@@ -104,3 +104,42 @@
 .ql-font-lpmqisepmisbah {
   @apply font-lpmq text-right text-3xl leading-[4.5rem];
 }
+
+.correction .ql-align-center {
+  @apply text-center;
+}
+
+.correction .ql-align-right {
+  @apply text-right;
+}
+
+.correction .ql-align-justify {
+  @apply text-justify;
+}
+
+.correction .ql-size-large {
+  @apply text-xl;
+}
+
+.correction .ql-size-huge {
+  @apply text-3xl;
+}
+
+.correction .ql-font-monospace {
+  @apply font-mono;
+}
+
+.correction .ql-font-serif {
+  font-family:
+    Georgia,
+    Times New Roman,
+    serif;
+}
+
+.correction ol {
+  @apply list-decimal pl-8 md:pl-10;
+}
+
+.correction ul {
+  @apply list-disc pl-8 md:pl-10;
+}
