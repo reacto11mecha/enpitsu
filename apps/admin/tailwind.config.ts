@@ -70,6 +70,7 @@ export default {
       },
       fontFamily: {
         sans: ["var(--font-manrope)", ...fontFamily.sans],
+        lpmq: ["var(--font-lpmq-isepmisbah)"],
       },
     },
   },

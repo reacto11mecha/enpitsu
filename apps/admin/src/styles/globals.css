@@ -91,38 +91,16 @@
   @apply dark:text-stone-50;
 }
 
-.ql-toolbar .ql-font span[data-label="Sans Serif"]::before {
-  font-family: "Sans Serif";
+.ql-snow
+  .ql-picker.ql-font
+  .ql-picker-label[data-value="lpmqisepmisbah"]::before,
+.ql-snow
+  .ql-picker.ql-font
+  .ql-picker-item[data-value="lpmqisepmisbah"]::before {
+  content: "Qur'an Font";
+  font-family: var(--font-lpmq-isepmisbah);
 }
 
-.ql-toolbar .ql-font span[data-label="Inconsolata"]::before {
-  font-family: "Inconsolata";
-}
-
-.ql-toolbar .ql-font span[data-label="Roboto"]::before {
-  font-family: "Roboto";
-}
-
-.ql-toolbar .ql-font span[data-label="Mirza"]::before {
-  font-family: "Mirza";
-}
-
-.ql-toolbar .ql-font span[data-label="Arial"]::before {
-  font-family: "Arial";
-}
-
-.ql-font-inconsolata {
-  font-family: "Inconsolata";
-}
-
-.ql-font-roboto {
-  font-family: "Roboto";
-}
-
-.ql-font-mirza {
-  font-family: "Mirza";
-}
-
-.ql-font-arial {
-  font-family: "Arial";
+.ql-font-lpmqisepmisbah {
+  @apply font-lpmq text-right text-3xl leading-[4.5rem];
 }

@@ -3,13 +3,6 @@ import { db, eq, schema } from "@enpitsu/db";
 
 import { Questions } from "~/_components/Soal/QuestionItems/Questions";
 
-import localFont from 'next/font/local'
-
-const QuranFont = localFont({
-  src: "../../../../../../fonts/LPMQ-IsepMisbah.ttf",
-  variable: '--font-lpmq-isepmisbah'
-});
-
 export default async function QuestionItemsPage({
   params,
 }: {
@@ -29,7 +22,7 @@ export default async function QuestionItemsPage({
   if (!question) return redirect("/admin/soal");
 
   return (
-    <div className={`mt-5 flex flex-col gap-7 px-5 py-5 md:items-center ${QuranFont.variable}`}>
+    <div className="mt-5 flex flex-col gap-7 px-5 py-5 md:items-center">
       <div className="w-full md:w-[80%]">
         <div className="mb-5 space-y-0.5">
           <h2 className="text-2xl font-bold tracking-tight">Butir Soal</h2>
