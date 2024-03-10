@@ -840,6 +840,27 @@ importers:
         specifier: ^5.3.3
         version: 5.3.3
 
+  packages/native-renderer:
+    devDependencies:
+      '@enpitsu/eslint-config':
+        specifier: workspace:^0.2.0
+        version: link:../../tooling/eslint
+      '@enpitsu/prettier-config':
+        specifier: workspace:^0.1.0
+        version: link:../../tooling/prettier
+      '@enpitsu/tsconfig':
+        specifier: workspace:^0.1.0
+        version: link:../../tooling/typescript
+      eslint:
+        specifier: ^8.55.0
+        version: 8.56.0
+      prettier:
+        specifier: ^3.1.0
+        version: 3.1.1
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+
   packages/token-generator:
     dependencies:
       nanoid:
