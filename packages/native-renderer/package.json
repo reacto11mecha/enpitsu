@@ -3,28 +3,33 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "license": "MIT",
   "scripts": {
-    "clean": "rm -rf .turbo node_modules",
-    "lint": "eslint .",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --check . --ignore-path ../../.gitignore",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/react": "^18.2.56",
+    "@types/react-dom": "^18.2.19",
+    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/parser": "^7.0.2",
     "@enpitsu/eslint-config": "workspace:^0.2.0",
     "@enpitsu/prettier-config": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
+    "@vitejs/plugin-react-swc": "^3.5.0",
     "eslint": "^8.55.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "typescript": "^5.3.3",
     "prettier": "^3.1.0",
-    "typescript": "^5.3.3"
-  },
-  "eslintConfig": {
-    "extends": [
-      "@enpitsu/eslint-config/base"
-    ]
+    "vite": "^5.1.4"
   },
   "prettier": "@enpitsu/prettier-config"
 }
