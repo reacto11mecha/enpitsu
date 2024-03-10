@@ -6,6 +6,7 @@ import { auth, signOut } from "@enpitsu/auth";
 
 import "~/styles/globals.css";
 
+import localFont from "next/font/local";
 import { headers } from "next/headers";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,11 @@ import { cn } from "@/lib/utils";
 import { Navbar } from "~/_components/Navbar";
 import { ThemeProvider } from "~/_components/theme-provider";
 import { TRPCReactProvider } from "./providers";
+
+const QuranFont = localFont({
+  src: "../../fonts/LPMQ-IsepMisbah.ttf",
+  variable: "--font-lpmq-isepmisbah",
+});
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -79,6 +85,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
         className={cn(
           "bg-background min-h-screen font-sans antialiased",
           fontSans.variable,
+          QuranFont.variable,
         )}
       >
         <ThemeProvider

@@ -230,7 +230,11 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
                 <FormItem>
                   <FormLabel>Pertanyaan</FormLabel>
                   <FormControl>
-                    <Editor value={field.value} setValue={field.onChange} />
+                    <Editor
+                      needAudioInput
+                      value={field.value}
+                      setValue={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -267,8 +271,13 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
                                   className="flex flex-row items-center gap-3"
                                   onPaste={(e) => {
                                     if (
-                                      currentField.value === "" &&
-                                      optIndex === 0
+                                      form
+                                        .getValues("options")
+                                        .every(
+                                          (field) =>
+                                            field.answer === "" ||
+                                            field.answer === "<p><br></p>",
+                                        )
                                     ) {
                                       e.preventDefault();
 
@@ -276,7 +285,13 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
                                         .getData("text")
                                         .trim()
                                         .split(/\r?\n/)
-                                        .filter((t) => t !== "");
+                                        .filter((t) => t !== "")
+                                        .map((text) =>
+                                          text
+                                            .trim()
+                                            .replace(/^[a-eA-E]\.\s/, "")
+                                            .trim(),
+                                        );
 
                                       optionsField.fields.forEach((_, idx) =>
                                         form.setValue(

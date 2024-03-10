@@ -69,6 +69,10 @@ export const ScanOrInputQuestionSlug = ({
 
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-center px-5">
+      <h3 className="font-ibm mb-5 text-3xl text-gray-700 dark:text-gray-300">
+        enpitsu
+      </h3>
+
       <div className="w-[85%] md:w-[55%] lg:w-[50%]">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>

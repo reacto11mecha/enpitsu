@@ -51,7 +51,11 @@ const NonInitVer = () => {
 
   return (
     <>
-      <div className="flex h-screen w-screen flex-col items-center justify-center p-7">
+      <div className="flex h-screen w-screen flex-col items-center justify-center gap-5 p-7">
+        <h3 className="font-ibm text-3xl text-gray-700 dark:text-gray-300">
+          enpitsu
+        </h3>
+
         <div className="sm:w-[85%] md:w-[50%]">
           <div className="flex flex-col gap-5">
             <div className="space-y-1">
@@ -78,6 +82,7 @@ const NonInitVer = () => {
                       <FormLabel>Token</FormLabel>
                       <FormControl>
                         <Input
+                          className="font-space"
                           placeholder="ABC12XX"
                           onChange={(el) =>
                             el.target.value.trim().length <= 8 &&
@@ -129,7 +134,11 @@ const InitVersion = () => {
 
   return (
     <>
-      <div className="flex h-screen w-screen flex-col items-center justify-center p-7">
+      <div className="flex h-screen w-screen flex-col items-center justify-center gap-5 p-7">
+        <h3 className="font-ibm text-3xl text-gray-700 dark:text-gray-300">
+          enpitsu
+        </h3>
+
         <div className="sm:w-[85%] md:w-[50%]">
           <div className="flex flex-col gap-5">
             <div className="space-y-1">
@@ -157,6 +166,7 @@ const InitVersion = () => {
                       <FormLabel>Token</FormLabel>
                       <FormControl>
                         <Input
+                          className="font-space"
                           placeholder="ABC12XX"
                           onChange={(el) =>
                             el.target.value.trim().length <= 8 &&

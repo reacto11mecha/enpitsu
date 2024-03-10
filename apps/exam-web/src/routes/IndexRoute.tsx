@@ -147,7 +147,9 @@ export default function IndexRoute() {
                   <tr className="w-full">
                     <td>Token</td>
                     <td className="px-1">:</td>
-                    <td>{studentQuery.data.student.token}</td>
+                    <td className="font-space">
+                      {studentQuery.data.student.token}
+                    </td>
                   </tr>
                 ) : (
                   <tr className="w-full">

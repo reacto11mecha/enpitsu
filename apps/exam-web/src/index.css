@@ -75,6 +75,58 @@
   }
 }
 
+@font-face {
+  font-family: "LPMQ";
+  src: url(@/fonts/LPMQ-IsepMisbah.ttf) format("truetype");
+  font-weight: 400;
+  font-weight: normal;
+  font-display: swap;
+}
+
+.ql-font-lpmqisepmisbah {
+  direction: rtl;
+  @apply font-lpmq text-right text-3xl leading-[4.5rem];
+}
+
 .no-copy {
   user-select: none;
+}
+
+.actual-question .ql-align-center {
+  @apply text-center;
+}
+
+.actual-question .ql-align-right {
+  @apply text-right;
+}
+
+.actual-question .ql-align-justify {
+  @apply text-justify;
+}
+
+.actual-question .ql-size-large {
+  @apply text-xl;
+}
+
+.actual-question .ql-size-huge {
+  @apply text-3xl;
+}
+
+.actual-question .ql-font-monospace {
+  @apply font-space;
+}
+
+.actual-question .ql-font-serif {
+  font-family:
+    Georgia,
+    Times New Roman,
+    serif;
+}
+
+.actual-question ol {
+  @apply list-decimal pl-8 md:pl-10;
+}
+
+.actual-question ul {
+  @apply list-disc pl-8 md:pl-10;
 }

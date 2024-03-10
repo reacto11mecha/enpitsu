@@ -90,3 +90,57 @@
 .ql-editing input {
   @apply dark:text-stone-50;
 }
+
+.ql-snow
+  .ql-picker.ql-font
+  .ql-picker-label[data-value="lpmqisepmisbah"]::before,
+.ql-snow
+  .ql-picker.ql-font
+  .ql-picker-item[data-value="lpmqisepmisbah"]::before {
+  content: "Qur'an Font";
+  font-family: var(--font-lpmq-isepmisbah);
+}
+
+.ql-font-lpmqisepmisbah {
+  direction: rtl;
+  @apply font-lpmq text-right text-3xl leading-[4.5rem];
+}
+
+.correction .ql-align-center {
+  @apply text-center;
+}
+
+.correction .ql-align-right {
+  @apply text-right;
+}
+
+.correction .ql-align-justify {
+  @apply text-justify;
+}
+
+.correction .ql-size-large {
+  @apply text-xl;
+}
+
+.correction .ql-size-huge {
+  @apply text-3xl;
+}
+
+.correction .ql-font-monospace {
+  @apply font-mono;
+}
+
+.correction .ql-font-serif {
+  font-family:
+    Georgia,
+    Times New Roman,
+    serif;
+}
+
+.correction ol {
+  @apply list-decimal pl-8 md:pl-10;
+}
+
+.correction ul {
+  @apply list-disc pl-8 md:pl-10;
+}

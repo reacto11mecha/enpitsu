@@ -1,4 +1,5 @@
 import { IBM_Plex_Mono, Zen_Maru_Gothic } from "next/font/google";
+import Image from "next/image";
 
 const zen = Zen_Maru_Gothic({
   subsets: ["latin"],
@@ -34,17 +35,57 @@ export default function AboutPage() {
       </h2>
 
       <div className="mt-8 flex flex-col gap-3">
-        <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-          Ezra Khairan Permana
-        </h3>
-        <a
-          href="https://rmecha.my.id/"
-          target="_blank"
-          rel="noreferrer noopener"
-          className="scroll-m-20 text-xl font-semibold tracking-tight text-sky-600 hover:text-sky-800"
-        >
-          https://rmecha.my.id/
-        </a>
+        <div className="flex flex-col items-center gap-20 md:flex-row md:justify-around md:gap-0">
+          <div className="flex gap-5">
+            <Image
+              src="https://avatars.githubusercontent.com/u/48118327"
+              width={90}
+              height={90}
+              alt="Foto profil github Ezra Khairan Permana"
+              className="rounded-full"
+            />
+
+            <div className="flex flex-col justify-center">
+              <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+                Ezra Khairan Permana
+              </h3>
+              <p>Pembuat utama</p>
+              <a
+                href="https://rmecha.my.id/"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="mt-2 scroll-m-20 text-xl font-semibold tracking-tight text-sky-600 hover:text-sky-800"
+              >
+                https://rmecha.my.id/
+              </a>
+            </div>
+          </div>
+
+          <div className="flex gap-5">
+            <div className="flex flex-col items-end justify-center">
+              <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+                Hendra Manudinata
+              </h3>
+              <p>Maintainer Infrastruktur</p>
+              <a
+                href="https://manoedinata.me/"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="mt-2 scroll-m-20 text-xl font-semibold tracking-tight text-sky-600 hover:text-sky-800"
+              >
+                https://manoedinata.me/
+              </a>
+            </div>
+
+            <Image
+              src="https://avatars.githubusercontent.com/u/116422610"
+              width={90}
+              height={90}
+              alt="Foto profil github Hendra Manudinata"
+              className="rounded-full"
+            />
+          </div>
+        </div>
       </div>
     </main>
   );

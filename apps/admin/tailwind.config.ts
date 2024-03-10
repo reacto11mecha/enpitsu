@@ -70,6 +70,12 @@ export default {
       },
       fontFamily: {
         sans: ["var(--font-manrope)", ...fontFamily.sans],
+        lpmq: [
+          "var(--font-lpmq-isepmisbah)",
+          "Traditional Arabic",
+          "Tahoma",
+          "sans-serif",
+        ],
       },
     },
   },

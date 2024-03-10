@@ -19,7 +19,6 @@ import { id } from "date-fns/locale";
 import { api } from "~/utils/api";
 
 import "katex/dist/katex.min.css";
-import "react-quill/dist/quill.snow.css";
 
 import { Separator } from "@/components/ui/separator";
 
@@ -159,7 +158,7 @@ export const Correction = ({
               <Card key={choice.iqid}>
                 <CardHeader>
                   <h3
-                    className={`scroll-m-20 text-base tracking-tight ${
+                    className={`correction scroll-m-20 text-base tracking-tight ${
                       choice.correctAnswerOrder ===
                       choices.find((c) => c.choiceId === choice.iqid)!.answer
                         ? "text-green-600"
@@ -238,7 +237,7 @@ export const Correction = ({
               <Card key={essay.iqid}>
                 <CardHeader>
                   <h3
-                    className="scroll-m-20 text-base tracking-tight"
+                    className="correction scroll-m-20 text-base tracking-tight"
                     dangerouslySetInnerHTML={{ __html: essay.question }}
                   />
                 </CardHeader>

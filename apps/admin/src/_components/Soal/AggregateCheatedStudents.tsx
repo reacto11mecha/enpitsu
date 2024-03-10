@@ -99,7 +99,7 @@ export const columns: ColumnDef<BlocklistByQuestion>[] = [
     cell: ({ row }) => (
       <Link
         className={badgeVariants({ variant: "secondary" })}
-        href={`/admin/angkatan/${row.original.student.subgrade.id}/kelola/${row.original.student.subgrade.grade.id}`}
+        href={`/admin/angkatan/${row.original.student.subgrade.grade.id}/kelola/${row.original.student.subgrade.id}`}
       >
         {row.original.student.subgrade.grade.label}{" "}
         {row.original.student.subgrade.label}
