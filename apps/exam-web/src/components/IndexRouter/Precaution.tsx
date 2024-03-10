@@ -30,7 +30,7 @@ const PrecautionChildren = ({
     threshold: 1,
     onChange: setScrollBottom,
   });
-  
+
   return (
     <div className="mt-8 max-h-72 w-auto space-y-5 overflow-y-scroll p-2 text-start">
       <div className="space-y-1">

@@ -8,7 +8,10 @@ import type { TFormSchema } from "./utils";
 type TChoice = FieldArrayWithId<TFormSchema, "multipleChoices", "id">;
 type TEssay = FieldArrayWithId<TFormSchema, "essays", "id">;
 
-const pageBuilder = (content: string, colorMode: string) => String.raw`<!DOCTYPE html>
+const pageBuilder = (
+  content: string,
+  colorMode: string,
+) => String.raw`<!DOCTYPE html>
 <html class="${colorMode}">
 <head>
   <meta charset="UTF-8">
