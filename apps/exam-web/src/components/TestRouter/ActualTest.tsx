@@ -344,7 +344,7 @@ const Test = ({ data, initialData }: Props) => {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center gap-6 p-3">
         <div className="flex flex-col items-center gap-3 text-center">
-          <h2 className="font-monospace scroll-m-20 text-center text-3xl font-semibold tracking-tight text-green-600 first:mt-0 dark:text-green-500">
+          <h2 className="font-monospace scroll-m-20 text-center text-3xl font-semibold tracking-tight text-blue-600 first:mt-0 dark:text-blue-500">
             Berhasil Submit
           </h2>
           <p className="text-center text-lg md:w-[75%]">
@@ -473,7 +473,7 @@ const Test = ({ data, initialData }: Props) => {
         >
           <div className="flex w-full max-w-lg flex-col gap-8">
             <Card>
-              <div className="h-3 rounded-t-lg rounded-tr-lg bg-green-700 dark:bg-green-800" />
+              <div className="h-3 rounded-t-lg rounded-tr-lg bg-blue-700 dark:bg-blue-800" />
               <CardHeader>
                 <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
                   {data.title}
@@ -496,8 +496,8 @@ const Test = ({ data, initialData }: Props) => {
             {multipleChoicesField.fields.length >= 1 ? (
               <div className="flex flex-col gap-4">
                 <Card>
-                  <CardHeader className="rounded-t-lg rounded-tr-lg bg-green-700 dark:bg-green-800">
-                    <h4 className="scroll-m-20 text-xl font-semibold uppercase tracking-tight text-green-50">
+                  <CardHeader className="rounded-t-lg rounded-tr-lg bg-blue-700 dark:bg-blue-800">
+                    <h4 className="scroll-m-20 text-xl font-semibold uppercase tracking-tight text-blue-50">
                       Soal Pilihan Ganda
                     </h4>
                   </CardHeader>
@@ -582,8 +582,8 @@ const Test = ({ data, initialData }: Props) => {
             {essaysField.fields.length >= 1 ? (
               <div className="flex flex-col gap-3">
                 <Card>
-                  <CardHeader className="rounded-t-lg rounded-tr-lg bg-green-700 dark:bg-green-800">
-                    <h4 className="scroll-m-20 text-xl font-semibold uppercase tracking-tight text-green-50">
+                  <CardHeader className="rounded-t-lg rounded-tr-lg bg-blue-700 dark:bg-blue-800">
+                    <h4 className="scroll-m-20 text-xl font-semibold uppercase tracking-tight text-blue-50">
                       Soal Esai
                     </h4>
                   </CardHeader>
