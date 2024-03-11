@@ -90,7 +90,7 @@ export const AnsweredQuestionsList = ({
   multipleChoices: TFormSchema["multipleChoices"];
   essays: TFormSchema["essays"];
 }) => {
-  const currentQuestion = useMemo(() => undefined, []);
+  // const currentQuestion = useMemo(() => undefined, []);
 
   return (
     <Drawer open={open} onOpenChange={toggleDrawer}>
