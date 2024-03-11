@@ -842,6 +842,9 @@ importers:
 
   packages/native-renderer:
     dependencies:
+      '@enpitsu/api':
+        specifier: workspace:^0.1.0
+        version: link:../api
       '@fontsource/ibm-plex-mono':
         specifier: ^5.0.8
         version: 5.0.8

@@ -35,10 +35,11 @@ export type TFormSchema = z.infer<typeof formSchema>;
 
 type TData = RouterOutputs["exam"]["queryQuestion"];
 
-export type Props = {
+export interface Props {
+  studentToken: string;
   data: TData;
   initialData: TStudentAnswer[];
-};
+}
 
 export function shuffleArray<T>(array: T[]): T[] {
   const shuffledArray = [...array] as T[];

@@ -12,35 +12,27 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
 import { useCountdown } from "@/hooks/useCountdown";
-import { useNetworkState } from "@/hooks/useNetworkState";
-import { usePageVisibility } from "@/hooks/usePageVisibility";
-import { studentAnswerAtom, studentTokenAtom } from "@/lib/atom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAtomValue, useSetAtom } from "jotai";
 import katex from "katex";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { useDebounceCallback } from "usehooks-ts";
-import { z } from "zod";
+import type { z } from "zod";
 
 import { ModeToggle } from "../mode-toggle";
 import {
   AnsweredQuestionsList,
-  BadInternetAlert,
   DishonestyAlert,
   DishonestyCountAlert,
   GoToHome,
-  ScreenWakeLockFail,
 } from "./AllAlert";
 import {
   formSchema,
-  shuffleArray,
-  type Props,
-  type TFormSchema,
+  // shuffleArray
 } from "./utils";
+import type { Props, TFormSchema } from "./utils";
 
 import "katex/dist/katex.min.css";
 import "react-quill/dist/quill.snow.css";
@@ -67,29 +59,14 @@ export const CountdownIsolation = memo(function Countdown({
   );
 });
 
-const Test = ({ data, initialData, studentToken }: Props) => {
-  const [checkIn] = useState(
-    // initialData.find((d) => d.slug === data.slug)?.checkIn
-    //   ? new Date(
-    //       initialData.find((d) => d.slug === data.slug)!
-    //         .checkIn as unknown as string,
-    //     )
-    //   : new Date(),
-    new Date(),
-  );
+const Test = ({ data, studentToken }: Props) => {
+  const [checkIn] = useState(new Date());
   const [isEnded, setEnded] = useState(false);
 
-  const { toast } = useToast();
-
-  const setStudentAnswers = useSetAtom(studentAnswerAtom);
-
-  const [dishonestyCount, setDishonestyCount] = useState(
-    // initialData.find((d) => d.slug === data.slug)?.dishonestCount ?? 0,
-    0,
-  );
+  const [dishonestyCount] = useState(0);
 
   // Toggle this initial state value for prod and dev
-  const [canUpdateDishonesty, setCanUpdateDishonesty] = useState(false);
+  const [, setCanUpdateDishonesty] = useState(false);
 
   const [dishonestyWarning, setDishonestyWarning] = useState(false);
   const [answeredDrawerOpen, setDrawerOpen] = useState(false);
@@ -102,34 +79,37 @@ const Test = ({ data, initialData, studentToken }: Props) => {
 
   const defaultFormValues = useMemo(
     () => ({
-      multipleChoices: shuffleArray(
-        data.multipleChoices.map((d) => {
-          const savedAnswer = initialData.find((d) => d.slug === data.slug);
+      // multipleChoices: shuffleArray(
+      //   data.multipleChoices.map((d) => {
+      //     const savedAnswer = initialData.find((d) => d.slug === data.slug);
 
-          return {
-            ...d,
-            options: shuffleArray(d.options),
-            choosedAnswer:
-              savedAnswer?.multipleChoices.find(
-                (choice) => choice.iqid === d.iqid,
-              )?.choosedAnswer ?? 0,
-          };
-        }),
-      ),
-      essays: shuffleArray(
-        data.essays.map((d) => {
-          const savedAnswer = initialData.find((d) => d.slug === data.slug);
+      //     return {
+      //       ...d,
+      //       options: shuffleArray(d.options),
+      //       choosedAnswer:
+      //         savedAnswer?.multipleChoices.find(
+      //           (choice) => choice.iqid === d.iqid,
+      //         )?.choosedAnswer ?? 0,
+      //     };
+      //   }),
+      // ),
+      // essays: shuffleArray(
+      //   data.essays.map((d) => {
+      //     const savedAnswer = initialData.find((d) => d.slug === data.slug);
 
-          return {
-            ...d,
-            answer:
-              savedAnswer?.essays.find((choice) => choice.iqid === d.iqid)
-                ?.answer ?? "",
-          };
-        }),
-      ),
+      //     return {
+      //       ...d,
+      //       answer:
+      //         savedAnswer?.essays.find((choice) => choice.iqid === d.iqid)
+      //           ?.answer ?? "",
+      //     };
+      //   }),
+      // ),
+      multipleChoices: [],
+      essays: [],
     }),
-    [data.essays, data.multipleChoices, data.slug, initialData],
+    [],
+    // [data.essays, data.multipleChoices, data.slug, initialData],
   );
 
   const form = useForm<TFormSchema>({
@@ -149,43 +129,13 @@ const Test = ({ data, initialData, studentToken }: Props) => {
 
   const multipleChoiceDebounced = useDebounceCallback(
     (updatedData: { iqid: number; choosedAnswer: number }) => {
-      setStudentAnswers((prev) =>
-        prev.map((answer) =>
-          answer.slug === data.slug
-            ? {
-                ...answer,
-                multipleChoices: !answer.multipleChoices.find(
-                  (choice) => choice.iqid === updatedData.iqid,
-                )
-                  ? [...answer.multipleChoices, updatedData]
-                  : answer.multipleChoices.map((choice) =>
-                      choice.iqid === updatedData.iqid ? updatedData : choice,
-                    ),
-              }
-            : answer,
-        ),
-      );
+      console.log(updatedData);
     },
     250,
   );
   const essayDebounce = useDebounceCallback(
     (updatedData: { iqid: number; answer: string }) => {
-      setStudentAnswers((prev) =>
-        prev.map((answer) =>
-          answer.slug === data.slug
-            ? {
-                ...answer,
-                essays: !answer.essays.find(
-                  (choice) => choice.iqid === updatedData.iqid,
-                )
-                  ? [...answer.essays, updatedData]
-                  : answer.essays.map((essay) =>
-                      essay.iqid === updatedData.iqid ? updatedData : essay,
-                    ),
-              }
-            : answer,
-        ),
-      );
+      console.log(updatedData);
     },
     250,
   );
@@ -208,7 +158,7 @@ const Test = ({ data, initialData, studentToken }: Props) => {
         submittedAt: new Date(),
       });
     },
-    [checkIn, data.id],
+    [data, checkIn],
   );
 
   if (isEnded)
@@ -338,7 +288,7 @@ const Test = ({ data, initialData, studentToken }: Props) => {
                                       choosedAnswer: parseInt(val),
                                     });
                                   }}
-                                  disabled={submitAnswerMutation.isLoading}
+                                  // disabled={submitAnswerMutation.isLoading}
                                 >
                                   {field.options.map((option, idx) => (
                                     <div
@@ -348,9 +298,9 @@ const Test = ({ data, initialData, studentToken }: Props) => {
                                       <RadioGroupItem
                                         value={String(option.order)}
                                         id={`options.${field.iqid}.opt.${idx}`}
-                                        disabled={
-                                          submitAnswerMutation.isLoading
-                                        }
+                                        // disabled={
+                                        //   submitAnswerMutation.isLoading
+                                        // }
                                       />
                                       <Label
                                         htmlFor={`options.${field.iqid}.opt.${idx}`}
@@ -417,7 +367,7 @@ const Test = ({ data, initialData, studentToken }: Props) => {
                                       answer: e.target.value,
                                     });
                                   }}
-                                  disabled={submitAnswerMutation.isLoading}
+                                  // disabled={submitAnswerMutation.isLoading}
                                 />
                               </FormControl>
                               <FormMessage />
