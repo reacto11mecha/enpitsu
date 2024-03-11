@@ -59,7 +59,7 @@ const Test = ({ data, initialData, studentToken }: Props) => {
   const [checkIn] = useState(initialData.checkIn ?? new Date());
   const [isEnded, setEnded] = useState(false);
 
-  const [dishonestyCount] = useState(initialData.dishonestyCount ?? 0);
+  const [dishonestyCount] = useState(initialData.dishonestCount ?? 0);
 
   const [isSubmitting] = useState(false);
   const [answeredDrawerOpen, setDrawerOpen] = useState(false);
