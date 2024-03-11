@@ -7,6 +7,8 @@ on:
 
 jobs:
   build:
+    if: github.repository == 'reacto11mecha/enpitsu'
+    
     runs-on: ubuntu-latest
 
     steps:
