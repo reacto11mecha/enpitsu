@@ -6,6 +6,8 @@ import {
   ScrollView,
   View,
 } from "react-native";
+import { WebView } from "react-native-webview";
+import { useAssets } from "expo-asset";
 import { useKeepAwake } from "expo-keep-awake";
 import { Link } from "expo-router";
 import { usePreventScreenCapture } from "expo-screen-capture";
@@ -27,7 +29,6 @@ import {
   DishonestyCountAlert,
   GoHomeAlert,
 } from "./AllAlert";
-import { RenderChoiceQuestion, RenderEssayQuestion } from "./Renderer";
 import { formSchema, shuffleArray } from "./utils";
 import type {
   TFormSchema,
@@ -65,6 +66,10 @@ const RealActualTest = React.memo(function ActualTest({
 }: TPropsRealTest) {
   usePreventScreenCapture();
 
+  const [mainRenderer, error] = useAssets([
+    require("@enpitsu/native-renderer/dist/index.html"),
+  ]);
+
   const setStudentAnswers = useSetAtom(studentAnswerAtom);
 
   const [checkIn] = React.useState(
@@ -101,56 +106,6 @@ const RealActualTest = React.memo(function ActualTest({
   const updateIsEnded = React.useCallback((isEnded: boolean) =>
     setEnded(isEnded),
   );
-
-  const defaultFormValues = React.useMemo(
-    () => ({
-      multipleChoices: shuffleArray(
-        data.multipleChoices.map((d) => {
-          const savedAnswer = initialData.find((d) => d.slug === data.slug);
-
-          return {
-            ...d,
-            options: shuffleArray(d.options),
-            choosedAnswer:
-              savedAnswer?.multipleChoices.find(
-                (choice) => choice.iqid === d.iqid,
-              )?.choosedAnswer ?? 0,
-          };
-        }),
-      ),
-
-      essays: shuffleArray(
-        data.essays.map((d) => {
-          const savedAnswer = initialData.find((d) => d.slug === data.slug);
-
-          return {
-            ...d,
-            answer:
-              savedAnswer?.essays.find((choice) => choice.iqid === d.iqid)
-                ?.answer ?? "",
-          };
-        }),
-      ),
-    }),
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
-
-  const form = useForm<TFormSchema>({
-    resolver: zodResolver(formSchema),
-    defaultValues: defaultFormValues,
-  });
-
-  const multipleChoicesField = useFieldArray({
-    control: form.control,
-    name: "multipleChoices",
-  });
-
-  const essaysField = useFieldArray({
-    control: form.control,
-    name: "essays",
-  });
 
   // Increment dishonesty count up to 3 app changes.
   // The first two will ask kindly to not to cheat on their exam.
@@ -266,20 +221,6 @@ const RealActualTest = React.memo(function ActualTest({
 
   const onSubmit = (values: TFormSchema) => {
     canUpdateDishonesty.current = false;
-
-    submitAnswer({
-      multipleChoices: values.multipleChoices.map((choice) => ({
-        iqid: choice.iqid,
-        choosedAnswer: choice.choosedAnswer,
-      })),
-      essays: values.essays.map((essay) => ({
-        iqid: essay.iqid,
-        answer: essay.answer,
-      })),
-      questionId: data.id,
-      checkIn,
-      submittedAt: new Date(),
-    });
   };
 
   if (isEnded)
@@ -307,125 +248,16 @@ const RealActualTest = React.memo(function ActualTest({
     );
 
   return (
-    <View>
-      <SafeAreaView>
-        <DihonestyAlert open={dishonestyWarning} close={closeDishonestyAlert} />
-
-        <BadInternetAlert
-          open={badInternetAlert}
-          close={closeBadInternet}
-          backOnline={isConnected}
-        />
-
-        <YStack>
-          <XStack
-            display="flex"
-            justifyContent="center"
-            gap={15}
-            mt={30}
-            mb={10}
-          >
-            <GoHomeAlert />
-
-            <ContainerizedCountdown
-              endedAt={data.endedAt}
-              setEnded={updateIsEnded}
-            />
-
-            <DishonestyCountAlert dishonestyCount={currDishonestCount} />
-          </XStack>
-        </YStack>
-      </SafeAreaView>
-
-      <ScrollView
-        refreshControl={
-          <RefreshControl refreshing={false} onRefresh={refetch} />
-        }
-      >
-        <YStack display="flex" mb={100} gap={30} px={20}>
-          {multipleChoicesField.fields.length > 0 ? (
-            <YStack mt={15} display="flex" gap={20}>
-              <H3>Pilihan ganda</H3>
-
-              <YStack minHeight={35}>
-                <FlashList
-                  data={multipleChoicesField.fields}
-                  renderItem={({ index, item }) => (
-                    <Controller
-                      control={form.control}
-                      name={`multipleChoices.${index}.choosedAnswer`}
-                      render={({ field }) => (
-                        <RenderChoiceQuestion
-                          index={index}
-                          item={item}
-                          disabled={isSubmitLoading}
-                          currPick={field.value}
-                          updateAnswer={(order: number) => {
-                            field.onChange(order);
-
-                            multipleChoiceDebounced({
-                              iqid: item.iqid,
-                              choosedAnswer: order,
-                            });
-                          }}
-                        />
-                      )}
-                    />
-                  )}
-                  estimatedItemSize={40}
-                />
-              </YStack>
-            </YStack>
-          ) : null}
-
-          {essaysField.fields.length > 0 ? (
-            <YStack mt={15} display="flex" gap={20}>
-              <H3>Esai</H3>
-
-              <YStack minHeight={35}>
-                <FlashList
-                  data={essaysField.fields}
-                  renderItem={({ index, item }) => (
-                    <Controller
-                      control={form.control}
-                      name={`essays.${index}.answer` as const}
-                      render={({ field }) => (
-                        <RenderEssayQuestion
-                          item={item}
-                          currAnswer={field.value}
-                          disabled={isSubmitLoading}
-                          index={index}
-                          updateAnswer={(answer) => {
-                            field.onChange(answer);
-
-                            essayDebounce({
-                              iqid: item.iqid,
-                              answer,
-                            });
-                          }}
-                        />
-                      )}
-                    />
-                  )}
-                  estimatedItemSize={40}
-                />
-              </YStack>
-            </YStack>
-          ) : null}
-
-          <XStack>
-            <XStack flex={1} />
-            <Button
-              chromeless
-              onPress={form.handleSubmit(onSubmit)}
-              disabled={isSubmitLoading}
-            >
-              {isSubmitLoading ? <Spinner /> : null} SUBMIT
-            </Button>
-          </XStack>
-        </YStack>
-      </ScrollView>
-    </View>
+    <SafeAreaView>
+      <YStack h="100%" display="flex" pt={35}>
+        {mainRenderer ? (
+          <WebView
+            style={{ height: "auto", width: "100%" }}
+            source={{ uri: mainRenderer[0].uri }}
+          />
+        ) : null}
+      </YStack>
+    </SafeAreaView>
   );
 });
 
