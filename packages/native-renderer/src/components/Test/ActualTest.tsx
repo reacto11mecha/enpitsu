@@ -381,5 +381,5 @@ export const ActualTest = memo(
   // This is intended, theoritically we just retrieve data just once,
   // after the user refresh on react native side, it will recreate
   // new instance of this browser
-  false,
+  () => false,
 );
