@@ -452,6 +452,9 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@enpitsu/native-renderer':
+        specifier: workspace:^0.1.0
+        version: link:../../packages/native-renderer
       '@enpitsu/token-generator':
         specifier: workspace:^0.1.0
         version: link:../../packages/token-generator

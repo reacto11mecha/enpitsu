@@ -24,14 +24,10 @@ import type { z } from "zod";
 import { ModeToggle } from "../mode-toggle";
 import {
   AnsweredQuestionsList,
-  DishonestyAlert,
   DishonestyCountAlert,
   GoToHome,
 } from "./AllAlert";
-import {
-  formSchema,
-  // shuffleArray
-} from "./utils";
+import { formSchema, shuffleArray } from "./utils";
 import type { Props, TFormSchema } from "./utils";
 
 import "katex/dist/katex.min.css";
@@ -59,57 +55,47 @@ export const CountdownIsolation = memo(function Countdown({
   );
 });
 
-const Test = ({ data, studentToken }: Props) => {
-  const [checkIn] = useState(new Date());
+const Test = ({ data, initialData, studentToken }: Props) => {
+  const [checkIn] = useState(initialData.checkIn ?? new Date());
   const [isEnded, setEnded] = useState(false);
 
-  const [dishonestyCount] = useState(0);
+  const [dishonestyCount] = useState(initialData.dishonestyCount ?? 0);
 
-  // Toggle this initial state value for prod and dev
-  const [, setCanUpdateDishonesty] = useState(false);
-
-  const [dishonestyWarning, setDishonestyWarning] = useState(false);
+  const [isSubmitting] = useState(false);
   const [answeredDrawerOpen, setDrawerOpen] = useState(false);
 
-  const closeAlertCallback = useCallback(() => {
-    setCanUpdateDishonesty(true);
-    setDishonestyWarning(false);
-  }, []);
   const theEndHasCome = useCallback(() => setEnded(true), []);
 
   const defaultFormValues = useMemo(
     () => ({
-      // multipleChoices: shuffleArray(
-      //   data.multipleChoices.map((d) => {
-      //     const savedAnswer = initialData.find((d) => d.slug === data.slug);
+      multipleChoices: shuffleArray(
+        data.multipleChoices.map((d) => {
+          const savedAnswer = initialData.multipleChoices.find(
+            (choice) => choice.iqid === d.iqid,
+          );
 
-      //     return {
-      //       ...d,
-      //       options: shuffleArray(d.options),
-      //       choosedAnswer:
-      //         savedAnswer?.multipleChoices.find(
-      //           (choice) => choice.iqid === d.iqid,
-      //         )?.choosedAnswer ?? 0,
-      //     };
-      //   }),
-      // ),
-      // essays: shuffleArray(
-      //   data.essays.map((d) => {
-      //     const savedAnswer = initialData.find((d) => d.slug === data.slug);
+          return {
+            ...d,
+            options: shuffleArray(d.options),
+            choosedAnswer: savedAnswer?.choosedAnswer ?? 0,
+          };
+        }),
+      ),
 
-      //     return {
-      //       ...d,
-      //       answer:
-      //         savedAnswer?.essays.find((choice) => choice.iqid === d.iqid)
-      //           ?.answer ?? "",
-      //     };
-      //   }),
-      // ),
-      multipleChoices: [],
-      essays: [],
+      essays: shuffleArray(
+        data.essays.map((d) => {
+          const savedAnswer = initialData.essays.find(
+            (choice) => choice.iqid === d.iqid,
+          );
+
+          return {
+            ...d,
+            answer: savedAnswer?.answer ?? "",
+          };
+        }),
+      ),
     }),
-    [],
-    // [data.essays, data.multipleChoices, data.slug, initialData],
+    [data.essays, data.multipleChoices, initialData],
   );
 
   const form = useForm<TFormSchema>({
@@ -142,8 +128,6 @@ const Test = ({ data, studentToken }: Props) => {
 
   const onSubmit = useCallback(
     (values: z.infer<typeof formSchema>) => {
-      setCanUpdateDishonesty(false);
-
       console.log({
         multipleChoices: values.multipleChoices.map((choice) => ({
           iqid: choice.iqid,
@@ -183,14 +167,9 @@ const Test = ({ data, studentToken }: Props) => {
 
   return (
     <>
-      <DishonestyAlert
-        open={dishonestyWarning}
-        closeAlert={closeAlertCallback}
-      />
-
       <header className="no-copy fixed inset-x-0 top-0 z-50 flex w-full justify-center border-solid">
         <div className="flex h-full w-full flex-wrap items-center justify-center gap-2 border border-b bg-white p-2 px-5 dark:bg-stone-900 sm:gap-4">
-          <GoToHome canUpdateDishonesty={setCanUpdateDishonesty} />
+          <GoToHome canUpdateDishonesty={() => {}} />
 
           <DishonestyCountAlert dishonestyCount={dishonestyCount} />
 
@@ -218,7 +197,7 @@ const Test = ({ data, studentToken }: Props) => {
         >
           <div className="flex w-full max-w-lg flex-col gap-8">
             <Card>
-              <div className="h-3 rounded-t-lg rounded-tr-lg bg-green-700 dark:bg-green-800" />
+              <div className="h-3 rounded-t-lg rounded-tr-lg bg-blue-700 dark:bg-blue-800" />
               <CardHeader>
                 <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
                   {data.title}
@@ -241,8 +220,8 @@ const Test = ({ data, studentToken }: Props) => {
             {multipleChoicesField.fields.length >= 1 ? (
               <div className="flex flex-col gap-4">
                 <Card>
-                  <CardHeader className="rounded-t-lg rounded-tr-lg bg-green-700 dark:bg-green-800">
-                    <h4 className="scroll-m-20 text-xl font-semibold uppercase tracking-tight text-green-50">
+                  <CardHeader className="rounded-t-lg rounded-tr-lg bg-blue-700 dark:bg-blue-800">
+                    <h4 className="scroll-m-20 text-xl font-semibold uppercase tracking-tight text-blue-50">
                       Soal Pilihan Ganda
                     </h4>
                   </CardHeader>
@@ -288,7 +267,7 @@ const Test = ({ data, studentToken }: Props) => {
                                       choosedAnswer: parseInt(val),
                                     });
                                   }}
-                                  // disabled={submitAnswerMutation.isLoading}
+                                  disabled={isSubmitting}
                                 >
                                   {field.options.map((option, idx) => (
                                     <div
@@ -298,9 +277,7 @@ const Test = ({ data, studentToken }: Props) => {
                                       <RadioGroupItem
                                         value={String(option.order)}
                                         id={`options.${field.iqid}.opt.${idx}`}
-                                        // disabled={
-                                        //   submitAnswerMutation.isLoading
-                                        // }
+                                        disabled={isSubmitting}
                                       />
                                       <Label
                                         htmlFor={`options.${field.iqid}.opt.${idx}`}
@@ -327,8 +304,8 @@ const Test = ({ data, studentToken }: Props) => {
             {essaysField.fields.length >= 1 ? (
               <div className="flex flex-col gap-3">
                 <Card>
-                  <CardHeader className="rounded-t-lg rounded-tr-lg bg-green-700 dark:bg-green-800">
-                    <h4 className="scroll-m-20 text-xl font-semibold uppercase tracking-tight text-green-50">
+                  <CardHeader className="rounded-t-lg rounded-tr-lg bg-blue-700 dark:bg-blue-800">
+                    <h4 className="scroll-m-20 text-xl font-semibold uppercase tracking-tight text-blue-50">
                       Soal Esai
                     </h4>
                   </CardHeader>
@@ -367,7 +344,7 @@ const Test = ({ data, studentToken }: Props) => {
                                       answer: e.target.value,
                                     });
                                   }}
-                                  // disabled={submitAnswerMutation.isLoading}
+                                  disabled={isSubmitting}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -382,7 +359,12 @@ const Test = ({ data, studentToken }: Props) => {
             ) : null}
 
             <div className="flex justify-end">
-              <Button type="submit" variant="ghost" className="uppercase">
+              <Button
+                type="submit"
+                variant="ghost"
+                className="uppercase"
+                disabled={isSubmitting}
+              >
                 Submit
               </Button>
             </div>
@@ -395,5 +377,9 @@ const Test = ({ data, studentToken }: Props) => {
 
 export const ActualTest = memo(
   Test,
-  (prev, next) => JSON.stringify(prev.data) === JSON.stringify(next.data),
+
+  // This is intended, theoritically we just retrieve data just once,
+  // after the user refresh on react native side, it will recreate
+  // new instance of this browser
+  false,
 );

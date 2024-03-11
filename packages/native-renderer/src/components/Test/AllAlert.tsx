@@ -21,8 +21,6 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { studentAnswerAtom } from "@/lib/atom";
-import { useAtomValue } from "jotai";
 import { Home, LayoutList } from "lucide-react";
 
 import type { TFormSchema } from "./utils";
@@ -94,12 +92,7 @@ export const AnsweredQuestionsList = ({
   multipleChoices: TFormSchema["multipleChoices"];
   essays: TFormSchema["essays"];
 }) => {
-  const studentAnswers = useAtomValue(studentAnswerAtom);
-
-  const currentQuestion = useMemo(
-    () => studentAnswers.find((answer) => answer.slug === slug),
-    [studentAnswers, slug],
-  );
+  const currentQuestion = useMemo(() => undefined, []);
 
   return (
     <Drawer open={open} onOpenChange={toggleDrawer}>

@@ -1,4 +1,3 @@
-import type { TStudentAnswer } from "@/lib/atom";
 import type { RouterOutputs } from "@enpitsu/api";
 import { z } from "zod";
 
@@ -38,7 +37,18 @@ type TData = RouterOutputs["exam"]["queryQuestion"];
 export interface Props {
   studentToken: string;
   data: TData;
-  initialData: TStudentAnswer[];
+  initialData: {
+    dishonestCount?: number | undefined;
+    checkIn?: Date | undefined;
+    multipleChoices: {
+      iqid: number;
+      choosedAnswer: number;
+    }[];
+    essays: {
+      iqid: number;
+      answer: string;
+    }[];
+  };
 }
 
 export function shuffleArray<T>(array: T[]): T[] {

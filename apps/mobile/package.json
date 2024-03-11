@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@enpitsu/token-generator": "workspace:^0.1.0",
+    "@enpitsu/native-renderer": "workspace:^0.1.0",
     "@expo-google-fonts/space-mono": "^0.2.3",
     "@expo/metro-config": "^0.10.7",
     "@hookform/resolvers": "^3.3.2",

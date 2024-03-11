@@ -1,10 +1,29 @@
+import { useEffect } from "react";
 import { ActualTest } from "@/components/Test/ActualTest";
 
 function App() {
+  useEffect(() => {
+    if (window.isNativeApp) {
+      const data = window.ReactNativeWebView.injectedObjectJson();
+
+      console.log(data);
+    }
+  }, []);
+
   return (
     <>
       <ActualTest
-        initialData={[]}
+        initialData={{
+          checkIn: new Date("2024-01-31"),
+          dishonestyCount: 1,
+          multipleChoices: [
+            {
+              iqid: 1,
+              choosedAnswer: 3,
+            },
+          ],
+          essays: [],
+        }}
         data={{
           id: 25,
           startedAt: new Date("2024"),
@@ -13,11 +32,11 @@ function App() {
             {
               iqid: 1,
               options: [
-                { order: 1, answer: "" },
-                { order: 2, answer: "" },
-                { order: 3, answer: "" },
-                { order: 4, answer: "" },
-                { order: 5, answer: "" },
+                { order: 1, answer: "a" },
+                { order: 2, answer: "b" },
+                { order: 3, answer: "c" },
+                { order: 4, answer: "d" },
+                { order: 5, answer: "e" },
               ],
               question: "test",
             },
