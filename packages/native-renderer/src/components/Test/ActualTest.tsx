@@ -181,7 +181,6 @@ const Test = ({ data, initialData, studentToken }: Props) => {
           <AnsweredQuestionsList
             open={answeredDrawerOpen}
             toggleDrawer={setDrawerOpen}
-            slug={data.slug}
             multipleChoices={multipleChoicesField.fields}
             essays={essaysField.fields}
           />
