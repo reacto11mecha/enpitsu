@@ -15,7 +15,7 @@ function App() {
       <ActualTest
         initialData={{
           checkIn: new Date("2024-01-31"),
-          dishonestyCount: 1,
+          dishonestCount: 1,
           multipleChoices: [
             {
               iqid: 1,
