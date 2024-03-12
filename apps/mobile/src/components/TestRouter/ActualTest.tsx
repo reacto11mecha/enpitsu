@@ -7,12 +7,6 @@ import {
   // View,
 } from "react-native";
 import { WebView } from "react-native-webview";
-// import {
-//   BadInternetAlert,
-//   DihonestyAlert,
-//   DishonestyCountAlert,
-//   GoHomeAlert,
-// } from "./AllAlert";
 // import { formSchema } from "./utils";
 
 import type { WebViewMessageEvent } from "react-native-webview";
@@ -23,12 +17,18 @@ import { Link } from "expo-router";
 import { usePreventScreenCapture } from "expo-screen-capture";
 // import { useNetInfo } from "@react-native-community/netinfo";
 import { useToastController } from "@tamagui/toast";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { Button, H3, Text, YStack } from "tamagui";
 import { useDebounceCallback } from "usehooks-ts";
 
 import { api } from "~/lib/api";
 import { studentAnswerAtom, studentTokenAtom } from "~/lib/atom";
+import {
+  // BadInternetAlert,
+  // DihonestyAlert,
+  // DishonestyCountAlert,
+  GoHomeAlert,
+} from "./AllAlert";
 import type {
   // TFormSchema,
   TPropsRealTest,
@@ -46,9 +46,8 @@ const RealActualTest = React.memo(function ActualTest({
   initialData,
   isSubmitLoading,
   submitAnswer,
-  currDishonestCount,
-} // updateDishonestCount,
-// submitCheated,
+  currDishonestCount, // updateDishonestCount,
+} // submitCheated,
 : TPropsRealTest) {
   const webviewRef = React.useRef<WebView>(null!);
 
@@ -58,7 +57,7 @@ const RealActualTest = React.memo(function ActualTest({
     require("@enpitsu/native-renderer/dist/index.html"),
   ]);
 
-  const setStudentAnswers = useSetAtom(studentAnswerAtom);
+  const [studentAnswers, setStudentAnswers] = useAtom(studentAnswerAtom);
 
   const studentToken = useAtomValue(studentTokenAtom);
 
@@ -68,6 +67,8 @@ const RealActualTest = React.memo(function ActualTest({
       : new Date(),
   );
   const [isEnded, setEnded] = React.useState(false);
+
+  const [homeAlertShowed, setHomeShowed] = React.useState(false);
 
   // const { isConnected } = useNetInfo();
 
@@ -178,7 +179,9 @@ const RealActualTest = React.memo(function ActualTest({
         };
       });
 
-      // TODO: Send status to client
+      webviewRef.current.injectJavaScript(
+        `window.updateChoiceAnswerList(${JSON.stringify(updatedData)})`,
+      );
     },
     250,
   );
@@ -207,7 +210,9 @@ const RealActualTest = React.memo(function ActualTest({
         };
       });
 
-      // TODO: send status to client
+      webviewRef.current.injectJavaScript(
+        `window.updateEssayAnswerList(${JSON.stringify(updatedData)})`,
+      );
     },
     250,
   );
@@ -219,15 +224,20 @@ const RealActualTest = React.memo(function ActualTest({
         value?: never;
       };
 
+      console.log(processed);
+
       switch (processed.key) {
         case "CLIENT:INIT": {
+          const latestAnswer = studentAnswers.answers.find(
+            (answer) => answer.slug === data.slug,
+          );
+
           webviewRef.current.injectJavaScript(
             `window.initFillData(
             ${JSON.stringify({
-              checkIn,
               dishonestCount: currDishonestCount,
-              essays: initialData?.essays ?? [],
-              multipleChoices: initialData?.multipleChoices ?? [],
+              essays: latestAnswer?.essays ?? [],
+              multipleChoices: latestAnswer?.multipleChoices ?? [],
             })},
             ${JSON.stringify(data)}, 
             ${JSON.stringify(studentToken.token)}
@@ -264,15 +274,22 @@ const RealActualTest = React.memo(function ActualTest({
         }
 
         case "CLIENT:SUBMIT": {
-          const value = processed.value as unknown as Parameters<
-            typeof submitAnswer
-          >["0"];
+          const value = processed.value as unknown as Omit<
+            Omit<Parameters<typeof submitAnswer>["0"], "checkIn">,
+            "submittedAt"
+          >;
 
           if (value) {
             canUpdateDishonesty.current = false;
 
             submitAnswer({ ...value, checkIn, submittedAt: new Date() });
           }
+
+          break;
+        }
+
+        case "CLIENT:TRIGGER_HOME": {
+          setHomeShowed(true);
 
           break;
         }
@@ -286,9 +303,8 @@ const RealActualTest = React.memo(function ActualTest({
       currDishonestCount,
       data,
       essayDebounced,
-      initialData?.essays,
-      initialData?.multipleChoices,
       multipleChoiceDebounced,
+      studentAnswers.answers,
       studentToken.token,
       submitAnswer,
     ],
@@ -320,6 +336,8 @@ const RealActualTest = React.memo(function ActualTest({
 
   return (
     <SafeAreaView>
+      <GoHomeAlert open={homeAlertShowed} toggle={() => setHomeShowed(false)} />
+
       <YStack h="100%" display="flex" pt={35}>
         {__DEV__ ? (
           <WebView

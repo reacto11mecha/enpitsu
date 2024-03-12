@@ -56,8 +56,6 @@ export const CountdownIsolation = memo(function Countdown({
 });
 
 const Test = ({ data, initialData, studentToken }: Props) => {
-  const [checkIn] = useState(initialData.checkIn ?? new Date());
-
   const [dishonestyCount] = useState(initialData.dishonestCount ?? 0);
 
   const [isSubmitting, setSubmitting] = useState(false);
@@ -126,13 +124,11 @@ const Test = ({ data, initialData, studentToken }: Props) => {
                 answer: essay.answer,
               })),
               questionId: data.id,
-              checkIn,
-              submittedAt: new Date(),
             },
           }),
         );
     },
-    [data, checkIn],
+    [data],
   );
 
   useEffect(() => {
@@ -151,6 +147,7 @@ const Test = ({ data, initialData, studentToken }: Props) => {
           <CountdownIsolation endedAt={data.endedAt} />
 
           <AnsweredQuestionsList
+            initialData={initialData}
             open={answeredDrawerOpen}
             toggleDrawer={setDrawerOpen}
             multipleChoices={multipleChoicesField.fields}
@@ -239,7 +236,7 @@ const Test = ({ data, initialData, studentToken }: Props) => {
                                     ) {
                                       window.ReactNativeWebView.postMessage(
                                         JSON.stringify({
-                                          key: "CLIENT:UPDATE_ESSAY",
+                                          key: "CLIENT:UPDATE_CHOICE",
                                           value: {
                                             iqid: field.iqid,
                                             choosedAnswer: parseInt(val),

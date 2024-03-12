@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   AlertDialog,
   // AlertDialogAction,
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/drawer";
 import { Home, LayoutList } from "lucide-react";
 
-import type { TFormSchema } from "./utils";
+import type { Props, TFormSchema } from "./utils";
 
 export const GoToHome = () => (
   <Button
@@ -66,16 +67,57 @@ export const DishonestyCountAlert = ({
 
 export const AnsweredQuestionsList = ({
   open,
+  initialData,
   toggleDrawer,
   multipleChoices,
   essays,
 }: {
   open: boolean;
+  initialData: Props["initialData"];
   toggleDrawer: (open: boolean) => void;
   multipleChoices: TFormSchema["multipleChoices"];
   essays: TFormSchema["essays"];
 }) => {
-  // const currentQuestion = useMemo(() => undefined, []);
+  const [currentMultipleChoices, updateChoiceList] = useState<
+    Props["initialData"]["multipleChoices"]
+  >(initialData.multipleChoices ?? []);
+  const [currentEssays, updateEssayList] = useState<
+    Props["initialData"]["essays"]
+  >(initialData.essays ?? []);
+
+  useEffect(() => {
+    window.updateChoiceAnswerList = (
+      updatedAnswer: Props["initialData"]["multipleChoices"][number],
+    ) => {
+      updateChoiceList((prev) => {
+        const existingItem = prev.find(
+          (choice) => choice.iqid === updatedAnswer.iqid,
+        );
+
+        if (!existingItem) return [...prev, updatedAnswer];
+
+        return prev.map((choice) =>
+          choice.iqid === updatedAnswer.iqid ? updatedAnswer : choice,
+        );
+      });
+    };
+
+    window.updateEssayAnswerList = (
+      updatedAnswer: Props["initialData"]["essays"][number],
+    ) => {
+      updateEssayList((prev) => {
+        const existingItem = prev.find(
+          (essay) => essay.iqid === updatedAnswer.iqid,
+        );
+
+        if (!existingItem) return [...prev, updatedAnswer];
+
+        return prev.map((essay) =>
+          essay.iqid === updatedAnswer.iqid ? updatedAnswer : essay,
+        );
+      });
+    };
+  }, []);
 
   return (
     <Drawer open={open} onOpenChange={toggleDrawer}>
@@ -120,14 +162,13 @@ export const AnsweredQuestionsList = ({
                             });
                         }, 1500);
                       }}
-                      // className={`${
-                      //   currentQuestion?.multipleChoices?.find(
-                      //     (answered) => answered.iqid === choice.iqid,
-                      //   )
-                      //     ? "bg-green-700 dark:bg-green-800 dark:text-white"
-                      //     : "bg-rose-700 dark:bg-rose-800 dark:text-white"
-                      // }`}
-                      className="bg-rose-700 dark:bg-rose-800 dark:text-white"
+                      className={`${
+                        currentMultipleChoices?.find(
+                          (answered) => answered.iqid === choice.iqid,
+                        )
+                          ? "bg-green-700 dark:bg-green-800 dark:text-white"
+                          : "bg-rose-700 dark:bg-rose-800 dark:text-white"
+                      }`}
                     >
                       {idx + 1}
                     </Button>
@@ -161,17 +202,16 @@ export const AnsweredQuestionsList = ({
                             });
                         }, 1500);
                       }}
-                      // className={`${
-                      //   // Find specific answer content, but the form will be empty (undefined) at
-                      //   // initialization, so using empty string as fallback fixed this problem.
-                      //   // (Weird but as long the problem solved, doesnt really matter)
-                      //   currentQuestion?.essays?.find(
-                      //     (answered) => answered.iqid === essay.iqid,
-                      //   )?.answer ?? ""
-                      //     ? "bg-green-700 dark:bg-green-800 dark:text-white"
-                      //     : "bg-rose-700 dark:bg-rose-800 dark:text-white"
-                      // }`}
-                      className="bg-rose-700 dark:bg-rose-800 dark:text-white"
+                      className={`${
+                        // Find specific answer content, but the form will be empty (undefined) at
+                        // initialization, so using empty string as fallback fixed this problem.
+                        // (Weird but as long the problem solved, doesnt really matter)
+                        currentEssays?.find(
+                          (answered) => answered.iqid === essay.iqid,
+                        )?.answer ?? ""
+                          ? "bg-green-700 dark:bg-green-800 dark:text-white"
+                          : "bg-rose-700 dark:bg-rose-800 dark:text-white"
+                      }`}
                     >
                       {idx + 1}
                     </Button>

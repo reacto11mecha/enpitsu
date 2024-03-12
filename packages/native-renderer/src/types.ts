@@ -1,8 +1,9 @@
 import type { Props } from "@/components/Test/utils";
 
+type InitialData = Props["initialData"];
+
 interface RNWebView {
   postMessage: (message: string) => void;
-  injectedObjectJson: () => string;
 }
 
 declare global {
@@ -11,12 +12,19 @@ declare global {
     ReactNativeWebView: RNWebView;
 
     initFillData: (
-      initialData: Props["initialData"],
+      initialData: InitialData,
       data: Props["data"],
       studentToken: string,
     ) => void;
 
     updateIsSubmitting: (submitting: boolean) => void;
+
+    updateChoiceAnswerList: (
+      updatedAnswer: InitialData["multipleChoices"][number],
+    ) => void;
+    updateEssayAnswerList: (
+      updatedAnswer: InitialData["essays"][number],
+    ) => void;
   }
 }
 

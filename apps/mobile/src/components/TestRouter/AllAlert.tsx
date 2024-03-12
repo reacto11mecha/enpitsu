@@ -1,12 +1,15 @@
 import { router } from "expo-router";
-import { Home } from "@tamagui/lucide-icons";
 import { AlertDialog, Button, Text, XStack, YStack } from "tamagui";
 
-export const GoHomeAlert = () => (
-  <AlertDialog>
-    <AlertDialog.Trigger asChild>
-      <Button variant="outlined" icon={<Home size={20} />} />
-    </AlertDialog.Trigger>
+export const GoHomeAlert = ({
+  open,
+  toggle,
+}: {
+  open: boolean;
+  toggle: () => void;
+}) => (
+  <AlertDialog open={open} onOpenChange={toggle}>
+    <AlertDialog.Trigger />
     <AlertDialog.Portal>
       <AlertDialog.Overlay
         key="overlay"
@@ -49,63 +52,6 @@ export const GoHomeAlert = () => (
             <Button themeInverse onPress={() => router.replace("/")}>
               Kembali
             </Button>
-          </XStack>
-        </YStack>
-      </AlertDialog.Content>
-    </AlertDialog.Portal>
-  </AlertDialog>
-);
-
-export const DishonestyCountAlert = ({
-  dishonestyCount,
-}: {
-  dishonestyCount: number;
-}) => (
-  <AlertDialog>
-    <AlertDialog.Trigger asChild>
-      <Button variant="outlined">
-        <Text>{dishonestyCount}</Text>
-      </Button>
-    </AlertDialog.Trigger>
-    <AlertDialog.Portal>
-      <AlertDialog.Overlay
-        key="overlay"
-        animation="quick"
-        opacity={0.5}
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
-      />
-      <AlertDialog.Content
-        bordered
-        elevate
-        key="content"
-        animation={[
-          "quick",
-          {
-            opacity: {
-              overshootClamping: true,
-            },
-          },
-        ]}
-        enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-        exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-        x={0}
-        scale={1}
-        opacity={1}
-        y={0}
-      >
-        <YStack space>
-          <AlertDialog.Title>Jumlah kecurangan</AlertDialog.Title>
-          <AlertDialog.Description>
-            Anda saat ini melakukan {dishonestyCount} kali kecurangan, melakukan
-            tiga (3) kali kecurangan maka anda akan dinyatakan melakukan
-            kecurangan.
-          </AlertDialog.Description>
-
-          <XStack justifyContent="flex-end" space="$2">
-            <AlertDialog.Cancel asChild>
-              <Button variant="outlined">Tutup</Button>
-            </AlertDialog.Cancel>
           </XStack>
         </YStack>
       </AlertDialog.Content>
