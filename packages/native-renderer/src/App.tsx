@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { ActualTest } from "@/components/Test/ActualTest";
-import type { Prop } from "@/components/Test/utils";
+import type { Props } from "@/components/Test/utils";
 import { RefreshCw } from "lucide-react";
 
 function App() {
-  const [data, setData] = useState<null | Prop["data"]>(null);
+  const [initialData, setInitialData] = useState<null | Props["initialData"]>(
+    null,
+  );
+  const [data, setData] = useState<null | Props["data"]>(null);
   const [studentToken, setStudentToken] = useState<null | string>(null);
 
   useEffect(() => {
@@ -16,27 +19,22 @@ function App() {
       }
     }
 
-    window.initFillData = (data: Prop["data"], studentToken: string) => {
+    window.initFillData = (
+      initialData: Props["initialData"],
+      data: Props["data"],
+      studentToken: string,
+    ) => {
+      setInitialData(initialData);
       setData(data);
       setStudentToken(studentToken);
     };
   }, []);
 
-  if (window.isNativeApp && studentToken && data)
+  if (window.isNativeApp && initialData && studentToken && data)
     return (
       <>
         <ActualTest
-          initialData={{
-            checkIn: new Date("2024-01-31"),
-            dishonestCount: 1,
-            multipleChoices: [
-              {
-                iqid: 1,
-                choosedAnswer: 3,
-              },
-            ],
-            essays: [],
-          }}
+          initialData={initialData}
           data={data}
           studentToken={studentToken}
         />
