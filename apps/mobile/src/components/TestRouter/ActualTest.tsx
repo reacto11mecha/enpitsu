@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { WebView } from "react-native-webview";
 import { useAssets } from "expo-asset";
+import Constants from "expo-constants";
 import { useKeepAwake } from "expo-keep-awake";
 import { Link } from "expo-router";
 import { usePreventScreenCapture } from "expo-screen-capture";
@@ -15,14 +16,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNetInfo } from "@react-native-community/netinfo";
 import { FlashList } from "@shopify/flash-list";
 import { useToastController } from "@tamagui/toast";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { Button, H3, Spinner, Text, XStack, YStack } from "tamagui";
 import { useDebounceCallback } from "usehooks-ts";
 
 import { useCountdown } from "~/hooks/useCountdown";
 import { api } from "~/lib/api";
-import { studentAnswerAtom } from "~/lib/atom";
+import { studentAnswerAtom, studentTokenAtom } from "~/lib/atom";
 import {
   BadInternetAlert,
   DihonestyAlert,
@@ -37,6 +38,9 @@ import type {
   TSubmitAnswerParam,
   TSubmitCheatParam,
 } from "./utils";
+
+const debuggerHost = Constants.expoConfig?.hostUri;
+const localhost = debuggerHost?.split(":")[0];
 
 const ContainerizedCountdown = React.memo(function Countdown({
   endedAt,
@@ -64,6 +68,8 @@ const RealActualTest = React.memo(function ActualTest({
   updateDishonestCount,
   submitCheated,
 }: TPropsRealTest) {
+  const webviewRef = React.useRef(null!);
+
   usePreventScreenCapture();
 
   const [mainRenderer, error] = useAssets([
@@ -71,6 +77,8 @@ const RealActualTest = React.memo(function ActualTest({
   ]);
 
   const setStudentAnswers = useSetAtom(studentAnswerAtom);
+
+  const studentToken = useAtomValue(studentTokenAtom);
 
   const [checkIn] = React.useState(
     initialData.find((d) => d.slug === data.slug)?.checkIn
@@ -219,6 +227,29 @@ const RealActualTest = React.memo(function ActualTest({
     250,
   );
 
+  const messageProcessor = React.useCallback((e) => {
+    const processed = JSON.parse(e.nativeEvent.data);
+
+    console.log(processed);
+
+    switch (processed.key) {
+      case "CLIENT:INIT": {
+        webviewRef.current.injectJavaScript(
+          `window.initFillData(${JSON.stringify(data)}, ${JSON.stringify(
+            studentToken.token,
+          )})`,
+        );
+
+        console.log(webviewRef.current);
+
+        break;
+      }
+
+      default:
+        break;
+    }
+  }, []);
+
   const onSubmit = (values: TFormSchema) => {
     canUpdateDishonesty.current = false;
   };
@@ -250,12 +281,29 @@ const RealActualTest = React.memo(function ActualTest({
   return (
     <SafeAreaView>
       <YStack h="100%" display="flex" pt={35}>
-        {mainRenderer ? (
+        {__DEV__ ? (
           <WebView
+            ref={webviewRef}
             style={{ height: "auto", width: "100%" }}
-            source={{ uri: mainRenderer[0].uri }}
+            source={{ uri: `http://${localhost}:5173` }}
+            useWebView2={true}
+            onMessage={messageProcessor}
+            injectedJavaScriptBeforeContentLoaded={`window.isNativeApp = true;window['RNWebView'] = window.ReactNativeWebView;true`}
           />
-        ) : null}
+        ) : (
+          <>
+            {mainRenderer ? (
+              <WebView
+                ref={webviewRef}
+                style={{ height: "auto", width: "100%" }}
+                source={{ uri: mainRenderer[0].uri }}
+                useWebView2={true}
+                onMessage={messageProcessor}
+                injectedJavaScriptBeforeContentLoaded={`window.isNativeApp = true;window['RNWebView'] = window.ReactNativeWebView;true`}
+              />
+            ) : null}
+          </>
+        )}
       </YStack>
     </SafeAreaView>
   );

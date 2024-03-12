@@ -15,8 +15,8 @@
     "ios": "expo run:ios"
   },
   "dependencies": {
-    "@enpitsu/token-generator": "workspace:^0.1.0",
     "@enpitsu/native-renderer": "workspace:^0.1.0",
+    "@enpitsu/token-generator": "workspace:^0.1.0",
     "@expo-google-fonts/space-mono": "^0.2.3",
     "@expo/metro-config": "^0.10.7",
     "@hookform/resolvers": "^3.3.2",
@@ -48,7 +48,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.49.0",
-    "react-native": "0.72.6",
+    "react-native": "0.72.10",
     "react-native-gesture-handler": "~2.12.1",
     "react-native-get-random-values": "^1.9.0",
     "react-native-intersection-observer": "^0.2.0",

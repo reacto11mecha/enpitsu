@@ -1,53 +1,53 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ActualTest } from "@/components/Test/ActualTest";
+import type { Prop } from "@/components/Test/utils";
+import { RefreshCw } from "lucide-react";
 
 function App() {
+  const [data, setData] = useState<null | Prop["data"]>(null);
+  const [studentToken, setStudentToken] = useState<null | string>(null);
+
   useEffect(() => {
     if (window.isNativeApp) {
-      const data = window.ReactNativeWebView.injectedObjectJson();
-
-      console.log(data);
+      if ("ReactNativeWebView" in window) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ key: "CLIENT:INIT" }),
+        );
+      }
     }
+
+    window.initFillData = (data: Prop["data"], studentToken: string) => {
+      setData(data);
+      setStudentToken(studentToken);
+    };
   }, []);
 
+  if (window.isNativeApp && studentToken && data)
+    return (
+      <>
+        <ActualTest
+          initialData={{
+            checkIn: new Date("2024-01-31"),
+            dishonestCount: 1,
+            multipleChoices: [
+              {
+                iqid: 1,
+                choosedAnswer: 3,
+              },
+            ],
+            essays: [],
+          }}
+          data={data}
+          studentToken={studentToken}
+        />
+        {JSON.stringify(window.isNativeApp)}
+      </>
+    );
+
   return (
-    <>
-      <ActualTest
-        initialData={{
-          checkIn: new Date("2024-01-31"),
-          dishonestCount: 1,
-          multipleChoices: [
-            {
-              iqid: 1,
-              choosedAnswer: 3,
-            },
-          ],
-          essays: [],
-        }}
-        data={{
-          id: 25,
-          startedAt: new Date("2024"),
-          endedAt: new Date("2025"),
-          multipleChoices: [
-            {
-              iqid: 1,
-              options: [
-                { order: 1, answer: "a" },
-                { order: 2, answer: "b" },
-                { order: 3, answer: "c" },
-                { order: 4, answer: "d" },
-                { order: 5, answer: "e" },
-              ],
-              question: "test",
-            },
-          ],
-          essays: [],
-          slug: "APA-AJA",
-          title: "Apa aja, ngetest doang",
-        }}
-        studentToken="SMFIKZHA"
-      />
-    </>
+    <div className="flex h-screen w-screen items-center justify-center">
+      <RefreshCw size={35} className="animate-spin" />
+    </div>
   );
 }
 
