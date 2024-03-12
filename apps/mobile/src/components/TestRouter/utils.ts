@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import type { SetStateAction } from "react";
 import type { RouterInputs, RouterOutputs } from "@enpitsu/api";
 import { z } from "zod";
@@ -42,7 +41,7 @@ type TData = RouterOutputs["exam"]["queryQuestion"];
 
 export interface TPropsWrapper {
   data: TData;
-  initialData: TStudentAnswer[];
+  initialData: TStudentAnswer | undefined;
   refetch: () => void;
 }
 export interface TPropsRealTest extends TPropsWrapper {

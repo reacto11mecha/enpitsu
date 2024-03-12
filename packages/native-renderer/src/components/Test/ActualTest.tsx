@@ -15,10 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCountdown } from "@/hooks/useCountdown";
 import { zodResolver } from "@hookform/resolvers/zod";
 import katex from "katex";
-import { ArrowLeft } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
-import { useDebounceCallback } from "usehooks-ts";
 import type { z } from "zod";
 
 import { ModeToggle } from "../mode-toggle";
@@ -37,16 +34,19 @@ window.katex = katex;
 
 export const CountdownIsolation = memo(function Countdown({
   endedAt,
-  theEndHasCome,
 }: {
   endedAt: Date;
-  theEndHasCome: () => void;
 }) {
   const { countdown, isEnded } = useCountdown(endedAt);
 
   useEffect(() => {
-    if (isEnded) theEndHasCome();
-  }, [isEnded, theEndHasCome]);
+    if (isEnded) {
+      if (window.isNativeApp && "ReactNativeWebView" in window)
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ key: "CLIENT:TIMES_UP" }),
+        );
+    }
+  }, [isEnded]);
 
   return (
     <Button variant="outline" className="font-space">
@@ -57,14 +57,11 @@ export const CountdownIsolation = memo(function Countdown({
 
 const Test = ({ data, initialData, studentToken }: Props) => {
   const [checkIn] = useState(initialData.checkIn ?? new Date());
-  const [isEnded, setEnded] = useState(false);
 
   const [dishonestyCount] = useState(initialData.dishonestCount ?? 0);
 
-  const [isSubmitting] = useState(false);
+  const [isSubmitting, setSubmitting] = useState(false);
   const [answeredDrawerOpen, setDrawerOpen] = useState(false);
-
-  const theEndHasCome = useCallback(() => setEnded(true), []);
 
   const defaultFormValues = useMemo(
     () => ({
@@ -113,70 +110,45 @@ const Test = ({ data, initialData, studentToken }: Props) => {
     name: "essays",
   });
 
-  const multipleChoiceDebounced = useDebounceCallback(
-    (updatedData: { iqid: number; choosedAnswer: number }) => {
-      console.log(updatedData);
-    },
-    250,
-  );
-  const essayDebounce = useDebounceCallback(
-    (updatedData: { iqid: number; answer: string }) => {
-      console.log(updatedData);
-    },
-    250,
-  );
-
   const onSubmit = useCallback(
     (values: z.infer<typeof formSchema>) => {
-      console.log({
-        multipleChoices: values.multipleChoices.map((choice) => ({
-          iqid: choice.iqid,
-          choosedAnswer: choice.choosedAnswer,
-        })),
-        essays: values.essays.map((essay) => ({
-          iqid: essay.iqid,
-          answer: essay.answer,
-        })),
-        questionId: data.id,
-        checkIn,
-        submittedAt: new Date(),
-      });
+      if (window.isNativeApp && "ReactNativeWebView" in window)
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({
+            key: "CLIENT:SUBMIT",
+            value: {
+              multipleChoices: values.multipleChoices.map((choice) => ({
+                iqid: choice.iqid,
+                choosedAnswer: choice.choosedAnswer,
+              })),
+              essays: values.essays.map((essay) => ({
+                iqid: essay.iqid,
+                answer: essay.answer,
+              })),
+              questionId: data.id,
+              checkIn,
+              submittedAt: new Date(),
+            },
+          }),
+        );
     },
     [data, checkIn],
   );
 
-  if (isEnded)
-    return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center gap-3 p-5">
-        <h2 className="font-monospace scroll-m-20 pb-2 text-center text-3xl font-semibold tracking-tight text-red-600 first:mt-0 dark:text-red-500">
-          Waktu Habis
-        </h2>
-        <p className="text-center text-lg">
-          Waktu ulangan sudah selesai, anda tidak bisa mengerjakan soal ini
-          lagi.
-        </p>
-
-        <Button variant="outline" size="icon" asChild>
-          <Link to="/">
-            <ArrowLeft />
-            <span className="sr-only">Kembali ke halaman depan</span>
-          </Link>
-        </Button>
-      </div>
-    );
+  useEffect(() => {
+    window.updateIsSubmitting = (submitting: boolean) =>
+      setSubmitting(submitting);
+  }, []);
 
   return (
     <>
       <header className="no-copy fixed inset-x-0 top-0 z-50 flex w-full justify-center border-solid">
         <div className="flex h-full w-full flex-wrap items-center justify-center gap-2 border border-b bg-white p-2 px-5 dark:bg-stone-900 sm:gap-4">
-          <GoToHome canUpdateDishonesty={() => {}} />
+          <GoToHome />
 
           <DishonestyCountAlert dishonestyCount={dishonestyCount} />
 
-          <CountdownIsolation
-            endedAt={data.endedAt}
-            theEndHasCome={theEndHasCome}
-          />
+          <CountdownIsolation endedAt={data.endedAt} />
 
           <AnsweredQuestionsList
             open={answeredDrawerOpen}
@@ -261,10 +233,20 @@ const Test = ({ data, initialData, studentToken }: Props) => {
                                   onValueChange={(val) => {
                                     currentField.onChange(parseInt(val));
 
-                                    multipleChoiceDebounced({
-                                      iqid: field.iqid,
-                                      choosedAnswer: parseInt(val),
-                                    });
+                                    if (
+                                      window.isNativeApp &&
+                                      "ReactNativeWebView" in window
+                                    ) {
+                                      window.ReactNativeWebView.postMessage(
+                                        JSON.stringify({
+                                          key: "CLIENT:UPDATE_ESSAY",
+                                          value: {
+                                            iqid: field.iqid,
+                                            choosedAnswer: parseInt(val),
+                                          },
+                                        }),
+                                      );
+                                    }
                                   }}
                                   disabled={isSubmitting}
                                 >
@@ -338,10 +320,21 @@ const Test = ({ data, initialData, studentToken }: Props) => {
                                   onPaste={(e) => e.preventDefault()}
                                   onChange={(e) => {
                                     currentField.onChange(e.target.value);
-                                    essayDebounce({
-                                      iqid: field.iqid,
-                                      answer: e.target.value,
-                                    });
+
+                                    if (
+                                      window.isNativeApp &&
+                                      "ReactNativeWebView" in window
+                                    ) {
+                                      window.ReactNativeWebView.postMessage(
+                                        JSON.stringify({
+                                          key: "CLIENT:UPDATE_ESSAY",
+                                          value: {
+                                            iqid: field.iqid,
+                                            answer: e.target.value,
+                                          },
+                                        }),
+                                      );
+                                    }
                                   }}
                                   disabled={isSubmitting}
                                 />

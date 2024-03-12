@@ -1,6 +1,6 @@
 import {
   AlertDialog,
-  AlertDialogAction,
+  // AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -24,33 +24,19 @@ import { Home, LayoutList } from "lucide-react";
 
 import type { TFormSchema } from "./utils";
 
-export const GoToHome = ({
-  canUpdateDishonesty,
-}: {
-  canUpdateDishonesty: (canUpdate: boolean) => void;
-}) => (
-  <AlertDialog>
-    <AlertDialogTrigger asChild>
-      <Button variant="outline" onClick={() => canUpdateDishonesty(false)}>
-        <Home size={18} />
-      </Button>
-    </AlertDialogTrigger>
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>Kembali ke beranda?</AlertDialogTitle>
-        <AlertDialogDescription>
-          Anda saat ini sedang mengerjakan soal. Jika anda kembali maka semua
-          jawaban dan status kecurangan masih tetap tersimpan.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel onClick={() => canUpdateDishonesty(true)}>
-          Batal
-        </AlertDialogCancel>
-        <AlertDialogAction>Kembali</AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
+export const GoToHome = () => (
+  <Button
+    variant="outline"
+    onClick={() => {
+      if (window.isNativeApp && "ReactNativeWebView" in window) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ key: "CLIENT:TRIGGER_HOME" }),
+        );
+      }
+    }}
+  >
+    <Home size={18} />
+  </Button>
 );
 
 export const DishonestyCountAlert = ({

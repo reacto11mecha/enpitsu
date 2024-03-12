@@ -15,6 +15,8 @@ declare global {
       data: Props["data"],
       studentToken: string,
     ) => void;
+
+    updateIsSubmitting: (submitting: boolean) => void;
   }
 }
 

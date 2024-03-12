@@ -11,12 +11,10 @@ function App() {
   const [studentToken, setStudentToken] = useState<null | string>(null);
 
   useEffect(() => {
-    if (window.isNativeApp) {
-      if ("ReactNativeWebView" in window) {
-        window.ReactNativeWebView.postMessage(
-          JSON.stringify({ key: "CLIENT:INIT" }),
-        );
-      }
+    if (window.isNativeApp && "ReactNativeWebView" in window) {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ key: "CLIENT:INIT" }),
+      );
     }
 
     window.initFillData = (
@@ -32,14 +30,11 @@ function App() {
 
   if (window.isNativeApp && initialData && studentToken && data)
     return (
-      <>
-        <ActualTest
-          initialData={initialData}
-          data={data}
-          studentToken={studentToken}
-        />
-        {JSON.stringify(window.isNativeApp)}
-      </>
+      <ActualTest
+        initialData={initialData}
+        data={data}
+        studentToken={studentToken}
+      />
     );
 
   return (

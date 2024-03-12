@@ -1,38 +1,36 @@
 import React from "react";
 import {
-  AppState,
-  RefreshControl,
+  // AppState,
+  // RefreshControl,
   SafeAreaView,
-  ScrollView,
-  View,
+  // ScrollView,
+  // View,
 } from "react-native";
 import { WebView } from "react-native-webview";
+// import {
+//   BadInternetAlert,
+//   DihonestyAlert,
+//   DishonestyCountAlert,
+//   GoHomeAlert,
+// } from "./AllAlert";
+// import { formSchema } from "./utils";
+
+import type { WebViewMessageEvent } from "react-native-webview";
 import { useAssets } from "expo-asset";
 import Constants from "expo-constants";
 import { useKeepAwake } from "expo-keep-awake";
 import { Link } from "expo-router";
 import { usePreventScreenCapture } from "expo-screen-capture";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useNetInfo } from "@react-native-community/netinfo";
-import { FlashList } from "@shopify/flash-list";
+// import { useNetInfo } from "@react-native-community/netinfo";
 import { useToastController } from "@tamagui/toast";
 import { useAtomValue, useSetAtom } from "jotai";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { Button, H3, Spinner, Text, XStack, YStack } from "tamagui";
+import { Button, H3, Text, YStack } from "tamagui";
 import { useDebounceCallback } from "usehooks-ts";
 
-import { useCountdown } from "~/hooks/useCountdown";
 import { api } from "~/lib/api";
 import { studentAnswerAtom, studentTokenAtom } from "~/lib/atom";
-import {
-  BadInternetAlert,
-  DihonestyAlert,
-  DishonestyCountAlert,
-  GoHomeAlert,
-} from "./AllAlert";
-import { formSchema, shuffleArray } from "./utils";
 import type {
-  TFormSchema,
+  // TFormSchema,
   TPropsRealTest,
   TPropsWrapper,
   TSubmitAnswerParam,
@@ -42,37 +40,21 @@ import type {
 const debuggerHost = Constants.expoConfig?.hostUri;
 const localhost = debuggerHost?.split(":")[0];
 
-const ContainerizedCountdown = React.memo(function Countdown({
-  endedAt,
-  setEnded,
-}: {
-  endedAt: Date;
-  setEnded: (ended: boolean) => void;
-}) {
-  const { isEnded, countdown } = useCountdown(endedAt);
-
-  React.useEffect(() => {
-    if (isEnded) setEnded(true);
-  }, [isEnded]);
-
-  return <Button variant="outlined">{countdown}</Button>;
-});
-
 const RealActualTest = React.memo(function ActualTest({
   data,
-  refetch,
+  // refetch,
   initialData,
   isSubmitLoading,
   submitAnswer,
   currDishonestCount,
-  updateDishonestCount,
-  submitCheated,
-}: TPropsRealTest) {
-  const webviewRef = React.useRef(null!);
+} // updateDishonestCount,
+// submitCheated,
+: TPropsRealTest) {
+  const webviewRef = React.useRef<WebView>(null!);
 
   usePreventScreenCapture();
 
-  const [mainRenderer, error] = useAssets([
+  const [mainRenderer] = useAssets([
     require("@enpitsu/native-renderer/dist/index.html"),
   ]);
 
@@ -81,97 +63,96 @@ const RealActualTest = React.memo(function ActualTest({
   const studentToken = useAtomValue(studentTokenAtom);
 
   const [checkIn] = React.useState(
-    initialData.find((d) => d.slug === data.slug)?.checkIn
-      ? new Date(
-          initialData.find((d) => d.slug === data.slug)!
-            .checkIn as unknown as string,
-        )
+    initialData?.checkIn
+      ? new Date(initialData.checkIn as unknown as string)
       : new Date(),
   );
   const [isEnded, setEnded] = React.useState(false);
 
-  const { isConnected } = useNetInfo();
+  // const { isConnected } = useNetInfo();
 
-  const appState = React.useRef(AppState.currentState);
+  // const appState = React.useRef(AppState.currentState);
 
   // Toggle this initial state value for prod and dev
   const canUpdateDishonesty = React.useRef(true);
 
-  const [dishonestyWarning, setDishonestyWarning] = React.useState(false);
-  const [badInternetAlert, setBadInternet] = React.useState(false);
+  // const [dishonestyWarning, setDishonestyWarning] = React.useState(false);
+  // const [badInternetAlert, setBadInternet] = React.useState(false);
 
-  const closeDishonestyAlert = React.useCallback(() => {
-    canUpdateDishonesty.current = true;
-    setDishonestyWarning(false);
-  }, []);
-  const closeBadInternet = React.useCallback(() => {
-    if (isConnected) {
-      canUpdateDishonesty.current = true;
-      setBadInternet(false);
-    }
-  }, [isConnected]);
-
-  const updateIsEnded = React.useCallback((isEnded: boolean) =>
-    setEnded(isEnded),
-  );
+  // const closeDishonestyAlert = React.useCallback(() => {
+  //   canUpdateDishonesty.current = true;
+  //   setDishonestyWarning(false);
+  // }, []);
+  // const closeBadInternet = React.useCallback(() => {
+  //   if (isConnected) {
+  //     canUpdateDishonesty.current = true;
+  //     setBadInternet(false);
+  //   }
+  // }, [isConnected]);
 
   // Increment dishonesty count up to 3 app changes.
   // The first two will ask kindly to not to cheat on their exam.
-  React.useEffect(() => {
-    const subscription = AppState.addEventListener("change", (nextAppState) => {
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === "active" &&
-        canUpdateDishonesty.current
-      )
-        updateDishonestCount((prev) => {
-          const newValue = ++prev;
+  // React.useEffect(() => {
+  //   const subscription = AppState.addEventListener("change", (nextAppState) => {
+  //     if (
+  //       appState.current.match(/inactive|background/) &&
+  //       nextAppState === "active" &&
+  //       canUpdateDishonesty.current
+  //     )
+  //       updateDishonestCount((prev) => {
+  //         const newValue = ++prev;
 
-          if (newValue > 2) {
-            canUpdateDishonesty.current = false;
-          } else if (newValue < 3) {
-            canUpdateDishonesty.current = false;
-            setDishonestyWarning(true);
-          }
+  //         if (newValue > 2) {
+  //           canUpdateDishonesty.current = false;
+  //         } else if (newValue < 3) {
+  //           canUpdateDishonesty.current = false;
+  //           setDishonestyWarning(true);
+  //         }
 
-          if (newValue > 0)
-            void setStudentAnswers(async (prev) => {
-              const original = await prev;
-              const currAnswers = original.answers;
+  //         if (newValue > 0)
+  //           void setStudentAnswers(async (prev) => {
+  //             const original = await prev;
+  //             const currAnswers = original.answers;
 
-              return {
-                answers: currAnswers.map((answer) =>
-                  answer.slug === data.slug
-                    ? { ...answer, dishonestCount: newValue }
-                    : answer,
-                ),
-              };
-            });
+  //             return {
+  //               answers: currAnswers.map((answer) =>
+  //                 answer.slug === data.slug
+  //                   ? { ...answer, dishonestCount: newValue }
+  //                   : answer,
+  //               ),
+  //             };
+  //           });
 
-          if (newValue > 2)
-            submitCheated({ questionId: data.id, time: new Date() });
+  //         if (newValue > 2)
+  //           submitCheated({ questionId: data.id, time: new Date() });
 
-          return newValue;
-        });
+  //         return newValue;
+  //       });
 
-      appState.current = nextAppState;
-    });
+  //     appState.current = nextAppState;
+  //   });
 
-    return () => {
-      subscription.remove();
-    };
+  //   return () => {
+  //     subscription.remove();
+  //   };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   // Track changes of user network status. User can turned on their
   // internet connection and safely continue their exam like normal.
+  // React.useEffect(() => {
+  //   if (!isConnected && isConnected !== null) {
+  //     canUpdateDishonesty.current = false;
+  //     setBadInternet(true);
+  //   }
+  // }, [isConnected]);
+
   React.useEffect(() => {
-    if (!isConnected && isConnected !== null) {
-      canUpdateDishonesty.current = false;
-      setBadInternet(true);
-    }
-  }, [isConnected]);
+    webviewRef.current.injectJavaScript(
+      `window.updateIsSubmitting(${JSON.stringify(isSubmitLoading)})`,
+    );
+  }, [isSubmitLoading]);
 
   const multipleChoiceDebounced = useDebounceCallback(
     (updatedData: { iqid: number; choosedAnswer: number }) => {
@@ -196,11 +177,13 @@ const RealActualTest = React.memo(function ActualTest({
           ),
         };
       });
+
+      // TODO: Send status to client
     },
     250,
   );
 
-  const essayDebounce = useDebounceCallback(
+  const essayDebounced = useDebounceCallback(
     (updatedData: { iqid: number; answer: string }) => {
       void setStudentAnswers(async (prev) => {
         const original = await prev;
@@ -223,36 +206,93 @@ const RealActualTest = React.memo(function ActualTest({
           ),
         };
       });
+
+      // TODO: send status to client
     },
     250,
   );
 
-  const messageProcessor = React.useCallback((e) => {
-    const processed = JSON.parse(e.nativeEvent.data);
+  const messageProcessor = React.useCallback(
+    (e: WebViewMessageEvent) => {
+      const processed = JSON.parse(e.nativeEvent.data) as {
+        key: string;
+        value?: never;
+      };
 
-    console.log(processed);
+      switch (processed.key) {
+        case "CLIENT:INIT": {
+          webviewRef.current.injectJavaScript(
+            `window.initFillData(
+            ${JSON.stringify({
+              checkIn,
+              dishonestCount: currDishonestCount,
+              essays: initialData?.essays ?? [],
+              multipleChoices: initialData?.multipleChoices ?? [],
+            })},
+            ${JSON.stringify(data)}, 
+            ${JSON.stringify(studentToken.token)}
+          )`,
+          );
 
-    switch (processed.key) {
-      case "CLIENT:INIT": {
-        webviewRef.current.injectJavaScript(
-          `window.initFillData(${JSON.stringify(data)}, ${JSON.stringify(
-            studentToken.token,
-          )})`,
-        );
+          break;
+        }
 
-        console.log(webviewRef.current);
+        case "CLIENT:UPDATE_CHOICE": {
+          const value = processed.value as unknown as Parameters<
+            typeof multipleChoiceDebounced
+          >["0"];
 
-        break;
+          if (value) multipleChoiceDebounced(value);
+
+          break;
+        }
+
+        case "CLIENT:UPDATE_ESSAY": {
+          const value = processed.value as unknown as Parameters<
+            typeof essayDebounced
+          >["0"];
+
+          if (value) essayDebounced(value);
+
+          break;
+        }
+
+        case "CLIENT:TIMES_UP": {
+          setEnded(true);
+
+          break;
+        }
+
+        case "CLIENT:SUBMIT": {
+          const value = processed.value as unknown as Parameters<
+            typeof submitAnswer
+          >["0"];
+
+          if (value) {
+            canUpdateDishonesty.current = false;
+
+            submitAnswer(value);
+          }
+
+          break;
+        }
+
+        default:
+          break;
       }
-
-      default:
-        break;
-    }
-  }, []);
-
-  const onSubmit = (values: TFormSchema) => {
-    canUpdateDishonesty.current = false;
-  };
+    },
+    [
+      checkIn,
+      currDishonestCount,
+      data,
+      essayDebounced,
+      initialData?.essays,
+      initialData?.multipleChoices,
+      multipleChoiceDebounced,
+      studentToken.token,
+      submitAnswer,
+    ],
+  );
 
   if (isEnded)
     return (
@@ -296,7 +336,7 @@ const RealActualTest = React.memo(function ActualTest({
               <WebView
                 ref={webviewRef}
                 style={{ height: "auto", width: "100%" }}
-                source={{ uri: mainRenderer[0].uri }}
+                source={{ uri: mainRenderer.at(0)!.uri }}
                 useWebView2={true}
                 onMessage={messageProcessor}
                 injectedJavaScriptBeforeContentLoaded={`window.isNativeApp = true;window['RNWebView'] = window.ReactNativeWebView;true`}
@@ -355,7 +395,7 @@ function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
   });
 
   const [dishonestyCount, setDishonestyCount] = React.useState(
-    initialData.find((d) => d.slug === data.slug)?.dishonestCount ?? 0,
+    initialData?.dishonestCount ?? 0,
   );
 
   const isSubmitLoading = React.useMemo(
