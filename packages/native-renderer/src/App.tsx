@@ -22,6 +22,7 @@ function App() {
       data: Props["data"],
       studentToken: string,
     ) => {
+      alert(JSON.stringify(initialData))
       setInitialData(initialData);
       setData(data);
       setStudentToken(studentToken);

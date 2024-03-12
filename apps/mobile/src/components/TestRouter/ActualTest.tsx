@@ -271,7 +271,7 @@ const RealActualTest = React.memo(function ActualTest({
           if (value) {
             canUpdateDishonesty.current = false;
 
-            submitAnswer(value);
+            submitAnswer({ ...value, checkIn, submittedAt: new Date() });
           }
 
           break;
