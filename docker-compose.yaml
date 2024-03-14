@@ -41,6 +41,19 @@ services:
     expose:
       - 3000
 
+  chibisafe:
+    image: chibisafe/chibisafe:latest
+    restart: always
+    volumes:
+      - chibisafe_db:/home/node/chibisafe/database:rw
+      - chibisafe_uploads:/home/node/chibisafe/uploads:rw
+      - chibisafe_logs:/home/node/chibisafe/logs:rw
+    expose:
+      - 8000
+
 volumes:
   db:
   cache:
+  chibisafe_db:
+  chibisafe_uploads:
+  chibisafe_logs:
