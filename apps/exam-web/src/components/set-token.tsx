@@ -26,8 +26,8 @@ const formSchema = z.object({
     .min(1, {
       message: "Token wajib di isi!",
     })
-    .min(8, { message: "Panjang token wajib 8 karakter!" })
-    .max(8, { message: "Panjang token tidak boleh dari 8 karakter!" })
+    .min(6, { message: "Panjang token wajib 8 karakter!" })
+    .max(6, { message: "Panjang token tidak boleh dari 8 karakter!" })
     .refine(validateId, { message: "Format token tidak sesuai!" }),
 });
 

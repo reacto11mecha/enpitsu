@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { validateId } from "@enpitsu/token-generator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { parse as parseCSV } from "csv-parse";
 import { FileSpreadsheet, Loader2 } from "lucide-react";
@@ -45,6 +46,11 @@ const FileValueSchema = z.array(
       .string()
       .min(1, { message: "Ruangan peserta wajib di isi!" })
       .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
+    Token: z
+      .string()
+      .min(6, { message: "Panjang token wajib 6 karakter!" })
+      .max(6, { message: "Panjang token tidak boleh dari 6 karakter!" })
+      .refine(validateId, { message: "Format token tidak sesuai!" }),
   }),
 );
 
@@ -149,6 +155,7 @@ export const UploadCSV = ({
           participantNumber: val["Nomor Peserta"],
           room: val.Ruang,
           subgradeId: subgrade.id,
+          token: val.Token,
         })),
       );
     });
@@ -156,11 +163,12 @@ export const UploadCSV = ({
 
   return (
     <Dialog
-      open={open}
+      open={!createStudentManyMutation.isLoading || !readLock ? open : true}
       onOpenChange={() => {
-        if (!createStudentManyMutation.isLoading || !readLock)
+        if (!createStudentManyMutation.isLoading || !readLock) {
           setOpen((prev) => !prev);
-        form.reset();
+          form.reset();
+        }
       }}
     >
       <DialogTrigger asChild>

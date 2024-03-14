@@ -1,4 +1,4 @@
-import { nanoid } from "@enpitsu/token-generator";
+// import { nanoid } from "@enpitsu/token-generator";
 import { relations } from "drizzle-orm";
 import { integer, serial, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 
@@ -34,7 +34,7 @@ export const students = myPgTable(
   {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 255 }).notNull(),
-    token: varchar("token", { length: 35 }).$defaultFn(() => nanoid()),
+    token: varchar("token", { length: 35 }).notNull(),
     participantNumber: varchar("participant_number", { length: 50 }).notNull(),
     room: varchar("room", { length: 50 }).notNull(),
     subgradeId: integer("subgrade_id")
