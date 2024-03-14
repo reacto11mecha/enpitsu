@@ -344,7 +344,7 @@ const Test = ({ data, initialData }: Props) => {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center gap-6 p-3">
         <div className="flex flex-col items-center gap-3 text-center">
-          <h2 className="font-monospace scroll-m-20 text-center text-3xl font-semibold tracking-tight text-blue-600 first:mt-0 dark:text-blue-500">
+          <h2 className="font-monospace scroll-m-20 text-center text-3xl font-semibold tracking-tight text-green-600 first:mt-0 dark:text-green-500">
             Berhasil Submit
           </h2>
           <p className="text-center text-lg md:w-[75%]">
