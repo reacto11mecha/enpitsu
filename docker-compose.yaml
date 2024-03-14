@@ -32,8 +32,6 @@ services:
     image: rmecha/enpitsu:main
     restart: always
     environment:
-      VIRTUAL_HOST: ${ENPITSU_VIRTUAL_HOST}
-      LETSENCRYPT_HOST: ${ENPITSU_VIRTUAL_HOST}
       DATABASE_URL: postgresql://enpitsu:enpitsu@db:5432/enpitsu
       REDIS_URL: redis://:enpitsu@cache:6379/4
       AUTH_URL: https://${ENPITSU_VIRTUAL_HOST}
