@@ -26,8 +26,8 @@ const formSchema = z.object({
     .min(1, {
       message: "Token wajib di isi!",
     })
-    .min(6, { message: "Panjang token wajib 8 karakter!" })
-    .max(6, { message: "Panjang token tidak boleh dari 8 karakter!" })
+    .min(6, { message: "Panjang token wajib 6 karakter!" })
+    .max(6, { message: "Panjang token tidak boleh dari 6 karakter!" })
     .refine(validateId, { message: "Format token tidak sesuai!" }),
 });
 
@@ -83,9 +83,9 @@ const NonInitVer = () => {
                       <FormControl>
                         <Input
                           className="font-space"
-                          placeholder="ABC12XX"
+                          placeholder="AZ-XXX"
                           onChange={(el) =>
-                            el.target.value.trim().length <= 8 &&
+                            el.target.value.trim().length <= 6 &&
                             field.onChange(el.target.value.toUpperCase().trim())
                           }
                           value={field.value}
@@ -167,9 +167,9 @@ const InitVersion = () => {
                       <FormControl>
                         <Input
                           className="font-space"
-                          placeholder="ABC12XX"
+                          placeholder="AZ-XXX"
                           onChange={(el) =>
-                            el.target.value.trim().length <= 8 &&
+                            el.target.value.trim().length <= 6 &&
                             field.onChange(el.target.value.toUpperCase().trim())
                           }
                           value={field.value}
