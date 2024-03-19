@@ -292,6 +292,10 @@ const Test = ({ data, initialData }: Props) => {
   }, [dishonestyCount]);
 
   useEffect(() => {
+    const preventContextMenu = (e: MouseEvent) => e.preventDefault();
+
+    window.addEventListener("contextmenu", preventContextMenu);
+
     setStudentAnswers((prev) =>
       !prev.find((answer) => answer.slug === data.slug)
         ? [
@@ -314,6 +318,8 @@ const Test = ({ data, initialData }: Props) => {
     }
 
     return () => {
+      window.removeEventListener("contextmenu", preventContextMenu);
+
       release();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -399,13 +405,17 @@ const Test = ({ data, initialData }: Props) => {
         <Button
           variant="outline"
           size="icon"
-          asChild
+          asChild={!blocklistMutation.isLoading}
           disabled={blocklistMutation.isLoading}
         >
-          <Link to="/" aria-disabled={blocklistMutation.isLoading}>
+          {blocklistMutation.isLoading ? (
             <ArrowLeft />
-            <span className="sr-only">Kembali ke halaman depan</span>
-          </Link>
+          ) : (
+            <Link to="/">
+              <ArrowLeft />
+              <span className="sr-only">Kembali ke halaman depan</span>
+            </Link>
+          )}
         </Button>
       </div>
     );
