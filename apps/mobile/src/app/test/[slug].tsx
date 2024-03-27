@@ -97,7 +97,9 @@ const TestPage = () => {
   return (
     <ActualTest
       data={questionQuery.data}
-      initialData={initialAnswer.answers}
+      initialData={initialAnswer.answers.find(
+        (answer) => answer.slug === questionQuery.data.slug,
+      )}
       refetch={refetchQuestion}
     />
   );

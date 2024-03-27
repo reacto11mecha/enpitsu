@@ -1,8 +1,5 @@
-import type { SetStateAction } from "react";
-import type { RouterInputs, RouterOutputs } from "@enpitsu/api";
+import type { RouterOutputs } from "@enpitsu/api";
 import { z } from "zod";
-
-import type { TStudentAnswer } from "~/lib/atom";
 
 export const formSchema = z.object({
   multipleChoices: z.array(
@@ -34,24 +31,24 @@ export const formSchema = z.object({
 });
 
 export type TFormSchema = z.infer<typeof formSchema>;
-export type TSubmitAnswerParam = RouterInputs["exam"]["submitAnswer"];
-export type TSubmitCheatParam = RouterInputs["exam"]["storeBlocklist"];
 
 type TData = RouterOutputs["exam"]["queryQuestion"];
 
-export interface TPropsWrapper {
+export interface Props {
+  studentToken: string;
   data: TData;
-  initialData: TStudentAnswer | undefined;
-  refetch: () => void;
-}
-export interface TPropsRealTest extends TPropsWrapper {
-  isSubmitLoading: boolean;
-  submitAnswer: (params: TSubmitAnswerParam) => void;
-
-  currDishonestCount: number;
-  updateDishonestCount: (count: SetStateAction<number>) => void;
-
-  submitCheated: (params: TSubmitCheatParam) => void;
+  initialData: {
+    dishonestCount?: number | undefined;
+    checkIn?: Date | undefined;
+    multipleChoices: {
+      iqid: number;
+      choosedAnswer: number;
+    }[];
+    essays: {
+      iqid: number;
+      answer: string;
+    }[];
+  };
 }
 
 export function shuffleArray<T>(array: T[]): T[] {

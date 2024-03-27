@@ -17,6 +17,7 @@
     "dev:admin": "turbo dev --scope admin",
     "dev:exam": "turbo dev --scope exam-web",
     "dev:web": "turbo dev --filter admin --filter exam-web",
+    "dev:mobile": "turbo dev --filter mobile --filter native-renderer",
     "format": "turbo format --continue -- --cache --cache-location node_modules/.cache/.prettiercache",
     "format:fix": "turbo format --continue -- --write --cache --cache-location node_modules/.cache/.prettiercache",
     "lint": "turbo lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
