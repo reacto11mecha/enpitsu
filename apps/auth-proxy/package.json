@@ -18,10 +18,10 @@
     "@enpitsu/prettier-config": "workspace:^0.1.0",
     "@enpitsu/tailwind-config": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
-    "eslint": "^8.55.0",
+    "eslint": "^8.57.0",
     "nitropack": "^2.8.1",
-    "prettier": "^3.1.0",
-    "typescript": "^5.3.3"
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.3"
   },
   "eslintConfig": {
     "root": true,

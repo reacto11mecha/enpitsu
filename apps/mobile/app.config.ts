@@ -1,8 +1,9 @@
-import type { ExpoConfig } from "@expo/config";
+import type { ConfigContext, ExpoConfig } from "expo/config";
 
-const defineConfig = (): ExpoConfig => ({
-  name: "enpitsu",
-  slug: "enpitsu",
+export default ({ config }: ConfigContext): ExpoConfig => ({
+  ...config,
+  name: "expo",
+  slug: "expo",
   scheme: "expo",
   version: "0.1.0",
   orientation: "portrait",
@@ -11,21 +12,21 @@ const defineConfig = (): ExpoConfig => ({
   splash: {
     image: "./assets/icon.png",
     resizeMode: "contain",
-    backgroundColor: "#15803D",
+    backgroundColor: "#1F104A",
   },
   updates: {
     fallbackToCacheTimeout: 0,
   },
   assetBundlePatterns: ["**/*"],
   ios: {
-    bundleIdentifier: "rmecha.my.id.enpitsu",
+    bundleIdentifier: "your.bundle.identifier",
     supportsTablet: true,
   },
   android: {
-    package: "rmecha.my.id.enpitsu",
+    package: "your.bundle.identifier",
     adaptiveIcon: {
       foregroundImage: "./assets/icon.png",
-      backgroundColor: "#15803D",
+      backgroundColor: "#1F104A",
     },
   },
   // extra: {
@@ -37,7 +38,5 @@ const defineConfig = (): ExpoConfig => ({
     tsconfigPaths: true,
     typedRoutes: true,
   },
-  plugins: ["expo-router", "./expo-plugins/with-modify-gradle.js"],
+  plugins: ["expo-router"],
 });
-
-export default defineConfig;

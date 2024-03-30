@@ -53,12 +53,10 @@ export const UpdateEssayScore = ({
       const prevData = apiUtils.question.getEssaysScore.getData();
 
       // Optimistically update the data with our new post
-      apiUtils.question.getEssaysScore.setData(
-        { respondId },
-        (old) =>
-          old?.map((d) =>
-            d.id === id ? { ...d, score: String(updatedData.score) } : d,
-          ),
+      apiUtils.question.getEssaysScore.setData({ respondId }, (old) =>
+        old?.map((d) =>
+          d.id === id ? { ...d, score: String(updatedData.score) } : d,
+        ),
       );
 
       // Return the previous data so we can revert if something goes wrong

@@ -29,8 +29,8 @@
     "@enpitsu/prettier-config": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
     "@types/eslint": "^8.44.8",
-    "eslint": "^8.55.0",
-    "typescript": "^5.3.3"
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.3"
   },
   "eslintConfig": {
     "root": true,
