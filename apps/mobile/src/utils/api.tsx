@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Constants from "expo-constants";
 import type { AppRouter } from "@enpitsu/api";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
+import { useAtomCallback } from "jotai/utils";
 import superjson from "superjson";
+
+import { studentTokenAtom } from "./atom";
 
 /**
  * A set of typesafe hooks for consuming your API.
@@ -42,6 +45,26 @@ const getBaseUrl = () => {
  * Use only in _app.tsx
  */
 export function TRPCProvider(props: { children: React.ReactNode }) {
+  const getHeaders = useAtomCallback(
+    useCallback((get) => {
+      const userToken = get(studentTokenAtom);
+
+      const headers = new Map<string, string>();
+
+      headers.set("x-trpc-source", "expo-react");
+
+      headers.set(
+        "authorization",
+
+        // @ts-expect-error weird value from the storage when using useAtomCallback
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        `Student ${userToken.value?.token ?? userToken.token}`,
+      );
+
+      return Object.fromEntries(headers);
+    }, []),
+  );
+
   const [queryClient] = useState(() => new QueryClient());
   const [trpcClient] = useState(() =>
     api.createClient({
@@ -55,11 +78,7 @@ export function TRPCProvider(props: { children: React.ReactNode }) {
         httpBatchLink({
           transformer: superjson,
           url: `${getBaseUrl()}/api/trpc`,
-          headers() {
-            const headers = new Map<string, string>();
-            headers.set("x-trpc-source", "expo-react");
-            return Object.fromEntries(headers);
-          },
+          headers: getHeaders,
         }),
       ],
     }),

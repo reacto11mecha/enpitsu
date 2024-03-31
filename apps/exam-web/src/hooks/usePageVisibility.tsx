@@ -14,7 +14,7 @@ export const usePageVisibility = () => {
           clearTimeout(timer);
           timer = setTimeout(() => {
             try {
-              let output = callback(...args);
+              const output = callback(...args);
               resolve(output);
             } catch (err) {
               if (err instanceof Error) {

@@ -2,8 +2,8 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "expo",
-  slug: "expo",
+  name: "enpitsu",
+  slug: "enpitsu",
   scheme: "expo",
   version: "0.1.0",
   orientation: "portrait",
@@ -12,21 +12,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   splash: {
     image: "./assets/icon.png",
     resizeMode: "contain",
-    backgroundColor: "#1F104A",
+    backgroundColor: "#15803D",
   },
   updates: {
     fallbackToCacheTimeout: 0,
   },
   assetBundlePatterns: ["**/*"],
   ios: {
-    bundleIdentifier: "your.bundle.identifier",
+    bundleIdentifier: "rmecha.my.id.enpitsu",
     supportsTablet: true,
   },
   android: {
-    package: "your.bundle.identifier",
+    package: "rmecha.my.id.enpitsu",
     adaptiveIcon: {
       foregroundImage: "./assets/icon.png",
-      backgroundColor: "#1F104A",
+      backgroundColor: "#15803D",
     },
   },
   // extra: {

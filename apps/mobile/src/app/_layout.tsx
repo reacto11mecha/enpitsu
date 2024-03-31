@@ -11,6 +11,7 @@ import { useColorScheme } from "nativewind";
 // It wraps your pages with the providers they need
 export default function RootLayout() {
   const { colorScheme } = useColorScheme();
+
   return (
     <TRPCProvider>
       {/*
@@ -20,8 +21,9 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerStyle: {
-            backgroundColor: "#f472b6",
+            backgroundColor: "#15803D",
           },
+          headerTintColor: "#e7e5e4",
           contentStyle: {
             backgroundColor: colorScheme == "dark" ? "#09090B" : "#FFFFFF",
           },
