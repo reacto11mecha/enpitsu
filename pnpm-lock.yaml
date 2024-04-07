@@ -619,7 +619,7 @@ importers:
         specifier: workspace:^0.1.0
         version: link:../../tooling/typescript
       '@expo/config-plugins':
-        specifier: ^7.8.4
+        specifier: ^7.2.5
         version: 7.8.4
       '@types/babel__core':
         specifier: ^7.20.5
