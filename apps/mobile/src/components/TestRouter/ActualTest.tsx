@@ -47,8 +47,8 @@ const RealActualTest = React.memo(function ActualTest({
   isSubmitLoading,
   submitAnswer,
   currDishonestCount, // updateDishonestCount,
-  // submitCheated,
-}: TPropsRealTest) {
+} // submitCheated,
+: TPropsRealTest) {
   const webviewRef = React.useRef<WebView>(null!);
 
   usePreventScreenCapture();
