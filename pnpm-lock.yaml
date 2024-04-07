@@ -41,6 +41,9 @@ importers:
       '@enpitsu/db':
         specifier: workspace:^0.1.0
         version: link:../../packages/db
+      '@enpitsu/token-generator':
+        specifier: workspace:^0.1.0
+        version: link:../../packages/token-generator
       '@hookform/resolvers':
         specifier: ^3.3.2
         version: 3.3.2(react-hook-form@7.49.0)

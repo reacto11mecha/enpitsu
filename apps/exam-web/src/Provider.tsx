@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
+import enpitsuLogo from "@/icon.png";
 import { studentTokenAtom } from "@/lib/atom";
 import { useAtom } from "jotai";
 import { RefreshCw } from "lucide-react";
@@ -20,7 +21,8 @@ export default function Provider() {
       {studentAtom === "" ? (
         <Suspense
           fallback={
-            <div className="flex h-screen w-screen items-center justify-center">
+            <div className="flex h-screen w-screen flex-col items-center justify-center gap-5">
+              <img src={enpitsuLogo} className="w-28 rounded-lg" />
               <RefreshCw size={35} className="animate-spin" />
             </div>
           }

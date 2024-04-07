@@ -17,6 +17,7 @@
     "@enpitsu/auth": "workspace:^0.1.0",
     "@enpitsu/cache": "workspace:^0.1.0",
     "@enpitsu/db": "workspace:^0.1.0",
+    "@enpitsu/token-generator": "workspace:^0.1.0",
     "@hookform/resolvers": "^3.3.2",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-avatar": "^1.0.4",

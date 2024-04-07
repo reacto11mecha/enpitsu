@@ -1,5 +1,6 @@
 import { ActualTest } from "@/components/TestRouter/ActualTest";
 import { Button } from "@/components/ui/button";
+import enpitsuLogo from "@/icon.png";
 import { studentAnswerAtom } from "@/lib/atom";
 import { api } from "@/utils/api";
 import { useAtomValue } from "jotai";
@@ -42,7 +43,8 @@ export default function TestRoute() {
 
   if (questionQuery.isLoading)
     return (
-      <div className="flex h-screen w-screen items-center justify-center">
+      <div className="flex h-screen w-screen flex-col items-center justify-center gap-5">
+        <img src={enpitsuLogo} className="w-28 rounded-lg" />
         <RefreshCw size={35} className="animate-spin" />
       </div>
     );

@@ -63,6 +63,7 @@ export const gradeRouter = createTRPCRouter({
         participantNumber: z.string(),
         room: z.string(),
         subgradeId: z.number(),
+        token: z.string(),
       }),
     )
     .mutation(({ ctx, input }) => {
@@ -77,6 +78,7 @@ export const gradeRouter = createTRPCRouter({
           participantNumber: z.string(),
           room: z.string(),
           subgradeId: z.number(),
+          token: z.string(),
         }),
       ),
     )

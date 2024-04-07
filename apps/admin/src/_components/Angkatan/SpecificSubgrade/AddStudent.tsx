@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { validateId } from "@enpitsu/token-generator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -43,6 +44,14 @@ const formSchema = z.object({
     .string()
     .min(1, { message: "Ruangan peserta wajib di isi!" })
     .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
+  token: z
+    .string()
+    .min(1, {
+      message: "Token wajib di isi!",
+    })
+    .min(6, { message: "Panjang token wajib 6 karakter!" })
+    .max(6, { message: "Panjang token tidak boleh dari 6 karakter!" })
+    .refine(validateId, { message: "Format token tidak sesuai!" }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -69,6 +78,10 @@ export const AddStudent = ({
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      participantNumber: "",
+    },
   });
 
   const createStudentMutation = api.grade.createStudent.useMutation({
@@ -123,7 +136,7 @@ export const AddStudent = ({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
             <FormField
               control={form.control}
               name="name"
@@ -178,6 +191,26 @@ export const AddStudent = ({
                   </FormControl>
                   <FormDescription>
                     Masukan nomor ruangan peserta ujian.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="token"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Token Peserta</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled={createStudentMutation.isLoading}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Masukan token peserta ujian.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

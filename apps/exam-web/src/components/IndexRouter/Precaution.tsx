@@ -87,6 +87,11 @@ const PrecautionChildren = ({
             dari itu maka otomatis anda dinyatakan curang dan otomatis gugur.
           </li>
           <li>
+            Harap hindari perangkat Anda dari layar yang mati (
+            <i>screen timed out</i>), karena hal tersebut dapat dianggap sebagai
+            tindakan curang.
+          </li>
+          <li>
             Jika waktu sudah menyentuh waktu selesai, maka anda tidak bisa
             mengumpulkan jawaban anda bagaimanapun caranya.
           </li>

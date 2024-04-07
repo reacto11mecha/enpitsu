@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useState } from "react";
+import enpitsuLogo from "@/icon.png";
 import { studentTokenAtom } from "@/lib/atom";
 import IndexRoute from "@/routes/IndexRoute";
 import { api } from "@/utils/api";
@@ -28,7 +29,8 @@ const router = createHashRouter([
     element: (
       <Suspense
         fallback={
-          <div className="flex h-screen w-screen items-center justify-center">
+          <div className="flex h-screen w-screen flex-col items-center justify-center gap-5">
+            <img src={enpitsuLogo} className="w-28 rounded-lg" />
             <RefreshCw size={35} className="animate-spin" />
           </div>
         }
@@ -42,7 +44,8 @@ const router = createHashRouter([
     element: (
       <Suspense
         fallback={
-          <div className="flex h-screen w-screen items-center justify-center">
+          <div className="flex h-screen w-screen flex-col items-center justify-center gap-5">
+            <img src={enpitsuLogo} className="w-28 rounded-lg" />
             <RefreshCw size={35} className="animate-spin" />
           </div>
         }
