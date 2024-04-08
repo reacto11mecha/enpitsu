@@ -23,9 +23,9 @@ export const FirstTimeNoToken = () => {
   const [userToken, setToken] = useAtom(studentTokenAtom);
 
   const {
-    control,
-    handleSubmit,
-    formState: { errors },
+    control: _c,
+    // handleSubmit,
+    // formState: { errors },
   } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -33,7 +33,7 @@ export const FirstTimeNoToken = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) =>
+  const _onSubmit = (values: z.infer<typeof formSchema>) =>
     setToken({ ...values });
 
   return <></>;
@@ -46,9 +46,9 @@ export const Settings = () => {
   const apiUtils = api.useUtils();
 
   const {
-    control,
-    handleSubmit,
-    formState: { errors },
+    control: _c,
+    // handleSubmit,
+    // formState: { errors },
   } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -56,7 +56,7 @@ export const Settings = () => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const _onSubmit = async (values: z.infer<typeof formSchema>) => {
     await setToken({ ...values });
 
     router.replace("/");

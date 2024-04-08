@@ -45,9 +45,8 @@ const RealActualTest = memo(function ActualTest({
   initialData,
   isSubmitLoading,
   submitAnswer,
-  currDishonestCount,
-} // updateDishonestCount,
-// submitCheated,
+  currDishonestCount, // updateDishonestCount,
+} // submitCheated,
 : TPropsRealTest) {
   const webviewRef = useRef<WebView>(null!);
 

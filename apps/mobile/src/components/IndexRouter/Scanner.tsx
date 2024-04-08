@@ -68,9 +68,8 @@ const _Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
 };
 
 export const ScannerWrapper = ({
-  sendMutate,
-} // isDisabled,
-: {
+  sendMutate, // isDisabled,
+}: {
   sendMutate: (slug: string) => void;
   isDisabled: boolean;
 }) => {
