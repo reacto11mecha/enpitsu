@@ -1,18 +1,15 @@
-import React from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Text } from "react-native";
 import { BarCodeScanner, PermissionStatus } from "expo-barcode-scanner";
-import { ScanLine } from "@tamagui/lucide-icons";
-import { AlertDialog, Button, Text, XStack, YStack } from "tamagui";
 
 import { formSchema } from "./schema";
 
-const Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
-  const [error, setError] = React.useState<string | null>(null);
-  const [hasPermission, setHasPermission] = React.useState<boolean | null>(
-    null,
-  );
-  const [scanned, setScanned] = React.useState(false);
+const _Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
+  const [error, setError] = useState<string | null>(null);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [scanned, setScanned] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const getBarCodeScannerPermissions = async () => {
       const { status } = await BarCodeScanner.requestPermissionsAsync();
       setHasPermission(status === PermissionStatus.GRANTED);
@@ -57,7 +54,7 @@ const Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
   }
 
   return (
-    <YStack w="100%">
+    <>
       <BarCodeScanner
         onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
         style={{
@@ -65,25 +62,21 @@ const Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
           height: 250,
         }}
       />
-      {error ? (
-        <Text color="red" fontSize={12} textAlign="center">
-          {error}
-        </Text>
-      ) : null}
-    </YStack>
+      {error ? <Text>{error}</Text> : null}
+    </>
   );
 };
 
 export const ScannerWrapper = ({
   sendMutate,
-  isDisabled,
-}: {
+} // isDisabled,
+: {
   sendMutate: (slug: string) => void;
   isDisabled: boolean;
 }) => {
-  const [open, setOpen] = React.useState(false);
+  const [_open, setOpen] = useState(false);
 
-  const mutate = React.useCallback(
+  const _mutate = useCallback(
     (slug: string) => {
       setOpen(false);
 
@@ -92,66 +85,5 @@ export const ScannerWrapper = ({
     [sendMutate],
   );
 
-  return (
-    <YStack w="100%">
-      <AlertDialog open={open} onOpenChange={() => setOpen((prev) => !prev)}>
-        <AlertDialog.Trigger asChild>
-          <Button
-            variant="outlined"
-            w="100%"
-            h="$10"
-            icon={<ScanLine size={20} />}
-            opacity={isDisabled ? 0.5 : 1}
-            disabled={isDisabled}
-          >
-            Pindai QR
-          </Button>
-        </AlertDialog.Trigger>
-
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay
-            key="overlay"
-            animation="quick"
-            opacity={0.5}
-            enterStyle={{ opacity: 0 }}
-            exitStyle={{ opacity: 0 }}
-          />
-          <AlertDialog.Content
-            bordered
-            elevate
-            key="content"
-            animation={[
-              "quick",
-              {
-                opacity: {
-                  overshootClamping: true,
-                },
-              },
-            ]}
-            enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-            exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-            x={0}
-            scale={1}
-            opacity={1}
-            y={0}
-          >
-            <YStack space>
-              <AlertDialog.Title>Scan Kode Soal</AlertDialog.Title>
-              <AlertDialog.Description>
-                Scan kode QR yang diberikan oleh pengawas ruangan.
-              </AlertDialog.Description>
-
-              <Scanner mutate={mutate} />
-
-              <XStack justifyContent="flex-end">
-                <AlertDialog.Cancel asChild>
-                  <Button>Batal</Button>
-                </AlertDialog.Cancel>
-              </XStack>
-            </YStack>
-          </AlertDialog.Content>
-        </AlertDialog.Portal>
-      </AlertDialog>
-    </YStack>
-  );
+  return <></>;
 };

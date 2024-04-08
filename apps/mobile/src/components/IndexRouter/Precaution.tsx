@@ -1,25 +1,15 @@
-import React from "react";
-import { ScrollView } from "react-native";
-import { InView, IOScrollView } from "react-native-intersection-observer";
-import { Link } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
+// import { ScrollView } from "react-native";
+// import { InView, IOScrollView } from "react-native-intersection-observer";
+// import { Link } from "expo-router";
 import type { RouterOutputs } from "@enpitsu/api";
-import { FlashList } from "@shopify/flash-list";
+// import { FlashList } from "@shopify/flash-list";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
-import {
-  AlertDialog,
-  Button,
-  H4,
-  Paragraph,
-  Separator,
-  Text,
-  XStack,
-  YStack,
-} from "tamagui";
 
 type TData = RouterOutputs["exam"]["getQuestion"] | undefined;
 
-const appBehaviour = [
+const _appBehaviour = [
   {
     label:
       'Jika sudah menekan tombol "Kerjakan" maka aplikasi ini memantau aktivitas yang berpotensi mencurigakan.',
@@ -34,7 +24,7 @@ const appBehaviour = [
   },
 ];
 
-const codeOfConduct = [
+const _codeOfConduct = [
   { label: "Peserta harus hadir tepat waktu di ruang ujian." },
   {
     label:
@@ -67,14 +57,13 @@ const codeOfConduct = [
   },
 ];
 
-const PrecautionChildren = ({
+const _PrecautionChildren = ({
   data,
-  setScrollBottom,
 }: {
   data: NonNullable<TData>;
   setScrollBottom: (scrolled: boolean) => void;
 }) => {
-  const questionIdentity = React.useMemo(
+  const _questionIdentity = useMemo(
     () => [
       {
         title: "SOAL",
@@ -111,158 +100,20 @@ const PrecautionChildren = ({
     [data],
   );
 
-  return (
-    <YStack w="100%" h={250}>
-      <IOScrollView>
-        <ScrollView style={{ flex: 1 }}>
-          <YStack gap={20}>
-            <YStack gap={5}>
-              <H4>Soal Ujian</H4>
-
-              <YStack>
-                {questionIdentity.map((question) => (
-                  <Text fontWeight="bold" key={question.title}>
-                    {question.title}: <Text>{question.label}.</Text>
-                  </Text>
-                ))}
-              </YStack>
-            </YStack>
-
-            <YStack gap={5}>
-              <H4>Perilaku Aplikasi</H4>
-
-              <YStack>
-                {appBehaviour.map((item, index) => (
-                  <Paragraph key={index}>
-                    <Text fontWeight="bold">{index + 1}</Text>. {item.label}
-                  </Paragraph>
-                ))}
-              </YStack>
-            </YStack>
-
-            <YStack gap={5}>
-              <H4>Tata Tertib</H4>
-
-              <YStack minHeight={50}>
-                <FlashList
-                  data={codeOfConduct}
-                  renderItem={({ item, index }) => (
-                    <Paragraph>
-                      <Text fontWeight="bold">{index + 1}</Text>. {item.label}
-                    </Paragraph>
-                  )}
-                  estimatedItemSize={10}
-                />
-
-                <InView onChange={(inView: boolean) => setScrollBottom(inView)}>
-                  <YStack display="flex" width="100%" height={10} />
-                </InView>
-              </YStack>
-            </YStack>
-          </YStack>
-        </ScrollView>
-      </IOScrollView>
-    </YStack>
-  );
+  return <></>;
 };
 
-export const Precaution = ({
-  data,
-  open,
-  close,
-}: {
+export const Precaution = (_k: {
   data: TData;
   open: boolean;
   close: () => void;
 }) => {
-  const [scrolledToBottom, setScroll] = React.useState(false);
+  const [_scrolledToBottom, setScroll] = useState(false);
 
-  const setScrollBottom = React.useCallback(
+  const _setScrollBottom = useCallback(
     (scrolled: boolean) => setScroll(scrolled),
     [],
   );
 
-  return (
-    <AlertDialog open={open} onOpenChange={close}>
-      <AlertDialog.Portal>
-        <AlertDialog.Overlay
-          key="overlay"
-          animation="quick"
-          opacity={0.5}
-          enterStyle={{ opacity: 0 }}
-          exitStyle={{ opacity: 0 }}
-        />
-        <AlertDialog.Content
-          bordered
-          elevate
-          key="content"
-          animation={[
-            "quick",
-            {
-              opacity: {
-                overshootClamping: true,
-              },
-            },
-          ]}
-          enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-          exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-          x={0}
-          scale={1}
-          opacity={1}
-          y={0}
-        >
-          <YStack space>
-            <AlertDialog.Title>Sebelum Mengerjakan,</AlertDialog.Title>
-            <AlertDialog.Description>
-              Baca keterangan dibawah ini dengan saksama! Scroll sampai bawah{" "}
-              {/*eslint-disable-next-line react/no-unescaped-entities */}
-              supaya bisa menekan tombol "Kerjakan".
-            </AlertDialog.Description>
-
-            <Separator />
-
-            {data ? (
-              <PrecautionChildren
-                data={data}
-                setScrollBottom={setScrollBottom}
-              />
-            ) : null}
-
-            <Separator />
-
-            <XStack justifyContent="flex-end" space="$2">
-              <AlertDialog.Cancel asChild>
-                <Button
-                  onPress={() => setScrollBottom(false)}
-                  variant="outlined"
-                >
-                  Batal
-                </Button>
-              </AlertDialog.Cancel>
-
-              {data ? (
-                <Link
-                  replace
-                  asChild
-                  href={{
-                    pathname: "/test/[slug]",
-                    params: { slug: data.slug },
-                  }}
-                >
-                  <Button
-                    themeInverse
-                    disabled={!scrolledToBottom}
-                    opacity={!scrolledToBottom ? 0.5 : 1}
-                    onPress={close}
-                  >
-                    Kerjakan
-                  </Button>
-                </Link>
-              ) : null}
-            </XStack>
-          </YStack>
-        </AlertDialog.Content>
-      </AlertDialog.Portal>
-    </AlertDialog>
-  );
+  return <></>;
 };

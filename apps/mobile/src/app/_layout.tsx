@@ -10,7 +10,7 @@ import { useColorScheme } from "nativewind";
 
 import { TRPCProvider } from "~/lib/api";
 
-SplashScreen.preventAutoHideAsync();
+void SplashScreen.preventAutoHideAsync();
 
 const RootLayout = () => {
   const { colorScheme } = useColorScheme();
@@ -21,7 +21,7 @@ const RootLayout = () => {
 
   useEffect(() => {
     if (loaded) {
-      SplashScreen.hideAsync();
+      void SplashScreen.hideAsync();
     }
   }, [loaded]);
 

@@ -1,4 +1,4 @@
-import React from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   // AppState,
   // RefreshControl,
@@ -11,24 +11,23 @@ import { WebView } from "react-native-webview";
 
 import type { WebViewMessageEvent } from "react-native-webview";
 import { useAssets } from "expo-asset";
-import Constants from "expo-constants";
+// import Constants from "expo-constants";
 import { useKeepAwake } from "expo-keep-awake";
 import { Link } from "expo-router";
 import { usePreventScreenCapture } from "expo-screen-capture";
 // import { useNetInfo } from "@react-native-community/netinfo";
-import { useToastController } from "@tamagui/toast";
+
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { Button, H3, Text, YStack } from "tamagui";
 import { useDebounceCallback } from "usehooks-ts";
 
 import { api } from "~/lib/api";
 import { studentAnswerAtom, studentTokenAtom } from "~/lib/atom";
-import {
-  // BadInternetAlert,
-  // DihonestyAlert,
-  // DishonestyCountAlert,
-  GoHomeAlert,
-} from "./AllAlert";
+// import {
+//   // BadInternetAlert,
+//   // DihonestyAlert,
+//   // DishonestyCountAlert,
+//   // GoHomeAlert,
+// } from "./AllAlert";
 import type {
   // TFormSchema,
   TPropsRealTest,
@@ -37,19 +36,20 @@ import type {
   TSubmitCheatParam,
 } from "./utils";
 
-const debuggerHost = Constants.expoConfig?.hostUri;
-const localhost = debuggerHost?.split(":")[0];
+// const debuggerHost = Constants.expoConfig?.hostUri;
+// const localhost = debuggerHost?.split(":")[0];
 
-const RealActualTest = React.memo(function ActualTest({
+const RealActualTest = memo(function ActualTest({
   data,
   // refetch,
   initialData,
   isSubmitLoading,
   submitAnswer,
-  currDishonestCount, // updateDishonestCount,
-  // submitCheated,
-}: TPropsRealTest) {
-  const webviewRef = React.useRef<WebView>(null!);
+  currDishonestCount,
+} // updateDishonestCount,
+// submitCheated,
+: TPropsRealTest) {
+  const webviewRef = useRef<WebView>(null!);
 
   usePreventScreenCapture();
 
@@ -61,21 +61,21 @@ const RealActualTest = React.memo(function ActualTest({
 
   const studentToken = useAtomValue(studentTokenAtom);
 
-  const [checkIn] = React.useState(
+  const [checkIn] = useState(
     initialData?.checkIn
       ? new Date(initialData.checkIn as unknown as string)
       : new Date(),
   );
-  const [isEnded, setEnded] = React.useState(false);
+  const [isEnded, setEnded] = useState(false);
 
-  const [homeAlertShowed, setHomeShowed] = React.useState(false);
+  const [_homeAlertShowed, setHomeShowed] = useState(false);
 
   // const { isConnected } = useNetInfo();
 
   // const appState = React.useRef(AppState.currentState);
 
   // Toggle this initial state value for prod and dev
-  const canUpdateDishonesty = React.useRef(true);
+  const canUpdateDishonesty = useRef(true);
 
   // const [dishonestyWarning, setDishonestyWarning] = React.useState(false);
   // const [badInternetAlert, setBadInternet] = React.useState(false);
@@ -149,7 +149,7 @@ const RealActualTest = React.memo(function ActualTest({
   //   }
   // }, [isConnected]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     webviewRef.current.injectJavaScript(
       `window.updateIsSubmitting(${JSON.stringify(isSubmitLoading)})`,
     );
@@ -217,7 +217,7 @@ const RealActualTest = React.memo(function ActualTest({
     250,
   );
 
-  const messageProcessor = React.useCallback(
+  const messageProcessor = useCallback(
     (e: WebViewMessageEvent) => {
       const processed = JSON.parse(e.nativeEvent.data) as {
         key: string;
@@ -313,64 +313,29 @@ const RealActualTest = React.memo(function ActualTest({
   if (isEnded)
     return (
       <SafeAreaView>
-        <YStack
-          h="100%"
-          display="flex"
-          jc="center"
-          ai="center"
-          gap={20}
-          px={20}
-        >
-          <H3>Waktu Habis</H3>
-          <Text textAlign="center">
-            Waktu ulangan sudah selesai, anda tidak bisa mengerjakan soal ini
-            lagi.
-          </Text>
-
-          <Link href="/" replace asChild>
-            <Button variant="outlined">Ke halaman depan</Button>
-          </Link>
-        </YStack>
+        <Link href="/" replace>
+          {" "}
+          Ke halaman depan
+        </Link>
       </SafeAreaView>
     );
 
   return (
     <SafeAreaView>
-      <GoHomeAlert open={homeAlertShowed} toggle={() => setHomeShowed(false)} />
-
-      <YStack h="100%" display="flex" pt={35}>
-        {__DEV__ ? (
-          <WebView
-            ref={webviewRef}
-            style={{ height: "auto", width: "100%" }}
-            source={{ uri: `http://${localhost}:5173` }}
-            useWebView2={true}
-            onMessage={messageProcessor}
-            injectedJavaScriptBeforeContentLoaded={`window.isNativeApp = true;window['RNWebView'] = window.ReactNativeWebView;true`}
-          />
-        ) : (
-          <>
-            {mainRenderer ? (
-              <WebView
-                ref={webviewRef}
-                style={{ height: "auto", width: "100%" }}
-                source={{ uri: mainRenderer.at(0)!.uri }}
-                useWebView2={true}
-                onMessage={messageProcessor}
-                injectedJavaScriptBeforeContentLoaded={`window.isNativeApp = true;window['RNWebView'] = window.ReactNativeWebView;true`}
-              />
-            ) : null}
-          </>
-        )}
-      </YStack>
+      <WebView
+        ref={webviewRef}
+        style={{ height: "auto", width: "100%" }}
+        source={{ uri: mainRenderer?.at(0)?.uri ?? "http://github.com/" }}
+        useWebView2={true}
+        onMessage={messageProcessor}
+        injectedJavaScriptBeforeContentLoaded={`window.isNativeApp = true;window['RNWebView'] = window.ReactNativeWebView;true`}
+      />
     </SafeAreaView>
   );
 });
 
 function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
   useKeepAwake();
-
-  const toast = useToastController();
 
   const setStudentAnswers = useSetAtom(studentAnswerAtom);
 
@@ -385,10 +350,10 @@ function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
         };
       });
     },
-    onError(error) {
-      toast.show("Operasi Gagal", {
-        message: `Gagal menyimpan status kecurangan. Error: ${error.message}`,
-      });
+    onError(_error) {
+      // toast.show("Operasi Gagal", {
+      //   message: `Gagal menyimpan status kecurangan. Error: ${error.message}`,
+      // });
     },
     retry: false,
   });
@@ -404,40 +369,37 @@ function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
         };
       });
     },
-    onError(error) {
-      toast.show("Operasi Gagal", {
-        message: `Gagal menyimpan jawaban. Error: ${error.message}`,
-      });
+    onError(_error) {
+      // toast.show("Operasi Gagal", {
+      //   message: `Gagal menyimpan jawaban. Error: ${error.message}`,
+      // });
     },
     retry: false,
   });
 
-  const [dishonestyCount, setDishonestyCount] = React.useState(
+  const [dishonestyCount, setDishonestyCount] = useState(
     initialData?.dishonestCount ?? 0,
   );
 
-  const isSubmitLoading = React.useMemo(
+  const isSubmitLoading = useMemo(
     () => submitAnswerMutation.isLoading,
     [submitAnswerMutation.isLoading],
   );
 
-  const submitAnswer = React.useCallback(
+  const submitAnswer = useCallback(
     (params: TSubmitAnswerParam) => submitAnswerMutation.mutate(params),
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
-  const currDishonestCount = React.useMemo(
-    () => dishonestyCount,
-    [dishonestyCount],
-  );
-  const updateDishonestCount = React.useCallback(
+  const currDishonestCount = useMemo(() => dishonestyCount, [dishonestyCount]);
+  const updateDishonestCount = useCallback(
     (count: React.SetStateAction<number>) => setDishonestyCount(count),
     [],
   );
 
-  const submitCheated = React.useCallback(
+  const submitCheated = useCallback(
     (params: TSubmitCheatParam) => blocklistMutation.mutate(params),
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -447,71 +409,18 @@ function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
   if (submitAnswerMutation.isSuccess)
     return (
       <SafeAreaView>
-        <YStack
-          h="100%"
-          display="flex"
-          jc="center"
-          ai="center"
-          gap={20}
-          px={20}
-        >
-          <H3>Berhasil Submit</H3>
-          <Text textAlign="center">
-            Jawaban berhasil terkirim, anda bisa menunjukan ini ke pengawas
-            ruangan bahwa jawaban anda sudah di submit dengan aman. Screenshot
-            bukti ini untuk berjaga-jaga.
-          </Text>
-
-          <Text>Kode Soal: {data.slug}</Text>
-
-          <Link href="/" replace asChild>
-            <Button variant="outlined">Ke halaman depan</Button>
-          </Link>
-        </YStack>
+        <Link href="/" replace>
+          Ke halaman depan
+        </Link>
       </SafeAreaView>
     );
 
   if (dishonestyCount > 2)
     return (
       <SafeAreaView>
-        <YStack
-          h="100%"
-          display="flex"
-          jc="center"
-          ai="center"
-          gap={20}
-          px={20}
-        >
-          <H3>Anda Melakukan Kecurangan</H3>
-          <Text textAlign="center">
-            Anda sudah tiga kali beralih dari aplikasi ini,{" "}
-            {!blocklistMutation.isLoading && blocklistMutation.isSuccess ? (
-              <>
-                kami berhasil menyimpan status anda sudah melakukan kecurangan.
-                Anda akan terlihat oleh panitia sudah melakukan kecurangan, lain
-                kali jangan di ulangi lagi.
-              </>
-            ) : (
-              <>
-                {blocklistMutation.isError ? (
-                  <>
-                    kami gagal menyimpan status kecurangan anda, anda bisa
-                    logout untuk me-reset status kecurangan pada browser
-                    perangkat anda dan login kembali.
-                  </>
-                ) : (
-                  <>kami sedang menyimpan status kecurangan anda...</>
-                )}
-              </>
-            )}
-          </Text>
-
-          <Text>Kode Soal: {data.slug}</Text>
-
-          <Link href="/" replace asChild>
-            <Button variant="outlined">Ke halaman depan</Button>
-          </Link>
-        </YStack>
+        <Link href="/" replace>
+          Ke halaman depan
+        </Link>
       </SafeAreaView>
     );
 
@@ -529,7 +438,7 @@ function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
   );
 }
 
-export const ActualTest = React.memo(
+export const ActualTest = memo(
   TestWrapper,
   (prev, next) => JSON.stringify(prev.data) === JSON.stringify(next.data),
 );

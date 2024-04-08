@@ -1,16 +1,14 @@
-import React from "react";
-import { SafeAreaView } from "react-native";
-import { Link, useLocalSearchParams } from "expo-router";
+import { memo, useCallback } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams } from "expo-router";
 import { useAtom } from "jotai";
-
-// import { Button, H3, Spinner, Text, YStack } from "tamagui";
 
 // import { ActualTest } from "~/components/TestRouter/ActualTest";
 import { api } from "~/lib/api";
 import { studentAnswerAtom } from "~/lib/atom";
 
 const TestPage = () => {
-  const [initialAnswer, setStudentAnswers] = useAtom(studentAnswerAtom);
+  const [_initialAnswer, setStudentAnswers] = useAtom(studentAnswerAtom);
 
   const { slug } = useLocalSearchParams();
 
@@ -48,7 +46,7 @@ const TestPage = () => {
     },
   );
 
-  const refetchQuestion = React.useCallback(
+  const _refetchQuestion = useCallback(
     () =>
       void apiUtils.exam.queryQuestion.invalidate({
         slug: (slug as string) ?? "",
@@ -63,7 +61,7 @@ const TestPage = () => {
   if (questionQuery.isLoading || questionQuery.isRefetching)
     return <SafeAreaView></SafeAreaView>;
 
-  return <></>;
+  return <SafeAreaView></SafeAreaView>;
 };
 
-export default React.memo(TestPage);
+export default memo(TestPage);
