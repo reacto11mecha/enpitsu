@@ -1,8 +1,9 @@
+import { Pressable, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import { validateId } from "@enpitsu/token-generator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { api } from "~/lib/api";
@@ -14,8 +15,8 @@ const formSchema = z.object({
     .min(1, {
       message: "Token wajib di isi!",
     })
-    .min(8, { message: "Panjang token wajib 8 karakter!" })
-    .max(8, { message: "Panjang token tidak boleh dari 8 karakter!" })
+    .min(6, { message: "Panjang token wajib 6 karakter!" })
+    .max(6, { message: "Panjang token tidak boleh dari 6 karakter!" })
     .refine(validateId, { message: "Format token tidak sesuai!" }),
 });
 
@@ -23,9 +24,9 @@ export const FirstTimeNoToken = () => {
   const [userToken, setToken] = useAtom(studentTokenAtom);
 
   const {
-    control: _c,
-    // handleSubmit,
-    // formState: { errors },
+    control,
+    handleSubmit,
+    formState: { errors },
   } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -33,10 +34,77 @@ export const FirstTimeNoToken = () => {
     },
   });
 
-  const _onSubmit = (values: z.infer<typeof formSchema>) =>
+  const onSubmit = (values: z.infer<typeof formSchema>) =>
     setToken({ ...values });
 
-  return <></>;
+  return (
+    <View className="flex h-screen w-screen flex-col items-center justify-center gap-5 p-5">
+      <Text className="font-[SpaceMono] text-4xl text-gray-700 dark:text-gray-300">
+        enpitsu
+      </Text>
+
+      <View className="sm:w-[90%] md:w-[50%]">
+        <View className="flex flex-col gap-5">
+          <View>
+            <Text className="scroll-m-20 text-xl font-semibold tracking-tight dark:text-gray-50">
+              Masukan Token
+            </Text>
+
+            <Text className="mt-1 text-justify leading-6 dark:text-gray-50">
+              Masukan token yang tertera pada kartu ujian pada kolom input
+              dibawah ini. Proses ini hanya di awal saja, namun bisa diganti
+              kapan saja di halaman pengaturan.
+            </Text>
+          </View>
+
+          <View className="flex flex-col gap-4">
+            <View>
+              <Text className="font-semibold dark:text-gray-50">Token</Text>
+
+              <Controller
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    autoCorrect={false}
+                    className="font-space mt-2 rounded border p-2 pl-5 font-[IBMPlex] placeholder:pl-5 dark:border-white dark:text-gray-50 dark:placeholder:text-gray-500"
+                    placeholder="Masukan Token"
+                    onBlur={onBlur}
+                    onChangeText={(text) =>
+                      text.trim().length <= 6 &&
+                      onChange(text.toUpperCase().trim())
+                    }
+                    value={value}
+                  />
+                )}
+                name="token"
+              />
+
+              {errors.token && (
+                <Text className="mt-2 text-red-500 dark:text-red-400">
+                  {errors.token.message}
+                </Text>
+              )}
+
+              <Text className="mt-2 text-gray-500 dark:text-gray-400">
+                Token yang tertera pada kartu ujian.
+              </Text>
+            </View>
+
+            <Pressable
+              className="rounded-lg bg-stone-900 p-4 dark:bg-stone-100"
+              onPress={handleSubmit(onSubmit)}
+            >
+              <Text className="text-center text-slate-50 dark:text-stone-900">
+                Simpan
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
 };
 
 export const Settings = () => {

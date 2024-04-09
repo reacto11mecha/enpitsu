@@ -35,6 +35,21 @@ function withMonorepoPaths(config) {
     path.resolve(workspaceRoot, "node_modules"),
   ];
 
+  // SVG Transformer step
+  // @see https://www.npmjs.com/package/react-native-svg-transformer
+  const { transformer, resolver } = config;
+
+  config.transformer = {
+    ...transformer,
+    babelTransformerPath: require.resolve("react-native-svg-transformer"),
+  };
+  config.resolver = {
+    ...resolver,
+    assetExts: resolver.assetExts.filter((ext) => ext !== "svg"),
+    sourceExts: [...resolver.sourceExts, "svg"],
+  };
+  // End of svg transformer step
+
   return config;
 }
 

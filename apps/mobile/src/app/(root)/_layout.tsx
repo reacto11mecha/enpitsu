@@ -1,3 +1,9 @@
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Slot, Stack } from "expo-router";
 import { useAtomValue } from "jotai";
@@ -10,11 +16,18 @@ export default function HomeLayout() {
 
   if (!userToken.token || userToken.token === "")
     return (
-      <SafeAreaView className="bg-background">
-        <Stack.Screen options={{ headerShown: false }} />
+      <>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="bg-background"
+        >
+          <Stack.Screen options={{ headerShown: false }} />
 
-        <FirstTimeNoToken />
-      </SafeAreaView>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <FirstTimeNoToken />
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </>
     );
 
   return (

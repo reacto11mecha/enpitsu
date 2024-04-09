@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { IBMPlexMono_400Regular } from "@expo-google-fonts/ibm-plex-mono";
 import { SpaceMono_400Regular } from "@expo-google-fonts/space-mono";
 
 import "../globals.css";
@@ -16,7 +17,8 @@ const RootLayout = () => {
   const { colorScheme } = useColorScheme();
 
   const [loaded] = useFonts({
-    SpaceMono_400Regular,
+    SpaceMono: SpaceMono_400Regular,
+    IBMPlex: IBMPlexMono_400Regular,
   });
 
   useEffect(() => {
@@ -38,10 +40,13 @@ const RootLayout = () => {
       <Stack
         screenOptions={{
           headerStyle: {
-            backgroundColor: "#f472b6",
+            backgroundColor: "#15803D",
+          },
+          headerTitleStyle: {
+            color: "#EAEAEA",
           },
           contentStyle: {
-            backgroundColor: colorScheme == "dark" ? "#09090B" : "#FFFFFF",
+            backgroundColor: colorScheme == "dark" ? "#09090B" : "#e7e5e4",
           },
         }}
       />

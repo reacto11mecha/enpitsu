@@ -1,3 +1,7 @@
+import { View } from "react-native";
+
+import { studentTokenAtom } from "~/lib/atom";
+
 export default function HomePage() {
-  return <></>;
+  return <View></View>;
 }
