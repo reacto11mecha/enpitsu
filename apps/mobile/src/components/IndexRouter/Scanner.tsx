@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Text } from "react-native";
-import { BarCodeScanner, PermissionStatus } from "expo-barcode-scanner";
+import { Camera, CameraView, PermissionStatus } from "expo-camera/next";
 
 import { formSchema } from "./schema";
 
@@ -11,7 +11,7 @@ const _Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
 
   useEffect(() => {
     const getBarCodeScannerPermissions = async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === PermissionStatus.GRANTED);
     };
 
@@ -55,8 +55,11 @@ const _Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
 
   return (
     <>
-      <BarCodeScanner
-        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+      <CameraView
+        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+        barcodeScannerSettings={{
+          barcodeTypes: ["qr", "pdf417"],
+        }}
         style={{
           width: "100%",
           height: 250,

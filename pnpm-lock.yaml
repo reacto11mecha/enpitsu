@@ -506,9 +506,9 @@ importers:
       expo:
         specifier: ^50.0.15
         version: 50.0.15(@babel/core@7.23.5)(@react-native/babel-preset@0.73.21)
-      expo-barcode-scanner:
-        specifier: ~12.9.3
-        version: 12.9.3(expo@50.0.15)
+      expo-camera:
+        specifier: ^14.1.2
+        version: 14.1.2(expo@50.0.15)
       expo-constants:
         specifier: ~15.4.5
         version: 15.4.5(expo@50.0.15)
@@ -11423,13 +11423,13 @@ packages:
       - supports-color
     dev: false
 
-  /expo-barcode-scanner@12.9.3(expo@50.0.15):
-    resolution: {integrity: sha512-I3zaKSINRMHbTc7sHIq14ug3fHkCsW4rweJF12yk0kHaympI2wxVgIo2DhzeZaYG1Ylkuj5aiKen3NuwDk1FSA==}
+  /expo-camera@14.1.2(expo@50.0.15):
+    resolution: {integrity: sha512-J+679RJLvalufC5OCl+rbyGDWYrutFkYyFX5nkURBq+iIAQJoNH/LbaAPj9lRjerdoe9uw0Ma1ZrdVEfH20Q7Q==}
     peerDependencies:
       expo: '*'
     dependencies:
       expo: 50.0.15(@babel/core@7.23.5)(@react-native/babel-preset@0.73.21)
-      expo-image-loader: 4.6.0(expo@50.0.15)
+      invariant: 2.2.4
     dev: false
 
   /expo-constants@15.4.5(expo@50.0.15):
@@ -11458,14 +11458,6 @@ packages:
     dependencies:
       expo: 50.0.15(@babel/core@7.23.5)(@react-native/babel-preset@0.73.21)
       fontfaceobserver: 2.3.0
-    dev: false
-
-  /expo-image-loader@4.6.0(expo@50.0.15):
-    resolution: {integrity: sha512-RHQTDak7/KyhWUxikn2yNzXL7i2cs16cMp6gEAgkHOjVhoCJQoOJ0Ljrt4cKQ3IowxgCuOrAgSUzGkqs7omj8Q==}
-    peerDependencies:
-      expo: '*'
-    dependencies:
-      expo: 50.0.15(@babel/core@7.23.5)(@react-native/babel-preset@0.73.21)
     dev: false
 
   /expo-keep-awake@12.8.2(expo@50.0.15):

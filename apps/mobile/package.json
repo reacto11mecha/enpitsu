@@ -32,7 +32,7 @@
     "burnt": "^0.12.2",
     "date-fns": "^3.0.1",
     "expo": "^50.0.15",
-    "expo-barcode-scanner": "~12.9.3",
+    "expo-camera": "^14.1.2",
     "expo-constants": "~15.4.5",
     "expo-keep-awake": "~12.8.2",
     "expo-linking": "~6.2.2",
