@@ -1,7 +1,16 @@
 import { useCallback, useState } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
+import { ScanOrInputQuestionSlug } from "~/components/IndexRouter/ScanOrInputQuestionSlug";
 import { api } from "~/lib/api";
+
+function LoadingComponent() {
+  return <View></View>;
+}
+
+function Separator() {
+  return <View className="h-1 w-[390px] border-t dark:border-gray-600" />;
+}
 
 export default function HomePage() {
   const [isCorrect, setCorrect] = useState(false);
@@ -12,27 +21,122 @@ export default function HomePage() {
     onError(error) {
       console.log(error);
     },
-    onSuccess(data) {
-      console.log(data);
-    },
   });
 
+  if (!studentQuery.isError && isCorrect)
+    return <ScanOrInputQuestionSlug closeScanner={closeQuestionScan} />;
+
   return (
-    <View className="flex flex h-screen items-center justify-center">
-      <View className="rounded-lg border border dark:border-gray-600 sm:w-[450px]">
-        <View className="flex flex-col space-y-1.5 p-6">
-          <Text className="text-4xl font-semibold leading-none dark:text-gray-50">
+    <View className="flex h-screen items-center justify-center p-3">
+      <View className="-translate-y-16 rounded-lg border dark:border-gray-600 sm:w-[450px]">
+        <View className="flex flex-col p-6">
+          <Text className="text-2xl font-semibold leading-none dark:text-gray-50">
             Sebelum Mengerjakan,
           </Text>
-          <Text className="text-muted-foreground text-justify text-2xl text-sm dark:text-gray-200">
+          <Text className="mt-1.5 text-justify text-xl dark:text-gray-100">
             Pastikan identitas anda sudah benar dan sesuai dengan yang tertera
             pada kartu ujian.
           </Text>
         </View>
 
-        <View className="h-2 w-[100%] border dark:border-gray-600" />
+        <Separator />
 
-        <View className="flex flex-col p-6"></View>
+        <View className="flex flex-col gap-2 p-6">
+          {!studentQuery.isLoading &&
+          studentQuery.data &&
+          studentQuery.data.student ? (
+            <View className="flex flex-row items-center justify-between">
+              <View className="flex flex-row items-center">
+                <Text className="dark:text-gray-50">No Peserta</Text>
+                <Text className="px-1 dark:text-gray-50">:</Text>
+              </View>
+              <Text className="dark:text-gray-50">
+                {studentQuery.data.student.participantNumber}
+              </Text>
+            </View>
+          ) : (
+            <LoadingComponent />
+          )}
+
+          {!studentQuery.isLoading &&
+          studentQuery.data &&
+          studentQuery.data.student ? (
+            <View className="flex flex-row items-center justify-between">
+              <View className="flex flex-row items-center">
+                <Text className="dark:text-gray-50">Nama</Text>
+                <Text className="px-1 dark:text-gray-50">:</Text>
+              </View>
+              <Text className="dark:text-gray-50">
+                {studentQuery.data.student.name}
+              </Text>
+            </View>
+          ) : (
+            <LoadingComponent />
+          )}
+
+          {!studentQuery.isLoading &&
+          studentQuery.data &&
+          studentQuery.data.student ? (
+            <View className="flex flex-row items-center justify-between">
+              <View className="flex flex-row items-center">
+                <Text className="dark:text-gray-50">Kelas</Text>
+                <Text className="px-1 dark:text-gray-50">:</Text>
+              </View>
+              <Text className="dark:text-gray-50">
+                {studentQuery.data.student.subgrade.grade.label}{" "}
+                {studentQuery.data.student.subgrade.label}
+              </Text>
+            </View>
+          ) : (
+            <LoadingComponent />
+          )}
+
+          {!studentQuery.isLoading &&
+          studentQuery.data &&
+          studentQuery.data.student ? (
+            <View className="flex flex-row items-center justify-between">
+              <View className="flex flex-row items-center">
+                <Text className="dark:text-gray-50">Ruangan</Text>
+                <Text className="px-1 dark:text-gray-50">:</Text>
+              </View>
+              <Text className="dark:text-gray-50">
+                {studentQuery.data.student.room}
+              </Text>
+            </View>
+          ) : (
+            <LoadingComponent />
+          )}
+
+          {!studentQuery.isLoading &&
+          studentQuery.data &&
+          studentQuery.data.student ? (
+            <View className="flex flex-row items-center justify-between">
+              <View className="flex flex-row items-center">
+                <Text className="dark:text-gray-50">Token</Text>
+                <Text className="px-1 dark:text-gray-50">:</Text>
+              </View>
+              <Text className="dark:text-gray-50">
+                {studentQuery.data.student.token}
+              </Text>
+            </View>
+          ) : (
+            <LoadingComponent />
+          )}
+        </View>
+
+        <Separator />
+
+        <View className="flex flex-row p-6">
+          <Pressable
+            className="w-full rounded-lg bg-stone-900 p-2"
+            disabled={!studentQuery.data || studentQuery.isError}
+            onPress={() => setCorrect(true)}
+          >
+            <Text className="text-center text-slate-50 dark:text-slate-800">
+              Ya, sudah benar
+            </Text>
+          </Pressable>
+        </View>
       </View>
     </View>
   );

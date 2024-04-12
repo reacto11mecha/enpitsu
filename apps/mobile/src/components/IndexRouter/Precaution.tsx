@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-// import { ScrollView } from "react-native";
+import { Modal, ScrollView, Text, View } from "react-native";
 // import { InView, IOScrollView } from "react-native-intersection-observer";
 // import { Link } from "expo-router";
 import type { RouterOutputs } from "@enpitsu/api";
@@ -103,17 +103,35 @@ const _PrecautionChildren = ({
   return <></>;
 };
 
-export const Precaution = (_k: {
+export const Precaution = ({
+  data,
+  open,
+  close,
+}: {
   data: TData;
   open: boolean;
   close: () => void;
 }) => {
-  const [_scrolledToBottom, setScroll] = useState(false);
+  const [scrolledToBottom, setScroll] = useState(false);
+
+  console.log(data, open);
 
   const _setScrollBottom = useCallback(
     (scrolled: boolean) => setScroll(scrolled),
     [],
   );
 
-  return <></>;
+  return (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      statusBarTranslucent={true}
+      visible={open}
+      onRequestClose={close}
+    >
+      <View className="items-center bg-gray-50 p-16">
+        <Text>somethign</Text>
+      </View>
+    </Modal>
+  );
 };
