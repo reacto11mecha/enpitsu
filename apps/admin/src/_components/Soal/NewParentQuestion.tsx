@@ -13,6 +13,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
@@ -29,6 +36,13 @@ const formSchema = z
   .object({
     title: z.string().min(5, { message: "Minimal memiliki 5 karakter!" }),
     slug: z.string().min(4, { message: "Minimal memiliki 4 karakter!" }),
+    multipleChoiceOptions: z.coerce
+      .number()
+      .min(0, {
+        message: "Pilihlah salah satu banyak opsi jawaban pilihan ganda!",
+      })
+      .min(4)
+      .max(5),
     startedAt: z.date({
       required_error: "Diperlukan kapan waktu ujian dimulai!",
     }),
@@ -54,6 +68,7 @@ export const NewParentQuestion = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      multipleChoiceOptions: "5",
       allowLists: [],
       title: "",
       slug: "",
@@ -147,6 +162,37 @@ export const NewParentQuestion = () => {
               <FormDescription>
                 Masukan kode soal yang nantinya akan menjadi Kode QR yang dapat
                 di scan oleh peserta.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="multipleChoiceOptions"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Jumlah opsi pilihan ganda</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger
+                    disabled={
+                      subgradeForAllowListQuery.isLoading ||
+                      createQuestionMutation.isLoading
+                    }
+                  >
+                    <SelectValue placeholder="Mohon pilih salah satu" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="5">5 Butir</SelectItem>
+                  <SelectItem value="4">4 Butir</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Pilih jumlah banyaknya opsi pilihan ganda, pilihan ini tidak
+                bisa di ubah.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -254,6 +300,7 @@ export const NewParentQuestion = () => {
                           <div key={grade.id}>
                             <div className="flex flex-row items-center gap-2">
                               <Checkbox
+                                id={`parent-grade-${grade.id}`}
                                 checked={grade.subgrades.every(
                                   (subgrade) =>
                                     field.value?.includes(subgrade.id),
@@ -275,7 +322,12 @@ export const NewParentQuestion = () => {
                                 }}
                                 disabled={createQuestionMutation.isLoading}
                               />
-                              <p>Kelas {grade.label}</p>
+                              <label
+                                htmlFor={`parent-grade-${grade.id}`}
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                              >
+                                Kelas {grade.label}
+                              </label>
                             </div>
 
                             <Separator className="my-3" />
