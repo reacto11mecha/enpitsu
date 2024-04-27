@@ -1,10 +1,8 @@
-import React from "react";
-import { SafeAreaView } from "react-native";
+import { useCallback, useState } from "react";
+import { Pressable, Text, TextInput, View } from "react-native";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft } from "@tamagui/lucide-icons";
-import { useToastController } from "@tamagui/toast";
 import { Controller, useForm } from "react-hook-form";
-import { Button, Input, Label, Spinner, Text, XStack, YStack } from "tamagui";
+import slugify from "slugify";
 import type { z } from "zod";
 
 import { api } from "~/lib/api";
@@ -17,25 +15,25 @@ export const ScanOrInputQuestionSlug = ({
 }: {
   closeScanner: () => void;
 }) => {
-  const toast = useToastController();
+  // const toast = useToastController();
 
-  const [isPrecautionOpen, setOpen] = React.useState(false);
+  const [isPrecautionOpen, setOpen] = useState(false);
 
   const getQuestionMutation = api.exam.getQuestion.useMutation({
     onSuccess() {
       setOpen(true);
     },
-    onError(error) {
-      toast.show("Gagal mengerjakan soal", {
-        message:
-          error.message === "Failed to fetch"
-            ? "Gagal meraih server"
-            : error.message,
-      });
+    onError(_error) {
+      // toast.show("Gagal mengerjakan soal", {
+      //   message:
+      //     error.message === "Failed to fetch"
+      //       ? "Gagal meraih server"
+      //       : error.message,
+      // });
     },
   });
 
-  const closePrecaution = React.useCallback(() => setOpen(false), []);
+  const closePrecaution = useCallback(() => setOpen(false), []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,7 +42,7 @@ export const ScanOrInputQuestionSlug = ({
     },
   });
 
-  const sendMutate = React.useCallback(
+  const sendMutate = useCallback(
     (slug: string) => {
       form.setValue("slug", slug);
 
@@ -57,67 +55,55 @@ export const ScanOrInputQuestionSlug = ({
     getQuestionMutation.mutate(values);
 
   return (
-    <SafeAreaView>
-      <YStack h="100%" display="flex" jc="center" ai="center" gap={20} px={20}>
-        <XStack>
-          <Controller
-            control={form.control}
-            name="slug"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <YStack display="flex" width="100%">
-                <Label lineHeight={30} ml={3}>
-                  Kode soal
-                </Label>
-                <XStack display="flex" gap={10} width="100%">
-                  <Input
-                    flex={1}
-                    disabled={getQuestionMutation.isLoading}
-                    placeholder="Masukan kode soal"
-                    fontFamily={"SpaceMono_400Regular"}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                  <Button
-                    themeInverse
-                    textAlign="center"
-                    disabled={getQuestionMutation.isLoading}
-                    onPress={form.handleSubmit(onSubmit)}
-                    opacity={getQuestionMutation.isLoading ? 0.5 : 1}
-                    icon={getQuestionMutation.isLoading ? <Spinner /> : <></>}
-                  >
-                    Kerjakan
-                  </Button>
-                </XStack>
-                {form.formState.errors.slug ? (
-                  <Text color="red" fontSize={10} ml={5}>
-                    {form.formState.errors.slug.message}
-                  </Text>
-                ) : null}
-              </YStack>
-            )}
-          />
-        </XStack>
+    <View className="flex h-screen w-screen -translate-y-16 flex-col items-center justify-center gap-5 p-5">
+      <Text className="font-[SpaceMono] text-4xl text-gray-700 dark:text-gray-300">
+        enpitsu
+      </Text>
 
-        <ScannerWrapper
-          sendMutate={sendMutate}
-          isDisabled={getQuestionMutation.isLoading}
+      <View className="w-[85%] md:w-[55%] lg:w-[50%]">
+        <Controller
+          control={form.control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <View className="flex flex-row gap-1">
+              <View>
+                <Text className="font-semibold dark:text-gray-50">
+                  Kode Soal
+                </Text>
+                <TextInput
+                  placeholder="Masukan Kode Soal"
+                  onBlur={onBlur}
+                  className="font-space mt-2 rounded border p-2 pl-5 font-[IBMPlex] placeholder:pl-5 dark:border-gray-700 dark:text-gray-50 dark:placeholder:text-gray-500"
+                  onChangeText={(text) =>
+                    onChange(
+                      slugify(text, {
+                        trim: false,
+                        strict: true,
+                        remove: /[*+~.()'"!:@]/g,
+                      }).toUpperCase(),
+                    )
+                  }
+                  value={value}
+                />
+              </View>
+              <Pressable
+                className="rounded-lg bg-stone-900 dark:bg-stone-100"
+                onPress={form.handleSubmit(onSubmit)}
+              >
+                <Text className="text-center text-slate-50 dark:text-stone-900">
+                  Kerjakan
+                </Text>
+              </Pressable>
+            </View>
+          )}
+          name="slug"
         />
-
-        <XStack>
-          <Button
-            variant="outlined"
-            icon={<ArrowLeft size={20} />}
-            onPress={closeScanner}
-          />
-        </XStack>
-      </YStack>
+      </View>
 
       <Precaution
         open={isPrecautionOpen}
         close={closePrecaution}
         data={getQuestionMutation.data}
       />
-    </SafeAreaView>
+    </View>
   );
 };

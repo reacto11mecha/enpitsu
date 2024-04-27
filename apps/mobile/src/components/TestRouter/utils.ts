@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import type { SetStateAction } from "react";
 import type { RouterInputs, RouterOutputs } from "@enpitsu/api";
 import { z } from "zod";
@@ -42,7 +41,7 @@ type TData = RouterOutputs["exam"]["queryQuestion"];
 
 export interface TPropsWrapper {
   data: TData;
-  initialData: TStudentAnswer[];
+  initialData: TStudentAnswer | undefined;
   refetch: () => void;
 }
 export interface TPropsRealTest extends TPropsWrapper {
@@ -53,33 +52,6 @@ export interface TPropsRealTest extends TPropsWrapper {
   updateDishonestCount: (count: SetStateAction<number>) => void;
 
   submitCheated: (params: TSubmitCheatParam) => void;
-}
-
-type Timer = ReturnType<typeof setTimeout>;
-type SomeFunction = (...args: never) => void;
-
-export function useDebounce<Func extends SomeFunction>(
-  func: Func,
-  delay = 250,
-) {
-  const timer = useRef<Timer>();
-
-  useEffect(() => {
-    return () => {
-      if (!timer.current) return;
-      clearTimeout(timer.current);
-    };
-  }, []);
-
-  const debouncedFunction = ((...args) => {
-    const newTimer = setTimeout(() => {
-      func(...args);
-    }, delay);
-    clearTimeout(timer.current);
-    timer.current = newTimer;
-  }) as Func;
-
-  return debouncedFunction;
 }
 
 export function shuffleArray<T>(array: T[]): T[] {
