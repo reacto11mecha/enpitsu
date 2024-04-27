@@ -13,6 +13,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
@@ -127,16 +134,21 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
             <FormItem>
               <FormLabel>Judul Soal</FormLabel>
               <FormControl>
-                <Input
-                  {...field}
-                  autoComplete="off"
-                  placeholder="MATEMATIKA WAJIB XII"
-                  disabled={
-                    currentQuestionQuery.isLoading ||
-                    subgradeForAllowListQuery.isLoading ||
-                    editQuestionMutation.isLoading
-                  }
-                />
+                {currentQuestionQuery.isLoading ||
+                subgradeForAllowListQuery.isLoading ? (
+                  <Skeleton className="h-10 w-full" />
+                ) : (
+                  <Input
+                    {...field}
+                    autoComplete="off"
+                    placeholder="MATEMATIKA WAJIB XII"
+                    disabled={
+                      currentQuestionQuery.isLoading ||
+                      subgradeForAllowListQuery.isLoading ||
+                      editQuestionMutation.isLoading
+                    }
+                  />
+                )}
               </FormControl>
               <FormDescription>
                 Masukan judul soal yang akan menjadi keterangan soal.
@@ -153,25 +165,26 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
             <FormItem>
               <FormLabel>Kode Soal</FormLabel>
               <FormControl>
-                <Input
-                  value={field.value}
-                  onChange={(el) =>
-                    field.onChange(
-                      slugify(el.target.value, {
-                        trim: false,
-                        strict: true,
-                        remove: /[*+~.()'"!:@]/g,
-                      }).toUpperCase(),
-                    )
-                  }
-                  autoComplete="off"
-                  placeholder="MATWA-XII"
-                  disabled={
-                    currentQuestionQuery.isLoading ||
-                    subgradeForAllowListQuery.isLoading ||
-                    editQuestionMutation.isLoading
-                  }
-                />
+                {currentQuestionQuery.isLoading ||
+                subgradeForAllowListQuery.isLoading ? (
+                  <Skeleton className="h-10 w-full" />
+                ) : (
+                  <Input
+                    value={field.value}
+                    onChange={(el) =>
+                      field.onChange(
+                        slugify(el.target.value, {
+                          trim: false,
+                          strict: true,
+                          remove: /[*+~.()'"!:@]/g,
+                        }).toUpperCase(),
+                      )
+                    }
+                    autoComplete="off"
+                    placeholder="MATWA-XII"
+                    disabled={editQuestionMutation.isLoading}
+                  />
+                )}
               </FormControl>
               <FormDescription>
                 Masukan kode soal yang nantinya akan menjadi Kode QR yang dapat
@@ -182,6 +195,35 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
           )}
         />
 
+        <FormItem>
+          <FormLabel>Jumlah opsi pilihan ganda</FormLabel>
+          {currentQuestionQuery.isLoading ||
+          subgradeForAllowListQuery.isLoading ? (
+            <Skeleton className="h-10 w-full" />
+          ) : (
+            <Select
+              defaultValue={String(
+                currentQuestionQuery.data.multipleChoiceOptions,
+              )}
+            >
+              <FormControl>
+                <SelectTrigger disabled>
+                  <SelectValue placeholder="Mohon pilih salah satu" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="5">5 Butir</SelectItem>
+                <SelectItem value="4">4 Butir</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+          <FormDescription>
+            Pilih jumlah banyaknya opsi pilihan ganda, pilihan ini tidak bisa di
+            ubah.
+          </FormDescription>
+          <FormMessage />
+        </FormItem>
+
         <div className="flex flex-col gap-4 sm:flex-row sm:gap-3">
           <FormField
             control={form.control}
@@ -190,26 +232,31 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
               <FormItem className="w-full">
                 <FormLabel>Waktu Mulai</FormLabel>
                 <FormControl>
-                  <Input
-                    className="w-full"
-                    type="datetime-local"
-                    min={format(startOfDay(new Date()), "yyyy-MM-dd'T'HH:mm")}
-                    value={
-                      field.value
-                        ? format(field.value, "yyyy-MM-dd'T'HH:mm")
-                        : ""
-                    }
-                    onChange={(e) =>
-                      e.target.value === ""
-                        ? field.onChange(undefined)
-                        : field.onChange(new Date(e.target.value))
-                    }
-                    disabled={
-                      currentQuestionQuery.isLoading ||
-                      subgradeForAllowListQuery.isLoading ||
-                      editQuestionMutation.isLoading
-                    }
-                  />
+                  {currentQuestionQuery.isLoading ||
+                  subgradeForAllowListQuery.isLoading ? (
+                    <Skeleton className="h-10 w-full" />
+                  ) : (
+                    <Input
+                      className="w-full"
+                      type="datetime-local"
+                      min={format(startOfDay(new Date()), "yyyy-MM-dd'T'HH:mm")}
+                      value={
+                        field.value
+                          ? format(field.value, "yyyy-MM-dd'T'HH:mm")
+                          : ""
+                      }
+                      onChange={(e) =>
+                        e.target.value === ""
+                          ? field.onChange(undefined)
+                          : field.onChange(new Date(e.target.value))
+                      }
+                      disabled={
+                        currentQuestionQuery.isLoading ||
+                        subgradeForAllowListQuery.isLoading ||
+                        editQuestionMutation.isLoading
+                      }
+                    />
+                  )}
                 </FormControl>
                 <FormDescription>
                   Tentukan kapan peserta bisa mulai mengerjakan soal.
@@ -226,33 +273,38 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
               <FormItem className="w-full">
                 <FormLabel>Waktu Selesai</FormLabel>
                 <FormControl>
-                  <Input
-                    type="datetime-local"
-                    min={
-                      form.getValues("startedAt")
-                        ? format(
-                            form.getValues("startedAt"),
-                            "yyyy-MM-dd'T'HH:mm",
-                          )
-                        : ""
-                    }
-                    value={
-                      field.value
-                        ? format(field.value, "yyyy-MM-dd'T'HH:mm")
-                        : ""
-                    }
-                    onChange={(e) =>
-                      e.target.value === ""
-                        ? field.onChange(undefined)
-                        : field.onChange(new Date(e.target.value))
-                    }
-                    disabled={
-                      currentQuestionQuery.isLoading ||
-                      subgradeForAllowListQuery.isLoading ||
-                      !form.getValues("startedAt") ||
-                      editQuestionMutation.isLoading
-                    }
-                  />
+                  {currentQuestionQuery.isLoading ||
+                  subgradeForAllowListQuery.isLoading ? (
+                    <Skeleton className="h-10 w-full" />
+                  ) : (
+                    <Input
+                      type="datetime-local"
+                      min={
+                        form.getValues("startedAt")
+                          ? format(
+                              form.getValues("startedAt"),
+                              "yyyy-MM-dd'T'HH:mm",
+                            )
+                          : ""
+                      }
+                      value={
+                        field.value
+                          ? format(field.value, "yyyy-MM-dd'T'HH:mm")
+                          : ""
+                      }
+                      onChange={(e) =>
+                        e.target.value === ""
+                          ? field.onChange(undefined)
+                          : field.onChange(new Date(e.target.value))
+                      }
+                      disabled={
+                        currentQuestionQuery.isLoading ||
+                        subgradeForAllowListQuery.isLoading ||
+                        !form.getValues("startedAt") ||
+                        editQuestionMutation.isLoading
+                      }
+                    />
+                  )}
                 </FormControl>
                 <FormDescription>
                   Tentukan kapan batas waktu maksimal peserta dapat mengumpulkan
