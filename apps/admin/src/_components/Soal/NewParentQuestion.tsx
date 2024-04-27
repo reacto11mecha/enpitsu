@@ -68,7 +68,7 @@ export const NewParentQuestion = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      multipleChoiceOptions: "5",
+      multipleChoiceOptions: 5,
       allowLists: [],
       title: "",
       slug: "",
@@ -174,7 +174,10 @@ export const NewParentQuestion = () => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Jumlah opsi pilihan ganda</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={String(field.value)}
+              >
                 <FormControl>
                   <SelectTrigger
                     disabled={
