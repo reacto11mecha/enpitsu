@@ -14,7 +14,7 @@ export const formSchema = z.object({
             answer: z.string(),
           }),
         )
-        .min(5)
+        .min(4)
         .max(5),
       choosedAnswer: z
         .number()
