@@ -259,12 +259,14 @@ export const questionRouter = createTRPCRouter({
       z.object({
         slug: z.string().min(4),
         title: z.string().min(5),
+        multipleChoiceOptions: z.number().min(4).max(5),
         startedAt: z.date(),
         endedAt: z.date(),
         allowLists: z.array(z.number()).min(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      console.log(input);
       try {
         return await ctx.db.transaction(async (tx) => {
           const question = await tx
@@ -507,7 +509,7 @@ export const questionRouter = createTRPCRouter({
               answer: z.string(),
             }),
           )
-          .min(5)
+          .min(4)
           .max(5),
 
         correctAnswerOrder: z.number(),
@@ -619,6 +621,7 @@ export const questionRouter = createTRPCRouter({
           where: eq(schema.questions.id, input.questionId),
           columns: {
             slug: true,
+            multipleChoiceOptions: true,
           },
         });
 
@@ -642,7 +645,9 @@ export const questionRouter = createTRPCRouter({
           ...input,
           question: "",
           correctAnswerOrder: 0,
-          options: Array.from({ length: 5 }).map((_, idx) => ({
+          options: Array.from({
+            length: parentQuestion.multipleChoiceOptions,
+          }).map((_, idx) => ({
             order: idx + 1,
             answer: "",
           })),
