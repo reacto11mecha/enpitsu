@@ -203,7 +203,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
           ) : (
             <Select
               defaultValue={String(
-                currentQuestionQuery.data.multipleChoiceOptions,
+                currentQuestionQuery.data?.multipleChoiceOptions ?? 5,
               )}
             >
               <FormControl>
