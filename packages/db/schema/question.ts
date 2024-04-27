@@ -21,6 +21,7 @@ export const questions = myPgTable(
     id: serial("id").primaryKey(),
     slug: varchar("slug", { length: 50 }).notNull(),
     title: varchar("title", { length: 255 }).notNull(),
+    multipleChoiceOptions: integer("multiple_choice_options").notNull(),
     startedAt: timestamp("started_at", { mode: "date" }).notNull(),
     endedAt: timestamp("ended_at", { mode: "date" }).notNull(),
     authorId: varchar("author_id").notNull(),

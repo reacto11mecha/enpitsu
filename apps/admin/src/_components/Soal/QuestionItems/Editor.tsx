@@ -99,6 +99,7 @@ const quillModules: ReactQuillProps["modules"] = {
             new Delta().retain(delta.length(), {
               color: false,
               background: false,
+              link: false,
             }),
           );
         },

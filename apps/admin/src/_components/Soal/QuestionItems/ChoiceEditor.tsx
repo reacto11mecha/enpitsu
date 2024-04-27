@@ -58,7 +58,7 @@ const formSchema = z.object({
         answer: z.string().min(1, { message: "Opsi jawaban wajib di isi!" }),
       }),
     )
-    .min(5)
+    .min(4)
     .max(5),
 
   correctAnswerOrder: z.number(),
