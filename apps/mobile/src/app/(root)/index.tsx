@@ -130,7 +130,7 @@ export default function HomePage() {
 
         <View className="flex flex-row p-6">
           <Pressable
-            className="w-full rounded-lg bg-stone-900 p-2 dark:bg-stone-100"
+            className="w-full rounded-lg bg-stone-900 p-2 disabled:bg-stone-600 dark:bg-stone-100 disabled:dark:bg-stone-500"
             disabled={!studentQuery.data || studentQuery.isError}
             onPress={() => setCorrect(true)}
           >

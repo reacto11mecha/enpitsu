@@ -1,4 +1,14 @@
-export const GoHomeAlert = (_k: { open: boolean; toggle: () => void }) => <></>;
+export const GoHomeAlert = ({
+  open,
+  toggle,
+}: {
+  open: boolean;
+  toggle: () => void;
+}) => {
+  console.log(open, toggle);
+
+  return <></>;
+};
 
 export const DihonestyAlert = (_k: { open: boolean; close: () => void }) => (
   <></>

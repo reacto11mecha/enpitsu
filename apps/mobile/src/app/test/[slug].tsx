@@ -1,14 +1,23 @@
 import { memo, useCallback } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, View } from "react-native";
+import { useAssets } from "expo-asset";
+import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { useAtom } from "jotai";
+import { RefreshCw } from "lucide-react-native";
 
-// import { ActualTest } from "~/components/TestRouter/ActualTest";
+import { ActualTest } from "~/components/TestRouter/ActualTest";
 import { api } from "~/lib/api";
 import { studentAnswerAtom } from "~/lib/atom";
 
 const TestPage = () => {
-  const [_initialAnswer, setStudentAnswers] = useAtom(studentAnswerAtom);
+  const [initialAnswer, setStudentAnswers] = useAtom(studentAnswerAtom);
+
+  const [iconAssets] = useAssets([require("../../../assets/icon.png")]);
+
+  const [rendererAssets] = useAssets([
+    require("@enpitsu/native-renderer/dist/index.html"),
+  ]);
 
   const { slug } = useLocalSearchParams();
 
@@ -46,7 +55,7 @@ const TestPage = () => {
     },
   );
 
-  const _refetchQuestion = useCallback(
+  const refetchQuestion = useCallback(
     () =>
       void apiUtils.exam.queryQuestion.invalidate({
         slug: (slug as string) ?? "",
@@ -56,12 +65,36 @@ const TestPage = () => {
     [],
   );
 
-  if (questionQuery.isError) return <SafeAreaView></SafeAreaView>;
+  if (questionQuery.isError) return <View></View>;
 
-  if (questionQuery.isLoading || questionQuery.isRefetching)
-    return <SafeAreaView></SafeAreaView>;
+  if (questionQuery.isLoading || questionQuery.isRefetching || !rendererAssets)
+    return (
+      <View className="flex h-screen items-center justify-center">
+        {iconAssets ? (
+          <View>
+            <Image
+              width={190}
+              height={190}
+              source={iconAssets[0]}
+              style={{ borderRadius: 20 }}
+            />
+          </View>
+        ) : null}
 
-  return <SafeAreaView></SafeAreaView>;
+        <View className="text- mt-10 animate-spin">
+          <RefreshCw color="#15803D" size={40} />
+        </View>
+      </View>
+    );
+
+  return (
+    <ActualTest
+      data={questionQuery.data}
+      initialData={initialAnswer.answers}
+      refetch={refetchQuestion}
+      webviewAsset={rendererAssets[0]}
+    />
+  );
 };
 
 export default memo(TestPage);

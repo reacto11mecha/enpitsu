@@ -214,7 +214,7 @@ importers:
         specifier: ^1.5.5
         version: 1.5.5
       '@types/react':
-        specifier: ^18.2.56
+        specifier: ^18.2.79
         version: 18.3.1
       '@types/react-dom':
         specifier: ^18.2.19
@@ -408,7 +408,7 @@ importers:
         specifier: ^20.10.2
         version: 20.10.2
       '@types/react':
-        specifier: ^18.2.56
+        specifier: ^18.2.79
         version: 18.3.1
       '@types/react-dom':
         specifier: ^18.2.19
@@ -512,6 +512,9 @@ importers:
       expo-constants:
         specifier: ~15.4.5
         version: 15.4.6(expo@50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5))))
+      expo-image:
+        specifier: ~1.10.6
+        version: 1.10.6(expo@50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5))))
       expo-keep-awake:
         specifier: ~12.8.2
         version: 12.8.2(expo@50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5))))
@@ -931,7 +934,7 @@ importers:
         specifier: workspace:^0.1.0
         version: link:../../tooling/typescript
       '@types/react':
-        specifier: ^18.2.56
+        specifier: ^18.2.79
         version: 18.3.1
       '@types/react-dom':
         specifier: ^18.2.19
@@ -5925,6 +5928,11 @@ packages:
 
   expo-font@11.10.3:
     resolution: {integrity: sha512-q1Td2zUvmLbCA9GV4OG4nLPw5gJuNY1VrPycsnemN1m8XWTzzs8nyECQQqrcBhgulCgcKZZJJ6U0kC2iuSoQHQ==}
+    peerDependencies:
+      expo: '*'
+
+  expo-image@1.10.6:
+    resolution: {integrity: sha512-vcnAIym1eU8vQgV1re1E7rVQZStJimBa4aPDhjFfzMzbddAF7heJuagyewiUkTzbZUwYzPaZAie6VJPyWx9Ueg==}
     peerDependencies:
       expo: '*'
 
@@ -16562,6 +16570,11 @@ snapshots:
     dependencies:
       expo: 50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5)))
       fontfaceobserver: 2.3.0
+
+  expo-image@1.10.6(expo@50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5)))):
+    dependencies:
+      '@react-native/assets-registry': 0.73.1
+      expo: 50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5)))
 
   expo-keep-awake@12.8.2(expo@50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5)))):
     dependencies:

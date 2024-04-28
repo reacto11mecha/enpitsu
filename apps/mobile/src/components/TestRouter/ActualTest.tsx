@@ -1,33 +1,29 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   // AppState,
-  // RefreshControl,
   SafeAreaView,
-  // ScrollView,
-  // View,
+  View,
 } from "react-native";
 import { WebView } from "react-native-webview";
 // import { formSchema } from "./utils";
 
 import type { WebViewMessageEvent } from "react-native-webview";
 import { useAssets } from "expo-asset";
-// import Constants from "expo-constants";
 import { useKeepAwake } from "expo-keep-awake";
 import { Link } from "expo-router";
 import { usePreventScreenCapture } from "expo-screen-capture";
-// import { useNetInfo } from "@react-native-community/netinfo";
-
+import { useNetInfo } from "@react-native-community/netinfo";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useDebounceCallback } from "usehooks-ts";
 
 import { api } from "~/lib/api";
 import { studentAnswerAtom, studentTokenAtom } from "~/lib/atom";
-// import {
-//   // BadInternetAlert,
-//   // DihonestyAlert,
-//   // DishonestyCountAlert,
-//   // GoHomeAlert,
-// } from "./AllAlert";
+import {
+  // BadInternetAlert,
+  // DihonestyAlert,
+  // DishonestyCountAlert,
+  GoHomeAlert,
+} from "./AllAlert";
 import type {
   // TFormSchema,
   TPropsRealTest,
@@ -36,25 +32,21 @@ import type {
   TSubmitCheatParam,
 } from "./utils";
 
-// const debuggerHost = Constants.expoConfig?.hostUri;
-// const localhost = debuggerHost?.split(":")[0];
-
 const RealActualTest = memo(function ActualTest({
   data,
-  // refetch,
+  refetch,
+  webviewAsset,
   initialData,
   isSubmitLoading,
   submitAnswer,
   currDishonestCount, // updateDishonestCount,
-  // submitCheated,
-}: TPropsRealTest) {
+} // submitCheated,
+: TPropsRealTest) {
   const webviewRef = useRef<WebView>(null!);
 
   usePreventScreenCapture();
 
-  const [mainRenderer] = useAssets([
-    require("@enpitsu/native-renderer/dist/index.html"),
-  ]);
+  console.log(webviewAsset);
 
   const [studentAnswers, setStudentAnswers] = useAtom(studentAnswerAtom);
 
@@ -67,86 +59,14 @@ const RealActualTest = memo(function ActualTest({
   );
   const [isEnded, setEnded] = useState(false);
 
-  const [_homeAlertShowed, setHomeShowed] = useState(false);
+  const [homeAlertShowed, setHomeShowed] = useState(false);
 
-  // const { isConnected } = useNetInfo();
+  const { isConnected } = useNetInfo();
 
   // const appState = React.useRef(AppState.currentState);
 
   // Toggle this initial state value for prod and dev
   const canUpdateDishonesty = useRef(true);
-
-  // const [dishonestyWarning, setDishonestyWarning] = React.useState(false);
-  // const [badInternetAlert, setBadInternet] = React.useState(false);
-
-  // const closeDishonestyAlert = React.useCallback(() => {
-  //   canUpdateDishonesty.current = true;
-  //   setDishonestyWarning(false);
-  // }, []);
-  // const closeBadInternet = React.useCallback(() => {
-  //   if (isConnected) {
-  //     canUpdateDishonesty.current = true;
-  //     setBadInternet(false);
-  //   }
-  // }, [isConnected]);
-
-  // Increment dishonesty count up to 3 app changes.
-  // The first two will ask kindly to not to cheat on their exam.
-  // React.useEffect(() => {
-  //   const subscription = AppState.addEventListener("change", (nextAppState) => {
-  //     if (
-  //       appState.current.match(/inactive|background/) &&
-  //       nextAppState === "active" &&
-  //       canUpdateDishonesty.current
-  //     )
-  //       updateDishonestCount((prev) => {
-  //         const newValue = ++prev;
-
-  //         if (newValue > 2) {
-  //           canUpdateDishonesty.current = false;
-  //         } else if (newValue < 3) {
-  //           canUpdateDishonesty.current = false;
-  //           setDishonestyWarning(true);
-  //         }
-
-  //         if (newValue > 0)
-  //           void setStudentAnswers(async (prev) => {
-  //             const original = await prev;
-  //             const currAnswers = original.answers;
-
-  //             return {
-  //               answers: currAnswers.map((answer) =>
-  //                 answer.slug === data.slug
-  //                   ? { ...answer, dishonestCount: newValue }
-  //                   : answer,
-  //               ),
-  //             };
-  //           });
-
-  //         if (newValue > 2)
-  //           submitCheated({ questionId: data.id, time: new Date() });
-
-  //         return newValue;
-  //       });
-
-  //     appState.current = nextAppState;
-  //   });
-
-  //   return () => {
-  //     subscription.remove();
-  //   };
-
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
-
-  // Track changes of user network status. User can turned on their
-  // internet connection and safely continue their exam like normal.
-  // React.useEffect(() => {
-  //   if (!isConnected && isConnected !== null) {
-  //     canUpdateDishonesty.current = false;
-  //     setBadInternet(true);
-  //   }
-  // }, [isConnected]);
 
   useEffect(() => {
     webviewRef.current.injectJavaScript(
@@ -293,6 +213,10 @@ const RealActualTest = memo(function ActualTest({
           break;
         }
 
+        case "CLIENT:REFETCH_LIST": {
+          refetch();
+        }
+
         default:
           break;
       }
@@ -311,29 +235,32 @@ const RealActualTest = memo(function ActualTest({
 
   if (isEnded)
     return (
-      <SafeAreaView>
-        <Link href="/" replace>
-          {" "}
-          Ke halaman depan
-        </Link>
-      </SafeAreaView>
+      <Link href="/" replace>
+        {" "}
+        Ke halaman depan
+      </Link>
     );
 
   return (
-    <SafeAreaView>
+    <View className="h-screen">
+      <GoHomeAlert open={homeAlertShowed} />
       <WebView
         ref={webviewRef}
-        style={{ height: "auto", width: "100%" }}
-        source={{ uri: mainRenderer?.at(0)?.uri ?? "http://github.com/" }}
+        source={webviewAsset}
         useWebView2={true}
         onMessage={messageProcessor}
         injectedJavaScriptBeforeContentLoaded={`window.isNativeApp = true;window['RNWebView'] = window.ReactNativeWebView;true`}
       />
-    </SafeAreaView>
+    </View>
   );
 });
 
-function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
+function TestWrapper({
+  data,
+  refetch,
+  initialData,
+  webviewAsset,
+}: TPropsWrapper) {
   useKeepAwake();
 
   const setStudentAnswers = useSetAtom(studentAnswerAtom);
@@ -348,11 +275,6 @@ function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
           answers: currAnswers.filter((answer) => answer.slug !== data.slug),
         };
       });
-    },
-    onError(_error) {
-      // toast.show("Operasi Gagal", {
-      //   message: `Gagal menyimpan status kecurangan. Error: ${error.message}`,
-      // });
     },
     retry: false,
   });
@@ -424,16 +346,21 @@ function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
     );
 
   return (
-    <RealActualTest
-      data={data}
-      refetch={refetch}
-      initialData={initialData}
-      isSubmitLoading={isSubmitLoading}
-      submitAnswer={submitAnswer}
-      currDishonestCount={currDishonestCount}
-      updateDishonestCount={updateDishonestCount}
-      submitCheated={submitCheated}
-    />
+    <>
+      {webviewAsset ? (
+        <RealActualTest
+          data={data}
+          refetch={refetch}
+          initialData={initialData}
+          webviewAsset={webviewAsset}
+          isSubmitLoading={isSubmitLoading}
+          submitAnswer={submitAnswer}
+          currDishonestCount={currDishonestCount}
+          updateDishonestCount={updateDishonestCount}
+          submitCheated={submitCheated}
+        />
+      ) : null}
+    </>
   );
 }
 
