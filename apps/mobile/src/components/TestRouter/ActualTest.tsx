@@ -19,9 +19,8 @@ import { useDebounceCallback } from "usehooks-ts";
 import { api } from "~/lib/api";
 import { studentAnswerAtom, studentTokenAtom } from "~/lib/atom";
 import {
-  // BadInternetAlert,
+  BadInternetAlert,
   // DihonestyAlert,
-  // DishonestyCountAlert,
   GoHomeAlert,
 } from "./AllAlert";
 import type {
@@ -46,8 +45,6 @@ const RealActualTest = memo(function ActualTest({
 
   usePreventScreenCapture();
 
-  console.log(webviewAsset);
-
   const [studentAnswers, setStudentAnswers] = useAtom(studentAnswerAtom);
 
   const studentToken = useAtomValue(studentTokenAtom);
@@ -57,6 +54,9 @@ const RealActualTest = memo(function ActualTest({
       ? new Date(initialData.checkIn as unknown as string)
       : new Date(),
   );
+  // Toggle this initial state value for prod and dev
+  const canUpdateDishonesty = useRef(true);
+
   const [isEnded, setEnded] = useState(false);
 
   const [homeAlertShowed, setHomeShowed] = useState(false);
@@ -65,14 +65,29 @@ const RealActualTest = memo(function ActualTest({
 
   // const appState = React.useRef(AppState.currentState);
 
-  // Toggle this initial state value for prod and dev
-  const canUpdateDishonesty = useRef(true);
+  const [badInternetAlert, setBadInternet] = useState(false);
+
+  const closeBadInternet = useCallback(() => {
+    if (isConnected) {
+      canUpdateDishonesty.current = true;
+      setBadInternet(false);
+    }
+  }, [isConnected]);
 
   useEffect(() => {
     webviewRef.current.injectJavaScript(
       `window.updateIsSubmitting(${JSON.stringify(isSubmitLoading)})`,
     );
   }, [isSubmitLoading]);
+
+  // Track changes of user network status. User can turned on their
+  // internet connection and safely continue their exam like normal.
+  useEffect(() => {
+    if (!isConnected && isConnected !== null) {
+      canUpdateDishonesty.current = false;
+      setBadInternet(true);
+    }
+  }, [isConnected]);
 
   const multipleChoiceDebounced = useDebounceCallback(
     (updatedData: { iqid: number; choosedAnswer: number }) => {
@@ -243,7 +258,17 @@ const RealActualTest = memo(function ActualTest({
 
   return (
     <View className="h-screen">
-      <GoHomeAlert open={homeAlertShowed} />
+      <GoHomeAlert
+        open={homeAlertShowed}
+        toggle={() => setHomeShowed((prev) => !prev)}
+      />
+
+      <BadInternetAlert
+        open={badInternetAlert}
+        close={closeBadInternet}
+        backOnline={isConnected}
+      />
+
       <WebView
         ref={webviewRef}
         source={webviewAsset}
