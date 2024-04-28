@@ -64,7 +64,7 @@ export const ScanOrInputQuestionSlug = ({
         <Controller
           control={form.control}
           render={({ field: { onChange, onBlur, value } }) => (
-            <View className="flex flex-row gap-1">
+            <View className="flex">
               <View>
                 <Text className="font-semibold dark:text-gray-50">
                   Kode Soal
@@ -86,7 +86,7 @@ export const ScanOrInputQuestionSlug = ({
                 />
               </View>
               <Pressable
-                className="rounded-lg bg-stone-900 dark:bg-stone-100"
+                className="mt-2 flex h-10 items-center justify-center rounded-lg bg-stone-900 dark:bg-stone-100"
                 onPress={form.handleSubmit(onSubmit)}
               >
                 <Text className="text-center text-slate-50 dark:text-stone-900">

@@ -9,7 +9,9 @@ function LoadingComponent() {
 }
 
 function Separator() {
-  return <View className="h-1 w-[390px] border-t dark:border-gray-600" />;
+  return (
+    <View className="h-1 w-[390px] border-t border-stone-300 dark:border-stone-700" />
+  );
 }
 
 export default function HomePage() {
@@ -28,7 +30,7 @@ export default function HomePage() {
 
   return (
     <View className="flex h-screen items-center justify-center p-3">
-      <View className="-translate-y-16 rounded-lg border dark:border-gray-600 sm:w-[450px]">
+      <View className="-translate-y-16 rounded-lg border border-stone-300 bg-stone-100 dark:border-stone-700 dark:bg-transparent sm:w-[450px]">
         <View className="flex flex-col p-6">
           <Text className="text-2xl font-semibold leading-none dark:text-gray-50">
             Sebelum Mengerjakan,
@@ -128,7 +130,7 @@ export default function HomePage() {
 
         <View className="flex flex-row p-6">
           <Pressable
-            className="w-full rounded-lg bg-stone-900 p-2"
+            className="w-full rounded-lg bg-stone-900 p-2 dark:bg-stone-100"
             disabled={!studentQuery.data || studentQuery.isError}
             onPress={() => setCorrect(true)}
           >
