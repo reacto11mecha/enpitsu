@@ -70,7 +70,7 @@ export const FirstTimeNoToken = () => {
                     autoComplete="off"
                     autoCapitalize="characters"
                     autoCorrect={false}
-                    className="font-space mt-2 rounded border p-2 pl-5 font-[IBMPlex] placeholder:pl-5 dark:border-gray-700 dark:text-gray-50 dark:placeholder:text-gray-500"
+                    className="font-space mt-2 rounded border border-transparent bg-stone-50 p-2 pl-5 font-[IBMPlex] placeholder:pl-5 dark:border-stone-700 dark:bg-transparent dark:text-gray-50 dark:placeholder:text-gray-500"
                     placeholder="Masukan Token"
                     onBlur={onBlur}
                     onChangeText={(text) =>

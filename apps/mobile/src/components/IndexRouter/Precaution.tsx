@@ -151,7 +151,7 @@ const PrecautionChildren = ({
             Tata Tertib
           </Text>
 
-          <View>
+          <View style={{ minHeight: 250 }}>
             <FlashList
               data={codeOfConduct}
               renderItem={({ item, index }) => (

@@ -117,7 +117,7 @@ export default function HomePage() {
                 <Text className="dark:text-gray-50">Token</Text>
                 <Text className="px-1 dark:text-gray-50">:</Text>
               </View>
-              <Text className="dark:text-gray-50">
+              <Text className="font-[IBMPlex] dark:text-gray-50">
                 {studentQuery.data.student.token}
               </Text>
             </View>

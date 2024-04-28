@@ -72,7 +72,7 @@ export const ScanOrInputQuestionSlug = ({
                 <TextInput
                   placeholder="Masukan Kode Soal"
                   onBlur={onBlur}
-                  className="font-space mt-2 rounded border p-2 pl-5 font-[IBMPlex] placeholder:pl-5 dark:border-gray-700 dark:text-gray-50 dark:placeholder:text-gray-500"
+                  className="font-space mt-2 rounded border border-transparent bg-stone-50 p-2 pl-5 font-[IBMPlex] placeholder:pl-5 dark:border-stone-700 dark:bg-transparent dark:text-gray-50 dark:placeholder:text-gray-500"
                   onChangeText={(text) =>
                     onChange(
                       slugify(text, {
