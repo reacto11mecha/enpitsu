@@ -1,18 +1,43 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 
 import { ScanOrInputQuestionSlug } from "~/components/IndexRouter/ScanOrInputQuestionSlug";
 import { api } from "~/lib/api";
 
-function LoadingComponent() {
-  return <View></View>;
-}
+const duration = 1000;
 
-function Separator() {
+const LoadingComponent = () => {
+  const sv = useSharedValue(1);
+
+  useEffect(() => {
+    sv.value = withRepeat(
+      withSequence(withTiming(0.5, { duration }), withTiming(1, { duration })),
+      -1,
+    );
+  }, []);
+
+  const style = useAnimatedStyle(() => ({
+    opacity: sv.value,
+  }));
+
   return (
-    <View className="h-1 w-[390px] border-t border-stone-300 dark:border-stone-700" />
+    <Animated.View
+      style={style}
+      className="h-6 w-full rounded rounded-lg bg-stone-300 dark:bg-stone-700"
+    />
   );
-}
+};
+
+const Separator = () => (
+  <View className="h-1 w-[390px] border-t border-stone-300 dark:border-stone-700" />
+);
 
 export default function HomePage() {
   const [isCorrect, setCorrect] = useState(false);

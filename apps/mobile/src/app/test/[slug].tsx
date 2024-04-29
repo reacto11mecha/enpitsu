@@ -81,7 +81,7 @@ const TestPage = () => {
           </View>
         ) : null}
 
-        <View className="text- mt-10 animate-spin">
+        <View className="mt-10 animate-spin">
           <RefreshCw color="#15803D" size={40} />
         </View>
       </View>

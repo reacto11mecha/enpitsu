@@ -18,11 +18,11 @@ import katex from "katex";
 import { useFieldArray, useForm } from "react-hook-form";
 import type { z } from "zod";
 
-import { ModeToggle } from "../mode-toggle";
 import {
   AnsweredQuestionsList,
   DishonestyCountAlert,
   GoToHome,
+  RefetchQuestion,
 } from "./AllAlert";
 import { formSchema, shuffleArray } from "./utils";
 import type { Props, TFormSchema } from "./utils";
@@ -154,7 +154,7 @@ const Test = ({ data, initialData, studentToken }: Props) => {
             essays={essaysField.fields}
           />
 
-          <ModeToggle size="default" />
+          <RefetchQuestion />
         </div>
       </header>
 

@@ -21,7 +21,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Home, LayoutList } from "lucide-react";
+import { Home, LayoutList, ListRestart } from "lucide-react";
 
 import type { Props, TFormSchema } from "./utils";
 
@@ -37,6 +37,21 @@ export const GoToHome = () => (
     }}
   >
     <Home size={18} />
+  </Button>
+);
+
+export const RefetchQuestion = () => (
+  <Button
+    variant="outline"
+    onClick={() => {
+      if (window.isNativeApp && "ReactNativeWebView" in window) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ key: "CLIENT:REFETCH_LIST" }),
+        );
+      }
+    }}
+  >
+    <ListRestart size={18} />
   </Button>
 );
 
