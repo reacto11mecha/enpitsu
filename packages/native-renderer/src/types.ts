@@ -1,4 +1,5 @@
 import type { Props } from "@/components/Test/utils";
+import type { Theme } from "@/components/theme-provider";
 
 type InitialData = Props["initialData"];
 
@@ -15,7 +16,10 @@ declare global {
       initialData: InitialData,
       data: Props["data"],
       studentToken: string,
+      theme: Theme,
     ) => void;
+
+    updateRendererTheme: (theme: Theme) => void;
 
     updateIsSubmitting: (submitting: boolean) => void;
 

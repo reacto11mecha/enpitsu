@@ -16,6 +16,7 @@ import { usePreventScreenCapture } from "expo-screen-capture";
 import { useNetInfo } from "@react-native-community/netinfo";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { ArrowLeft } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import { useDebounceCallback } from "usehooks-ts";
 
 import { api } from "~/lib/api";
@@ -65,6 +66,8 @@ const RealActualTest = memo(function ActualTest({
 
   const { isConnected } = useNetInfo();
 
+  const { colorScheme } = useColorScheme();
+
   // const appState = React.useRef(AppState.currentState);
 
   const [badInternetAlert, setBadInternet] = useState(false);
@@ -81,6 +84,12 @@ const RealActualTest = memo(function ActualTest({
       `window.updateIsSubmitting(${JSON.stringify(isSubmitLoading)})`,
     );
   }, [isSubmitLoading]);
+
+  useEffect(() => {
+    webviewRef.current.injectJavaScript(
+      `window.updateRendererTheme(${JSON.stringify(colorScheme)})`,
+    );
+  }, [colorScheme]);
 
   // Track changes of user network status. User can turned on their
   // internet connection and safely continue their exam like normal.
@@ -176,7 +185,8 @@ const RealActualTest = memo(function ActualTest({
               multipleChoices: latestAnswer?.multipleChoices ?? [],
             })},
             ${JSON.stringify(data)}, 
-            ${JSON.stringify(studentToken.token)}
+            ${JSON.stringify(studentToken.token)},
+            ${JSON.stringify(colorScheme)}
           )`,
           );
 
@@ -247,6 +257,7 @@ const RealActualTest = memo(function ActualTest({
       studentAnswers.answers,
       studentToken.token,
       submitAnswer,
+      colorScheme,
     ],
   );
 
