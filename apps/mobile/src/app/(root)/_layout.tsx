@@ -31,7 +31,7 @@ export default function HomeLayout() {
     );
 
   return (
-    <SafeAreaView className="bg-background">
+    <SafeAreaView>
       <Stack.Screen options={{ headerShown: true, title: "Beranda" }} />
 
       <Slot />

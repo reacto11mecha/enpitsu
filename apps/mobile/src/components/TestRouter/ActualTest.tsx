@@ -1,7 +1,8 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   // AppState,
-  SafeAreaView,
+  Pressable,
+  Text,
   View,
 } from "react-native";
 import { WebView } from "react-native-webview";
@@ -10,10 +11,11 @@ import { WebView } from "react-native-webview";
 import type { WebViewMessageEvent } from "react-native-webview";
 import { useAssets } from "expo-asset";
 import { useKeepAwake } from "expo-keep-awake";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { usePreventScreenCapture } from "expo-screen-capture";
 import { useNetInfo } from "@react-native-community/netinfo";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { ArrowLeft } from "lucide-react-native";
 import { useDebounceCallback } from "usehooks-ts";
 
 import { api } from "~/lib/api";
@@ -250,10 +252,30 @@ const RealActualTest = memo(function ActualTest({
 
   if (isEnded)
     return (
-      <Link href="/" replace>
-        {" "}
-        Ke halaman depan
-      </Link>
+      <View className="flex h-screen w-screen flex-col items-center justify-center gap-8 p-3">
+        <View className="flex flex-col items-center gap-3 text-center">
+          <Text className="text-center font-[IBMPlex] text-3xl font-semibold tracking-tight text-red-600 first:mt-0 dark:text-red-500">
+            Waktu Habis
+          </Text>
+          <Text className="text-center text-lg/8 dark:text-stone-100">
+            Waktu ulangan sudah selesai, anda tidak bisa mengerjakan soal ini
+            lagi.
+          </Text>
+        </View>
+
+        <Text className="text-stone-900/80 dark:text-stone-50/80">
+          Kode soal: {data.slug}
+        </Text>
+
+        <Pressable
+          className="flex h-[45] w-24 items-center justify-center rounded-lg border border-none bg-stone-900 text-stone-900 dark:border-stone-700 dark:bg-transparent disabled:dark:bg-stone-400"
+          onPress={() =>
+            router.canGoBack() ? router.back() : router.replace("/")
+          }
+        >
+          <ArrowLeft color="#EAEAEA" size={30} />
+        </Pressable>
+      </View>
     );
 
   return (
@@ -354,20 +376,40 @@ function TestWrapper({
 
   if (submitAnswerMutation.isSuccess)
     return (
-      <SafeAreaView>
-        <Link href="/" replace>
-          Ke halaman depan
-        </Link>
-      </SafeAreaView>
+      <View className="flex h-screen w-screen flex-col items-center justify-center gap-8 p-3">
+        <View className="flex flex-col items-center gap-3 text-center">
+          <Text className="text-center font-[IBMPlex] text-3xl font-semibold tracking-tight text-green-600 first:mt-0 dark:text-green-500">
+            Berhasil Submit
+          </Text>
+          <Text className="text-center text-lg/8 dark:text-stone-100">
+            Jawaban berhasil terkirim, anda bisa menunjukan ini ke pengawas
+            ruangan bahwa jawaban anda telah di submit dengan aman. Screenshot
+            bukti ini untuk berjaga-berjaga.
+          </Text>
+        </View>
+
+        <Text className="text-stone-900/80 dark:text-stone-50/80">
+          Kode soal: {data.slug}
+        </Text>
+
+        <Pressable
+          className="flex h-[45] w-24 items-center justify-center rounded-lg border border-none bg-stone-900 text-stone-900 dark:border-stone-700 dark:bg-transparent disabled:dark:bg-stone-400"
+          onPress={() =>
+            router.canGoBack() ? router.back() : router.replace("/")
+          }
+        >
+          <ArrowLeft color="#EAEAEA" size={30} />
+        </Pressable>
+      </View>
     );
 
   if (dishonestyCount > 2)
     return (
-      <SafeAreaView>
+      <View>
         <Link href="/" replace>
           Ke halaman depan
         </Link>
-      </SafeAreaView>
+      </View>
     );
 
   return (
