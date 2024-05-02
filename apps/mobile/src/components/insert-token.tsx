@@ -1,5 +1,5 @@
 import { Pressable, Text, TextInput, View } from "react-native";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 import { validateId } from "@enpitsu/token-generator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
@@ -112,7 +112,6 @@ export const FirstTimeNoToken = () => {
 export const Settings = () => {
   const [userToken, setToken] = useAtom(studentTokenAtom);
 
-  const router = useRouter();
   const apiUtils = api.useUtils();
 
   const { colorScheme } = useColorScheme();
@@ -131,7 +130,8 @@ export const Settings = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     await setToken({ ...values });
 
-    router.replace("/");
+    if (router.canGoBack()) router.back();
+    else router.replace("/");
 
     await apiUtils.exam.getStudent.invalidate();
   };
@@ -201,15 +201,17 @@ export const Settings = () => {
           </View>
         </View>
 
-        <Pressable
-          className="flex h-16 w-16 items-center justify-center rounded border dark:border-slate-300"
-          onPress={() => router.back()}
-        >
-          <ArrowLeft
-            color={colorScheme === "dark" ? "#EAEAEA" : "#1C1917"}
-            size={26}
-          />
-        </Pressable>
+        <View className="mt-10 flex items-center">
+          <Pressable
+            className="flex h-16 w-16 items-center justify-center rounded border dark:border-slate-300"
+            onPress={() => router.back()}
+          >
+            <ArrowLeft
+              color={colorScheme === "dark" ? "#EAEAEA" : "#1C1917"}
+              size={26}
+            />
+          </Pressable>
+        </View>
       </View>
     </View>
   );

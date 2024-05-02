@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft } from "lucide-react-native";
 import { Controller, useForm } from "react-hook-form";
 import slugify from "slugify";
 import type { z } from "zod";
@@ -11,25 +12,22 @@ import { ScannerWrapper } from "./Scanner";
 import { formSchema } from "./schema";
 
 export const ScanOrInputQuestionSlug = ({
-  closeScanner,
+  backToFrontPage,
 }: {
-  closeScanner: () => void;
+  backToFrontPage: () => void;
 }) => {
-  // const toast = useToastController();
-
   const [isPrecautionOpen, setOpen] = useState(false);
 
   const getQuestionMutation = api.exam.getQuestion.useMutation({
     onSuccess() {
       setOpen(true);
     },
-    onError(_error) {
-      // toast.show("Gagal mengerjakan soal", {
-      //   message:
-      //     error.message === "Failed to fetch"
-      //       ? "Gagal meraih server"
-      //       : error.message,
-      // });
+    onError(error) {
+      console.error(
+        error.message === "Failed to fetch"
+          ? "Gagal meraih server"
+          : error.message,
+      );
     },
   });
 
@@ -98,6 +96,13 @@ export const ScanOrInputQuestionSlug = ({
           name="slug"
         />
       </View>
+
+      <Pressable
+        className="flex h-[45] w-24 items-center justify-center rounded-lg border border-none bg-stone-900 text-stone-900 dark:border-stone-700 dark:bg-transparent disabled:dark:bg-stone-400"
+        onPress={backToFrontPage}
+      >
+        <ArrowLeft color="#EAEAEA" size={30} />
+      </Pressable>
 
       <Precaution
         open={isPrecautionOpen}
