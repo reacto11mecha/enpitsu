@@ -200,7 +200,7 @@ export const Precaution = ({
       visible={open}
       onRequestClose={close}
     >
-      <View className="mt-8 flex h-screen items-center items-center justify-between bg-stone-50 p-3 py-10 dark:bg-stone-800">
+      <View className="mt-8 flex h-screen items-center items-center justify-between bg-stone-50 p-3 py-10 dark:bg-stone-900">
         <View>
           <Text className="text-2xl font-bold text-stone-900 dark:text-stone-50">
             Sebelum Mengerjakan,

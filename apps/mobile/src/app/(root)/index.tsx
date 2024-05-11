@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -53,7 +53,14 @@ export default function HomePage() {
 
   const studentQuery = api.exam.getStudent.useQuery(undefined, {
     onError(error) {
-      console.log(error);
+      Alert.alert(
+        "Gagal mengambil data pribadi",
+        `Operasi mengambil data gagal, mohon coba lagi. Error: ${
+          error.message === "Failed to fetch"
+            ? "Gagal meraih server"
+            : error.message
+        }`,
+      );
     },
   });
 

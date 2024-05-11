@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { Text } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { Camera, CameraView, PermissionStatus } from "expo-camera/next";
+import { ScanLine } from "lucide-react-native";
 
 import { formSchema } from "./schema";
 
@@ -71,14 +72,15 @@ const _Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
 };
 
 export const ScannerWrapper = ({
-  sendMutate, // isDisabled,
+  sendMutate,
+  isDisabled,
 }: {
   sendMutate: (slug: string) => void;
   isDisabled: boolean;
 }) => {
-  const [_open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  const _mutate = useCallback(
+  const mutate = useCallback(
     (slug: string) => {
       setOpen(false);
 
@@ -87,5 +89,22 @@ export const ScannerWrapper = ({
     [sendMutate],
   );
 
-  return <></>;
+  return (
+    <>
+      <Pressable
+        className="flex h-[65] w-full flex-row items-center justify-center gap-3 rounded-lg border border-none bg-stone-900 text-stone-900 dark:border-stone-700 dark:bg-transparent"
+        disabled={isDisabled}
+        onPress={() => setOpen(true)}
+      >
+        <ScanLine color={isDisabled ? "#CACACA" : "#EAEAEA"} size={30} />
+        <Text
+          className={`text-xl ${
+            isDisabled ? "text-white/70" : "text-stone-100"
+          } font-semibold`}
+        >
+          Pindai QR
+        </Text>
+      </Pressable>
+    </>
+  );
 };

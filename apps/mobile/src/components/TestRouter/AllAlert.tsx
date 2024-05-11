@@ -16,7 +16,7 @@ export const GoHomeAlert = ({
     onRequestClose={toggle}
   >
     <View className="mt-7 flex h-screen items-center justify-center bg-black/80 p-3">
-      <View className="w-full rounded rounded-lg border border-stone-300 bg-white p-6 dark:border-stone-700 dark:bg-stone-800">
+      <View className="w-full rounded rounded-lg border border-stone-300 bg-white p-6 dark:border-stone-900 dark:bg-stone-900">
         <View>
           <Text className="text-2xl font-bold text-stone-900 dark:text-stone-50">
             Kembali ke beranda?
@@ -74,7 +74,7 @@ export const BadInternetAlert = ({
     onRequestClose={close}
   >
     <View className="mt-7 flex h-screen items-center justify-center bg-stone-800/50 p-3 dark:bg-stone-900/70">
-      <View className="w-full rounded rounded-lg border border-stone-300 bg-white p-6 dark:border-stone-700 dark:bg-stone-800">
+      <View className="w-full rounded rounded-lg border border-stone-300 bg-white p-6 dark:border-stone-900 dark:bg-stone-900">
         <View>
           <Text className="text-2xl font-bold text-stone-900 dark:text-stone-50">
             {backOnline ? "Anda kembali terhubung." : "Koneksi anda terputus!"}

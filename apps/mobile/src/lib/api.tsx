@@ -29,7 +29,7 @@ const getBaseUrl = () => {
    * baseUrl to your production API URL.
    */
 
-  // return "https://admin-osn.rmecha.my.id";
+  return "http://192.168.100.38:3000";
 
   const debuggerHost = Constants.expoConfig?.hostUri;
   const localhost = debuggerHost?.split(":")[0];
