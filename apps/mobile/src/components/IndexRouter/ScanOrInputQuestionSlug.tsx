@@ -83,7 +83,13 @@ export const ScanOrInputQuestionSlug = ({
                   }
                   value={value}
                 />
+                {form.formState.errors.slug ? (
+                  <Text className="mb-1.5 mt-0.5 text-sm text-red-600 dark:text-red-500">
+                    {form.formState.errors.slug.message}
+                  </Text>
+                ) : null}
               </View>
+
               <Pressable
                 className="mt-2 flex h-10 items-center justify-center rounded-lg bg-stone-900 dark:bg-stone-100"
                 disabled={getQuestionMutation.isLoading}
