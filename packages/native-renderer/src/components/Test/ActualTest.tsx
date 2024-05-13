@@ -161,7 +161,9 @@ const Test = ({ data, initialData, studentToken }: Props) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit, () => setDrawerOpen(true))}
-          className="no-copy flex justify-center px-4 pb-16 pt-20"
+          className={`no-copy flex justify-center px-4 ${
+            essaysField.fields.length >= 1 ? "pb-64" : "pb-16"
+          } pt-20`}
         >
           <div className="flex w-full max-w-lg flex-col gap-8">
             <Card>
