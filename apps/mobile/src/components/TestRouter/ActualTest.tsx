@@ -9,7 +9,6 @@ import { WebView } from "react-native-webview";
 // import { formSchema } from "./utils";
 
 import type { WebViewMessageEvent } from "react-native-webview";
-import { useAssets } from "expo-asset";
 import { useKeepAwake } from "expo-keep-awake";
 import { Link, router } from "expo-router";
 import { usePreventScreenCapture } from "expo-screen-capture";
@@ -34,6 +33,10 @@ import type {
   TSubmitCheatParam,
 } from "./utils";
 
+// Still, unused prop
+// updateDishonestCount,
+// submitCheated,
+
 const RealActualTest = memo(function ActualTest({
   data,
   refetch,
@@ -41,9 +44,8 @@ const RealActualTest = memo(function ActualTest({
   initialData,
   isSubmitLoading,
   submitAnswer,
-  currDishonestCount, // updateDishonestCount,
-} // submitCheated,
-: TPropsRealTest) {
+  currDishonestCount,
+}: TPropsRealTest) {
   const webviewRef = useRef<WebView>(null!);
 
   usePreventScreenCapture();
@@ -242,6 +244,8 @@ const RealActualTest = memo(function ActualTest({
 
         case "CLIENT:REFETCH_LIST": {
           refetch();
+
+          break;
         }
 
         default:
@@ -258,6 +262,7 @@ const RealActualTest = memo(function ActualTest({
       studentToken.token,
       submitAnswer,
       colorScheme,
+      refetch,
     ],
   );
 
