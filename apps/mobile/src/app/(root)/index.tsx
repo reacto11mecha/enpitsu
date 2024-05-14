@@ -24,6 +24,8 @@ const LoadingComponent = () => {
       withSequence(withTiming(0.5, { duration }), withTiming(1, { duration })),
       -1,
     );
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const style = useAnimatedStyle(() => ({
@@ -87,9 +89,7 @@ export default function HomePage() {
             <Error />
           ) : (
             <>
-              {!studentQuery.isLoading &&
-              studentQuery.data &&
-              studentQuery.data.student ? (
+              {!studentQuery.isLoading && studentQuery.data?.student ? (
                 <View className="flex flex-row items-center justify-between">
                   <View className="flex flex-row items-center">
                     <Text className="dark:text-gray-50">No Peserta</Text>
@@ -109,9 +109,7 @@ export default function HomePage() {
             <Error />
           ) : (
             <>
-              {!studentQuery.isLoading &&
-              studentQuery.data &&
-              studentQuery.data.student ? (
+              {!studentQuery.isLoading && studentQuery.data?.student ? (
                 <View className="flex flex-row items-center justify-between">
                   <View className="flex flex-row items-center">
                     <Text className="dark:text-gray-50">Nama</Text>
@@ -131,9 +129,7 @@ export default function HomePage() {
             <Error />
           ) : (
             <>
-              {!studentQuery.isLoading &&
-              studentQuery.data &&
-              studentQuery.data.student ? (
+              {!studentQuery.isLoading && studentQuery.data?.student ? (
                 <View className="flex flex-row items-center justify-between">
                   <View className="flex flex-row items-center">
                     <Text className="dark:text-gray-50">Kelas</Text>
@@ -154,9 +150,7 @@ export default function HomePage() {
             <Error />
           ) : (
             <>
-              {!studentQuery.isLoading &&
-              studentQuery.data &&
-              studentQuery.data.student ? (
+              {!studentQuery.isLoading && studentQuery.data?.student ? (
                 <View className="flex flex-row items-center justify-between">
                   <View className="flex flex-row items-center">
                     <Text className="dark:text-gray-50">Ruangan</Text>
@@ -176,9 +170,7 @@ export default function HomePage() {
             <Error />
           ) : (
             <>
-              {!studentQuery.isLoading &&
-              studentQuery.data &&
-              studentQuery.data.student ? (
+              {!studentQuery.isLoading && studentQuery.data?.student ? (
                 <View className="flex flex-row items-center justify-between">
                   <View className="flex flex-row items-center">
                     <Text className="dark:text-gray-50">Token</Text>
@@ -198,7 +190,7 @@ export default function HomePage() {
         <Separator />
 
         <View className="flex flex-row gap-2 p-6">
-          <Link href="/settings" asChild>
+          <Link href="/settings/" asChild>
             <Pressable className="flex w-[10%] items-center justify-center rounded-lg bg-transparent dark:bg-stone-200">
               <Settings color="#0c0a09" size={23} />
             </Pressable>

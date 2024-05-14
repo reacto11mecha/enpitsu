@@ -206,8 +206,9 @@ export const Precaution = ({
             Sebelum Mengerjakan,
           </Text>
           <Text className="mt-1 text-stone-900/70 dark:text-stone-50/70">
-            Baca keterangan dibawah ini dengan saksama! Scroll sampai bawah
-            supaya bisa menekan tombol "Kerjakan".
+            {
+              'Baca keterangan dibawah ini dengan saksama! Scroll sampai bawah supaya bisa menekan tombol "Kerjakan".'
+            }
           </Text>
 
           <Separator additionalClass="mt-5" />
