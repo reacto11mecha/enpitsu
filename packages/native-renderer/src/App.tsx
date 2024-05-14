@@ -34,6 +34,8 @@ function App() {
     };
 
     window.updateRendererTheme = (theme: Theme) => setTheme(theme);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (window.isNativeApp && initialData && studentToken && data)
