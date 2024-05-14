@@ -2,6 +2,7 @@ import { memo, useCallback } from "react";
 import { View } from "react-native";
 import { useAssets } from "expo-asset";
 import { Image } from "expo-image";
+// import type { ImageSource } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { useAtom } from "jotai";
 import { RefreshCw } from "lucide-react-native";
@@ -70,16 +71,14 @@ const TestPage = () => {
   if (questionQuery.isLoading || questionQuery.isRefetching || !rendererAssets)
     return (
       <View className="flex h-screen items-center justify-center">
-        {iconAssets ? (
-          <View>
+        <View>
+          {iconAssets ? (
             <Image
-              width={190}
-              height={190}
-              source={iconAssets[0]}
-              style={{ borderRadius: 20 }}
+              source={iconAssets[0]!.uri}
+              style={{ borderRadius: 20, width: 190, height: 190 }}
             />
-          </View>
-        ) : null}
+          ) : null}
+        </View>
 
         <View className="mt-10 animate-spin">
           <RefreshCw color="#15803D" size={40} />
