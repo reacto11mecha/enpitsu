@@ -1,8 +1,7 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { View } from "react-native";
 import { useAssets } from "expo-asset";
 import { Image } from "expo-image";
-// import type { ImageSource } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { useAtom } from "jotai";
 import { RefreshCw } from "lucide-react-native";
@@ -56,6 +55,11 @@ const TestPage = () => {
     },
   );
 
+  const actualInitialAnswer = useMemo(
+    () => initialAnswer?.answers.find((answer) => answer.slug === slug),
+    [initialAnswer, slug],
+  );
+
   const refetchQuestion = useCallback(
     () =>
       void apiUtils.exam.queryQuestion.invalidate({
@@ -68,7 +72,12 @@ const TestPage = () => {
 
   if (questionQuery.isError) return <View></View>;
 
-  if (questionQuery.isLoading || questionQuery.isRefetching || !rendererAssets)
+  if (
+    questionQuery.isLoading ||
+    questionQuery.isRefetching ||
+    !actualInitialAnswer ||
+    !rendererAssets
+  )
     return (
       <View className="flex h-screen items-center justify-center">
         <View>
@@ -89,7 +98,7 @@ const TestPage = () => {
   return (
     <ActualTest
       data={questionQuery.data}
-      initialData={initialAnswer.answers}
+      initialData={actualInitialAnswer}
       refetch={refetchQuestion}
       webviewAsset={rendererAssets[0]}
     />

@@ -1,5 +1,5 @@
 import type { SetStateAction } from "react";
-import { WebViewProps } from "react-native-webview";
+import type { WebViewProps } from "react-native-webview";
 import type { RouterInputs, RouterOutputs } from "@enpitsu/api";
 import { z } from "zod";
 
