@@ -1,10 +1,10 @@
 import { memo, useCallback, useMemo } from "react";
-import { View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useAssets } from "expo-asset";
 import { Image } from "expo-image";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useAtom } from "jotai";
-import { RefreshCw } from "lucide-react-native";
+import { ArrowLeft, RefreshCw } from "lucide-react-native";
 
 import { ActualTest } from "~/components/TestRouter/ActualTest";
 import { api } from "~/lib/api";
@@ -70,7 +70,32 @@ const TestPage = () => {
     [],
   );
 
-  if (questionQuery.isError) return <View></View>;
+  if (questionQuery.isError)
+    return (
+      <View className="flex h-screen w-screen flex-col items-center justify-center gap-8 p-3">
+        <View className="flex flex-col items-center gap-3 text-center">
+          <Text className="text-center font-[IBMPlex] text-3xl font-semibold tracking-tight text-red-600 first:mt-0 dark:text-red-500">
+            Terjadi Kesalahan
+          </Text>
+          <Text className="text-center text-lg/8 dark:text-stone-100">
+            {questionQuery.error.message}
+          </Text>
+        </View>
+
+        <Text className="text-stone-900/80 dark:text-stone-50/80">
+          Kode soal: {slug}
+        </Text>
+
+        <Pressable
+          className="flex h-[45] w-24 items-center justify-center rounded-lg border border-none bg-stone-900 text-stone-900 dark:border-stone-700 dark:bg-transparent disabled:dark:bg-stone-400"
+          onPress={() =>
+            router.canGoBack() ? router.back() : router.replace("/")
+          }
+        >
+          <ArrowLeft color="#EAEAEA" size={30} />
+        </Pressable>
+      </View>
+    );
 
   if (
     questionQuery.isLoading ||
