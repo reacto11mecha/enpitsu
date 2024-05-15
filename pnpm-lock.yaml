@@ -512,6 +512,9 @@ importers:
       expo-constants:
         specifier: ~15.4.5
         version: 15.4.6(expo@50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5))))
+      expo-image:
+        specifier: ~1.10.6
+        version: 1.10.6(expo@50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5))))
       expo-keep-awake:
         specifier: ~12.8.2
         version: 12.8.2(expo@50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5))))
@@ -532,7 +535,7 @@ importers:
         version: 1.11.1
       jotai:
         specifier: ^2.6.0
-        version: 2.6.0(@types/react@18.2.79)(react@18.2.0)
+        version: 2.6.0(@types/react@18.3.1)(react@18.2.0)
       lucide-react-native:
         specifier: ^0.365.0
         version: 0.365.0(react-native-svg@14.1.0(react-native@0.73.6(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5))(react@18.2.0))(react@18.2.0))(react-native@0.73.6(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5))(react@18.2.0))(react@18.2.0)
@@ -616,8 +619,8 @@ importers:
         specifier: ^7.20.5
         version: 7.20.5
       '@types/react':
-        specifier: ^18.2.79
-        version: 18.2.79
+        specifier: ^18.2.56
+        version: 18.3.1
       eslint:
         specifier: ^8.55.0
         version: 8.55.0
@@ -4340,9 +4343,6 @@ packages:
   '@types/react-dom@18.3.0':
     resolution: {integrity: sha512-EhwApuTmMBmXuFOikhQLIBUn6uFg81SwLMOAUgodJF14SOBOCMdU04gDoYi0WOJJHD144TL32z4yDqCW3dnkQg==}
 
-  '@types/react@18.2.79':
-    resolution: {integrity: sha512-RwGAGXPl9kSXwdNTafkOEuFrTBD5SA2B3iEB96xi8+xu5ddUa/cpvyVCSNn+asgLCTHkb5ZxN8gbuibYJi4s1w==}
-
   '@types/react@18.3.1':
     resolution: {integrity: sha512-V0kuGBX3+prX+DQ/7r2qsv1NsdfnCLnTgnRJ1pYnxykBhGMz+qj+box5lq7XsO5mtZsBqpjwwTu/7wszPfMBcw==}
 
@@ -5925,6 +5925,11 @@ packages:
 
   expo-font@11.10.3:
     resolution: {integrity: sha512-q1Td2zUvmLbCA9GV4OG4nLPw5gJuNY1VrPycsnemN1m8XWTzzs8nyECQQqrcBhgulCgcKZZJJ6U0kC2iuSoQHQ==}
+    peerDependencies:
+      expo: '*'
+
+  expo-image@1.10.6:
+    resolution: {integrity: sha512-vcnAIym1eU8vQgV1re1E7rVQZStJimBa4aPDhjFfzMzbddAF7heJuagyewiUkTzbZUwYzPaZAie6VJPyWx9Ueg==}
     peerDependencies:
       expo: '*'
 
@@ -14447,11 +14452,6 @@ snapshots:
     dependencies:
       '@types/react': 18.3.1
 
-  '@types/react@18.2.79':
-    dependencies:
-      '@types/prop-types': 15.7.11
-      csstype: 3.1.2
-
   '@types/react@18.3.1':
     dependencies:
       '@types/prop-types': 15.7.11
@@ -16563,6 +16563,11 @@ snapshots:
       expo: 50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5)))
       fontfaceobserver: 2.3.0
 
+  expo-image@1.10.6(expo@50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5)))):
+    dependencies:
+      '@react-native/assets-registry': 0.73.1
+      expo: 50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5)))
+
   expo-keep-awake@12.8.2(expo@50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5)))):
     dependencies:
       expo: 50.0.17(@babel/core@7.23.5)(@react-native/babel-preset@0.74.81(@babel/core@7.23.5)(@babel/preset-env@7.23.5(@babel/core@7.23.5)))
@@ -17578,11 +17583,6 @@ snapshots:
   join-component@1.1.0: {}
 
   jose@4.15.4: {}
-
-  jotai@2.6.0(@types/react@18.2.79)(react@18.2.0):
-    optionalDependencies:
-      '@types/react': 18.2.79
-      react: 18.2.0
 
   jotai@2.6.0(@types/react@18.3.1)(react@18.2.0):
     optionalDependencies:

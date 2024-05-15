@@ -18,11 +18,11 @@ import katex from "katex";
 import { useFieldArray, useForm } from "react-hook-form";
 import type { z } from "zod";
 
-import { ModeToggle } from "../mode-toggle";
 import {
   AnsweredQuestionsList,
   DishonestyCountAlert,
   GoToHome,
+  RefetchQuestion,
 } from "./AllAlert";
 import { formSchema, shuffleArray } from "./utils";
 import type { Props, TFormSchema } from "./utils";
@@ -154,14 +154,16 @@ const Test = ({ data, initialData, studentToken }: Props) => {
             essays={essaysField.fields}
           />
 
-          <ModeToggle size="default" />
+          <RefetchQuestion />
         </div>
       </header>
 
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit, () => setDrawerOpen(true))}
-          className="no-copy flex justify-center px-4 pb-16 pt-20"
+          className={`no-copy flex justify-center px-4 ${
+            essaysField.fields.length >= 1 ? "pb-64" : "pb-16"
+          } pt-20`}
         >
           <div className="flex w-full max-w-lg flex-col gap-8">
             <Card>

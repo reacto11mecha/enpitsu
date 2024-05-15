@@ -1,4 +1,5 @@
 import type { SetStateAction } from "react";
+import type { WebViewProps } from "react-native-webview";
 import type { RouterInputs, RouterOutputs } from "@enpitsu/api";
 import { z } from "zod";
 
@@ -43,6 +44,7 @@ export interface TPropsWrapper {
   data: TData;
   initialData: TStudentAnswer | undefined;
   refetch: () => void;
+  webviewAsset: WebViewProps["source"];
 }
 export interface TPropsRealTest extends TPropsWrapper {
   isSubmitLoading: boolean;

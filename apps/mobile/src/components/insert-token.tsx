@@ -1,5 +1,5 @@
 import { Pressable, Text, TextInput, View } from "react-native";
-import { useRouter } from "expo-router";
+import { router, Stack } from "expo-router";
 import { validateId } from "@enpitsu/token-generator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
@@ -112,7 +112,6 @@ export const FirstTimeNoToken = () => {
 export const Settings = () => {
   const [userToken, setToken] = useAtom(studentTokenAtom);
 
-  const router = useRouter();
   const apiUtils = api.useUtils();
 
   const { colorScheme } = useColorScheme();
@@ -131,13 +130,15 @@ export const Settings = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     await setToken({ ...values });
 
-    router.replace("/");
+    void apiUtils.exam.getStudent.invalidate();
 
-    await apiUtils.exam.getStudent.invalidate();
+    if (router.canGoBack()) router.back();
+    else router.replace("/");
   };
 
   return (
     <View className="flex h-screen w-screen flex-col items-center justify-center gap-5 p-5">
+      <Stack.Screen options={{ headerShown: true, title: "Pengaturan" }} />
       <Text className="font-[SpaceMono] text-4xl text-gray-700 dark:text-gray-300">
         enpitsu
       </Text>
@@ -166,7 +167,7 @@ export const Settings = () => {
                     autoComplete="off"
                     autoCapitalize="characters"
                     autoCorrect={false}
-                    className="font-space mt-2 rounded border p-2 pl-5 font-[IBMPlex] placeholder:pl-5 dark:border-white dark:text-gray-50 dark:placeholder:text-gray-500"
+                    className="font-space mt-2 rounded border border-transparent bg-stone-50 p-2 pl-5 font-[IBMPlex] placeholder:pl-5 dark:border-stone-700 dark:bg-transparent dark:text-gray-50 dark:placeholder:text-gray-500"
                     placeholder="Masukan Token"
                     onBlur={onBlur}
                     onChangeText={(text) =>
@@ -201,15 +202,17 @@ export const Settings = () => {
           </View>
         </View>
 
-        <Pressable
-          className="flex h-16 w-16 items-center justify-center rounded border dark:border-slate-300"
-          onPress={() => router.back()}
-        >
-          <ArrowLeft
-            color={colorScheme === "dark" ? "#EAEAEA" : "#1C1917"}
-            size={26}
-          />
-        </Pressable>
+        <View className="mt-10 flex items-center">
+          <Pressable
+            className="flex h-16 w-16 items-center justify-center rounded border border-stone-900/20 dark:border-stone-700"
+            onPress={() => router.back()}
+          >
+            <ArrowLeft
+              color={colorScheme === "dark" ? "#EAEAEA" : "#1C1917"}
+              size={26}
+            />
+          </Pressable>
+        </View>
       </View>
     </View>
   );

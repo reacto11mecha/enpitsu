@@ -1,33 +1,30 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   // AppState,
-  // RefreshControl,
-  SafeAreaView,
-  // ScrollView,
-  // View,
+  Pressable,
+  Text,
+  View,
 } from "react-native";
 import { WebView } from "react-native-webview";
 // import { formSchema } from "./utils";
 
 import type { WebViewMessageEvent } from "react-native-webview";
-import { useAssets } from "expo-asset";
-// import Constants from "expo-constants";
 import { useKeepAwake } from "expo-keep-awake";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { usePreventScreenCapture } from "expo-screen-capture";
-// import { useNetInfo } from "@react-native-community/netinfo";
-
+import { useNetInfo } from "@react-native-community/netinfo";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { ArrowLeft } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import { useDebounceCallback } from "usehooks-ts";
 
 import { api } from "~/lib/api";
 import { studentAnswerAtom, studentTokenAtom } from "~/lib/atom";
-// import {
-//   // BadInternetAlert,
-//   // DihonestyAlert,
-//   // DishonestyCountAlert,
-//   // GoHomeAlert,
-// } from "./AllAlert";
+import {
+  BadInternetAlert,
+  // DihonestyAlert,
+  GoHomeAlert,
+} from "./AllAlert";
 import type {
   // TFormSchema,
   TPropsRealTest,
@@ -36,25 +33,22 @@ import type {
   TSubmitCheatParam,
 } from "./utils";
 
-// const debuggerHost = Constants.expoConfig?.hostUri;
-// const localhost = debuggerHost?.split(":")[0];
+// Still, unused prop
+// updateDishonestCount,
+// submitCheated,
 
 const RealActualTest = memo(function ActualTest({
   data,
-  // refetch,
+  refetch,
+  webviewAsset,
   initialData,
   isSubmitLoading,
   submitAnswer,
-  currDishonestCount, // updateDishonestCount,
-  // submitCheated,
+  currDishonestCount,
 }: TPropsRealTest) {
   const webviewRef = useRef<WebView>(null!);
 
   usePreventScreenCapture();
-
-  const [mainRenderer] = useAssets([
-    require("@enpitsu/native-renderer/dist/index.html"),
-  ]);
 
   const [studentAnswers, setStudentAnswers] = useAtom(studentAnswerAtom);
 
@@ -65,94 +59,48 @@ const RealActualTest = memo(function ActualTest({
       ? new Date(initialData.checkIn as unknown as string)
       : new Date(),
   );
-  const [isEnded, setEnded] = useState(false);
-
-  const [_homeAlertShowed, setHomeShowed] = useState(false);
-
-  // const { isConnected } = useNetInfo();
-
-  // const appState = React.useRef(AppState.currentState);
-
   // Toggle this initial state value for prod and dev
   const canUpdateDishonesty = useRef(true);
 
-  // const [dishonestyWarning, setDishonestyWarning] = React.useState(false);
-  // const [badInternetAlert, setBadInternet] = React.useState(false);
+  const [isEnded, setEnded] = useState(false);
 
-  // const closeDishonestyAlert = React.useCallback(() => {
-  //   canUpdateDishonesty.current = true;
-  //   setDishonestyWarning(false);
-  // }, []);
-  // const closeBadInternet = React.useCallback(() => {
-  //   if (isConnected) {
-  //     canUpdateDishonesty.current = true;
-  //     setBadInternet(false);
-  //   }
-  // }, [isConnected]);
+  const [homeAlertShowed, setHomeShowed] = useState(false);
 
-  // Increment dishonesty count up to 3 app changes.
-  // The first two will ask kindly to not to cheat on their exam.
-  // React.useEffect(() => {
-  //   const subscription = AppState.addEventListener("change", (nextAppState) => {
-  //     if (
-  //       appState.current.match(/inactive|background/) &&
-  //       nextAppState === "active" &&
-  //       canUpdateDishonesty.current
-  //     )
-  //       updateDishonestCount((prev) => {
-  //         const newValue = ++prev;
+  const { isConnected } = useNetInfo();
 
-  //         if (newValue > 2) {
-  //           canUpdateDishonesty.current = false;
-  //         } else if (newValue < 3) {
-  //           canUpdateDishonesty.current = false;
-  //           setDishonestyWarning(true);
-  //         }
+  const { colorScheme } = useColorScheme();
 
-  //         if (newValue > 0)
-  //           void setStudentAnswers(async (prev) => {
-  //             const original = await prev;
-  //             const currAnswers = original.answers;
+  // const appState = React.useRef(AppState.currentState);
 
-  //             return {
-  //               answers: currAnswers.map((answer) =>
-  //                 answer.slug === data.slug
-  //                   ? { ...answer, dishonestCount: newValue }
-  //                   : answer,
-  //               ),
-  //             };
-  //           });
+  const [badInternetAlert, setBadInternet] = useState(false);
 
-  //         if (newValue > 2)
-  //           submitCheated({ questionId: data.id, time: new Date() });
-
-  //         return newValue;
-  //       });
-
-  //     appState.current = nextAppState;
-  //   });
-
-  //   return () => {
-  //     subscription.remove();
-  //   };
-
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
-
-  // Track changes of user network status. User can turned on their
-  // internet connection and safely continue their exam like normal.
-  // React.useEffect(() => {
-  //   if (!isConnected && isConnected !== null) {
-  //     canUpdateDishonesty.current = false;
-  //     setBadInternet(true);
-  //   }
-  // }, [isConnected]);
+  const closeBadInternet = useCallback(() => {
+    if (isConnected) {
+      canUpdateDishonesty.current = true;
+      setBadInternet(false);
+    }
+  }, [isConnected]);
 
   useEffect(() => {
     webviewRef.current.injectJavaScript(
       `window.updateIsSubmitting(${JSON.stringify(isSubmitLoading)})`,
     );
   }, [isSubmitLoading]);
+
+  useEffect(() => {
+    webviewRef.current.injectJavaScript(
+      `window.updateRendererTheme(${JSON.stringify(colorScheme)})`,
+    );
+  }, [colorScheme]);
+
+  // Track changes of user network status. User can turned on their
+  // internet connection and safely continue their exam like normal.
+  useEffect(() => {
+    if (!isConnected && isConnected !== null) {
+      canUpdateDishonesty.current = false;
+      setBadInternet(true);
+    }
+  }, [isConnected]);
 
   const multipleChoiceDebounced = useDebounceCallback(
     (updatedData: { iqid: number; choosedAnswer: number }) => {
@@ -239,7 +187,8 @@ const RealActualTest = memo(function ActualTest({
               multipleChoices: latestAnswer?.multipleChoices ?? [],
             })},
             ${JSON.stringify(data)}, 
-            ${JSON.stringify(studentToken.token)}
+            ${JSON.stringify(studentToken.token)},
+            ${JSON.stringify(colorScheme)}
           )`,
           );
 
@@ -293,6 +242,12 @@ const RealActualTest = memo(function ActualTest({
           break;
         }
 
+        case "CLIENT:REFETCH_LIST": {
+          refetch();
+
+          break;
+        }
+
         default:
           break;
       }
@@ -306,34 +261,69 @@ const RealActualTest = memo(function ActualTest({
       studentAnswers.answers,
       studentToken.token,
       submitAnswer,
+      colorScheme,
+      refetch,
     ],
   );
 
   if (isEnded)
     return (
-      <SafeAreaView>
-        <Link href="/" replace>
-          {" "}
-          Ke halaman depan
-        </Link>
-      </SafeAreaView>
+      <View className="flex h-screen w-screen flex-col items-center justify-center gap-8 p-3">
+        <View className="flex flex-col items-center gap-3 text-center">
+          <Text className="text-center font-[IBMPlex] text-3xl font-semibold tracking-tight text-red-600 first:mt-0 dark:text-red-500">
+            Waktu Habis
+          </Text>
+          <Text className="text-center text-lg/8 dark:text-stone-100">
+            Waktu ulangan sudah selesai, anda tidak bisa mengerjakan soal ini
+            lagi.
+          </Text>
+        </View>
+
+        <Text className="text-stone-900/80 dark:text-stone-50/80">
+          Kode soal: {data.slug}
+        </Text>
+
+        <Pressable
+          className="flex h-[45] w-24 items-center justify-center rounded-lg border border-none bg-stone-900 text-stone-900 dark:border-stone-700 dark:bg-transparent disabled:dark:bg-stone-400"
+          onPress={() =>
+            router.canGoBack() ? router.back() : router.replace("/")
+          }
+        >
+          <ArrowLeft color="#EAEAEA" size={30} />
+        </Pressable>
+      </View>
     );
 
   return (
-    <SafeAreaView>
+    <View className="h-screen">
+      <GoHomeAlert
+        open={homeAlertShowed}
+        toggle={() => setHomeShowed((prev) => !prev)}
+      />
+
+      <BadInternetAlert
+        open={badInternetAlert}
+        close={closeBadInternet}
+        backOnline={isConnected}
+      />
+
       <WebView
         ref={webviewRef}
-        style={{ height: "auto", width: "100%" }}
-        source={{ uri: mainRenderer?.at(0)?.uri ?? "http://github.com/" }}
+        source={webviewAsset}
         useWebView2={true}
         onMessage={messageProcessor}
         injectedJavaScriptBeforeContentLoaded={`window.isNativeApp = true;window['RNWebView'] = window.ReactNativeWebView;true`}
       />
-    </SafeAreaView>
+    </View>
   );
 });
 
-function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
+function TestWrapper({
+  data,
+  refetch,
+  initialData,
+  webviewAsset,
+}: TPropsWrapper) {
   useKeepAwake();
 
   const setStudentAnswers = useSetAtom(studentAnswerAtom);
@@ -348,11 +338,6 @@ function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
           answers: currAnswers.filter((answer) => answer.slug !== data.slug),
         };
       });
-    },
-    onError(_error) {
-      // toast.show("Operasi Gagal", {
-      //   message: `Gagal menyimpan status kecurangan. Error: ${error.message}`,
-      // });
     },
     retry: false,
   });
@@ -407,33 +392,58 @@ function TestWrapper({ data, refetch, initialData }: TPropsWrapper) {
 
   if (submitAnswerMutation.isSuccess)
     return (
-      <SafeAreaView>
-        <Link href="/" replace>
-          Ke halaman depan
-        </Link>
-      </SafeAreaView>
+      <View className="flex h-screen w-screen flex-col items-center justify-center gap-8 p-3">
+        <View className="flex flex-col items-center gap-3 text-center">
+          <Text className="text-center font-[IBMPlex] text-3xl font-semibold tracking-tight text-green-600 first:mt-0 dark:text-green-500">
+            Berhasil Submit
+          </Text>
+          <Text className="text-center text-lg/8 dark:text-stone-100">
+            Jawaban berhasil terkirim, anda bisa menunjukan ini ke pengawas
+            ruangan bahwa jawaban anda telah di submit dengan aman. Screenshot
+            bukti ini untuk berjaga-berjaga.
+          </Text>
+        </View>
+
+        <Text className="text-stone-900/80 dark:text-stone-50/80">
+          Kode soal: {data.slug}
+        </Text>
+
+        <Pressable
+          className="flex h-[45] w-24 items-center justify-center rounded-lg border border-none bg-stone-900 text-stone-900 dark:border-stone-700 dark:bg-transparent disabled:dark:bg-stone-400"
+          onPress={() =>
+            router.canGoBack() ? router.back() : router.replace("/")
+          }
+        >
+          <ArrowLeft color="#EAEAEA" size={30} />
+        </Pressable>
+      </View>
     );
 
   if (dishonestyCount > 2)
     return (
-      <SafeAreaView>
+      <View>
         <Link href="/" replace>
           Ke halaman depan
         </Link>
-      </SafeAreaView>
+      </View>
     );
 
   return (
-    <RealActualTest
-      data={data}
-      refetch={refetch}
-      initialData={initialData}
-      isSubmitLoading={isSubmitLoading}
-      submitAnswer={submitAnswer}
-      currDishonestCount={currDishonestCount}
-      updateDishonestCount={updateDishonestCount}
-      submitCheated={submitCheated}
-    />
+    <>
+      {webviewAsset ? (
+        <RealActualTest
+          data={data}
+          refetch={refetch}
+          initialData={initialData}
+          webviewAsset={webviewAsset}
+          isSubmitLoading={isSubmitLoading}
+          submitAnswer={submitAnswer}
+          currDishonestCount={currDishonestCount}
+          updateDishonestCount={updateDishonestCount}
+          submitCheated={submitCheated}
+        />
+      ) : null}
+    </>
   );
 }
 
