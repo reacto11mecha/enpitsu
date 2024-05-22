@@ -29,6 +29,13 @@
       "when": 1714134871496,
       "tag": "0003_shallow_freak",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1716384827185,
+      "tag": "0004_easy_klaw",
+      "breakpoints": true
     }
   ]
 }

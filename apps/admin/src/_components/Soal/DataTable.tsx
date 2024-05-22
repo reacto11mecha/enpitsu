@@ -59,6 +59,7 @@ import {
   ChevronsRight,
   ClipboardCheck,
   LayoutList,
+  ListX,
   MoreHorizontal,
   PencilLine,
   PlusSquare,
@@ -340,6 +341,12 @@ export function DataTable({
                     <Link href="/admin/soal/cheat">
                       Data Kecurangan
                       <UserRoundX className="ml-2 h-4 md:w-4" />
+                    </Link>
+                  </Button>
+                  <Button asChild className="w-fit">
+                    <Link href="/admin/soal/ban">
+                      Data Larangan Peserta Sementara
+                      <ListX className="ml-2 h-4 md:w-4" />
                     </Link>
                   </Button>
                   <Button asChild className="w-fit">

@@ -206,3 +206,23 @@ export const studentBlocklistRelations = relations(
     }),
   }),
 );
+
+export const studentTemporaryBans = myPgTable("studentTemporaryBan", {
+  id: serial("id").primaryKey(),
+  startedAt: timestamp("started_at", { mode: "date" }).notNull(),
+  endedAt: timestamp("ended_at", { mode: "date" }).notNull(),
+  studentId: integer("student_id")
+    .notNull()
+    .references(() => students.id),
+  reason: text("reason").notNull(),
+});
+
+export const studentTemporaryBanRelations = relations(
+  studentTemporaryBans,
+  ({ one }) => ({
+    student: one(students, {
+      fields: [studentBlocklists.studentId],
+      references: [students.id],
+    }),
+  }),
+);
