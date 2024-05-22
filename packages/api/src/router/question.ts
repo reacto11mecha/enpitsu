@@ -145,6 +145,7 @@ export const questionRouter = createTRPCRouter({
         id: true,
         startedAt: true,
         endedAt: true,
+        reason: true,
       },
       with: {
         student: {

@@ -128,8 +128,7 @@ export function DataTable() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const table = useReactTable({
-    // data: blocklistsQuery.data ?? [],
-    data: [],
+    data: temporarilyBannedQuery.data ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
