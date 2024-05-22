@@ -139,6 +139,40 @@ export const questionRouter = createTRPCRouter({
       }),
     ),
 
+  getStudentTempobans: adminProcedure.query(({ ctx }) =>
+    ctx.db.query.studentTemporaryBans.findMany({
+      columns: {
+        id: true,
+        startedAt: true,
+        endedAt: true,
+      },
+      with: {
+        student: {
+          columns: {
+            name: true,
+            room: true,
+          },
+          with: {
+            subgrade: {
+              columns: {
+                id: true,
+                label: true,
+              },
+              with: {
+                grade: {
+                  columns: {
+                    id: true,
+                    label: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+  ),
+
   getStudentAnswers: adminProcedure.query(({ ctx }) =>
     ctx.db.query.studentResponds.findMany({
       columns: {

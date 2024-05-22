@@ -60,31 +60,18 @@ import {
 import { api } from "~/utils/api";
 import { DeleteCheatedStudent } from "./CheatedList/DeleteCheatedStudent";
 
-type BlocklistByQuestion =
-  RouterOutputs["question"]["getStudentBlocklists"][number];
+type StudentTempoban = RouterOutputs["question"]["getStudentTempobans"][number];
 
 const MonoFont = Space_Mono({
   weight: "400",
   subsets: ["latin"],
 });
 
-export const columns: ColumnDef<BlocklistByQuestion>[] = [
+export const columns: ColumnDef<StudentTempoban>[] = [
   {
     accessorKey: "studentName",
     header: "Nama Peserta",
-    cell: ({ row }) => <div>{row.original.student.name}</div>,
-  },
-  {
-    accessorKey: "title",
-    header: "Soal Ujian",
-    cell: ({ row }) => (
-      <Button variant="ghost" asChild>
-        <Link href={`/admin/soal/cheat/${row.original.question.id}`}>
-          {row.original.question.title}
-          <ArrowUpRight className="ml-2 h-4 w-4" />
-        </Link>
-      </Button>
-    ),
+    cell: ({ row }) => <p>{row.original.student.name}</p>,
   },
   {
     accessorKey: "room",
@@ -107,71 +94,42 @@ export const columns: ColumnDef<BlocklistByQuestion>[] = [
     ),
   },
   {
-    accessorKey: "time",
-    header: "Waktu Melakukan Kecurangan",
+    accessorKey: "startedAt",
+    header: "Waktu Mulai",
     cell: ({ row }) => (
       <pre className={MonoFont.className}>
-        {format(row.getValue("time"), "dd MMMM yyyy, kk.mm", {
+        {format(row.getValue("startedAt"), "dd MMM yyyy, kk.mm", {
           locale: id,
         })}
       </pre>
     ),
   },
   {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const cheat = row.original;
-
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const [openDelete, setOpenDelete] = useState(false);
-
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const closeDialog = useCallback(() => setOpenDelete((prev) => !prev), []);
-
-      return (
-        <>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-              <DropdownMenuItem
-                className="cursor-pointer text-rose-500 hover:text-rose-700 focus:text-rose-700"
-                onClick={() => setOpenDelete(true)}
-              >
-                <Trash2 className="mr-2 h-4 md:w-4" />
-                Hapus Status
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DeleteCheatedStudent
-            closeDialog={closeDialog}
-            id={cheat.id}
-            openDelete={openDelete}
-            questionTitle={cheat.question.title}
-            name={cheat.student.name}
-          />
-        </>
-      );
-    },
+    accessorKey: "endedAt",
+    header: "Waktu Selesai",
+    cell: ({ row }) => (
+      <pre className={MonoFont.className}>
+        {format(row.getValue("endedAt"), "dd MMM yyyy, kk.mm", { locale: id })}
+      </pre>
+    ),
+  },
+  {
+    accessorKey: "reason",
+    header: "Alasan Penambahan",
+    cell: ({ row }) => <p>{row.original.reason}</p>,
   },
 ];
 
 export function DataTable() {
-  const blocklistsQuery = api.question.getStudentBlocklists.useQuery();
+  const temporarilyBannedQuery = api.question.getStudentTempobans.useQuery();
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const table = useReactTable({
-    data: blocklistsQuery.data ?? [],
+    // data: blocklistsQuery.data ?? [],
+    data: [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -239,18 +197,19 @@ export function DataTable() {
             ))}
           </TableHeader>
           <TableBody>
-            {blocklistsQuery.isError ? (
+            {temporarilyBannedQuery.isError ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Error: {blocklistsQuery.error.message}
+                  Error: {temporarilyBannedQuery.error.message}
                 </TableCell>
               </TableRow>
             ) : null}
 
-            {blocklistsQuery.isLoading && !blocklistsQuery.isError ? (
+            {temporarilyBannedQuery.isLoading &&
+            !temporarilyBannedQuery.isError ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <TableRow key={idx}>
@@ -280,9 +239,9 @@ export function DataTable() {
               ))
             ) : (
               <>
-                {!blocklistsQuery.isLoading && (
+                {!temporarilyBannedQuery.isLoading && (
                   <>
-                    {!blocklistsQuery.isError && (
+                    {!temporarilyBannedQuery.isError && (
                       <TableRow>
                         <TableCell
                           colSpan={columns.length}

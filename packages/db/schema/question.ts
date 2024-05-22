@@ -221,7 +221,7 @@ export const studentTemporaryBanRelations = relations(
   studentTemporaryBans,
   ({ one }) => ({
     student: one(students, {
-      fields: [studentBlocklists.studentId],
+      fields: [studentTemporaryBans.studentId],
       references: [students.id],
     }),
   }),
