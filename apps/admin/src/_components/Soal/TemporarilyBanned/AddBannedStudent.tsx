@@ -42,9 +42,7 @@ import { api } from "~/utils/api";
 
 const formSchema = z
   .object({
-    studentId: z
-      .number({ message: "Pilih nama salah satu peserta!" })
-      .min(1, { message: "Pilih nama salah satu peserta!" }),
+    studentId: z.number().min(1, { message: "Pilih nama salah satu peserta!" }),
     startedAt: z.date({
       required_error: "Diperlukan kapan waktu ujian dimulai!",
     }),
