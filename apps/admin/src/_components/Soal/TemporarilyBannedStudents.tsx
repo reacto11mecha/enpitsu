@@ -54,6 +54,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   MoreHorizontal,
+  PencilLine,
   Trash2,
 } from "lucide-react";
 
@@ -117,6 +118,43 @@ export const columns: ColumnDef<StudentTempoban>[] = [
     accessorKey: "reason",
     header: "Alasan Penambahan",
     cell: ({ row }) => <p>{row.original.reason}</p>,
+  },
+  {
+    id: "actions",
+    enableHiding: false,
+    cell: ({ row }) => {
+      const student = row.original;
+
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [openDelete, setOpenDelete] = useState(false);
+
+      return (
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+              <DropdownMenuItem className="cursor-pointer">
+                <PencilLine className="mr-2 h-4 md:w-4" />
+                Edit Status
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer text-rose-500 hover:text-rose-700 focus:text-rose-700"
+                onClick={() => seteOpenDelete(true)}
+              >
+                <Trash2 className="mr-2 h-4 md:w-4" />
+                Hapus Status
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      );
+    },
   },
 ];
 
