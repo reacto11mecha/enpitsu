@@ -10,9 +10,9 @@ import { env } from "~/env.mjs";
  */
 function setCorsHeaders(res: Response) {
   res.headers.set("Access-Control-Allow-Origin", env.CORS_ORIGIN);
-  res.headers.set("Access-Control-Request-Method", env.CORS_ORIGIN);
+  res.headers.set("Access-Control-Request-Method", "*");
   res.headers.set("Access-Control-Allow-Methods", "OPTIONS, GET, POST");
-  res.headers.set("Access-Control-Allow-Headers", env.CORS_ORIGIN);
+  res.headers.set("Access-Control-Allow-Headers", "*");
 }
 
 export function OPTIONS() {
