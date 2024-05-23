@@ -17,6 +17,20 @@ export const db = drizzle(postgres(process.env.DATABASE_URL!), {
 });
 
 // Prepared statement stuff
+export const preparedStudentIsTemporarilyBanned = db.query.studentTemporaryBans
+  .findFirst({
+    where: eq(
+      schema.studentTemporaryBans.studentId,
+      sql.placeholder("studentId"),
+    ),
+    columns: {
+      startedAt: true,
+      endedAt: true,
+      reason: true,
+    },
+  })
+  .prepare("studentTemporarilyBanned");
+
 export const preparedStudentIsCheated = db.query.studentBlocklists
   .findFirst({
     where: and(
