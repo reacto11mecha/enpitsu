@@ -1,0 +1,2 @@
+ALTER TABLE "enpitsu_studentTemporaryBan" DROP CONSTRAINT "uniq_student_id";--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "uniq_student_id" ON "enpitsu_studentTemporaryBan" ("student_id");

@@ -58,7 +58,7 @@ import {
 } from "lucide-react";
 
 import { api } from "~/utils/api";
-import { DeleteCheatedStudent } from "./CheatedList/DeleteCheatedStudent";
+import { AddBannedStudent } from "./TemporarilyBanned/AddBannedStudent";
 
 type StudentTempoban = RouterOutputs["question"]["getStudentTempobans"][number];
 
@@ -148,6 +148,7 @@ export function DataTable() {
   return (
     <div className="w-full">
       <div className="flex items-center pb-4">
+        <AddBannedStudent />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">

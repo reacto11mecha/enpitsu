@@ -36,6 +36,20 @@
       "when": 1716384827185,
       "tag": "0004_easy_klaw",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1716409268840,
+      "tag": "0005_hot_dexter_bennett",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1716426006500,
+      "tag": "0006_slippery_inertia",
+      "breakpoints": true
     }
   ]
 }

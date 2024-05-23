@@ -1,0 +1,1 @@
+ALTER TABLE "enpitsu_studentTemporaryBan" ADD CONSTRAINT "uniq_student_id" UNIQUE("student_id");
