@@ -4,10 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -32,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, startOfDay } from "date-fns";
 import { useForm } from "react-hook-form";
@@ -67,11 +64,11 @@ export function AddBannedStudent() {
   const apiUtils = api.useUtils();
 
   const addNewBannedStudent = api.grade.addTemporaryBan.useMutation({
-    async onSuccess(result) {
+    async onSuccess() {
       setSubgradeId(null);
       form.reset();
 
-      await apiUtils.grade.getStudentTempobans.invalidate();
+      await apiUtils.question.getStudentTempobans.invalidate();
 
       toast({
         title: "Penambahan Larangan Berhasil!",
@@ -101,10 +98,6 @@ export function AddBannedStudent() {
       reason: "",
     },
   });
-
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-  }
 
   return (
     <Dialog
