@@ -1,5 +1,6 @@
 "use client";
 
+import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +40,7 @@ import { api } from "~/utils/api";
 
 const formSchema = z
   .object({
-    studentId: z.number().min(1, { message: "Pilih nama salah satu peserta!" }),
+    studentName: z.string(),
     startedAt: z.date({
       required_error: "Diperlukan kapan waktu ujian dimulai!",
     }),
@@ -55,24 +56,36 @@ const formSchema = z
     message: "Waktu selesai tidak boleh kurang dari waktu mulai!",
   });
 
-export function AddBannedStudent() {
-  const [isDialogOpen, setDialogOpen] = useState(false);
-  const [selectedSubgradeId, setSubgradeId] = useState<number | null>(null);
-
+export function EditBannedStudent({
+  id,
+  reason,
+  studentName,
+  studentClassName,
+  startedAt,
+  endedAt,
+  isDialogOpen,
+  setDialogOpen,
+}: {
+  id: number;
+  reason: string;
+  studentName: string;
+  studentClassName: string;
+  startedAt: Date;
+  endedAt: Date;
+  isDialogOpen: boolean;
+  setDialogOpen: Dispatch<SetStateAction<boolean>>;
+}) {
   const { toast } = useToast();
 
   const apiUtils = api.useUtils();
 
-  const addNewBannedStudent = api.grade.addTemporaryBan.useMutation({
+  const editBannedStudent = api.grade.editTemporaryBan.useMutation({
     async onSuccess() {
-      setSubgradeId(null);
-      form.reset();
-
       await apiUtils.question.getStudentTempobans.invalidate();
 
       toast({
-        title: "Penambahan Larangan Berhasil!",
-        description: `Berhasil menambahkan peserta!`,
+        title: "Pembaharuan Larangan Berhasil!",
+        description: `Berhasil mengubah peserta!`,
       });
 
       setDialogOpen(false);
@@ -86,16 +99,14 @@ export function AddBannedStudent() {
       });
     },
   });
-  const subgradesWithGrade = api.grade.getSubgradesWithGrade.useQuery();
-  const studentLists = api.grade.getStudents.useQuery({
-    subgradeId: selectedSubgradeId,
-  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      studentId: 0,
-      reason: "",
+      studentName,
+      reason,
+      startedAt,
+      endedAt,
     },
   });
 
@@ -103,24 +114,16 @@ export function AddBannedStudent() {
     <Dialog
       open={isDialogOpen}
       onOpenChange={() => {
-        if (addNewBannedStudent.isLoading) return;
-
-        form.reset();
-        setSubgradeId(null);
+        if (editBannedStudent.isLoading) return;
 
         setDialogOpen((prev) => !prev);
       }}
     >
-      <DialogTrigger asChild>
-        <Button>Tambah peserta</Button>
-      </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Tambahkan Larangan Untuk peserta</DialogTitle>
+          <DialogTitle>Edit Larangan Peserta</DialogTitle>
           <DialogDescription>
-            Pilih peserta dari daftar yang sudah dibuat. Pilih peserta dari
-            spesifik kelas, tentukan durasi, dan berikan alasan yang jelas.
-            Masing-masing peserta hanya mendapatkan satu kesempatan larangan.
+            Perbarui durasi dan alasan peserta ini.
           </DialogDescription>
         </DialogHeader>
 
@@ -128,7 +131,12 @@ export function AddBannedStudent() {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit((val) =>
-                addNewBannedStudent.mutate(val),
+                editBannedStudent.mutate({
+                  id,
+                  startedAt: val.startedAt,
+                  endedAt: val.endedAt,
+                  reason: val.reason,
+                }),
               )}
               className="space-y-3"
             >
@@ -136,111 +144,19 @@ export function AddBannedStudent() {
                 <div className="flex flex-col md:w-[150px]">
                   <FormLabel className="mb-2">Kelas</FormLabel>
                   <FormControl>
-                    <Select
-                      onValueChange={(value) => {
-                        const subgradeId = parseInt(value);
-
-                        setSubgradeId((prevId) => {
-                          if (prevId === subgradeId) return prevId;
-
-                          form.resetField("studentId");
-
-                          return subgradeId;
-                        });
-                      }}
-                      disabled={
-                        subgradesWithGrade.isLoading ||
-                        subgradesWithGrade.isError ||
-                        addNewBannedStudent.isLoading
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih kelas peserta" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel className="mt-14">
-                            Daftar kelas
-                          </SelectLabel>
-                          {subgradesWithGrade.data?.map((subgrade) => (
-                            <SelectItem
-                              key={subgrade.id}
-                              value={`${subgrade.id}`}
-                            >
-                              {subgrade.grade.label} {subgrade.label}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                    <Input disabled value={studentClassName} />
                   </FormControl>
-                  <FormDescription className="mt-1">
-                    Pilih kelas asal supaya bisa memilih peserta.
-                  </FormDescription>
-                  <FormMessage />
                 </div>
 
                 <FormField
                   control={form.control}
-                  name="studentId"
+                  name="studentName"
                   render={({ field }) => (
                     <FormItem className="md:col-span-3">
                       <FormLabel>Nama Peserta</FormLabel>
                       <FormControl>
-                        <Select
-                          onValueChange={(value) =>
-                            value && field.onChange(parseInt(value))
-                          }
-                          value={field.value === 0 ? "" : String(field.value)}
-                          disabled={
-                            subgradesWithGrade.isLoading ||
-                            subgradesWithGrade.isError ||
-                            !selectedSubgradeId ||
-                            studentLists.isLoading ||
-                            studentLists.isError ||
-                            addNewBannedStudent.isLoading
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pilih kelas peserta" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectLabel className="mt-14">
-                                Daftar nama peserta
-                              </SelectLabel>
-
-                              {!studentLists.isLoading &&
-                              !studentLists.isError ? (
-                                <>
-                                  {studentLists.data.length < 1 ? (
-                                    <SelectLabel className="font-normal text-red-500">
-                                      Tidak ada data peserta di kelas ini!
-                                    </SelectLabel>
-                                  ) : (
-                                    <>
-                                      {studentLists.data.map((student) => (
-                                        <SelectItem
-                                          key={student.id}
-                                          value={`${student.id}`}
-                                        >
-                                          {student.name}
-                                        </SelectItem>
-                                      ))}
-                                    </>
-                                  )}
-                                </>
-                              ) : (
-                                <></>
-                              )}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
+                        <Input disabled value={field.value} />
                       </FormControl>
-                      <FormDescription>
-                        Pilih peserta spesifik dari list yang ada.
-                      </FormDescription>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -271,12 +187,7 @@ export function AddBannedStudent() {
                               ? field.onChange(undefined)
                               : field.onChange(new Date(e.target.value))
                           }
-                          disabled={
-                            !selectedSubgradeId ||
-                            studentLists.isLoading ||
-                            studentLists.isError ||
-                            addNewBannedStudent.isLoading
-                          }
+                          disabled={editBannedStudent.isLoading}
                         />
                       </FormControl>
                       <FormDescription>
@@ -316,11 +227,8 @@ export function AddBannedStudent() {
                               : field.onChange(new Date(e.target.value))
                           }
                           disabled={
-                            !selectedSubgradeId ||
-                            studentLists.isLoading ||
-                            studentLists.isError ||
-                            !form.getValues("startedAt") ||
-                            addNewBannedStudent.isLoading
+                            editBannedStudent.isLoading ||
+                            !form.getValues("startedAt")
                           }
                         />
                       </FormControl>
@@ -345,12 +253,7 @@ export function AddBannedStudent() {
                         {...field}
                         autoComplete="off"
                         placeholder="Masukan alasan logis"
-                        disabled={
-                          !selectedSubgradeId ||
-                          studentLists.isLoading ||
-                          studentLists.isError ||
-                          addNewBannedStudent.isLoading
-                        }
+                        disabled={editBannedStudent.isLoading}
                       />
                     </FormControl>
                     <FormDescription>
@@ -360,16 +263,8 @@ export function AddBannedStudent() {
                   </FormItem>
                 )}
               />
-              <Button
-                type="submit"
-                disabled={
-                  !selectedSubgradeId ||
-                  studentLists.isLoading ||
-                  studentLists.isError ||
-                  addNewBannedStudent.isLoading
-                }
-              >
-                Tambah
+              <Button type="submit" disabled={editBannedStudent.isLoading}>
+                Edit
               </Button>
             </form>
           </Form>

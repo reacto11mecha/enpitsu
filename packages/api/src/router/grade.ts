@@ -326,7 +326,7 @@ export const gradeRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        await ctx.db.insert(schema.studentTemporaryBans).values(input);
+        return await ctx.db.insert(schema.studentTemporaryBans).values(input);
       } catch (e) {
         // @ts-expect-error unknown error value
         if (e.code === "23505" && e.constraint_name === "uniq_student_id")
@@ -341,5 +341,25 @@ export const gradeRouter = createTRPCRouter({
             message: "Terjadi kesalahan internal, mohon coba lagi nanti",
           });
       }
+    }),
+
+  editTemporaryBan: adminProcedure
+    .input(
+      z.object({
+        id: z.number().min(1),
+        startedAt: z.date(),
+        endedAt: z.date(),
+        reason: z.string().min(5),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db
+        .update(schema.studentTemporaryBans)
+        .set({
+          startedAt: input.startedAt,
+          endedAt: input.endedAt,
+          reason: input.reason,
+        })
+        .where(eq(schema.studentTemporaryBans.id, input.id));
     }),
 });

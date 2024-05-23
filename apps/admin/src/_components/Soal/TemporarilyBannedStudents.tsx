@@ -60,6 +60,7 @@ import {
 
 import { api } from "~/utils/api";
 import { AddBannedStudent } from "./TemporarilyBanned/AddBannedStudent";
+import { EditBannedStudent } from "./TemporarilyBanned/EditBannedStudent";
 
 type StudentTempoban = RouterOutputs["question"]["getStudentTempobans"][number];
 
@@ -123,7 +124,10 @@ export const columns: ColumnDef<StudentTempoban>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const student = row.original;
+      const tempBan = row.original;
+
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [openEdit, setOpenEdit] = useState(false);
 
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const [openDelete, setOpenDelete] = useState(false);
@@ -139,19 +143,33 @@ export const columns: ColumnDef<StudentTempoban>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-              <DropdownMenuItem className="cursor-pointer">
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => setOpenEdit(true)}
+              >
                 <PencilLine className="mr-2 h-4 md:w-4" />
                 Edit Status
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer text-rose-500 hover:text-rose-700 focus:text-rose-700"
-                onClick={() => seteOpenDelete(true)}
+                onClick={() => setOpenDelete(true)}
               >
                 <Trash2 className="mr-2 h-4 md:w-4" />
                 Hapus Status
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <EditBannedStudent
+            id={tempBan.id}
+            reason={tempBan.reason}
+            studentName={tempBan.student.name}
+            studentClassName={`${tempBan.student.subgrade.grade.label} ${tempBan.student.subgrade.label}`}
+            startedAt={tempBan.startedAt}
+            endedAt={tempBan.endedAt}
+            isDialogOpen={openEdit}
+            setDialogOpen={setOpenEdit}
+          />
         </>
       );
     },
