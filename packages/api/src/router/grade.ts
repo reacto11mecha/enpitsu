@@ -25,13 +25,15 @@ export const gradeRouter = createTRPCRouter({
     ),
 
   getStudents: adminProcedure
-    .input(z.object({ subgradeId: z.number() }))
-    .query(({ ctx, input }) =>
-      ctx.db.query.students.findMany({
+    .input(z.object({ subgradeId: z.number().nullable() }))
+    .query(async ({ ctx, input }) => {
+      if (!input.subgradeId) return [];
+
+      return await ctx.db.query.students.findMany({
         where: eq(schema.students.subgradeId, input.subgradeId),
         orderBy: [asc(schema.students.name)],
-      }),
-    ),
+      });
+    }),
 
   getSubgrade: adminProcedure.input(z.number()).query(({ ctx, input }) =>
     ctx.db.query.subGrades.findFirst({
@@ -296,4 +298,80 @@ export const gradeRouter = createTRPCRouter({
 
       return subgradeData;
     }),
+
+  getSubgradesWithGrade: adminProcedure.query(async ({ ctx }) =>
+    ctx.db.query.subGrades.findMany({
+      columns: {
+        id: true,
+        label: true,
+      },
+      with: {
+        grade: {
+          columns: {
+            label: true,
+          },
+        },
+      },
+    }),
+  ),
+
+  addTemporaryBan: adminProcedure
+    .input(
+      z.object({
+        studentId: z.number().min(1),
+        startedAt: z.date(),
+        endedAt: z.date(),
+        reason: z.string().min(5),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return await ctx.db.insert(schema.studentTemporaryBans).values(input);
+      } catch (e) {
+        // @ts-expect-error unknown error value
+        if (e.code === "23505" && e.constraint_name === "uniq_student_id")
+          throw new TRPCError({
+            code: "CONFLICT",
+            message:
+              "Sudah ada peserta dalam daftar larangan ini! Jika ingin memperbarui jadwal dan alasan, silahkan edit peserta tersebut.",
+          });
+        else
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Terjadi kesalahan internal, mohon coba lagi nanti",
+          });
+      }
+    }),
+
+  editTemporaryBan: adminProcedure
+    .input(
+      z.object({
+        id: z.number().min(1),
+        startedAt: z.date(),
+        endedAt: z.date(),
+        reason: z.string().min(5),
+      }),
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        await tx
+          .update(schema.studentTemporaryBans)
+          .set({
+            startedAt: input.startedAt,
+            endedAt: input.endedAt,
+            reason: input.reason,
+          })
+          .where(eq(schema.studentTemporaryBans.id, input.id));
+      }),
+    ),
+
+  deleteTemporaryBan: adminProcedure
+    .input(z.object({ id: z.number().min(1) }))
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        await tx
+          .delete(schema.studentTemporaryBans)
+          .where(eq(schema.studentTemporaryBans.id, input.id));
+      }),
+    ),
 });

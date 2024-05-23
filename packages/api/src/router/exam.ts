@@ -4,6 +4,7 @@ import {
   preparedQuestionSelect,
   preparedStudentHasAnswered,
   preparedStudentIsCheated,
+  preparedStudentIsTemporarilyBanned,
   schema,
 } from "@enpitsu/db";
 import { TRPCError } from "@trpc/server";
@@ -19,6 +20,23 @@ type TQuestion = NonNullable<
 
 const getQuestionPrecheck = async (student: TStudent, question: TQuestion) => {
   const { allowLists, ...sendedData } = question;
+
+  const isTemporarilyBanned = await preparedStudentIsTemporarilyBanned.execute({
+    studentId: student.id,
+  });
+
+  if (isTemporarilyBanned) {
+    const nowTime = new Date();
+
+    if (
+      (isTemporarilyBanned.startedAt <= nowTime,
+      isTemporarilyBanned.endedAt >= nowTime)
+    )
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: `Anda dilarang mengerjakan soal apapun. Alasan: ${isTemporarilyBanned.reason}`,
+      });
+  }
 
   const isCheated = await preparedStudentIsCheated.execute({
     questionId: question.id,
