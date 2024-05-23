@@ -60,6 +60,7 @@ import {
 
 import { api } from "~/utils/api";
 import { AddBannedStudent } from "./TemporarilyBanned/AddBannedStudent";
+import { DeleteBannedStudent } from "./TemporarilyBanned/DeleteBannedStudent";
 import { EditBannedStudent } from "./TemporarilyBanned/EditBannedStudent";
 
 type StudentTempoban = RouterOutputs["question"]["getStudentTempobans"][number];
@@ -169,6 +170,13 @@ export const columns: ColumnDef<StudentTempoban>[] = [
             endedAt={tempBan.endedAt}
             isDialogOpen={openEdit}
             setDialogOpen={setOpenEdit}
+          />
+          <DeleteBannedStudent
+            id={tempBan.id}
+            studentName={tempBan.student.name}
+            studentClassName={`${tempBan.student.subgrade.grade.label} ${tempBan.student.subgrade.label}`}
+            isDialogOpen={openDelete}
+            setDialogOpen={setOpenDelete}
           />
         </>
       );

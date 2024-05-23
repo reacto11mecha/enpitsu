@@ -352,14 +352,26 @@ export const gradeRouter = createTRPCRouter({
         reason: z.string().min(5),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.db
-        .update(schema.studentTemporaryBans)
-        .set({
-          startedAt: input.startedAt,
-          endedAt: input.endedAt,
-          reason: input.reason,
-        })
-        .where(eq(schema.studentTemporaryBans.id, input.id));
-    }),
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        await tx
+          .update(schema.studentTemporaryBans)
+          .set({
+            startedAt: input.startedAt,
+            endedAt: input.endedAt,
+            reason: input.reason,
+          })
+          .where(eq(schema.studentTemporaryBans.id, input.id));
+      }),
+    ),
+
+  deleteTemporaryBan: adminProcedure
+    .input(z.object({ id: z.number().min(1) }))
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        await tx
+          .delete(schema.studentTemporaryBans)
+          .where(eq(schema.studentTemporaryBans.id, input.id));
+      }),
+    ),
 });
