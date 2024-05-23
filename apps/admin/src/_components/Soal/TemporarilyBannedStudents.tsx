@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
 import { badgeVariants } from "@/components/ui/badge";
@@ -47,7 +47,6 @@ import {
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import {
-  ArrowUpRight,
   ChevronDown,
   ChevronLeftIcon,
   ChevronRightIcon,
