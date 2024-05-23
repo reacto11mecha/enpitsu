@@ -16,6 +16,7 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
     REDIS_URL: z.string().url(),
+    CORS_ORIGIN: z.string(),
   },
   /**
    * Specify your client-side environment variables schema here.
@@ -32,6 +33,7 @@ export const env = createEnv({
     PORT: process.env.PORT,
     DATABASE_URL: process.env.DATABASE_URL,
     REDIS_URL: process.env.REDIS_URL,
+    CORS_ORIGIN: process.env.CORS_ORIGIN,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   skipValidation:
