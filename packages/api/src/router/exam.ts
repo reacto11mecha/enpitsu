@@ -29,8 +29,8 @@ const getQuestionPrecheck = async (student: TStudent, question: TQuestion) => {
     const nowTime = new Date();
 
     if (
-      isTemporarilyBanned.startedAt >= nowTime &&
-      isTemporarilyBanned.endedAt <= nowTime
+      (isTemporarilyBanned.startedAt <= nowTime,
+      isTemporarilyBanned.endedAt >= nowTime)
     )
       throw new TRPCError({
         code: "BAD_REQUEST",
