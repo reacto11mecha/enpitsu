@@ -127,7 +127,9 @@ export function AddBannedStudent() {
         <div>
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(addNewBannedStudent.mutate)}
+              onSubmit={form.handleSubmit((val) =>
+                addNewBannedStudent.mutate(val),
+              )}
               className="space-y-3"
             >
               <div className="flex flex-col gap-5 md:grid md:grid-cols-4">
