@@ -17,11 +17,19 @@ const SetToken = lazy(() => import("@/components/set-token"));
 const parser = new UAParser();
 
 const browser = parser.getBrowser();
+const userOS = parser.getOS();
+
+const enforceChromeOnAndroidOnly =
+  browser.name === "Samsung Internet" ||
+  (userOS.name === "Android" && browser.name !== "Chrome");
+const enforceLatestVersion =
+  userOS.name === "Android" &&
+  (browser.major ? parseInt(browser.major) < 120 : true);
 
 export default function Provider() {
   const [studentAtom] = useAtom(studentTokenAtom);
 
-  if (browser.name !== "Chrome")
+  if (enforceChromeOnAndroidOnly)
     return (
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <div className="flex h-screen w-screen flex-col items-center justify-center gap-5 p-6">
@@ -84,7 +92,7 @@ export default function Provider() {
       </ThemeProvider>
     );
 
-  if (browser.major ? parseInt(browser.major) < 120 : true)
+  if (enforceLatestVersion)
     return (
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <div className="flex h-screen w-screen flex-col items-center justify-center gap-5 p-6">
