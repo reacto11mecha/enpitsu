@@ -84,7 +84,7 @@ export default function Provider() {
       </ThemeProvider>
     );
 
-  if (parseInt(browser.major) < 115)
+  if (browser.major ? parseInt(browser.major) < 115 : true)
     return (
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <div className="flex h-screen w-screen flex-col items-center justify-center gap-5 p-6">
