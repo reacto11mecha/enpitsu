@@ -107,9 +107,9 @@ export const examRouter = createTRPCRouter({
             time: Date.now().valueOf(),
             msg: "Failed to get cached question data, fallback to database request",
             ...input,
-            error,
           }),
         );
+        console.error(error);
       }
 
       const question = await preparedQuestionSelect.execute(input);
@@ -166,9 +166,9 @@ export const examRouter = createTRPCRouter({
             endpoint: "exam.queryQuestion",
             msg: "Failed to get cached question data, fallback to database request",
             input,
-            error,
           }),
         );
+        console.error(error);
       }
 
       const question = await preparedQuestionSelect.execute(input);
