@@ -1221,4 +1221,71 @@ export const questionRouter = createTRPCRouter({
         data: sortedData,
       };
     }),
+
+  downloadStudentBlocklistsExcelAggregate: protectedProcedure.mutation(
+    async ({ ctx }) => {
+      const allBlocklistsData = await ctx.db.query.studentBlocklists.findMany({
+        columns: {
+          time: true,
+        },
+        with: {
+          question: {
+            columns: {
+              slug: true,
+            },
+          },
+          student: {
+            columns: {
+              name: true,
+              room: true,
+            },
+            with: {
+              subgrade: {
+                columns: {
+                  label: true,
+                },
+                with: {
+                  grade: {
+                    columns: {
+                      label: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const normalizedData = allBlocklistsData.map((data) => ({
+        name: data.student.name,
+        slug: data.question.slug,
+        room: data.student.room,
+        time: data.time,
+        className: `${data.student.subgrade.grade.label} ${data.student.subgrade.label}`,
+      }));
+
+      const sortedData = [...new Set(normalizedData.map((d) => d.slug))].map(
+        (slug) => {
+          const blocks = normalizedData.filter((d) => d.slug === slug);
+
+          const sortedByClass = [...new Set(blocks.map((d) => d.className))]
+            .sort((l, r) => l.localeCompare(r))
+            .flatMap((cn) =>
+              blocks
+                .filter((a) => a.className === cn)
+                .sort((l, r) => l.name.localeCompare(r.name)),
+            )
+            .map(({ slug: _, ...rest }) => rest);
+
+          return {
+            slug,
+            data: sortedByClass,
+          };
+        },
+      );
+
+      return sortedData;
+    },
+  ),
 });
