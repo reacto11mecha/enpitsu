@@ -259,6 +259,8 @@ export function DataTable({
     },
   });
 
+  const resetSelection = useCallback(() => table.resetRowSelection(), [table]);
+
   return (
     <RoleContext.Provider value={currUserRole}>
       <div className="w-full">
@@ -315,8 +317,9 @@ export function DataTable({
                 .getFilteredSelectedRowModel()
                 .rows.map((d) => d.original)}
               questionTitle={title}
+              resetSelection={resetSelection}
             />
-            <Button variant="outline" onClick={() => table.resetRowSelection()}>
+            <Button variant="outline" onClick={resetSelection}>
               Batalkan semua pilihan
             </Button>
           </div>

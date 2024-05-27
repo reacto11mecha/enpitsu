@@ -281,6 +281,26 @@ export const questionRouter = createTRPCRouter({
       }),
     ),
 
+  deleteManyAnswer: protectedProcedure
+    .input(z.object({ ids: z.array(z.number()) }))
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        for (const id of input.ids) {
+          await tx
+            .delete(schema.studentRespondChoices)
+            .where(eq(schema.studentRespondChoices.respondId, id));
+
+          await tx
+            .delete(schema.studentRespondEssays)
+            .where(eq(schema.studentRespondEssays.respondId, id));
+
+          await tx
+            .delete(schema.studentResponds)
+            .where(eq(schema.studentResponds.id, id));
+        }
+      }),
+    ),
+
   deleteSpecificBlocklist: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(({ ctx, input }) =>

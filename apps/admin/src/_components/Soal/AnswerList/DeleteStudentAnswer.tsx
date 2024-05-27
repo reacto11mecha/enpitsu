@@ -139,9 +139,11 @@ export const DeleteSingleStudentAnswer = ({
 export const DeleteManyStudentAnswer = ({
   questionTitle,
   data,
+  resetSelection,
 }: {
   questionTitle: string;
   data: AnsweredListByQuestion;
+  resetSelection: () => void;
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -166,7 +168,9 @@ export const DeleteManyStudentAnswer = ({
 
       setConfirmText("");
 
-      await apiUtils.question.getStudentAnswers.invalidate();
+      await apiUtils.question.getStudentAnswersByQuestion.invalidate();
+
+      resetSelection();
 
       toast({
         title: "Penghapusan Berhasil!",
