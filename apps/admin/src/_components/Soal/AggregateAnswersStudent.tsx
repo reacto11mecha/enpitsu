@@ -13,6 +13,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -71,7 +72,8 @@ const MonoFont = Space_Mono({
 
 export const columns: ColumnDef<StudentAnswers>[] = [
   {
-    accessorKey: "studentName",
+    id: "studentName",
+    accessorKey: "student.name",
     header: "Nama Peserta",
     cell: ({ row }) => <div>{row.original.student.name}</div>,
   },
@@ -218,8 +220,22 @@ export function DataTable() {
 
   return (
     <div className="w-full">
-      <div className="mt-2 flex flex-col gap-2 pb-4 md:flex-row md:items-center">
+      <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center">
         <AggregateExcelAnswerDownload />
+      </div>
+
+      <div className="mt-2 flex flex-col gap-2 pb-4 md:flex-row md:items-center">
+        <Input
+          placeholder="Filter berdasarkan nama peserta..."
+          value={
+            (table.getColumn("studentName")?.getFilterValue() as string) ?? ""
+          }
+          onChange={(event) =>
+            table.getColumn("studentName")?.setFilterValue(event.target.value)
+          }
+          className="w-full md:max-w-md"
+        />
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="md:ml-auto">
