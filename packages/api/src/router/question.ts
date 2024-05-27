@@ -287,16 +287,16 @@ export const questionRouter = createTRPCRouter({
       ctx.db.transaction(async (tx) => {
         for (const id of input.ids) {
           await tx
-            .delete(schema.studentrespondchoices)
-            .where(eq(schema.studentrespondchoices.respondid, id));
+            .delete(schema.studentRespondChoices)
+            .where(eq(schema.studentRespondChoices.respondId, id));
 
           await tx
-            .delete(schema.studentrespondessays)
-            .where(eq(schema.studentrespondessays.respondid, id));
+            .delete(schema.studentRespondEssays)
+            .where(eq(schema.studentRespondEssays.respondId, id));
 
           await tx
-            .delete(schema.studentresponds)
-            .where(eq(schema.studentresponds.id, id));
+            .delete(schema.studentResponds)
+            .where(eq(schema.studentResponds.id, id));
         }
       }),
     ),
