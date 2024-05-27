@@ -60,11 +60,14 @@ import {
 } from "lucide-react";
 
 import { api } from "~/utils/api";
-import { DeleteStudentAnswer } from "./DeleteStudentAnswer";
+import {
+  DeleteManyStudentAnswer,
+  DeleteSingleStudentAnswer,
+} from "./DeleteStudentAnswer";
 import { SpecificExcelAnswerDownload } from "./ExcelAnswerDownload";
 import { RecalcEssayAnswer } from "./RecalcEssayAnswer";
 
-type BlocklistByQuestion =
+type AnsweredListByQuestion =
   RouterOutputs["question"]["getStudentAnswersByQuestion"][number];
 
 const MonoFont = Space_Mono({
@@ -74,7 +77,7 @@ const MonoFont = Space_Mono({
 
 const RoleContext = createContext("");
 
-export const columns: ColumnDef<BlocklistByQuestion>[] = [
+export const columns: ColumnDef<AnsweredListByQuestion>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -83,15 +86,15 @@ export const columns: ColumnDef<BlocklistByQuestion>[] = [
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && "indeterminate")
         }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
+        disabled
+        aria-label="Pilih semua"
       />
     ),
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
+        aria-label="Select baris ini"
       />
     ),
     enableSorting: false,
@@ -208,7 +211,7 @@ export const columns: ColumnDef<BlocklistByQuestion>[] = [
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <DeleteStudentAnswer
+          <DeleteSingleStudentAnswer
             closeDialog={closeDialog}
             id={answer.id}
             openDelete={openDelete}
@@ -275,7 +278,7 @@ export function DataTable({
             onChange={(event) =>
               table.getColumn("studentName")?.setFilterValue(event.target.value)
             }
-            className="max-w-md"
+            className="w-full md:max-w-md"
           />
 
           <DropdownMenu>
@@ -305,6 +308,19 @@ export function DataTable({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        {table.getFilteredSelectedRowModel().rows.length > 0 ? (
+          <div className="flex flex-col gap-2 pb-4 md:flex-row md:items-center">
+            <DeleteManyStudentAnswer
+              data={table
+                .getFilteredSelectedRowModel()
+                .rows.map((d) => d.original)}
+              questionTitle={title}
+            />
+            <Button variant="outline" onClick={() => table.resetRowSelection()}>
+              Batalkan semua pilihan
+            </Button>
+          </div>
+        ) : null}
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -390,7 +406,7 @@ export function DataTable({
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="text-muted-foreground flex-1 text-sm">
             {table.getFilteredSelectedRowModel().rows.length} dari{" "}
-            {table.getFilteredRowModel().rows.length} baris dipilih.
+            {table.getFilteredRowModel().rows.length} baris data dipilih.
           </div>
 
           <div className="flex items-center space-x-6 lg:space-x-8">
