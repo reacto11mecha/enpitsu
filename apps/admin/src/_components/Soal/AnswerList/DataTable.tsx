@@ -5,6 +5,7 @@ import { Space_Mono } from "next/font/google";
 import Link from "next/link";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -13,6 +14,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -32,6 +34,7 @@ import {
 import type { RouterOutputs } from "@enpitsu/api";
 import type {
   ColumnDef,
+  ColumnFiltersState,
   SortingState,
   VisibilityState,
 } from "@tanstack/react-table";
@@ -73,7 +76,30 @@ const RoleContext = createContext("");
 
 export const columns: ColumnDef<BlocklistByQuestion>[] = [
   {
-    accessorKey: "studentName",
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    id: "studentName",
+    accessorKey: "student.name",
     header: "Nama Peserta",
     cell: ({ row }) => <div>{row.original.student.name}</div>,
   },
@@ -209,12 +235,14 @@ export function DataTable({
     });
 
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const table = useReactTable({
     data: specificAnswerByQuestionQuery.data ?? [],
     columns,
     onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -223,6 +251,7 @@ export function DataTable({
     initialState: { pagination: { pageSize: 20 } },
     state: {
       sorting,
+      columnFilters,
       columnVisibility,
     },
   });
@@ -230,10 +259,24 @@ export function DataTable({
   return (
     <RoleContext.Provider value={currUserRole}>
       <div className="w-full">
-        <p>Soal: {title}</p>
-        <div className="mt-2 flex flex-col gap-2 pb-4 md:flex-row md:items-center">
+        <p className="mb-2">Soal: {title}</p>
+
+        <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center">
           <RecalcEssayAnswer questionId={questionId} title={title} />
           <SpecificExcelAnswerDownload questionId={questionId} title={title} />
+        </div>
+
+        <div className="mt-2 flex flex-col gap-2 pb-4 md:flex-row md:items-center">
+          <Input
+            placeholder="Filter berdasarkan nama peserta..."
+            value={
+              (table.getColumn("studentName")?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table.getColumn("studentName")?.setFilterValue(event.target.value)
+            }
+            className="max-w-md"
+          />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -345,6 +388,11 @@ export function DataTable({
           </Table>
         </div>
         <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="text-muted-foreground flex-1 text-sm">
+            {table.getFilteredSelectedRowModel().rows.length} dari{" "}
+            {table.getFilteredRowModel().rows.length} baris dipilih.
+          </div>
+
           <div className="flex items-center space-x-6 lg:space-x-8">
             <div className="flex items-center space-x-2">
               <p className="text-sm font-medium">Baris per halaman</p>
