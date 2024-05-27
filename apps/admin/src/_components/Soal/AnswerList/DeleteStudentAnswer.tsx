@@ -18,7 +18,7 @@ import { Loader2, Trash2 } from "lucide-react";
 import { api } from "~/utils/api";
 
 type AnsweredListByQuestion =
-  RouterOutputs["question"]["getStudentAnswersByQuestion"][number];
+  RouterOutputs["question"]["getStudentAnswersByQuestion"];
 
 export const DeleteSingleStudentAnswer = ({
   questionTitle,

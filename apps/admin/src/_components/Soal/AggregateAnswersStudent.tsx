@@ -59,7 +59,7 @@ import {
 } from "lucide-react";
 
 import { api } from "~/utils/api";
-import { DeleteStudentAnswer } from "./AnswerList/DeleteStudentAnswer";
+import { DeleteSingleStudentAnswer } from "./AnswerList/DeleteStudentAnswer";
 import { AggregateExcelAnswerDownload } from "./AnswerList/ExcelAnswerDownload";
 
 type StudentAnswers = RouterOutputs["question"]["getStudentAnswers"][number];
@@ -178,7 +178,7 @@ export const columns: ColumnDef<StudentAnswers>[] = [
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <DeleteStudentAnswer
+          <DeleteSingleStudentAnswer
             closeDialog={closeDialog}
             id={answer.id}
             openDelete={openDelete}
