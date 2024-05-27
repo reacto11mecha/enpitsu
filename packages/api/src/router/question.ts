@@ -1221,4 +1221,144 @@ export const questionRouter = createTRPCRouter({
         data: sortedData,
       };
     }),
+
+  downloadStudentBlocklistsExcelById: protectedProcedure
+    .input(
+      z.object({
+        questionId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const actualQuestion = await ctx.db.query.questions.findFirst({
+        where: eq(schema.questions.id, input.questionId),
+        columns: {
+          slug: true,
+        },
+      });
+
+      if (!actualQuestion)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Soal ini tidak ada!",
+        });
+
+      const blocklistsByQID = await ctx.db.query.studentBlocklists.findMany({
+        where: eq(schema.studentBlocklists.questionId, input.questionId),
+        columns: {
+          time: true,
+        },
+        with: {
+          student: {
+            columns: {
+              name: true,
+              room: true,
+            },
+            with: {
+              subgrade: {
+                columns: {
+                  label: true,
+                },
+                with: {
+                  grade: {
+                    columns: {
+                      label: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (blocklistsByQID.length < 1)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Belum ada yang curang pada soal ini!",
+        });
+
+      const normalizedData = blocklistsByQID.map((data) => ({
+        name: data.student.name,
+        className: `${data.student.subgrade.grade.label} ${data.student.subgrade.label}`,
+        room: data.student.room,
+        time: data.time,
+      }));
+
+      const sortedData = [...new Set(normalizedData.map((d) => d.className))]
+        .sort((l, r) => l.localeCompare(r))
+        .flatMap((className) =>
+          normalizedData
+            .filter((data) => data.className === className)
+            .sort((l, r) => l.name.localeCompare(r.name)),
+        );
+
+      return { slug: actualQuestion.slug, data: sortedData };
+    }),
+
+  downloadStudentBlocklistsExcelAggregate: protectedProcedure.mutation(
+    async ({ ctx }) => {
+      const allBlocklistsData = await ctx.db.query.studentBlocklists.findMany({
+        columns: {
+          time: true,
+        },
+        with: {
+          question: {
+            columns: {
+              slug: true,
+            },
+          },
+          student: {
+            columns: {
+              name: true,
+              room: true,
+            },
+            with: {
+              subgrade: {
+                columns: {
+                  label: true,
+                },
+                with: {
+                  grade: {
+                    columns: {
+                      label: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const normalizedData = allBlocklistsData.map((data) => ({
+        name: data.student.name,
+        slug: data.question.slug,
+        room: data.student.room,
+        time: data.time,
+        className: `${data.student.subgrade.grade.label} ${data.student.subgrade.label}`,
+      }));
+
+      const sortedData = [...new Set(normalizedData.map((d) => d.slug))].map(
+        (slug) => {
+          const blocks = normalizedData.filter((d) => d.slug === slug);
+
+          const sortedByClass = [...new Set(blocks.map((d) => d.className))]
+            .sort((l, r) => l.localeCompare(r))
+            .flatMap((cn) =>
+              blocks
+                .filter((a) => a.className === cn)
+                .sort((l, r) => l.name.localeCompare(r.name)),
+            )
+            .map(({ slug: _, ...rest }) => rest);
+
+          return {
+            slug,
+            data: sortedByClass,
+          };
+        },
+      );
+
+      return sortedData;
+    },
+  ),
 });

@@ -59,6 +59,7 @@ import {
 
 import { api } from "~/utils/api";
 import { DeleteCheatedStudent } from "./CheatedList/DeleteCheatedStudent";
+import { AggregateExcelCheatDownload } from "./CheatedList/ExcelCheatedDownload";
 
 type BlocklistByQuestion =
   RouterOutputs["question"]["getStudentBlocklists"][number];
@@ -191,6 +192,7 @@ export function DataTable() {
   return (
     <div className="w-full">
       <div className="flex items-center pb-4">
+        <AggregateExcelCheatDownload />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">

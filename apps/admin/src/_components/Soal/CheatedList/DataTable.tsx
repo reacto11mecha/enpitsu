@@ -60,6 +60,7 @@ import {
 
 import { api } from "~/utils/api";
 import { DeleteCheatedStudent } from "./DeleteCheatedStudent";
+import { SpecificExcelBlockedDownload } from "./ExcelCheatedDownload";
 
 type BlocklistByQuestion =
   RouterOutputs["question"]["getStudentBlocklistByQuestion"][number];
@@ -206,8 +207,9 @@ export function DataTable({
   return (
     <RoleContext.Provider value={currUserRole}>
       <div className="w-full">
+        <p className="mb-2">Soal: {title}</p>
         <div className="flex items-center pb-4">
-          <p>Soal: {title}</p>
+          <SpecificExcelBlockedDownload questionId={questionId} title={title} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">
