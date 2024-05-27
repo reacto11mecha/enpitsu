@@ -59,7 +59,7 @@ import {
 } from "lucide-react";
 
 import { api } from "~/utils/api";
-import { DeleteCheatedStudent } from "./CheatedList/DeleteCheatedStudent";
+import { DeleteSingleCheatedStudent } from "./CheatedList/DeleteCheatedStudent";
 import { AggregateExcelCheatDownload } from "./CheatedList/ExcelCheatedDownload";
 
 type BlocklistByQuestion =
@@ -153,7 +153,7 @@ export const columns: ColumnDef<BlocklistByQuestion>[] = [
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <DeleteCheatedStudent
+          <DeleteSingleCheatedStudent
             closeDialog={closeDialog}
             id={cheat.id}
             openDelete={openDelete}
