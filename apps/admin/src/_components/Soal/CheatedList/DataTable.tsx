@@ -5,15 +5,16 @@ import { Space_Mono } from "next/font/google";
 import Link from "next/link";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  // DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -59,7 +60,10 @@ import {
 } from "lucide-react";
 
 import { api } from "~/utils/api";
-import { DeleteCheatedStudent } from "./DeleteCheatedStudent";
+import {
+  DeleteManyCheatedStudent,
+  DeleteSingleCheatedStudent,
+} from "./DeleteCheatedStudent";
 import { SpecificExcelBlockedDownload } from "./ExcelCheatedDownload";
 
 type BlocklistByQuestion =
@@ -74,7 +78,30 @@ const RoleContext = createContext("");
 
 export const columns: ColumnDef<BlocklistByQuestion>[] = [
   {
-    accessorKey: "studentName",
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        disabled
+        aria-label="Pilih semua"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select baris ini"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    id: "studentName",
+    accessorKey: "student.name",
     header: "Nama Peserta",
     cell: ({ row }) => <div>{row.original.student.name}</div>,
   },
@@ -156,7 +183,7 @@ export const columns: ColumnDef<BlocklistByQuestion>[] = [
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <DeleteCheatedStudent
+          <DeleteSingleCheatedStudent
             closeDialog={closeDialog}
             id={cheat.id}
             openDelete={openDelete}
@@ -204,12 +231,29 @@ export function DataTable({
     },
   });
 
+  const resetSelection = useCallback(() => table.resetRowSelection(), [table]);
+
   return (
     <RoleContext.Provider value={currUserRole}>
       <div className="w-full">
         <p className="mb-2">Soal: {title}</p>
-        <div className="flex items-center pb-4">
+
+        <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center">
           <SpecificExcelBlockedDownload questionId={questionId} title={title} />
+        </div>
+
+        <div className="mt-2 flex flex-col gap-2 pb-4 md:flex-row md:items-center">
+          <Input
+            placeholder="Filter berdasarkan nama peserta..."
+            value={
+              (table.getColumn("studentName")?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table.getColumn("studentName")?.setFilterValue(event.target.value)
+            }
+            className="w-full md:max-w-md"
+          />
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">
@@ -237,6 +281,22 @@ export function DataTable({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        {table.getFilteredSelectedRowModel().rows.length > 0 ? (
+          <div className="flex flex-col gap-2 pb-4 md:flex-row md:items-center">
+            <DeleteManyCheatedStudent
+              data={table
+                .getFilteredSelectedRowModel()
+                .rows.map((d) => d.original)}
+              questionTitle={title}
+              resetSelection={resetSelection}
+            />
+            <Button variant="outline" onClick={resetSelection}>
+              Batalkan semua pilihan
+            </Button>
+          </div>
+        ) : null}
+
         <div className="rounded-md border">
           <Table>
             <TableHeader>

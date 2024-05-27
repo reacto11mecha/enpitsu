@@ -287,16 +287,16 @@ export const questionRouter = createTRPCRouter({
       ctx.db.transaction(async (tx) => {
         for (const id of input.ids) {
           await tx
-            .delete(schema.studentRespondChoices)
-            .where(eq(schema.studentRespondChoices.respondId, id));
+            .delete(schema.studentrespondchoices)
+            .where(eq(schema.studentrespondchoices.respondid, id));
 
           await tx
-            .delete(schema.studentRespondEssays)
-            .where(eq(schema.studentRespondEssays.respondId, id));
+            .delete(schema.studentrespondessays)
+            .where(eq(schema.studentrespondessays.respondid, id));
 
           await tx
-            .delete(schema.studentResponds)
-            .where(eq(schema.studentResponds.id, id));
+            .delete(schema.studentresponds)
+            .where(eq(schema.studentresponds.id, id));
         }
       }),
     ),
@@ -307,6 +307,18 @@ export const questionRouter = createTRPCRouter({
       ctx.db
         .delete(schema.studentBlocklists)
         .where(eq(schema.studentBlocklists.id, input.id)),
+    ),
+
+  deleteManyBlocklist: protectedProcedure
+    .input(z.object({ ids: z.array(z.number()) }))
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        for (const id of input.ids) {
+          await tx
+            .delete(schema.studentBlocklists)
+            .where(eq(schema.studentBlocklists.id, id));
+        }
+      }),
     ),
 
   createQuestion: protectedProcedure
