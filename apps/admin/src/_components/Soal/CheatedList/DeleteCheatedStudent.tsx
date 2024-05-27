@@ -176,7 +176,7 @@ export const DeleteManyCheatedStudent = ({
 
         toast({
           title: "Penghapusan Berhasil!",
-          description: "Berhasil menghapus banyak jawaban peserta.",
+          description: "Berhasil menghapus banyak kecurangan peserta.",
         });
       },
       onError(error) {

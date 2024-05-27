@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
 import { badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -13,6 +14,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -59,7 +61,10 @@ import {
 
 import { api } from "~/utils/api";
 import { AddBannedStudent } from "./TemporarilyBanned/AddBannedStudent";
-import { DeleteBannedStudent } from "./TemporarilyBanned/DeleteBannedStudent";
+import {
+  DeleteManyBannedStudent,
+  DeleteSingleBannedStudent,
+} from "./TemporarilyBanned/DeleteBannedStudent";
 import { EditBannedStudent } from "./TemporarilyBanned/EditBannedStudent";
 
 type StudentTempoban = RouterOutputs["question"]["getStudentTempobans"][number];
@@ -71,7 +76,30 @@ const MonoFont = Space_Mono({
 
 export const columns: ColumnDef<StudentTempoban>[] = [
   {
-    accessorKey: "studentName",
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        disabled
+        aria-label="Pilih semua"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select baris ini"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    id: "studentName",
+    accessorKey: "student.name",
     header: "Nama Peserta",
     cell: ({ row }) => <p>{row.original.student.name}</p>,
   },
@@ -170,7 +198,7 @@ export const columns: ColumnDef<StudentTempoban>[] = [
             isDialogOpen={openEdit}
             setDialogOpen={setOpenEdit}
           />
-          <DeleteBannedStudent
+          <DeleteSingleBannedStudent
             id={tempBan.id}
             studentName={tempBan.student.name}
             studentClassName={`${tempBan.student.subgrade.grade.label} ${tempBan.student.subgrade.label}`}
@@ -208,13 +236,29 @@ export function DataTable() {
     },
   });
 
+  const resetSelection = useCallback(() => table.resetRowSelection(), [table]);
+
   return (
     <div className="w-full">
-      <div className="flex items-center pb-4">
+      <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center">
         <AddBannedStudent />
+      </div>
+
+      <div className="mt-2 flex flex-col gap-2 pb-4 md:flex-row md:items-center">
+        <Input
+          placeholder="Filter berdasarkan nama peserta..."
+          value={
+            (table.getColumn("studentName")?.getFilterValue() as string) ?? ""
+          }
+          onChange={(event) =>
+            table.getColumn("studentName")?.setFilterValue(event.target.value)
+          }
+          className="w-full md:max-w-md"
+        />
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+            <Button variant="outline" className="md:ml-auto">
               Kolom-Kolom <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -239,6 +283,19 @@ export function DataTable() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      {table.getFilteredSelectedRowModel().rows.length > 0 ? (
+        <div className="flex flex-col gap-2 pb-4 md:flex-row md:items-center">
+          <DeleteManyBannedStudent
+            data={table
+              .getFilteredSelectedRowModel()
+              .rows.map((d) => d.original)}
+            resetSelection={resetSelection}
+          />
+          <Button variant="outline" onClick={resetSelection}>
+            Batalkan semua pilihan
+          </Button>
+        </div>
+      ) : null}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -322,6 +379,11 @@ export function DataTable() {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="text-muted-foreground flex-1 text-sm">
+          {table.getFilteredSelectedRowModel().rows.length} dari{" "}
+          {table.getFilteredRowModel().rows.length} baris data dipilih.
+        </div>
+
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Baris per halaman</p>

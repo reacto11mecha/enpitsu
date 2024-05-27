@@ -365,13 +365,25 @@ export const gradeRouter = createTRPCRouter({
       }),
     ),
 
-  deleteTemporaryBan: adminProcedure
+  deleteSingleTemporaryBan: adminProcedure
     .input(z.object({ id: z.number().min(1) }))
     .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
         await tx
           .delete(schema.studentTemporaryBans)
           .where(eq(schema.studentTemporaryBans.id, input.id));
+      }),
+    ),
+
+  deleteManyTemporaryBan: adminProcedure
+    .input(z.object({ ids: z.array(z.number().min(1)) }))
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        for (const id of input.ids) {
+          await tx
+            .delete(schema.studentTemporaryBans)
+            .where(eq(schema.studentTemporaryBans.id, id));
+        }
       }),
     ),
 });
