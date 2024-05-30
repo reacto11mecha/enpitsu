@@ -21,6 +21,7 @@ const userOS = parser.getOS();
 
 const enforceChromeOnAndroidOnly =
   browser.name === "Samsung Internet" ||
+  browser.name === "MIUI Browser" ||
   (userOS.name === "Android" && browser.name !== "Chrome");
 const enforceLatestVersion =
   userOS.name === "Android" &&
