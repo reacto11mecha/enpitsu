@@ -89,7 +89,7 @@ export const SpecificExcelAnswerDownload = ({
           views: [{ state: "frozen", ySplit: 1 }],
         });
 
-        const essayIsAThing = result.data.every((res) => res.essayLength > 0);
+        const essayIsAThing = result.essayLength > 0;
         const headerRow = [
           "Nama",
           "Kelas",
@@ -266,7 +266,7 @@ export const AggregateExcelAnswerDownload = () => {
             views: [{ state: "frozen", ySplit: 1 }],
           });
 
-          const essayIsAThing = result.data.every((res) => res.essayLength > 0);
+          const essayIsAThing = result.essayLength > 0;
           const headerRow = [
             "Nama",
             "Kelas",
@@ -309,7 +309,7 @@ export const AggregateExcelAnswerDownload = () => {
           };
 
           const sortedData = [...new Set(result.data.map((d) => d.className))]
-            .sort((l, r) => l.localeCompare(r))
+            .sort((l, r) => l.localeCompare(r))!
             .flatMap((className) =>
               result.data
                 .filter((data) => data.className === className)
