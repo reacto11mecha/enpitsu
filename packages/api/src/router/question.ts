@@ -1131,7 +1131,6 @@ export const questionRouter = createTRPCRouter({
         where: inArray(schema.studentRespondEssays.respondId, allRespondIds),
         columns: {
           respondId: true,
-          choiceId: true,
           score: true,
         },
       });
@@ -1153,7 +1152,7 @@ export const questionRouter = createTRPCRouter({
                 .filter((avail) => avail.respondId === r.id)
                 .map(
                   (d) =>
-                    question.multipleChoices.find((c) => c.iqid === d.choiceId)
+                    question.multipleChoices.find((c) => c.iqid === d.choiceId)!
                       .correctAnswerOrder === d.answer,
                 )
                 .filter((a) => !!a).length,
