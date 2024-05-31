@@ -136,7 +136,7 @@ export const SpecificExcelBlockedDownload = ({
         });
 
         worksheet.getColumn(1).width = 40;
-        worksheet.getColumn(4).numFmt = "dddd, dd mmmm yyyy, HH:MM:ss";
+        worksheet.getColumn(4).numFmt = "dddd!, dd mmmm yyyy!, HH:MM:ss";
         worksheet.getColumn(4).width = 33;
 
         const buffer = await workbook.xlsx.writeBuffer();
@@ -249,7 +249,7 @@ export const AggregateExcelCheatDownload = () => {
           });
 
           worksheet.getColumn(1).width = 40;
-          worksheet.getColumn(4).numFmt = "dddd, dd mmmm yyyy, HH:MM:ss";
+          worksheet.getColumn(4).numFmt = "dddd!, dd mmmm yyyy!, HH:MM:ss";
           worksheet.getColumn(4).width = 33;
         }
 
