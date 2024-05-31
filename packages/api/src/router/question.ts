@@ -1,5 +1,14 @@
 import { cache } from "@enpitsu/cache";
-import { and, asc, count, desc, eq, schema } from "@enpitsu/db";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  schema,
+  studentRespondsData,
+} from "@enpitsu/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -1022,110 +1031,156 @@ export const questionRouter = createTRPCRouter({
 
   downloadStudentResponsesExcelAggregate: protectedProcedure.mutation(
     async ({ ctx }) => {
-      const responsesByQID = await ctx.db.query.studentResponds.findMany({
-        columns: {
-          checkIn: true,
-          submittedAt: true,
-        },
-        with: {
-          question: {
-            columns: {
-              slug: true,
-            },
-          },
-          student: {
-            columns: {
-              name: true,
-              room: true,
-            },
-            with: {
-              subgrade: {
-                columns: {
-                  id: true,
-                  label: true,
-                },
-                with: {
-                  grade: {
-                    columns: {
-                      id: true,
-                      label: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
+      console.log(
+        ">>> aggregate student response begin",
+        new Date(),
+        "by",
+        ctx.session.user.name,
+      );
 
-          choices: {
-            columns: {
-              choiceId: true,
-              answer: true,
-            },
-            with: {
-              choiceQuestion: {
-                columns: {
-                  correctAnswerOrder: true,
-                },
-              },
-            },
-          },
+      console.time("totalComputation");
 
-          essays: {
-            columns: {
-              id: true,
-              score: true,
-            },
-          },
-        },
-      });
+      console.time("basicStudentResponds");
+      const studentResponses = await studentRespondsData.execute();
+      console.timeEnd("basicStudentResponds");
 
-      if (responsesByQID.length < 1)
+      if (studentResponses.length < 1)
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Belum ada jawaban pada aplikasi ini!",
         });
 
-      const normalizedData = responsesByQID.map((response) => ({
-        slug: response.question.slug,
-        name: response.student.name,
-        className: `${response.student.subgrade.grade.label} ${response.student.subgrade.label}`,
-        room: response.student.room,
-        checkIn: response.checkIn,
-        submittedAt: response.submittedAt,
-        choiceRightAnswered: response.choices
-          .map(
-            (choice) =>
-              choice.answer === choice.choiceQuestion.correctAnswerOrder,
-          )
-          .filter((a) => !!a).length,
-        choiceLength: response.choices.length,
-        essayScore: response.essays
-          .map((e) => parseFloat(e.score))
-          .reduce((curr, acc) => curr + acc, 0),
-        essayLength: response.essays.length,
+      const allRespondIds = studentResponses.map((r) => r.id);
+      const studentIds = [...new Set(studentResponses.map((r) => r.studentId))];
+      const questionIds = [
+        ...new Set(studentResponses.map((r) => r.questionId)),
+      ];
+
+      console.time("retrieveValidStudents");
+      const reusableStudentsData = await ctx.db.query.students.findMany({
+        where: inArray(schema.students.id, studentIds),
+        columns: {
+          id: true,
+          name: true,
+          room: true,
+        },
+        with: {
+          subgrade: {
+            columns: {
+              id: true,
+              label: true,
+            },
+            with: {
+              grade: {
+                columns: {
+                  id: true,
+                  label: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      console.timeEnd("retrieveValidStudents");
+
+      const normalizedStudentsData = reusableStudentsData.map((student) => ({
+        id: student.id,
+        name: student.name,
+        room: student.room,
+        className: `${student.subgrade.grade.label} ${student.subgrade.label}`,
       }));
 
-      const sortedData = [...new Set(normalizedData.map((d) => d.slug))].map(
-        (slug) => {
-          const answers = normalizedData.filter((d) => d.slug === slug);
+      console.time("retrieveValidQuestions");
+      const reusableQuestionsData = await ctx.db.query.questions.findMany({
+        where: inArray(schema.questions.id, questionIds),
+        columns: {
+          id: true,
+          slug: true,
+        },
+        with: {
+          multipleChoices: {
+            columns: {
+              iqid: true,
+              correctAnswerOrder: true,
+            },
+          },
+          essays: {
+            columns: {
+              iqid: true,
+            },
+          },
+        },
+      });
+      console.timeEnd("retrieveValidQuestions");
 
-          const sortedByClass = [...new Set(answers.map((d) => d.className))]
-            .sort((l, r) => l.localeCompare(r))
-            .flatMap((cn) =>
-              answers
-                .filter((a) => a.className === cn)
-                .sort((l, r) => l.name.localeCompare(r.name)),
-            )
-            .map(({ slug: _, ...rest }) => rest);
-
-          return {
-            slug,
-            data: sortedByClass,
-          };
+      console.time("retrieveValidStudentChoices");
+      const allAvailChoices = await ctx.db.query.studentRespondChoices.findMany(
+        {
+          where: inArray(schema.studentRespondChoices.respondId, allRespondIds),
+          columns: {
+            respondId: true,
+            choiceId: true,
+            answer: true,
+          },
         },
       );
+      console.timeEnd("retrieveValidStudentChoices");
 
-      return sortedData;
+      console.time("retrieveValidStudentEssays");
+      const allAvailEssays = await ctx.db.query.studentRespondEssays.findMany({
+        where: inArray(schema.studentRespondEssays.respondId, allRespondIds),
+        columns: {
+          respondId: true,
+          score: true,
+        },
+      });
+      console.timeEnd("retrieveValidStudentEssays");
+
+      const normalizedData = reusableQuestionsData.map((question) => {
+        const studentList = studentResponses
+          .filter((r) => r.questionId === question.id)
+          .map((r) => {
+            const actualStudent = normalizedStudentsData.find(
+              (s) => s.id === r.studentId,
+            );
+
+            return {
+              ...actualStudent,
+              checkIn: r.checkIn,
+              submittedAt: r.submittedAt,
+              choiceRightAnswered: allAvailChoices
+                .filter((avail) => avail.respondId === r.id)
+                .map(
+                  (d) =>
+                    question.multipleChoices.find((c) => c.iqid === d.choiceId)!
+                      .correctAnswerOrder === d.answer,
+                )
+                .filter((a) => !!a).length,
+              essayScore: allAvailEssays
+                .filter((avail) => avail.respondId === r.id)
+                .map((e) => parseFloat(e.score))
+                .reduce((curr, acc) => curr + acc, 0),
+            };
+          });
+
+        return {
+          slug: question.slug,
+          data: studentList,
+          choiceLength: question.multipleChoices.length,
+          essayLength: question.essays.length,
+        };
+      });
+
+      console.timeEnd("totalComputation");
+
+      console.log(
+        ">>> aggregate student response done at",
+        new Date(),
+        "by",
+        ctx.session.user.name,
+      );
+
+      return normalizedData;
     },
   ),
 

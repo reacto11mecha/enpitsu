@@ -117,3 +117,7 @@ export const preparedGetStudent = db.query.students
     },
   })
   .prepare("getStudentDatas");
+
+export const studentRespondsData = db.query.studentResponds
+  .findMany()
+  .prepare("studentRespondsBasicData");

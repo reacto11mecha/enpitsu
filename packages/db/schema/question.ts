@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  index,
   integer,
   json,
   numeric,
@@ -103,17 +104,24 @@ export const essayRelations = relations(essays, ({ one, many }) => ({
   responds: many(studentRespondEssays),
 }));
 
-export const studentResponds = myPgTable("studentRespond", {
-  id: serial("id").primaryKey(),
-  checkIn: timestamp("check_in", { mode: "date" }).notNull(),
-  submittedAt: timestamp("submittedAt", { mode: "date" }).notNull(),
-  questionId: integer("question_id")
-    .notNull()
-    .references(() => questions.id),
-  studentId: integer("student_id")
-    .notNull()
-    .references(() => students.id),
-});
+export const studentResponds = myPgTable(
+  "studentRespond",
+  {
+    id: serial("id").primaryKey(),
+    checkIn: timestamp("check_in", { mode: "date" }).notNull(),
+    submittedAt: timestamp("submittedAt", { mode: "date" }).notNull(),
+    questionId: integer("question_id")
+      .notNull()
+      .references(() => questions.id),
+    studentId: integer("student_id")
+      .notNull()
+      .references(() => students.id),
+  },
+  (table) => ({
+    questionIdx: index("question_idx").on(table.questionId),
+    studentIdx: index("student_idx").on(table.studentId),
+  }),
+);
 
 export const studentRespondRelations = relations(
   studentResponds,
