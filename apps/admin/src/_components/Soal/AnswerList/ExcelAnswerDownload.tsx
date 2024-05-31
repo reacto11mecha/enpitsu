@@ -309,7 +309,7 @@ export const AggregateExcelAnswerDownload = () => {
           };
 
           const sortedData = [...new Set(result.data.map((d) => d.className))]
-            .sort((l, r) => l!.localeCompare(r!))!
+            .sort((l, r) => l!.localeCompare(r!))
             .flatMap((className) =>
               result.data
                 .filter((data) => data.className === className)
