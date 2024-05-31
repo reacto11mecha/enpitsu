@@ -85,13 +85,59 @@ export const SpecificExcelBlockedDownload = ({
 
         workbook.created = new Date();
 
-        const worksheet = workbook.addWorksheet(result.slug);
+        const worksheet = workbook.addWorksheet(result.slug, {
+          views: [{ state: "frozen", ySplit: 1 }],
+        });
 
         worksheet.addRow(["Nama", "Kelas", "Ruangan", "Waktu Kecurangan"]);
 
-        result.data.forEach((res) => {
-          worksheet.addRow([res.name, res.className, res.room, res.time]);
+        const firstRow = worksheet.getRow(1);
+
+        for (let i = 1; i <= 4; i++) {
+          firstRow.getCell(i).border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        firstRow.alignment = {
+          vertical: "middle",
+          horizontal: "center",
+        };
+        firstRow.font = {
+          bold: true,
+        };
+
+        result.data.forEach((res, idx) => {
+          worksheet.addRow([
+            res.name,
+            res.className,
+            res.room,
+            new Date(res.time.getTime() + 7 * 60 * 60 * 1000),
+          ]);
+
+          const currentRow = worksheet.getRow(idx + 2);
+
+          for (let i = 1; i <= 4; i++) {
+            currentRow.getCell(i).alignment = {
+              vertical: "middle",
+              horizontal: i === 4 ? "right" : i > 1 ? "center" : "left",
+            };
+
+            currentRow.getCell(i).border = {
+              top: { style: "thin" },
+              left: { style: "thin" },
+              bottom: { style: "thin" },
+              right: { style: "thin" },
+            };
+          }
         });
+
+        worksheet.getColumn(1).width = 40;
+        worksheet.getColumn(4).numFmt = "dddd, dd mmmm yyyy, HH:MM:ss";
+        worksheet.getColumn(4).width = 33;
 
         const buffer = await workbook.xlsx.writeBuffer();
 
@@ -152,13 +198,59 @@ export const AggregateExcelCheatDownload = () => {
         workbook.created = new Date();
 
         for (const result of results) {
-          const worksheet = workbook.addWorksheet(result.slug);
+          const worksheet = workbook.addWorksheet(result.slug, {
+            views: [{ state: "frozen", ySplit: 1 }],
+          });
 
           worksheet.addRow(["Nama", "Kelas", "Ruangan", "Waktu Kecurangan"]);
 
-          result.data.forEach((res) => {
-            worksheet.addRow([res.name, res.className, res.room, res.time]);
+          const firstRow = worksheet.getRow(1);
+
+          for (let i = 1; i <= 4; i++) {
+            firstRow.getCell(i).border = {
+              top: { style: "thin" },
+              left: { style: "thin" },
+              bottom: { style: "thin" },
+              right: { style: "thin" },
+            };
+          }
+
+          firstRow.alignment = {
+            vertical: "middle",
+            horizontal: "center",
+          };
+          firstRow.font = {
+            bold: true,
+          };
+
+          result.data.forEach((res, idx) => {
+            worksheet.addRow([
+              res.name,
+              res.className,
+              res.room,
+              new Date(res.time.getTime() + 7 * 60 * 60 * 1000),
+            ]);
+
+            const currentRow = worksheet.getRow(idx + 2);
+
+            for (let i = 1; i <= 4; i++) {
+              currentRow.getCell(i).alignment = {
+                vertical: "middle",
+                horizontal: i === 4 ? "right" : i > 1 ? "center" : "left",
+              };
+
+              currentRow.getCell(i).border = {
+                top: { style: "thin" },
+                left: { style: "thin" },
+                bottom: { style: "thin" },
+                right: { style: "thin" },
+              };
+            }
           });
+
+          worksheet.getColumn(1).width = 40;
+          worksheet.getColumn(4).numFmt = "dddd, dd mmmm yyyy, HH:MM:ss";
+          worksheet.getColumn(4).width = 33;
         }
 
         const buffer = await workbook.xlsx.writeBuffer();

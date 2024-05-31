@@ -85,42 +85,123 @@ export const SpecificExcelAnswerDownload = ({
 
         workbook.created = new Date();
 
-        const worksheet = workbook.addWorksheet(result.slug);
+        const worksheet = workbook.addWorksheet(result.slug, {
+          views: [{ state: "frozen", ySplit: 1 }],
+        });
 
-        worksheet.addRow([
+        const essayIsAThing = result.data.every((res) => res.essayLength > 0);
+        const headerRow = [
           "Nama",
           "Kelas",
           "Ruangan",
           "Mulai Mengerjakan",
           "Waktu Submit",
+          "Durasi Pengerjaan",
           "Skor PG",
           "Soal PG",
           "Skor Esai",
           "Soal Esai",
           "Nilai Akhir",
-        ]);
+        ].filter((d) => (essayIsAThing ? true : !d.includes("Esai")));
 
-        result.data.forEach((res) => {
-          worksheet.addRow([
-            res.name,
-            res.className,
-            res.room,
-            res.checkIn,
-            res.submittedAt,
-            res.choiceRightAnswered,
-            result.choiceLength,
-            res.essayScore,
-            result.essayLength,
-          ]);
-        });
+        worksheet.addRow(headerRow);
 
-        for (let i = 2; i <= result.data.length + 1; i++) {
-          // Komposisi pilihan ganda 70% dan esai 30%
-          // - Pak ade
-          worksheet.getCell(`J${i}`).value = {
-            formula: `((F${i}/G${i}*0.7)+(H${i}/i${i})*0.3)*100`,
+        const firstRow = worksheet.getRow(1);
+
+        for (let i = 1; i <= headerRow.length; i++) {
+          worksheet.getColumn(i).alignment = {
+            vertical: "middle",
+            horizontal:
+              i === headerRow.length ? "right" : i > 1 ? "center" : "left",
+          };
+
+          firstRow.getCell(i).border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
           };
         }
+
+        firstRow.alignment = {
+          vertical: "middle",
+          horizontal: "center",
+        };
+        firstRow.font = {
+          bold: true,
+        };
+
+        result.data.forEach((res, idx) => {
+          const adjustedCheckIn = new Date(
+            res.checkIn.getTime() + 7 * 60 * 60 * 1000,
+          );
+          const adjustedSubmittedAt = new Date(
+            res.submittedAt.getTime() + 7 * 60 * 60 * 1000,
+          );
+
+          const rowValue = essayIsAThing
+            ? [
+                res.name,
+                res.className,
+                res.room,
+                adjustedCheckIn,
+                adjustedSubmittedAt,
+                "",
+                res.choiceRightAnswered,
+                result.choiceLength,
+                res.essayScore,
+                result.essayLength,
+              ]
+            : [
+                res.name,
+                res.className,
+                res.room,
+                adjustedCheckIn,
+                adjustedSubmittedAt,
+                "",
+                res.choiceRightAnswered,
+                result.choiceLength,
+              ];
+
+          worksheet.addRow(rowValue);
+
+          worksheet.getCell(`F${idx + 2}`).value = {
+            formula: `E${idx + 2}-D${idx + 2}`,
+          };
+
+          worksheet.getCell(
+            essayIsAThing ? `K${idx + 2}` : `I${idx + 2}`,
+          ).value = {
+            formula: essayIsAThing
+              ? // Komposisi pilihan ganda 70% dan esai 30%
+                // - Pak ade
+                `((G${idx + 2}/H${idx + 2}*0.7)+(I${idx + 2}/J${
+                  idx + 2
+                })*0.3)*100`
+              : `G${idx + 2}/H${idx + 2}*100`,
+          };
+
+          const currentRow = worksheet.getRow(idx + 2);
+
+          for (let i = 1; i <= headerRow.length; i++) {
+            currentRow.getCell(i).border = {
+              top: { style: "thin" },
+              left: { style: "thin" },
+              bottom: { style: "thin" },
+              right: { style: "thin" },
+            };
+          }
+        });
+
+        worksheet.getColumn(1).width = 40;
+        worksheet.getColumn(4).numFmt = "dddd, dd mmmm yyyy, HH:MM:ss";
+        worksheet.getColumn(4).width = 33;
+        worksheet.getColumn(5).numFmt = "dddd, dd mmmm yyyy, HH:MM:ss";
+        worksheet.getColumn(5).width = 33;
+        worksheet.getColumn(6).width = 19;
+        worksheet.getColumn(6).numFmt = "HH:MM:ss";
+
+        worksheet.getColumn(headerRow.length).width = 11;
 
         const buffer = await workbook.xlsx.writeBuffer();
 
