@@ -308,15 +308,7 @@ export const AggregateExcelAnswerDownload = () => {
             bold: true,
           };
 
-          const sortedData = [...new Set(result.data.map((d) => d.className))]
-            .sort((l, r) => l!.localeCompare(r!))
-            .flatMap((className) =>
-              result.data
-                .filter((data) => data.className === className)
-                .sort((l, r) => l.name!.localeCompare(r.name!)),
-            );
-
-          sortedData.forEach((res, idx) => {
+          result.data.forEach((res, idx) => {
             const adjustedCheckIn = new Date(
               res.checkIn.getTime() + 7 * 60 * 60 * 1000,
             );

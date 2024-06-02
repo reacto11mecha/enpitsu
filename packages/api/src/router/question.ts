@@ -1029,10 +1029,10 @@ export const questionRouter = createTRPCRouter({
       }),
     ),
 
-  downloadStudentResponsesExcelAggregate: protectedProcedure.mutation(
+  downloadStudentResponsesExcelAggregate: adminProcedure.mutation(
     async ({ ctx }) => {
       console.log(
-        ">>> aggregate student response begin",
+        ">>> aggregate student response begin at",
         new Date(),
         "by",
         ctx.session.user.name,
@@ -1136,40 +1136,83 @@ export const questionRouter = createTRPCRouter({
       });
       console.timeEnd("retrieveValidStudentEssays");
 
+      // Precompute lookups for faster access
+      console.time("measureMapCreation");
+      const studentMap = new Map<number, (typeof normalizedStudentsData)[0]>();
+      normalizedStudentsData.forEach((student) =>
+        studentMap.set(student.id, student),
+      );
+
+      const responsesByQuestion = new Map<number, typeof studentResponses>();
+      studentResponses.forEach((response) => {
+        if (!responsesByQuestion.has(response.questionId)) {
+          responsesByQuestion.set(response.questionId, []);
+        }
+        responsesByQuestion.get(response.questionId)!.push(response);
+      });
+
+      const choicesByResponse = new Map<number, typeof allAvailChoices>();
+      allAvailChoices.forEach((choice) => {
+        if (!choicesByResponse.has(choice.respondId)) {
+          choicesByResponse.set(choice.respondId, []);
+        }
+        choicesByResponse.get(choice.respondId)!.push(choice);
+      });
+
+      const essaysByResponse = new Map<number, typeof allAvailEssays>();
+      allAvailEssays.forEach((essay) => {
+        if (!essaysByResponse.has(essay.respondId)) {
+          essaysByResponse.set(essay.respondId, []);
+        }
+        essaysByResponse.get(essay.respondId)!.push(essay);
+      });
+      console.timeEnd("measureMapCreation");
+
+      console.time("measureActualDataCreation");
       const normalizedData = reusableQuestionsData.map((question) => {
-        const studentList = studentResponses
-          .filter((r) => r.questionId === question.id)
-          .map((r) => {
-            const actualStudent = normalizedStudentsData.find(
-              (s) => s.id === r.studentId,
+        const studentList = (responsesByQuestion.get(question.id) || []).map(
+          (r) => {
+            const actualStudent = studentMap.get(r.studentId)!;
+
+            const choiceRightAnswered = (
+              choicesByResponse.get(r.id) || []
+            ).filter(
+              (d) =>
+                question.multipleChoices.find((c) => c.iqid === d.choiceId)
+                  ?.correctAnswerOrder === d.answer,
+            ).length;
+
+            const essayScore = (essaysByResponse.get(r.id) || []).reduce(
+              (total, essay) => total + parseFloat(essay.score),
+              0,
             );
 
             return {
               ...actualStudent,
               checkIn: r.checkIn,
               submittedAt: r.submittedAt,
-              choiceRightAnswered: allAvailChoices
-                .filter((avail) => avail.respondId === r.id)
-                .map(
-                  (d) =>
-                    question.multipleChoices.find((c) => c.iqid === d.choiceId)!
-                      .correctAnswerOrder === d.answer,
-                )
-                .filter((a) => !!a).length,
-              essayScore: allAvailEssays
-                .filter((avail) => avail.respondId === r.id)
-                .map((e) => parseFloat(e.score))
-                .reduce((curr, acc) => curr + acc, 0),
+              choiceRightAnswered,
+              essayScore,
             };
-          });
+          },
+        );
+
+        const sortedData = studentList.sort((a, b) => {
+          if (a.className === b.className) {
+            return a.name.localeCompare(b.name);
+          }
+
+          return a.className.localeCompare(b.className);
+        });
 
         return {
           slug: question.slug,
-          data: studentList,
+          data: sortedData,
           choiceLength: question.multipleChoices.length,
           essayLength: question.essays.length,
         };
       });
+      console.timeEnd("measureActualDataCreation");
 
       console.timeEnd("totalComputation");
 
