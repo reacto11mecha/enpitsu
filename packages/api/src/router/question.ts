@@ -1172,19 +1172,19 @@ export const questionRouter = createTRPCRouter({
 
       console.time("measureActualDataCreation");
       const normalizedData = reusableQuestionsData.map((question) => {
-        const studentList = (responsesByQuestion.get(question.id) || []).map(
+        const studentList = (responsesByQuestion.get(question.id) ?? []).map(
           (r) => {
             const actualStudent = studentMap.get(r.studentId)!;
 
             const choiceRightAnswered = (
-              choicesByResponse.get(r.id) || []
+              choicesByResponse.get(r.id) ?? []
             ).filter(
               (d) =>
                 question.multipleChoices.find((c) => c.iqid === d.choiceId)
                   ?.correctAnswerOrder === d.answer,
             ).length;
 
-            const essayScore = (essaysByResponse.get(r.id) || []).reduce(
+            const essayScore = (essaysByResponse.get(r.id) ?? []).reduce(
               (total, essay) => total + parseFloat(essay.score),
               0,
             );
@@ -1341,13 +1341,13 @@ export const questionRouter = createTRPCRouter({
       const normalizedData = studentResponsesByQID.map((r) => {
         const actualStudent = studentMap.get(r.studentId)!;
 
-        const choiceRightAnswered = (choicesByResponse.get(r.id) || []).filter(
+        const choiceRightAnswered = (choicesByResponse.get(r.id) ?? []).filter(
           (d) =>
             specificQuestion.multipleChoices.find((c) => c.iqid === d.choiceId)
               ?.correctAnswerOrder === d.answer,
         ).length;
 
-        const essayScore = (essaysByResponse.get(r.id) || []).reduce(
+        const essayScore = (essaysByResponse.get(r.id) ?? []).reduce(
           (total, essay) => total + parseFloat(essay.score),
           0,
         );
