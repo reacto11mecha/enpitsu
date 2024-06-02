@@ -7,6 +7,8 @@ import {
   eq,
   inArray,
   schema,
+  specificQuestionData,
+  studentRespondsByQuestionData,
   studentRespondsData,
 } from "@enpitsu/db";
 import { TRPCError } from "@trpc/server";
@@ -1083,13 +1085,6 @@ export const questionRouter = createTRPCRouter({
       });
       console.timeEnd("retrieveValidStudents");
 
-      const normalizedStudentsData = reusableStudentsData.map((student) => ({
-        id: student.id,
-        name: student.name,
-        room: student.room,
-        className: `${student.subgrade.grade.label} ${student.subgrade.label}`,
-      }));
-
       console.time("retrieveValidQuestions");
       const reusableQuestionsData = await ctx.db.query.questions.findMany({
         where: inArray(schema.questions.id, questionIds),
@@ -1138,9 +1133,16 @@ export const questionRouter = createTRPCRouter({
 
       // Precompute lookups for faster access
       console.time("measureMapCreation");
-      const studentMap = new Map<number, (typeof normalizedStudentsData)[0]>();
-      normalizedStudentsData.forEach((student) =>
-        studentMap.set(student.id, student),
+      const studentMap = new Map<
+        number,
+        { name: string; room: string; className: string }
+      >();
+      reusableStudentsData.forEach((student) =>
+        studentMap.set(student.id, {
+          name: student.name,
+          room: student.room,
+          className: `${student.subgrade.grade.label} ${student.subgrade.label}`,
+        }),
       );
 
       const responsesByQuestion = new Map<number, typeof studentResponses>();
@@ -1234,26 +1236,17 @@ export const questionRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const specificQuestion = await ctx.db.query.questions.findFirst({
-        where: eq(schema.questions.id, input.questionId),
-        columns: {
-          title: true,
-          slug: true,
-        },
-        with: {
-          multipleChoices: {
-            columns: {
-              iqid: true,
-              correctAnswerOrder: true,
-            },
-          },
-          essays: {
-            columns: {
-              iqid: true,
-            },
-          },
-        },
-      });
+      console.log(
+        ">>> specific student response begin at",
+        new Date(),
+        "by",
+        ctx.session.user.name,
+        "on questionId",
+        input.questionId,
+      );
+      console.time("totalComputation");
+
+      const specificQuestion = await specificQuestionData.execute(input);
 
       if (!specificQuestion)
         throw new TRPCError({
@@ -1261,87 +1254,131 @@ export const questionRouter = createTRPCRouter({
           message: "Tidak ada soal yang sesuai dengan permintaan anda!",
         });
 
-      const responsesByQID = await ctx.db.query.studentResponds.findMany({
-        where: eq(schema.studentResponds.questionId, input.questionId),
-        columns: {
-          checkIn: true,
-          submittedAt: true,
-        },
-        with: {
-          student: {
-            columns: {
-              name: true,
-              room: true,
-            },
-            with: {
-              subgrade: {
-                columns: {
-                  id: true,
-                  label: true,
-                },
-                with: {
-                  grade: {
-                    columns: {
-                      id: true,
-                      label: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
+      const studentResponsesByQID =
+        await studentRespondsByQuestionData.execute(input);
 
-          choices: {
-            columns: {
-              choiceId: true,
-              answer: true,
-            },
-          },
-
-          essays: {
-            columns: {
-              id: true,
-              score: true,
-            },
-          },
-        },
-      });
-
-      if (responsesByQID.length < 1)
+      if (studentResponsesByQID.length < 1)
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Belum ada jawaban pada soal ini!",
         });
 
-      const normalizedData = responsesByQID.map((response) => ({
-        name: response.student.name,
-        className: `${response.student.subgrade.grade.label} ${response.student.subgrade.label}`,
-        room: response.student.room,
-        checkIn: response.checkIn,
-        submittedAt: response.submittedAt,
-        choiceRightAnswered: specificQuestion.multipleChoices
-          .map((choice) => {
-            const currentChoice = response.choices.find(
-              (c) => c.choiceId === choice.iqid,
-            );
+      const allRespondIds = studentResponsesByQID.map((r) => r.id);
+      const studentIds = studentResponsesByQID.map((r) => r.studentId);
 
-            if (!currentChoice) return false;
+      const reusableStudentsData = await ctx.db.query.students.findMany({
+        where: inArray(schema.students.id, studentIds),
+        columns: {
+          id: true,
+          name: true,
+          room: true,
+        },
+        with: {
+          subgrade: {
+            columns: {
+              id: true,
+              label: true,
+            },
+            with: {
+              grade: {
+                columns: {
+                  id: true,
+                  label: true,
+                },
+              },
+            },
+          },
+        },
+      });
 
-            return currentChoice.answer === choice.correctAnswerOrder;
-          })
-          .filter((a) => !!a).length,
-        essayScore: response.essays
-          .map((e) => parseFloat(e.score))
-          .reduce((curr, acc) => curr + acc, 0),
-      }));
+      const allAvailChoices = await ctx.db.query.studentRespondChoices.findMany(
+        {
+          where: inArray(schema.studentRespondChoices.respondId, allRespondIds),
+          columns: {
+            respondId: true,
+            choiceId: true,
+            answer: true,
+          },
+        },
+      );
 
-      const sortedData = [...new Set(normalizedData.map((d) => d.className))]
-        .sort((l, r) => l.localeCompare(r))
-        .flatMap((className) =>
-          normalizedData
-            .filter((data) => data.className === className)
-            .sort((l, r) => l.name.localeCompare(r.name)),
+      const allAvailEssays = await ctx.db.query.studentRespondEssays.findMany({
+        where: inArray(schema.studentRespondEssays.respondId, allRespondIds),
+        columns: {
+          respondId: true,
+          score: true,
+        },
+      });
+
+      const studentMap = new Map<
+        number,
+        { name: string; room: string; className: string }
+      >();
+      reusableStudentsData.forEach((student) =>
+        studentMap.set(student.id, {
+          name: student.name,
+          room: student.room,
+          className: `${student.subgrade.grade.label} ${student.subgrade.label}`,
+        }),
+      );
+
+      const choicesByResponse = new Map<number, typeof allAvailChoices>();
+      allAvailChoices.forEach((choice) => {
+        if (!choicesByResponse.has(choice.respondId)) {
+          choicesByResponse.set(choice.respondId, []);
+        }
+        choicesByResponse.get(choice.respondId)!.push(choice);
+      });
+
+      const essaysByResponse = new Map<number, typeof allAvailEssays>();
+      allAvailEssays.forEach((essay) => {
+        if (!essaysByResponse.has(essay.respondId)) {
+          essaysByResponse.set(essay.respondId, []);
+        }
+        essaysByResponse.get(essay.respondId)!.push(essay);
+      });
+
+      const normalizedData = studentResponsesByQID.map((r) => {
+        const actualStudent = studentMap.get(r.studentId)!;
+
+        const choiceRightAnswered = (choicesByResponse.get(r.id) || []).filter(
+          (d) =>
+            specificQuestion.multipleChoices.find((c) => c.iqid === d.choiceId)
+              ?.correctAnswerOrder === d.answer,
+        ).length;
+
+        const essayScore = (essaysByResponse.get(r.id) || []).reduce(
+          (total, essay) => total + parseFloat(essay.score),
+          0,
         );
+
+        return {
+          ...actualStudent,
+          checkIn: r.checkIn,
+          submittedAt: r.submittedAt,
+          choiceRightAnswered,
+          essayScore,
+        };
+      });
+
+      const sortedData = normalizedData.sort((a, b) => {
+        if (a.className === b.className) {
+          return a.name.localeCompare(b.name);
+        }
+
+        return a.className.localeCompare(b.className);
+      });
+
+      console.timeEnd("totalComputation");
+
+      console.log(
+        ">>> specific student response done at",
+        new Date(),
+        "by",
+        ctx.session.user.name,
+        "on questionId",
+        input.questionId,
+      );
 
       return {
         title: specificQuestion.title,
