@@ -1,4 +1,5 @@
 import React from "react";
+import { ThemeProvider } from "@/components/theme-provider";
 import ReactDOM from "react-dom/client";
 
 import Provider from "./Provider.tsx";
@@ -7,6 +8,8 @@ import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <Provider />
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <Provider />
+    </ThemeProvider>
   </React.StrictMode>,
 );

@@ -1,5 +1,4 @@
 import { lazy, Suspense } from "react";
-import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import enpitsuLogo from "@/icon.png";
 import { studentTokenAtom } from "@/lib/atom";
@@ -32,7 +31,7 @@ export default function Provider() {
 
   if (enforceChromeOnAndroidOnly)
     return (
-      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <>
         <div className="flex h-screen w-screen flex-col items-center justify-center gap-5 p-6">
           <div className="flex flex-col items-center">
             <h2 className="scroll-m-20 text-center text-3xl font-semibold tracking-tight text-orange-600 first:mt-0 dark:text-orange-500">
@@ -90,12 +89,12 @@ export default function Provider() {
             </div>
           </div>
         </div>
-      </ThemeProvider>
+      </>
     );
 
   if (enforceLatestVersion)
     return (
-      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <>
         <div className="flex h-screen w-screen flex-col items-center justify-center gap-5 p-6">
           <div className="flex flex-col items-center">
             <h2 className="scroll-m-20 text-center text-3xl font-semibold tracking-tight text-orange-600 first:mt-0 dark:text-orange-500">
@@ -152,11 +151,11 @@ export default function Provider() {
             </div>
           </div>
         </div>
-      </ThemeProvider>
+      </>
     );
 
   return (
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+    <>
       {studentAtom === "" ? (
         <Suspense
           fallback={
@@ -172,6 +171,6 @@ export default function Provider() {
         <App />
       )}
       <Toaster />
-    </ThemeProvider>
+    </>
   );
 }
