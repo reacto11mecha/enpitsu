@@ -117,3 +117,38 @@ export const preparedGetStudent = db.query.students
     },
   })
   .prepare("getStudentDatas");
+
+// Prepared statement for download all answers
+export const studentRespondsData = db.query.studentResponds
+  .findMany()
+  .prepare("studentRespondsBasicData");
+
+// Prepared statement for download specific question answer
+export const specificQuestionData = db.query.questions
+  .findFirst({
+    where: eq(schema.questions.id, sql.placeholder("questionId")),
+    columns: {
+      title: true,
+      slug: true,
+    },
+    with: {
+      multipleChoices: {
+        columns: {
+          iqid: true,
+          correctAnswerOrder: true,
+        },
+      },
+      essays: {
+        columns: {
+          iqid: true,
+        },
+      },
+    },
+  })
+  .prepare("specificQuestionData");
+
+export const studentRespondsByQuestionData = db.query.studentResponds
+  .findMany({
+    where: eq(schema.studentResponds.questionId, sql.placeholder("questionId")),
+  })
+  .prepare("studentRespondsSpecificQuestionData");

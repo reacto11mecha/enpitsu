@@ -1,5 +1,16 @@
 import { cache } from "@enpitsu/cache";
-import { and, asc, count, desc, eq, schema } from "@enpitsu/db";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  schema,
+  specificQuestionData,
+  studentRespondsByQuestionData,
+  studentRespondsData,
+} from "@enpitsu/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -1020,126 +1031,65 @@ export const questionRouter = createTRPCRouter({
       }),
     ),
 
-  downloadStudentResponsesExcelAggregate: protectedProcedure.mutation(
+  downloadStudentResponsesExcelAggregate: adminProcedure.mutation(
     async ({ ctx }) => {
-      const responsesByQID = await ctx.db.query.studentResponds.findMany({
-        columns: {
-          checkIn: true,
-          submittedAt: true,
-        },
-        with: {
-          question: {
-            columns: {
-              slug: true,
-            },
-          },
-          student: {
-            columns: {
-              name: true,
-              room: true,
-            },
-            with: {
-              subgrade: {
-                columns: {
-                  id: true,
-                  label: true,
-                },
-                with: {
-                  grade: {
-                    columns: {
-                      id: true,
-                      label: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
+      console.log(
+        ">>> aggregate student response begin at",
+        new Date(),
+        "by",
+        ctx.session.user.name,
+      );
 
-          choices: {
-            columns: {
-              choiceId: true,
-              answer: true,
-            },
-            with: {
-              choiceQuestion: {
-                columns: {
-                  correctAnswerOrder: true,
-                },
-              },
-            },
-          },
+      console.time("totalComputation");
 
-          essays: {
-            columns: {
-              id: true,
-              score: true,
-            },
-          },
-        },
-      });
+      console.time("basicStudentResponds");
+      const studentResponses = await studentRespondsData.execute();
+      console.timeEnd("basicStudentResponds");
 
-      if (responsesByQID.length < 1)
+      if (studentResponses.length < 1)
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Belum ada jawaban pada aplikasi ini!",
         });
 
-      const normalizedData = responsesByQID.map((response) => ({
-        slug: response.question.slug,
-        name: response.student.name,
-        className: `${response.student.subgrade.grade.label} ${response.student.subgrade.label}`,
-        room: response.student.room,
-        checkIn: response.checkIn,
-        submittedAt: response.submittedAt,
-        choiceRightAnswered: response.choices
-          .map(
-            (choice) =>
-              choice.answer === choice.choiceQuestion.correctAnswerOrder,
-          )
-          .filter((a) => !!a).length,
-        choiceLength: response.choices.length,
-        essayScore: response.essays
-          .map((e) => parseFloat(e.score))
-          .reduce((curr, acc) => curr + acc, 0),
-        essayLength: response.essays.length,
-      }));
+      const allRespondIds = studentResponses.map((r) => r.id);
+      const studentIds = [...new Set(studentResponses.map((r) => r.studentId))];
+      const questionIds = [
+        ...new Set(studentResponses.map((r) => r.questionId)),
+      ];
 
-      const sortedData = [...new Set(normalizedData.map((d) => d.slug))].map(
-        (slug) => {
-          const answers = normalizedData.filter((d) => d.slug === slug);
-
-          const sortedByClass = [...new Set(answers.map((d) => d.className))]
-            .sort((l, r) => l.localeCompare(r))
-            .flatMap((cn) =>
-              answers
-                .filter((a) => a.className === cn)
-                .sort((l, r) => l.name.localeCompare(r.name)),
-            )
-            .map(({ slug: _, ...rest }) => rest);
-
-          return {
-            slug,
-            data: sortedByClass,
-          };
-        },
-      );
-
-      return sortedData;
-    },
-  ),
-
-  downloadStudentResponsesExcelById: protectedProcedure
-    .input(
-      z.object({
-        questionId: z.number(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const specificQuestion = await ctx.db.query.questions.findFirst({
-        where: eq(schema.questions.id, input.questionId),
+      console.time("retrieveValidStudents");
+      const reusableStudentsData = await ctx.db.query.students.findMany({
+        where: inArray(schema.students.id, studentIds),
         columns: {
-          title: true,
+          id: true,
+          name: true,
+          room: true,
+        },
+        with: {
+          subgrade: {
+            columns: {
+              id: true,
+              label: true,
+            },
+            with: {
+              grade: {
+                columns: {
+                  id: true,
+                  label: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      console.timeEnd("retrieveValidStudents");
+
+      console.time("retrieveValidQuestions");
+      const reusableQuestionsData = await ctx.db.query.questions.findMany({
+        where: inArray(schema.questions.id, questionIds),
+        columns: {
+          id: true,
           slug: true,
         },
         with: {
@@ -1156,6 +1106,147 @@ export const questionRouter = createTRPCRouter({
           },
         },
       });
+      console.timeEnd("retrieveValidQuestions");
+
+      console.time("retrieveValidStudentChoices");
+      const allAvailChoices = await ctx.db.query.studentRespondChoices.findMany(
+        {
+          where: inArray(schema.studentRespondChoices.respondId, allRespondIds),
+          columns: {
+            respondId: true,
+            choiceId: true,
+            answer: true,
+          },
+        },
+      );
+      console.timeEnd("retrieveValidStudentChoices");
+
+      console.time("retrieveValidStudentEssays");
+      const allAvailEssays = await ctx.db.query.studentRespondEssays.findMany({
+        where: inArray(schema.studentRespondEssays.respondId, allRespondIds),
+        columns: {
+          respondId: true,
+          score: true,
+        },
+      });
+      console.timeEnd("retrieveValidStudentEssays");
+
+      // Precompute lookups for faster access
+      console.time("measureMapCreation");
+      const studentMap = new Map<
+        number,
+        { name: string; room: string; className: string }
+      >();
+      reusableStudentsData.forEach((student) =>
+        studentMap.set(student.id, {
+          name: student.name,
+          room: student.room,
+          className: `${student.subgrade.grade.label} ${student.subgrade.label}`,
+        }),
+      );
+
+      const responsesByQuestion = new Map<number, typeof studentResponses>();
+      studentResponses.forEach((response) => {
+        if (!responsesByQuestion.has(response.questionId)) {
+          responsesByQuestion.set(response.questionId, []);
+        }
+        responsesByQuestion.get(response.questionId)!.push(response);
+      });
+
+      const choicesByResponse = new Map<number, typeof allAvailChoices>();
+      allAvailChoices.forEach((choice) => {
+        if (!choicesByResponse.has(choice.respondId)) {
+          choicesByResponse.set(choice.respondId, []);
+        }
+        choicesByResponse.get(choice.respondId)!.push(choice);
+      });
+
+      const essaysByResponse = new Map<number, typeof allAvailEssays>();
+      allAvailEssays.forEach((essay) => {
+        if (!essaysByResponse.has(essay.respondId)) {
+          essaysByResponse.set(essay.respondId, []);
+        }
+        essaysByResponse.get(essay.respondId)!.push(essay);
+      });
+      console.timeEnd("measureMapCreation");
+
+      console.time("measureActualDataCreation");
+      const normalizedData = reusableQuestionsData.map((question) => {
+        const studentList = (responsesByQuestion.get(question.id) ?? []).map(
+          (r) => {
+            const actualStudent = studentMap.get(r.studentId)!;
+
+            const choiceRightAnswered = (
+              choicesByResponse.get(r.id) ?? []
+            ).filter(
+              (d) =>
+                question.multipleChoices.find((c) => c.iqid === d.choiceId)
+                  ?.correctAnswerOrder === d.answer,
+            ).length;
+
+            const essayScore = (essaysByResponse.get(r.id) ?? []).reduce(
+              (total, essay) => total + parseFloat(essay.score),
+              0,
+            );
+
+            return {
+              ...actualStudent,
+              checkIn: r.checkIn,
+              submittedAt: r.submittedAt,
+              choiceRightAnswered,
+              essayScore,
+            };
+          },
+        );
+
+        const sortedData = studentList.sort((a, b) => {
+          if (a.className === b.className) {
+            return a.name.localeCompare(b.name);
+          }
+
+          return a.className.localeCompare(b.className);
+        });
+
+        return {
+          slug: question.slug,
+          data: sortedData,
+          choiceLength: question.multipleChoices.length,
+          essayLength: question.essays.length,
+        };
+      });
+      console.timeEnd("measureActualDataCreation");
+
+      console.timeEnd("totalComputation");
+
+      console.log(
+        ">>> aggregate student response done at",
+        new Date(),
+        "by",
+        ctx.session.user.name,
+      );
+
+      return normalizedData;
+    },
+  ),
+
+  downloadStudentResponsesExcelById: protectedProcedure
+    .input(
+      z.object({
+        questionId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log(
+        ">>> specific student response begin at",
+        new Date(),
+        "by",
+        ctx.session.user.name,
+        "on questionId",
+        input.questionId,
+      );
+      console.time("totalComputation");
+
+      const specificQuestion = await specificQuestionData.execute(input);
 
       if (!specificQuestion)
         throw new TRPCError({
@@ -1163,87 +1254,131 @@ export const questionRouter = createTRPCRouter({
           message: "Tidak ada soal yang sesuai dengan permintaan anda!",
         });
 
-      const responsesByQID = await ctx.db.query.studentResponds.findMany({
-        where: eq(schema.studentResponds.questionId, input.questionId),
-        columns: {
-          checkIn: true,
-          submittedAt: true,
-        },
-        with: {
-          student: {
-            columns: {
-              name: true,
-              room: true,
-            },
-            with: {
-              subgrade: {
-                columns: {
-                  id: true,
-                  label: true,
-                },
-                with: {
-                  grade: {
-                    columns: {
-                      id: true,
-                      label: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
+      const studentResponsesByQID =
+        await studentRespondsByQuestionData.execute(input);
 
-          choices: {
-            columns: {
-              choiceId: true,
-              answer: true,
-            },
-          },
-
-          essays: {
-            columns: {
-              id: true,
-              score: true,
-            },
-          },
-        },
-      });
-
-      if (responsesByQID.length < 1)
+      if (studentResponsesByQID.length < 1)
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Belum ada jawaban pada soal ini!",
         });
 
-      const normalizedData = responsesByQID.map((response) => ({
-        name: response.student.name,
-        className: `${response.student.subgrade.grade.label} ${response.student.subgrade.label}`,
-        room: response.student.room,
-        checkIn: response.checkIn,
-        submittedAt: response.submittedAt,
-        choiceRightAnswered: specificQuestion.multipleChoices
-          .map((choice) => {
-            const currentChoice = response.choices.find(
-              (c) => c.choiceId === choice.iqid,
-            );
+      const allRespondIds = studentResponsesByQID.map((r) => r.id);
+      const studentIds = studentResponsesByQID.map((r) => r.studentId);
 
-            if (!currentChoice) return false;
+      const reusableStudentsData = await ctx.db.query.students.findMany({
+        where: inArray(schema.students.id, studentIds),
+        columns: {
+          id: true,
+          name: true,
+          room: true,
+        },
+        with: {
+          subgrade: {
+            columns: {
+              id: true,
+              label: true,
+            },
+            with: {
+              grade: {
+                columns: {
+                  id: true,
+                  label: true,
+                },
+              },
+            },
+          },
+        },
+      });
 
-            return currentChoice.answer === choice.correctAnswerOrder;
-          })
-          .filter((a) => !!a).length,
-        essayScore: response.essays
-          .map((e) => parseFloat(e.score))
-          .reduce((curr, acc) => curr + acc, 0),
-      }));
+      const allAvailChoices = await ctx.db.query.studentRespondChoices.findMany(
+        {
+          where: inArray(schema.studentRespondChoices.respondId, allRespondIds),
+          columns: {
+            respondId: true,
+            choiceId: true,
+            answer: true,
+          },
+        },
+      );
 
-      const sortedData = [...new Set(normalizedData.map((d) => d.className))]
-        .sort((l, r) => l.localeCompare(r))
-        .flatMap((className) =>
-          normalizedData
-            .filter((data) => data.className === className)
-            .sort((l, r) => l.name.localeCompare(r.name)),
+      const allAvailEssays = await ctx.db.query.studentRespondEssays.findMany({
+        where: inArray(schema.studentRespondEssays.respondId, allRespondIds),
+        columns: {
+          respondId: true,
+          score: true,
+        },
+      });
+
+      const studentMap = new Map<
+        number,
+        { name: string; room: string; className: string }
+      >();
+      reusableStudentsData.forEach((student) =>
+        studentMap.set(student.id, {
+          name: student.name,
+          room: student.room,
+          className: `${student.subgrade.grade.label} ${student.subgrade.label}`,
+        }),
+      );
+
+      const choicesByResponse = new Map<number, typeof allAvailChoices>();
+      allAvailChoices.forEach((choice) => {
+        if (!choicesByResponse.has(choice.respondId)) {
+          choicesByResponse.set(choice.respondId, []);
+        }
+        choicesByResponse.get(choice.respondId)!.push(choice);
+      });
+
+      const essaysByResponse = new Map<number, typeof allAvailEssays>();
+      allAvailEssays.forEach((essay) => {
+        if (!essaysByResponse.has(essay.respondId)) {
+          essaysByResponse.set(essay.respondId, []);
+        }
+        essaysByResponse.get(essay.respondId)!.push(essay);
+      });
+
+      const normalizedData = studentResponsesByQID.map((r) => {
+        const actualStudent = studentMap.get(r.studentId)!;
+
+        const choiceRightAnswered = (choicesByResponse.get(r.id) ?? []).filter(
+          (d) =>
+            specificQuestion.multipleChoices.find((c) => c.iqid === d.choiceId)
+              ?.correctAnswerOrder === d.answer,
+        ).length;
+
+        const essayScore = (essaysByResponse.get(r.id) ?? []).reduce(
+          (total, essay) => total + parseFloat(essay.score),
+          0,
         );
+
+        return {
+          ...actualStudent,
+          checkIn: r.checkIn,
+          submittedAt: r.submittedAt,
+          choiceRightAnswered,
+          essayScore,
+        };
+      });
+
+      const sortedData = normalizedData.sort((a, b) => {
+        if (a.className === b.className) {
+          return a.name.localeCompare(b.name);
+        }
+
+        return a.className.localeCompare(b.className);
+      });
+
+      console.timeEnd("totalComputation");
+
+      console.log(
+        ">>> specific student response done at",
+        new Date(),
+        "by",
+        ctx.session.user.name,
+        "on questionId",
+        input.questionId,
+      );
 
       return {
         title: specificQuestion.title,
