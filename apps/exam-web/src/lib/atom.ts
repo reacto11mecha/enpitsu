@@ -1,5 +1,17 @@
 import { atomWithStorage } from "jotai/utils";
 
+export type TSystemServer = {
+  npsn: number | null;
+  serverUrl: string | null;
+  institution: string | null;
+};
+
+export const systemServerAtom = atomWithStorage<TSystemServer>("systemServer", {
+  npsn: null,
+  serverUrl: null,
+  institution: null,
+});
+
 export const studentTokenAtom = atomWithStorage("studentToken", "");
 
 export type TStudentAnswer = {

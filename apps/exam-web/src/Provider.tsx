@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import enpitsuLogo from "@/icon.png";
-import { studentTokenAtom } from "@/lib/atom";
+import { studentTokenAtom, systemServerAtom } from "@/lib/atom";
 import { useAtom } from "jotai";
 import { RefreshCw } from "lucide-react";
 import { UAParser } from "ua-parser-js";
@@ -26,7 +26,7 @@ const enforceLatestVersion =
   userOS.name === "Android" &&
   (browser.major ? parseInt(browser.major) < 90 : true);
 
-export default function Provider() {
+function SmallProvider() {
   const [studentAtom] = useAtom(studentTokenAtom);
 
   if (enforceChromeOnAndroidOnly)
@@ -173,4 +173,17 @@ export default function Provider() {
       <Toaster />
     </>
   );
+}
+
+export default function Provider() {
+  const [systemServer] = useAtom(systemServerAtom);
+
+  if (
+    !systemServer.npsn &&
+    !systemServerAtom.serverUrl &&
+    !systemServer.institution
+  )
+    return <>kosong bos</>;
+
+  return <></>;
 }
