@@ -17,6 +17,7 @@ import ExcelJS from "exceljs";
 import { Sheet } from "lucide-react";
 
 import { api } from "~/utils/api";
+import { excelNormalizeTime } from "~/utils/time";
 
 const ReusableDialog = ({
   open,
@@ -132,12 +133,8 @@ export const SpecificExcelAnswerDownload = ({
         };
 
         result.data.forEach((res, idx) => {
-          const adjustedCheckIn = new Date(
-            res.checkIn.getTime() + 7 * 60 * 60 * 1000,
-          );
-          const adjustedSubmittedAt = new Date(
-            res.submittedAt.getTime() + 7 * 60 * 60 * 1000,
-          );
+          const adjustedCheckIn = excelNormalizeTime(res.checkIn);
+          const adjustedSubmittedAt = excelNormalizeTime(res.submittedAt);
 
           const rowValue = essayIsAThing
             ? [
@@ -309,12 +306,8 @@ export const AggregateExcelAnswerDownload = () => {
           };
 
           result.data.forEach((res, idx) => {
-            const adjustedCheckIn = new Date(
-              res.checkIn.getTime() + 7 * 60 * 60 * 1000,
-            );
-            const adjustedSubmittedAt = new Date(
-              res.submittedAt.getTime() + 7 * 60 * 60 * 1000,
-            );
+            const adjustedCheckIn = excelNormalizeTime(res.checkIn);
+            const adjustedSubmittedAt = excelNormalizeTime(res.submittedAt);
 
             const rowValue = essayIsAThing
               ? [

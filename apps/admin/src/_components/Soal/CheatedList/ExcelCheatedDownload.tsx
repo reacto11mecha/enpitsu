@@ -17,6 +17,7 @@ import ExcelJS from "exceljs";
 import { Sheet } from "lucide-react";
 
 import { api } from "~/utils/api";
+import { excelNormalizeTime } from "~/utils/time";
 
 const ReusableDialog = ({
   open,
@@ -115,7 +116,7 @@ export const SpecificExcelBlockedDownload = ({
             res.name,
             res.className,
             res.room,
-            new Date(res.time.getTime() + 7 * 60 * 60 * 1000),
+            excelNormalizeTime(res.time),
           ]);
 
           const currentRow = worksheet.getRow(idx + 2);
@@ -228,7 +229,7 @@ export const AggregateExcelCheatDownload = () => {
               res.name,
               res.className,
               res.room,
-              new Date(res.time.getTime() + 7 * 60 * 60 * 1000),
+              excelNormalizeTime(res.time),
             ]);
 
             const currentRow = worksheet.getRow(idx + 2);
