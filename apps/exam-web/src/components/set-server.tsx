@@ -38,7 +38,10 @@ import { ModeToggle } from "./mode-toggle";
 const formSchema = z.object({
   npsn: z
     .union([
-      z.string({ required_error: "Bidang ini wajib di isi." }).min(8).max(8),
+      z
+        .string({ required_error: "Bidang ini wajib di isi." })
+        .min(8, { message: "NPSN memiliki panjang 8 digit." })
+        .max(8, { message: "NPSN memiliki panjang 8 digit." }),
       z.number({ required_error: "Bidang ini wajib di isi." }).int().positive(),
     ])
     .pipe(
@@ -61,7 +64,7 @@ export function LogoutFromCurrentServer() {
           <AlertDialogTitle>Yakin ingin mengganti server?</AlertDialogTitle>
           <AlertDialogDescription>
             Saat ini anda terhubung ke server <b>{systemServer.institution}</b>.
-            Anda bisa login kembali dengan memasukan NPSN dengan nomor{" "}
+            Anda bisa terhubung kembali dengan memasukan NPSN dengan nomor{" "}
             <b>{systemServer.npsn}</b>. Lanjutkan?
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -80,7 +83,7 @@ export function SetServer() {
   const setServerProps = useSetAtom(systemServerAtom);
   const { toast } = useToast();
 
-  const [currNpsn, setNpsn] = useState("");
+  const [currNpsn, setNpsn] = useState<number | null>(null);
   const [serverUrl, setSU] = useState<string | null>(null);
   const [schoolName, setSN] = useState<string | null>(null);
 
@@ -91,14 +94,14 @@ export function SetServer() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setSU(null);
     setSN(null);
-
-    setNpsn(String(values.npsn));
+    setNpsn(null);
 
     try {
       const response = await ky
         .get(`${env.VITE_TRUTH_TABLE_URL}/api/school/${values.npsn}`)
         .json<{
           data: {
+            npsn: number;
             uri: string;
             name: string;
           };
@@ -106,6 +109,7 @@ export function SetServer() {
 
       setSU(response.data.uri);
       setSN(response.data.name);
+      setNpsn(response.data.npsn);
     } catch (error) {
       if ((error as { name: string }).name === "HTTPError") {
         const errorJson = await (error as unknown as HTTPError).response.json<{
@@ -191,7 +195,7 @@ export function SetServer() {
               </form>
             </Form>
 
-            {serverUrl && schoolName ? (
+            {currNpsn && serverUrl && schoolName ? (
               <Card className="w-full">
                 <CardContent className="p-6">
                   <div className="flex flex-row justify-between">
@@ -207,7 +211,7 @@ export function SetServer() {
                         onClick={() => {
                           setServerProps({
                             institution: schoolName,
-                            npsn: parseInt(currNpsn),
+                            npsn: currNpsn as number,
                             serverUrl,
                           });
                         }}
