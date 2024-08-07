@@ -11,7 +11,7 @@ export const env = createEnv({
   clientPrefix: "VITE_",
 
   client: {
-    VITE_TRPC_URL: z.string().url(),
+    VITE_TRUTH_TABLE_URL: z.string().url(),
   },
 
   /**

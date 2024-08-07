@@ -19,7 +19,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "date-fns": "^3.0.1",
-    "lucide-react": "^0.294.0",
+    "lucide-react": "^0.424.0",
     "@fontsource/ibm-plex-mono": "^5.0.8",
     "@fontsource/space-mono": "^5.0.18",
     "@hookform/resolvers": "^3.3.2",

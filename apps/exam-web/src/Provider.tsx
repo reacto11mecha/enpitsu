@@ -1,8 +1,7 @@
 import { lazy, Suspense } from "react";
-import { Toaster } from "@/components/ui/toaster";
 import enpitsuLogo from "@/icon.png";
 import { studentTokenAtom, systemServerAtom } from "@/lib/atom";
-import { useAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import { RefreshCw } from "lucide-react";
 import { UAParser } from "ua-parser-js";
 
@@ -10,6 +9,8 @@ import App from "./App";
 
 import "@fontsource/space-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
+
+import { SetServer } from "@/components/set-server";
 
 const SetToken = lazy(() => import("@/components/set-token"));
 
@@ -27,7 +28,8 @@ const enforceLatestVersion =
   (browser.major ? parseInt(browser.major) < 90 : true);
 
 function SmallProvider() {
-  const [studentAtom] = useAtom(studentTokenAtom);
+  const studentAtom = useAtomValue(studentTokenAtom);
+  const serverAtom = useAtomValue(systemServerAtom);
 
   if (enforceChromeOnAndroidOnly)
     return (
@@ -168,22 +170,21 @@ function SmallProvider() {
           <SetToken init />
         </Suspense>
       ) : (
-        <App />
+        <App serverUrl={serverAtom.serverUrl as string} />
       )}
-      <Toaster />
     </>
   );
 }
 
 export default function Provider() {
-  const [systemServer] = useAtom(systemServerAtom);
+  const systemServer = useAtomValue(systemServerAtom);
 
   if (
     !systemServer.npsn &&
-    !systemServerAtom.serverUrl &&
+    !systemServer.serverUrl &&
     !systemServer.institution
   )
-    return <>kosong bos</>;
+    return <SetServer />;
 
-  return <></>;
+  return <SmallProvider />;
 }

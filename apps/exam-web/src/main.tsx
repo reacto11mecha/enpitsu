@@ -1,5 +1,6 @@
 import React from "react";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
 import ReactDOM from "react-dom/client";
 
 import Provider from "./Provider.tsx";
@@ -11,5 +12,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <Provider />
     </ThemeProvider>
+    <Toaster />
   </React.StrictMode>,
 );

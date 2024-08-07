@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 import { ModeToggle } from "./mode-toggle";
+import { LogoutFromCurrentServer } from "./set-server";
 
 const formSchema = z.object({
   token: z
@@ -189,7 +190,8 @@ const InitVersion = () => {
             </Form>
           </div>
 
-          <div className="flex translate-y-16 justify-center">
+          <div className="flex translate-y-16 justify-center gap-2">
+            <LogoutFromCurrentServer />
             <ModeToggle />
           </div>
         </div>

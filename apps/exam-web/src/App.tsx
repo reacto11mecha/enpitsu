@@ -56,7 +56,7 @@ const router = createHashRouter([
   },
 ]);
 
-export default function App() {
+export default function App({ serverUrl }: { serverUrl: string }) {
   const getHeaders = useAtomCallback(
     useCallback((get) => {
       const userToken = get(studentTokenAtom);
@@ -75,7 +75,7 @@ export default function App() {
     api.createClient({
       links: [
         httpBatchLink({
-          url: env.VITE_TRPC_URL,
+          url: serverUrl,
           headers: getHeaders,
         }),
       ],
