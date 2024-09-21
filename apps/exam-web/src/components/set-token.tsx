@@ -24,11 +24,11 @@ const formSchema = z.object({
   token: z
     .string()
     .min(1, {
-      message: "Token wajib di isi!",
+      message: "Nomor peserta wajib di isi!",
     })
-    .min(6, { message: "Panjang token wajib 6 karakter!" })
-    .max(6, { message: "Panjang token tidak boleh dari 6 karakter!" })
-    .refine(validateId, { message: "Format token tidak sesuai!" }),
+    .min(13, { message: "Panjang nomor peserta wajib 13 karakter!" })
+    .max(13, { message: "Panjang nomor peserta tidak boleh dari 13 karakter!" })
+    .refine(validateId, { message: "Format nomor peserta tidak sesuai!" }),
 });
 
 const NonInitVer = () => {
@@ -64,8 +64,8 @@ const NonInitVer = () => {
               </h4>
 
               <p className="leading-6 [&:not(:first-child)]:mt-6">
-                Atur token dan mode aplikasi ulangan pada halaman ini. Tap
-                tombol kembali jika dianggap semua pengaturan aman.
+                Atur nomor peserta dan mode aplikasi ulangan pada halaman ini.
+                Tap tombol kembali jika dianggap semua pengaturan aman.
               </p>
             </div>
 
@@ -79,20 +79,20 @@ const NonInitVer = () => {
                   name="token"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Token</FormLabel>
+                      <FormLabel>Nomor Peserta</FormLabel>
                       <FormControl>
                         <Input
                           className="font-space"
-                          placeholder="AZ-XXX"
+                          // placeholder="AZ-XXX"
                           onChange={(el) =>
-                            el.target.value.trim().length <= 6 &&
+                            el.target.value.trim().length <= 13 &&
                             field.onChange(el.target.value.toUpperCase().trim())
                           }
                           value={field.value}
                         />
                       </FormControl>
                       <FormDescription>
-                        Token yang tertera pada kartu ujian.
+                        Nomor peserta yang tertera pada kartu ujian.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -143,13 +143,13 @@ const InitVersion = () => {
           <div className="flex flex-col gap-5">
             <div className="space-y-1">
               <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
-                Masukan Token
+                Masukan Nomor Peserta
               </h4>
 
               <p className="leading-6 [&:not(:first-child)]:mt-6">
-                Masukan token yang tertera pada kartu ujian pada kolom input
-                dibawah ini. Proses ini hanya di awal saja, namun bisa diganti
-                kapan saja di halaman pengaturan.
+                Masukan nomor peserta yang tertera pada kartu ujian pada kolom
+                input dibawah ini. Proses ini hanya di awal saja, namun bisa
+                diganti kapan saja di halaman pengaturan.
               </p>
             </div>
 
@@ -163,20 +163,21 @@ const InitVersion = () => {
                   name="token"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Token</FormLabel>
+                      <FormLabel>Nomor Peserta</FormLabel>
                       <FormControl>
                         <Input
                           className="font-space"
-                          placeholder="AZ-XXX"
+                          // placeholder="AZ-XXX"
+                          placeholder="12-XX-STS-XXX"
                           onChange={(el) =>
-                            el.target.value.trim().length <= 6 &&
+                            el.target.value.trim().length <= 13 &&
                             field.onChange(el.target.value.toUpperCase().trim())
                           }
                           value={field.value}
                         />
                       </FormControl>
                       <FormDescription>
-                        Token yang tertera pada kartu ujian.
+                        Nomor peserta yang tertera pada kartu ujian.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
