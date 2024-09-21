@@ -1,4 +1,3 @@
-version: "3"
 services:
   db:
     image: postgres
@@ -15,8 +14,8 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - db:/var/lib/postgresql/data
-    expose:
-      - 5432
+    ports:
+      - 5432:5432
 
   cache:
     image: redis:6.2-alpine
@@ -38,8 +37,8 @@ services:
       AUTH_SECRET: ${ENPITSU_AUTH_SECRET}
       AUTH_GOOGLE_ID: ${ENPITSU_AUTH_GOOGLE_ID}
       AUTH_GOOGLE_SECRET: ${ENPITSU_AUTH_GOOGLE_SECRET}
-    expose:
-      - 3000
+    ports:
+      - 3000:3000
 
   # chibisafe:
   #   image: chibisafe/chibisafe:latest
