@@ -55,7 +55,7 @@ import {
 } from "lucide-react";
 
 import { api } from "~/utils/api";
-import { ExcelStudentsBySubgradeDownload } from "../ExcelStudentsDownload";
+import { ExcelStudentsBySubgradeDownload } from "../ExcelStudentsActivity";
 import { AddStudent } from "./AddStudent";
 import { DeleteStudent } from "./DeleteStudent";
 import { UpdateStudent } from "./UpdateStudent";

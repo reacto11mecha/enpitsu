@@ -23,6 +23,9 @@ export default async function ManageSpecificSubgrade(props: {
 
   if (!specificSubgrade) return redirect("/admin/angkatan");
 
+  if (specificSubgrade.gradeId !== specificGrade.id)
+    return redirect("/admin/angkatan");
+
   const students = await db.query.students.findMany({
     where: eq(schema.students.subgradeId, subgradeId),
     orderBy: [asc(schema.students.name)],
