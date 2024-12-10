@@ -263,9 +263,21 @@ export const ExcelUploadStudentsByGrade = ({
 }) => {
   const [open, setOpen] = useState(false);
 
+  const { toast } = useToast();
+
+  const excelMutationApi = api.grade.uploadSpecificGradeExcel.useMutation({
+    onSuccess() {},
+    onError(error) {
+      toast({
+        variant: "destructive",
+        title: "Operasi Upload Gagal",
+        description: `Terjadi kesalahan, Error: ${error.message}`,
+      });
+    },
+  });
+
   const onOpenChange = useCallback(() => {
-    // if (!excelMutationApi.isLoading)
-    setOpen((prev) => !prev);
+    if (!excelMutationApi.isLoading) setOpen((prev) => !prev);
   }, []);
 
   const formSchema = z.object({
@@ -318,22 +330,27 @@ export const ExcelUploadStudentsByGrade = ({
       return { subgradeName: w.name, data };
     });
 
-    const result = FileValueSchema.safeParse(records);
+    const result = await FileValueSchema.safeParseAsync(records);
 
     if (!result.success) {
       toast({
         variant: "destructive",
         title: "Format file tidak sesuai!",
-        description: `Mohon periksa kembali format file yang ingin di upload, masih ada kesalahan.`,
+        description:
+          "Mohon periksa kembali format file yang ingin di upload, masih ada kesalahan.",
       });
+
+      return;
     }
 
-
-    console.log(result.data)
+    excelMutationApi.mutate({ gradeId, data: result.data });
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog
+      open={form.formState.isSubmitting || open}
+      onOpenChange={onOpenChange}
+    >
       <AlertDialogTrigger asChild>
         <Button className="w-full md:w-fit">
           <HardDriveUpload className="mr-2 h-4 md:w-4" />
@@ -353,7 +370,7 @@ export const ExcelUploadStudentsByGrade = ({
           <form onSubmit={form.handleSubmit(onXLSXSubmit)}>
             <FormField
               control={form.control}
-              name="csv"
+              name="xlsx"
               render={() => (
                 <FormItem>
                   <FormLabel>File XLSX</FormLabel>
@@ -361,12 +378,15 @@ export const ExcelUploadStudentsByGrade = ({
                     <Input
                       accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                       type="file"
-                      //disabled={createStudentManyMutation.isLoading}
+                      disabled={
+                        form.formState.isSubmitting ||
+                        excelMutationApi.isLoading
+                      }
                       {...form.register("xlsx")}
                     />
                   </FormControl>
                   <FormDescription>
-                    Pilih file csv untuk menambahkan banyak murid sekaligus.
+                    Pilih file excel untuk menambahkan banyak murid sekaligus.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -377,12 +397,21 @@ export const ExcelUploadStudentsByGrade = ({
                 <Button
                   type="button"
                   variant="secondary"
-                  // disabled={isLoading}
+                  disabled={
+                    form.formState.isSubmitting || excelMutationApi.isLoading
+                  }
                 >
                   Batal
                 </Button>
               </AlertDialogCancel>
-              <Button type="submit">Unggah Data</Button>
+              <Button
+                type="submit"
+                disabled={
+                  form.formState.isSubmitting || excelMutationApi.isLoading
+                }
+              >
+                Unggah Data
+              </Button>
             </AlertDialogFooter>
           </form>
         </Form>
