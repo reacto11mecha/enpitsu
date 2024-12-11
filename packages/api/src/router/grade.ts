@@ -1,5 +1,6 @@
 import { cache } from "@enpitsu/cache";
 import { asc, eq, schema } from "@enpitsu/db";
+import { validateId } from "@enpitsu/token-generator";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -216,6 +217,71 @@ export const gradeRouter = createTRPCRouter({
         .delete(schema.students)
         .where(eq(schema.students.id, input));
     }),
+
+  uploadSpecificGradeExcel: adminProcedure
+    .input(
+      z.object({
+        gradeId: z.number(),
+        data: z.array(
+          z.object({
+            subgradeName: z.string(),
+            data: z.array(
+              z.object({
+                Nama: z.string().min(2).max(255),
+                "Nomor Peserta": z.string().min(5).max(50),
+                Ruang: z.string().min(1).max(50),
+                Token: z.string().min(6).max(6).refine(validateId),
+              }),
+            ),
+          }),
+        ),
+      }),
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        const subgrades = await tx.query.subGrades.findMany({
+          where: eq(schema.subGrades.gradeId, input.gradeId),
+          columns: {
+            label: true,
+            id: true,
+          },
+        });
+
+        if (subgrades.length < 1)
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Belum ada data kelas pada angkatan ini!",
+          });
+
+        if (
+          !subgrades.every((sg) =>
+            input.data.find((d) => sg.label === d.subgradeName),
+          )
+        )
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Ada nama kelas yang tidak ada/sesuai!",
+          });
+
+        for (const sg of subgrades) {
+          await tx.transaction(async (tx2) => {
+            const correspondClass = input.data.find(
+              (d) => sg.label === d.subgradeName,
+            )!;
+
+            const dataToInsert = correspondClass.data.map((std) => ({
+              name: std.Nama,
+              token: std.Token,
+              room: std.Ruang,
+              participantNumber: std["Nomor Peserta"],
+              subgradeId: sg.id,
+            }));
+
+            await tx2.insert(schema.students).values(dataToInsert);
+          });
+        }
+      }),
+    ),
 
   downloadSpecificGradeExcel: adminProcedure
     .input(z.object({ gradeId: z.number() }))
