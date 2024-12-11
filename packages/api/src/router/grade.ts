@@ -260,10 +260,26 @@ export const gradeRouter = createTRPCRouter({
         )
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Ada nama kelas yang tidak ada/sesuai!"
+            message: "Ada nama kelas yang tidak ada/sesuai!",
           });
 
-        console.log(input.data)
+        for (const sg of subgrades) {
+          await tx.transaction(async (tx2) => {
+            const correspondClass = input.data.find(
+              (d) => sg.label === d.subgradeName,
+            )!;
+
+            const dataToInsert = correspondClass.data.map((std) => ({
+              name: std.Nama,
+              token: std.Token,
+              room: std.Ruang,
+              participantNumber: std["Nomor Peserta"],
+              subgradeId: sg.id,
+            }));
+
+            await tx2.insert(schema.students).values(dataToInsert);
+          });
+        }
       }),
     ),
 

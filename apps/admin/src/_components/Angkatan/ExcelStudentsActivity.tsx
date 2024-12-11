@@ -266,7 +266,17 @@ export const ExcelUploadStudentsByGrade = ({
   const { toast } = useToast();
 
   const excelMutationApi = api.grade.uploadSpecificGradeExcel.useMutation({
-    onSuccess() {},
+    onSuccess() {
+      setOpen(false);
+
+      form.reset();
+
+      toast({
+        title: "Upload Data Peserta Berhasil!",
+        description:
+          "Mohon untuk mengecek kembali apakah data yang di upload sudah sesuai atau belum.",
+      });
+    },
     onError(error) {
       toast({
         variant: "destructive",
