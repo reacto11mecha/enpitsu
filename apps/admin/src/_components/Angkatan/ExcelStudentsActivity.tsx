@@ -138,9 +138,8 @@ export const ExcelStudentsByGradeDownload = ({
       const anchor = document.createElement("a");
 
       anchor.href = url;
-      anchor.download = `Data Seluruh Peserta-${+Date.now()}-Seluruh kelas ${
-        result.label
-      }-.xlsx`;
+      anchor.download = `Data Seluruh Peserta-${+Date.now()}-Seluruh kelas ${result.label
+        }-.xlsx`;
 
       anchor.click();
       anchor.remove();
@@ -216,9 +215,8 @@ export const ExcelStudentsBySubgradeDownload = ({
       const anchor = document.createElement("a");
 
       anchor.href = url;
-      anchor.download = `Data Peserta-${+Date.now()}-Spesifik kelas ${
-        result.grade.label
-      } ${result.label}.xlsx`;
+      anchor.download = `Data Peserta-${+Date.now()}-Spesifik kelas ${result.grade.label
+        } ${result.label}.xlsx`;
 
       anchor.click();
       anchor.remove();
@@ -288,7 +286,7 @@ export const ExcelUploadStudentsByGrade = ({
 
   const onOpenChange = useCallback(() => {
     if (!excelMutationApi.isLoading) setOpen((prev) => !prev);
-  }, []);
+  }, [excelMutationApi.isLoading]);
 
   const formSchema = z.object({
     xlsx: z
@@ -320,15 +318,17 @@ export const ExcelUploadStudentsByGrade = ({
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(buffer);
 
-    const records = workbook.worksheets.map((w, idx) => {
-      const sheetValues = w
-        .getSheetValues()
-        .filter((d) => !!d)
-        .map((d) => d.filter((e) => !!e));
-      const keys = sheetValues.shift();
+    const records = workbook.worksheets.map((w) => {
+      type TSheetValue = string[];
+
+      const sheetValues = w.getSheetValues() as TSheetValue[];
+      const sheetVal = sheetValues.filter((d) => !!d).map((d) => d.filter((e) => !!e));
+      const keys = sheetVal.shift()!;
 
       const data = sheetValues.map((d) => {
-        let tmpObj = {};
+        const tmpObj = {} as {
+          Nama: string;
+        };
 
         keys.forEach((key, idx) => {
           tmpObj[key] = d[idx];
