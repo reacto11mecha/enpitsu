@@ -138,8 +138,9 @@ export const ExcelStudentsByGradeDownload = ({
       const anchor = document.createElement("a");
 
       anchor.href = url;
-      anchor.download = `Data Seluruh Peserta-${+Date.now()}-Seluruh kelas ${result.label
-        }-.xlsx`;
+      anchor.download = `Data Seluruh Peserta-${+Date.now()}-Seluruh kelas ${
+        result.label
+      }-.xlsx`;
 
       anchor.click();
       anchor.remove();
@@ -215,8 +216,9 @@ export const ExcelStudentsBySubgradeDownload = ({
       const anchor = document.createElement("a");
 
       anchor.href = url;
-      anchor.download = `Data Peserta-${+Date.now()}-Spesifik kelas ${result.grade.label
-        } ${result.label}.xlsx`;
+      anchor.download = `Data Peserta-${+Date.now()}-Spesifik kelas ${
+        result.grade.label
+      } ${result.label}.xlsx`;
 
       anchor.click();
       anchor.remove();
@@ -322,7 +324,9 @@ export const ExcelUploadStudentsByGrade = ({
       type TSheetValue = string[];
 
       const sheetValues = w.getSheetValues() as TSheetValue[];
-      const sheetVal = sheetValues.filter((d) => !!d).map((d) => d.filter((e) => !!e));
+      const sheetVal = sheetValues
+        .filter((d) => !!d)
+        .map((d) => d.filter((e) => !!e));
       const keys = sheetVal.shift()!;
 
       const data = sheetValues.map((d) => {
