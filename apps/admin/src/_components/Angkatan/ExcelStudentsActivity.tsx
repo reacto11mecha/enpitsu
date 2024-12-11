@@ -330,12 +330,10 @@ export const ExcelUploadStudentsByGrade = ({
       const keys = sheetVal.shift()!;
 
       const data = sheetValues.map((d) => {
-        const tmpObj = {} as {
-          Nama: string;
-        };
+        const tmpObj: Record<string, string> = {};
 
-        keys.forEach((key, idx) => {
-          tmpObj[key] = d[idx];
+        keys.forEach((key, idx: number) => {
+          tmpObj[key] = d[idx] ?? "";
         });
 
         return tmpObj;
