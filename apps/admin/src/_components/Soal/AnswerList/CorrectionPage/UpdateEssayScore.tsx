@@ -94,10 +94,10 @@ export const UpdateEssayScore = ({
                     max={1}
                     step={0.015}
                     className="w-full"
-                    disabled={updateScoreMutation.isLoading}
+                    disabled={updateScoreMutation.isPending}
                     {...field}
                   />
-                  {updateScoreMutation.isLoading ? (
+                  {updateScoreMutation.isPending ? (
                     <Loader2 className="h-8 w-8 animate-spin" />
                   ) : updateScoreMutation.isError ? (
                     <NuhUh className="h-8 w-8 text-red-600 dark:text-red-500" />

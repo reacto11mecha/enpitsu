@@ -70,7 +70,7 @@ export const CreateSubgrade = ({ gradeId }: { gradeId: number }) => {
             name="label"
             render={({ field }) => (
               <FormItem
-                aria-disabled={createSubgradeMutation.isLoading}
+                aria-disabled={createSubgradeMutation.isPending}
                 className="w-full"
               >
                 <FormLabel>Nama Sub Kelas</FormLabel>
@@ -80,14 +80,14 @@ export const CreateSubgrade = ({ gradeId }: { gradeId: number }) => {
                       placeholder="1"
                       {...field}
                       autoComplete="off"
-                      disabled={createSubgradeMutation.isLoading}
+                      disabled={createSubgradeMutation.isPending}
                     />
                   </FormControl>
                   <Button
-                    disabled={createSubgradeMutation.isLoading}
+                    disabled={createSubgradeMutation.isPending}
                     type="submit"
                   >
-                    {createSubgradeMutation.isLoading ? (
+                    {createSubgradeMutation.isPending ? (
                       <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
                     ) : null}
                     Tambah

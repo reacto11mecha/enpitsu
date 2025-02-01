@@ -66,7 +66,7 @@ export const AngkatanViewer = () => {
 
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
-      {grades.isLoading && !grades.isError ? (
+      {grades.isPending && !grades.isError ? (
         <>
           <Skeleton className="h-48 w-full" />
           <Skeleton className="h-48 w-full" />
@@ -74,11 +74,11 @@ export const AngkatanViewer = () => {
         </>
       ) : null}
 
-      {!grades.isLoading && grades.data && grades.data.length === 0
+      {!grades.isPending && grades.data && grades.data.length === 0
         ? "Belum ada data."
         : null}
 
-      {!grades.isLoading &&
+      {!grades.isPending &&
         grades.data?.map((grade) => (
           <Card key={grade.id}>
             <CardHeader />
@@ -109,7 +109,7 @@ export const AngkatanViewer = () => {
       <Dialog
         open={open}
         onOpenChange={() => {
-          if (!gradeDeleteMutation.isLoading) setOpen((prev) => !prev);
+          if (!gradeDeleteMutation.isPending) setOpen((prev) => !prev);
 
           if (confirmationText.length > 0) setConfirmText("");
         }}
@@ -137,7 +137,7 @@ export const AngkatanViewer = () => {
               type="text"
               autoComplete="false"
               autoCorrect="false"
-              disabled={gradeDeleteMutation.isLoading}
+              disabled={gradeDeleteMutation.isPending}
               value={confirmationText}
               onChange={(e) => setConfirmText(e.target.value)}
             />
@@ -147,7 +147,7 @@ export const AngkatanViewer = () => {
               <Button
                 type="button"
                 variant="secondary"
-                disabled={gradeDeleteMutation.isLoading}
+                disabled={gradeDeleteMutation.isPending}
               >
                 Batal
               </Button>
@@ -155,12 +155,12 @@ export const AngkatanViewer = () => {
             <Button
               type="button"
               variant="destructive"
-              disabled={!reallySure || gradeDeleteMutation.isLoading}
+              disabled={!reallySure || gradeDeleteMutation.isPending}
               onClick={() => {
                 if (reallySure) gradeDeleteMutation.mutate(currentDeleteID!);
               }}
             >
-              {gradeDeleteMutation.isLoading ? (
+              {gradeDeleteMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
               ) : null}
               Hapus

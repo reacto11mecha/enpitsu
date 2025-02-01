@@ -129,7 +129,7 @@ export const UpdateStudent = ({
     <Dialog
       open={openEdit}
       onOpenChange={() => {
-        if (!editStudentMutation.isLoading) setOpenEdit((prev) => !prev);
+        if (!editStudentMutation.isPending) setOpenEdit((prev) => !prev);
       }}
     >
       <DialogContent className="md:max-w-screen-md">
@@ -156,7 +156,7 @@ export const UpdateStudent = ({
                           placeholder="1"
                           {...field}
                           autoComplete="off"
-                          disabled={editStudentMutation.isLoading}
+                          disabled={editStudentMutation.isPending}
                         />
                       </FormControl>
                       <FormMessage />
@@ -175,7 +175,7 @@ export const UpdateStudent = ({
                           placeholder="1"
                           {...field}
                           autoComplete="off"
-                          disabled={editStudentMutation.isLoading}
+                          disabled={editStudentMutation.isPending}
                         />
                       </FormControl>
                       <FormMessage />
@@ -194,7 +194,7 @@ export const UpdateStudent = ({
                           placeholder="1"
                           {...field}
                           autoComplete="off"
-                          disabled={editStudentMutation.isLoading}
+                          disabled={editStudentMutation.isPending}
                         />
                       </FormControl>
                       <FormMessage />
@@ -210,17 +210,17 @@ export const UpdateStudent = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={editStudentMutation.isLoading}
+              disabled={editStudentMutation.isPending}
             >
               Batal
             </Button>
           </DialogClose>
           <Button
             type="button"
-            disabled={isTheSameValue || editStudentMutation.isLoading}
+            disabled={isTheSameValue || editStudentMutation.isPending}
             onClick={() => form.handleSubmit(onSubmit)()}
           >
-            {editStudentMutation.isLoading ? (
+            {editStudentMutation.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Ubah

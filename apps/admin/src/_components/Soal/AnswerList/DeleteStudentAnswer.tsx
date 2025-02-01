@@ -75,7 +75,7 @@ export const DeleteSingleStudentAnswer = ({
     <Dialog
       open={openDelete}
       onOpenChange={() => {
-        if (!deleteSpecificAnswerMutation.isLoading) closeDialog();
+        if (!deleteSpecificAnswerMutation.isPending) closeDialog();
 
         if (confirmationText.length > 0) setConfirmText("");
       }}
@@ -102,7 +102,7 @@ export const DeleteSingleStudentAnswer = ({
             type="text"
             autoComplete="false"
             autoCorrect="false"
-            disabled={deleteSpecificAnswerMutation.isLoading}
+            disabled={deleteSpecificAnswerMutation.isPending}
             value={confirmationText}
             onChange={(e) => setConfirmText(e.target.value)}
           />
@@ -112,7 +112,7 @@ export const DeleteSingleStudentAnswer = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={deleteSpecificAnswerMutation.isLoading}
+              disabled={deleteSpecificAnswerMutation.isPending}
             >
               Batal
             </Button>
@@ -120,12 +120,12 @@ export const DeleteSingleStudentAnswer = ({
           <Button
             type="button"
             variant="destructive"
-            disabled={!reallySure || deleteSpecificAnswerMutation.isLoading}
+            disabled={!reallySure || deleteSpecificAnswerMutation.isPending}
             onClick={() => {
               if (reallySure) deleteSpecificAnswerMutation.mutate({ id });
             }}
           >
-            {deleteSpecificAnswerMutation.isLoading ? (
+            {deleteSpecificAnswerMutation.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Hapus
@@ -190,7 +190,7 @@ export const DeleteManyStudentAnswer = ({
     <Dialog
       open={dialogOpen}
       onOpenChange={() => {
-        if (deleteManyStudentAnswers.isLoading) return;
+        if (deleteManyStudentAnswers.isPending) return;
 
         setDialogOpen((prev) => !prev);
         setConfirmText("");
@@ -233,7 +233,7 @@ export const DeleteManyStudentAnswer = ({
                 type="text"
                 autoComplete="false"
                 autoCorrect="false"
-                disabled={deleteManyStudentAnswers.isLoading}
+                disabled={deleteManyStudentAnswers.isPending}
                 value={confirmationText}
                 onChange={(e) => setConfirmText(e.target.value)}
               />
@@ -244,7 +244,7 @@ export const DeleteManyStudentAnswer = ({
           <DialogClose asChild>
             <Button
               variant="secondary"
-              disabled={deleteManyStudentAnswers.isLoading}
+              disabled={deleteManyStudentAnswers.isPending}
             >
               Batal
             </Button>
@@ -252,12 +252,12 @@ export const DeleteManyStudentAnswer = ({
           <Button
             type="button"
             variant="destructive"
-            disabled={!reallySure || deleteManyStudentAnswers.isLoading}
+            disabled={!reallySure || deleteManyStudentAnswers.isPending}
             onClick={() => {
               if (reallySure) deleteManyStudentAnswers.mutate({ ids: allIds });
             }}
           >
-            {deleteManyStudentAnswers.isLoading ? (
+            {deleteManyStudentAnswers.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Hapus

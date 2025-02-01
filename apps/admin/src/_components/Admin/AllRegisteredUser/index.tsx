@@ -208,7 +208,7 @@ export function AllRegisteredUser() {
               </TableRow>
             ) : null}
 
-            {allRegisteredUserQuery.isLoading &&
+            {allRegisteredUserQuery.isPending &&
             !allRegisteredUserQuery.isError ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
@@ -239,7 +239,7 @@ export function AllRegisteredUser() {
               ))
             ) : (
               <>
-                {!allRegisteredUserQuery.isLoading && (
+                {!allRegisteredUserQuery.isPending && (
                   <>
                     {!allRegisteredUserQuery.isError && (
                       <TableRow>

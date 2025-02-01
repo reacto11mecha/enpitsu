@@ -295,7 +295,7 @@ export function DataTable() {
               </TableRow>
             ) : null}
 
-            {studentAnswerQuery.isLoading && !studentAnswerQuery.isError ? (
+            {studentAnswerQuery.isPending && !studentAnswerQuery.isError ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <TableRow key={idx}>
@@ -325,7 +325,7 @@ export function DataTable() {
               ))
             ) : (
               <>
-                {!studentAnswerQuery.isLoading && (
+                {!studentAnswerQuery.isPending && (
                   <>
                     {!studentAnswerQuery.isError && (
                       <TableRow>

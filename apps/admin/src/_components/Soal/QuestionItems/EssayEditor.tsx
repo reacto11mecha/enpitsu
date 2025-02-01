@@ -199,7 +199,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
         </CardHeader>
 
         <CardContent className="flex flex-col gap-5">
-          {specificEssayQuery.isLoading ? (
+          {specificEssayQuery.isPending ? (
             <Skeleton className="h-10 w-full" />
           ) : (
             <FormField
@@ -217,7 +217,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
             />
           )}
 
-          {specificEssayQuery.isLoading ? (
+          {specificEssayQuery.isPending ? (
             <Skeleton className="h-10 w-full" />
           ) : (
             <FormField
@@ -238,7 +238,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
             />
           )}
 
-          {specificEssayQuery.isLoading ? (
+          {specificEssayQuery.isPending ? (
             <Skeleton className="h-10 w-full" />
           ) : (
             <FormField
@@ -281,7 +281,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
               </div>
             ) : (
               <>
-                {specificEssayMutation.isLoading ? (
+                {specificEssayMutation.isPending ? (
                   <div className="flex flex-col items-center justify-center gap-2">
                     <RefreshCw className="animate-spin text-muted-foreground" />
                     <small className="font-mono text-muted-foreground">
@@ -298,9 +298,9 @@ export const EssayEditor = memo(function EssayEditorConstructor({
               <Button
                 variant="ghost"
                 disabled={
-                  specificEssayQuery.isLoading ||
-                  specificEssayMutation.isLoading ||
-                  deleteEssayMutation.isLoading
+                  specificEssayQuery.isPending ||
+                  specificEssayMutation.isPending ||
+                  deleteEssayMutation.isPending
                 }
                 onClick={() =>
                   deleteEssayMutation.mutate({
@@ -309,7 +309,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
                 }
               >
                 <span className="sr-only">Hapus pertanyaan</span>
-                {deleteEssayMutation.isLoading ? (
+                {deleteEssayMutation.isPending ? (
                   <Loader2 className="h-6 w-6 animate-spin" />
                 ) : (
                   <Trash2 />

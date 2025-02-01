@@ -157,8 +157,8 @@ export const ExcelStudentsByGradeDownload = ({
   });
 
   const onOpenChange = useCallback(() => {
-    if (!excelMutationApi.isLoading) setOpen((prev) => !prev);
-  }, [excelMutationApi.isLoading]);
+    if (!excelMutationApi.isPending) setOpen((prev) => !prev);
+  }, [excelMutationApi.isPending]);
 
   const triggerDownload = useCallback(
     () => excelMutationApi.mutate({ gradeId }),
@@ -172,7 +172,7 @@ export const ExcelStudentsByGradeDownload = ({
       open={open}
       desc="Unduh data angkatan ini dalam bentuk excel. Mohon tunggu jika proses ini berjalan lama."
       onOpenChange={onOpenChange}
-      isLoading={excelMutationApi.isLoading}
+      isLoading={excelMutationApi.isPending}
       triggerDownload={triggerDownload}
     />
   );
@@ -235,8 +235,8 @@ export const ExcelStudentsBySubgradeDownload = ({
   });
 
   const onOpenChange = useCallback(() => {
-    if (!excelMutationApi.isLoading) setOpen((prev) => !prev);
-  }, [excelMutationApi.isLoading]);
+    if (!excelMutationApi.isPending) setOpen((prev) => !prev);
+  }, [excelMutationApi.isPending]);
 
   const triggerDownload = useCallback(
     () => excelMutationApi.mutate({ subgradeId }),
@@ -250,7 +250,7 @@ export const ExcelStudentsBySubgradeDownload = ({
       open={open}
       desc="Unduh data kelas ini dalam bentuk excel. Mohon tunggu jika proses ini berjalan lama."
       onOpenChange={onOpenChange}
-      isLoading={excelMutationApi.isLoading}
+      isLoading={excelMutationApi.isPending}
       triggerDownload={triggerDownload}
     />
   );
@@ -287,8 +287,8 @@ export const ExcelUploadStudentsByGrade = ({
   });
 
   const onOpenChange = useCallback(() => {
-    if (!excelMutationApi.isLoading) setOpen((prev) => !prev);
-  }, [excelMutationApi.isLoading]);
+    if (!excelMutationApi.isPending) setOpen((prev) => !prev);
+  }, [excelMutationApi.isPending]);
 
   const formSchema = z.object({
     xlsx: z
@@ -392,7 +392,7 @@ export const ExcelUploadStudentsByGrade = ({
                       type="file"
                       disabled={
                         form.formState.isSubmitting ||
-                        excelMutationApi.isLoading
+                        excelMutationApi.isPending
                       }
                       {...form.register("xlsx")}
                     />
@@ -410,7 +410,7 @@ export const ExcelUploadStudentsByGrade = ({
                   type="button"
                   variant="secondary"
                   disabled={
-                    form.formState.isSubmitting || excelMutationApi.isLoading
+                    form.formState.isSubmitting || excelMutationApi.isPending
                   }
                 >
                   Batal
@@ -419,7 +419,7 @@ export const ExcelUploadStudentsByGrade = ({
               <Button
                 type="submit"
                 disabled={
-                  form.formState.isSubmitting || excelMutationApi.isLoading
+                  form.formState.isSubmitting || excelMutationApi.isPending
                 }
               >
                 Unggah Data

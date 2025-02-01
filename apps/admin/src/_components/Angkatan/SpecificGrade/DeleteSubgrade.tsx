@@ -64,7 +64,7 @@ export const DeleteSubgrade = ({
     <Dialog
       open={openDelete}
       onOpenChange={() => {
-        if (!subgradeDeleteMutation.isLoading) setOpenDelete((prev) => !prev);
+        if (!subgradeDeleteMutation.isPending) setOpenDelete((prev) => !prev);
 
         if (confirmationText.length > 0) setConfirmText("");
       }}
@@ -85,7 +85,7 @@ export const DeleteSubgrade = ({
             type="text"
             autoComplete="false"
             autoCorrect="false"
-            disabled={subgradeDeleteMutation.isLoading}
+            disabled={subgradeDeleteMutation.isPending}
             value={confirmationText}
             onChange={(e) => setConfirmText(e.target.value)}
           />
@@ -95,7 +95,7 @@ export const DeleteSubgrade = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={subgradeDeleteMutation.isLoading}
+              disabled={subgradeDeleteMutation.isPending}
             >
               Batal
             </Button>
@@ -103,12 +103,12 @@ export const DeleteSubgrade = ({
           <Button
             type="button"
             variant="destructive"
-            disabled={!reallySure || subgradeDeleteMutation.isLoading}
+            disabled={!reallySure || subgradeDeleteMutation.isPending}
             onClick={() => {
               if (reallySure) subgradeDeleteMutation.mutate(id);
             }}
           >
-            {subgradeDeleteMutation.isLoading ? (
+            {subgradeDeleteMutation.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Hapus

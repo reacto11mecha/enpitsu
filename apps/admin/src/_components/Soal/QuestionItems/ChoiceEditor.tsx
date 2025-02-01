@@ -219,7 +219,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
         </CardHeader>
 
         <CardContent className="flex flex-col gap-5">
-          {specificChoiceQuery.isLoading ? (
+          {specificChoiceQuery.isPending ? (
             <Skeleton className="h-10 w-full" />
           ) : (
             <FormField
@@ -241,7 +241,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
             />
           )}
 
-          {specificChoiceQuery.isLoading ? (
+          {specificChoiceQuery.isPending ? (
             <div className="space-y-5">
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
@@ -394,7 +394,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
                 </div>
               ) : (
                 <>
-                  {specificChoiceMutation.isLoading ? (
+                  {specificChoiceMutation.isPending ? (
                     <div className="flex flex-col items-center justify-center gap-2">
                       <RefreshCw className="animate-spin text-muted-foreground" />
                       <small className="font-mono text-muted-foreground">
@@ -410,9 +410,9 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
               <Button
                 variant="ghost"
                 disabled={
-                  specificChoiceQuery.isLoading ||
-                  specificChoiceMutation.isLoading ||
-                  deleteChoiceMutation.isLoading
+                  specificChoiceQuery.isPending ||
+                  specificChoiceMutation.isPending ||
+                  deleteChoiceMutation.isPending
                 }
                 onClick={() =>
                   deleteChoiceMutation.mutate({
@@ -421,7 +421,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
                 }
               >
                 <span className="sr-only">Hapus pertanyaan</span>
-                {deleteChoiceMutation.isLoading ? (
+                {deleteChoiceMutation.isPending ? (
                   <Loader2 className="h-6 w-6 animate-spin" />
                 ) : (
                   <Trash2 />

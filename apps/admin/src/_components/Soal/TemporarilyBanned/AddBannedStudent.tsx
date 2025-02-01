@@ -103,7 +103,7 @@ export function AddBannedStudent() {
     <Dialog
       open={isDialogOpen}
       onOpenChange={() => {
-        if (addNewBannedStudent.isLoading) return;
+        if (addNewBannedStudent.isPending) return;
 
         form.reset();
         setSubgradeId(null);
@@ -149,9 +149,9 @@ export function AddBannedStudent() {
                         });
                       }}
                       disabled={
-                        subgradesWithGrade.isLoading ||
+                        subgradesWithGrade.isPending ||
                         subgradesWithGrade.isError ||
-                        addNewBannedStudent.isLoading
+                        addNewBannedStudent.isPending
                       }
                     >
                       <SelectTrigger>
@@ -193,12 +193,12 @@ export function AddBannedStudent() {
                           }
                           value={field.value === 0 ? "" : String(field.value)}
                           disabled={
-                            subgradesWithGrade.isLoading ||
+                            subgradesWithGrade.isPending ||
                             subgradesWithGrade.isError ||
                             !selectedSubgradeId ||
-                            studentLists.isLoading ||
+                            studentLists.isPending ||
                             studentLists.isError ||
-                            addNewBannedStudent.isLoading
+                            addNewBannedStudent.isPending
                           }
                         >
                           <SelectTrigger>
@@ -210,7 +210,7 @@ export function AddBannedStudent() {
                                 Daftar nama peserta
                               </SelectLabel>
 
-                              {!studentLists.isLoading &&
+                              {!studentLists.isPending &&
                               !studentLists.isError ? (
                                 <>
                                   {studentLists.data.length < 1 ? (
@@ -273,9 +273,9 @@ export function AddBannedStudent() {
                           }
                           disabled={
                             !selectedSubgradeId ||
-                            studentLists.isLoading ||
+                            studentLists.isPending ||
                             studentLists.isError ||
-                            addNewBannedStudent.isLoading
+                            addNewBannedStudent.isPending
                           }
                         />
                       </FormControl>
@@ -317,10 +317,10 @@ export function AddBannedStudent() {
                           }
                           disabled={
                             !selectedSubgradeId ||
-                            studentLists.isLoading ||
+                            studentLists.isPending ||
                             studentLists.isError ||
                             !form.getValues("startedAt") ||
-                            addNewBannedStudent.isLoading
+                            addNewBannedStudent.isPending
                           }
                         />
                       </FormControl>
@@ -347,9 +347,9 @@ export function AddBannedStudent() {
                         placeholder="Masukan alasan logis"
                         disabled={
                           !selectedSubgradeId ||
-                          studentLists.isLoading ||
+                          studentLists.isPending ||
                           studentLists.isError ||
-                          addNewBannedStudent.isLoading
+                          addNewBannedStudent.isPending
                         }
                       />
                     </FormControl>
@@ -364,9 +364,9 @@ export function AddBannedStudent() {
                 type="submit"
                 disabled={
                   !selectedSubgradeId ||
-                  studentLists.isLoading ||
+                  studentLists.isPending ||
                   studentLists.isError ||
-                  addNewBannedStudent.isLoading
+                  addNewBannedStudent.isPending
                 }
               >
                 Tambah

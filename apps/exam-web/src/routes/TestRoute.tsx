@@ -41,7 +41,7 @@ export default function TestRoute() {
       </div>
     );
 
-  if (questionQuery.isLoading)
+  if (questionQuery.isPending)
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center gap-5">
         <img src={enpitsuLogo} className="w-28 rounded-lg" />

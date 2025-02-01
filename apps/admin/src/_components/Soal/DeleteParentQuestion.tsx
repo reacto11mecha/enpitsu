@@ -64,7 +64,7 @@ export const DeleteParentQuestion = ({
     <Dialog
       open={openDelete}
       onOpenChange={() => {
-        if (!deleteQuestionMutation.isLoading) setOpenDelete((prev) => !prev);
+        if (!deleteQuestionMutation.isPending) setOpenDelete((prev) => !prev);
 
         if (confirmationText.length > 0) setConfirmText("");
       }}
@@ -85,7 +85,7 @@ export const DeleteParentQuestion = ({
             type="text"
             autoComplete="false"
             autoCorrect="false"
-            disabled={deleteQuestionMutation.isLoading}
+            disabled={deleteQuestionMutation.isPending}
             value={confirmationText}
             onChange={(e) => setConfirmText(e.target.value)}
           />
@@ -95,7 +95,7 @@ export const DeleteParentQuestion = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={deleteQuestionMutation.isLoading}
+              disabled={deleteQuestionMutation.isPending}
             >
               Batal
             </Button>
@@ -103,12 +103,12 @@ export const DeleteParentQuestion = ({
           <Button
             type="button"
             variant="destructive"
-            disabled={!reallySure || deleteQuestionMutation.isLoading}
+            disabled={!reallySure || deleteQuestionMutation.isPending}
             onClick={() => {
               if (reallySure) deleteQuestionMutation.mutate({ id });
             }}
           >
-            {deleteQuestionMutation.isLoading ? (
+            {deleteQuestionMutation.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Hapus

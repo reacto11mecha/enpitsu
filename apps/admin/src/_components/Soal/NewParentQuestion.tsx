@@ -120,8 +120,8 @@ export const NewParentQuestion = () => {
                   autoComplete="off"
                   placeholder="MATEMATIKA WAJIB XII"
                   disabled={
-                    subgradeForAllowListQuery.isLoading ||
-                    createQuestionMutation.isLoading
+                    subgradeForAllowListQuery.isPending ||
+                    createQuestionMutation.isPending
                   }
                 />
               </FormControl>
@@ -154,8 +154,8 @@ export const NewParentQuestion = () => {
                   autoComplete="off"
                   placeholder="MATWA-XII"
                   disabled={
-                    subgradeForAllowListQuery.isLoading ||
-                    createQuestionMutation.isLoading
+                    subgradeForAllowListQuery.isPending ||
+                    createQuestionMutation.isPending
                   }
                 />
               </FormControl>
@@ -181,8 +181,8 @@ export const NewParentQuestion = () => {
                 <FormControl>
                   <SelectTrigger
                     disabled={
-                      subgradeForAllowListQuery.isLoading ||
-                      createQuestionMutation.isLoading
+                      subgradeForAllowListQuery.isPending ||
+                      createQuestionMutation.isPending
                     }
                   >
                     <SelectValue placeholder="Mohon pilih salah satu" />
@@ -225,8 +225,8 @@ export const NewParentQuestion = () => {
                         : field.onChange(new Date(e.target.value))
                     }
                     disabled={
-                      subgradeForAllowListQuery.isLoading ||
-                      createQuestionMutation.isLoading
+                      subgradeForAllowListQuery.isPending ||
+                      createQuestionMutation.isPending
                     }
                   />
                 </FormControl>
@@ -266,9 +266,9 @@ export const NewParentQuestion = () => {
                         : field.onChange(new Date(e.target.value))
                     }
                     disabled={
-                      subgradeForAllowListQuery.isLoading ||
+                      subgradeForAllowListQuery.isPending ||
                       !form.getValues("startedAt") ||
-                      createQuestionMutation.isLoading
+                      createQuestionMutation.isPending
                     }
                   />
                 </FormControl>
@@ -290,12 +290,12 @@ export const NewParentQuestion = () => {
               <FormLabel>Daftar Putih Pengerjaan Soal</FormLabel>
               <FormControl>
                 <div className="flex flex-col gap-8 py-5">
-                  {subgradeForAllowListQuery.isLoading &&
+                  {subgradeForAllowListQuery.isPending &&
                     !subgradeForAllowListQuery.isError && (
                       <Skeleton className="h-32 w-full" />
                     )}
 
-                  {!subgradeForAllowListQuery.isLoading &&
+                  {!subgradeForAllowListQuery.isPending &&
                     !subgradeForAllowListQuery.isError &&
                     subgradeForAllowListQuery?.data.map((grade) => (
                       <>
@@ -322,7 +322,7 @@ export const NewParentQuestion = () => {
                                         ),
                                       );
                                 }}
-                                disabled={createQuestionMutation.isLoading}
+                                disabled={createQuestionMutation.isPending}
                               />
                               <label
                                 htmlFor={`parent-grade-${grade.id}`}
@@ -365,7 +365,7 @@ export const NewParentQuestion = () => {
                                                   );
                                             }}
                                             disabled={
-                                              createQuestionMutation.isLoading
+                                              createQuestionMutation.isPending
                                             }
                                           />
                                         </FormControl>
@@ -393,11 +393,11 @@ export const NewParentQuestion = () => {
         <Button
           type="submit"
           disabled={
-            subgradeForAllowListQuery.isLoading ||
-            createQuestionMutation.isLoading
+            subgradeForAllowListQuery.isPending ||
+            createQuestionMutation.isPending
           }
         >
-          {createQuestionMutation.isLoading ? (
+          {createQuestionMutation.isPending ? (
             <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
           ) : null}
           Buat

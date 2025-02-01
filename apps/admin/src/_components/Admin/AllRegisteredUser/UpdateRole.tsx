@@ -87,7 +87,7 @@ export const UpdateRole = ({
     <Dialog
       open={isOpen}
       onOpenChange={() => {
-        if (!updateRoleMutation.isLoading) toggleOpen();
+        if (!updateRoleMutation.isPending) toggleOpen();
       }}
     >
       <DialogContent>
@@ -137,19 +137,19 @@ export const UpdateRole = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={updateRoleMutation.isLoading}
+              disabled={updateRoleMutation.isPending}
             >
               Batal
             </Button>
           </DialogClose>
           <Button
             disabled={
-              updateRoleMutation.isLoading ||
+              updateRoleMutation.isPending ||
               currRole === form.getValues("role")
             }
             onClick={form.handleSubmit(onSubmit)}
           >
-            {updateRoleMutation.isLoading ? (
+            {updateRoleMutation.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Perbarui

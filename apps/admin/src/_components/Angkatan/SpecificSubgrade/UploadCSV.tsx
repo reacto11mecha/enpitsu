@@ -163,9 +163,9 @@ export const UploadCSV = ({
 
   return (
     <Dialog
-      open={!createStudentManyMutation.isLoading || !readLock ? open : true}
+      open={!createStudentManyMutation.isPending || !readLock ? open : true}
       onOpenChange={() => {
-        if (!createStudentManyMutation.isLoading || !readLock) {
+        if (!createStudentManyMutation.isPending || !readLock) {
           setOpen((prev) => !prev);
           form.reset();
         }
@@ -199,7 +199,7 @@ export const UploadCSV = ({
                     <Input
                       accept="text/csv"
                       type="file"
-                      disabled={createStudentManyMutation.isLoading}
+                      disabled={createStudentManyMutation.isPending}
                       {...form.register("csv")}
                     />
                   </FormControl>
@@ -217,7 +217,7 @@ export const UploadCSV = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={createStudentManyMutation.isLoading || readLock}
+              disabled={createStudentManyMutation.isPending || readLock}
             >
               Batal
             </Button>
@@ -225,9 +225,9 @@ export const UploadCSV = ({
           <Button
             type="submit"
             onClick={form.handleSubmit(onSubmit)}
-            disabled={createStudentManyMutation.isLoading || readLock}
+            disabled={createStudentManyMutation.isPending || readLock}
           >
-            {createStudentManyMutation.isLoading || readLock ? (
+            {createStudentManyMutation.isPending || readLock ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Tambah

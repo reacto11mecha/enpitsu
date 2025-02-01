@@ -103,7 +103,7 @@ export function EditBannedStudent({
     <Dialog
       open={isDialogOpen}
       onOpenChange={() => {
-        if (editBannedStudent.isLoading) return;
+        if (editBannedStudent.isPending) return;
 
         setDialogOpen((prev) => !prev);
       }}
@@ -176,7 +176,7 @@ export function EditBannedStudent({
                               ? field.onChange(undefined)
                               : field.onChange(new Date(e.target.value))
                           }
-                          disabled={editBannedStudent.isLoading}
+                          disabled={editBannedStudent.isPending}
                         />
                       </FormControl>
                       <FormDescription>
@@ -216,7 +216,7 @@ export function EditBannedStudent({
                               : field.onChange(new Date(e.target.value))
                           }
                           disabled={
-                            editBannedStudent.isLoading ||
+                            editBannedStudent.isPending ||
                             !form.getValues("startedAt")
                           }
                         />
@@ -242,7 +242,7 @@ export function EditBannedStudent({
                         {...field}
                         autoComplete="off"
                         placeholder="Masukan alasan logis"
-                        disabled={editBannedStudent.isLoading}
+                        disabled={editBannedStudent.isPending}
                       />
                     </FormControl>
                     <FormDescription>
@@ -252,7 +252,7 @@ export function EditBannedStudent({
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={editBannedStudent.isLoading}>
+              <Button type="submit" disabled={editBannedStudent.isPending}>
                 Edit
               </Button>
             </form>

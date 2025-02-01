@@ -77,7 +77,7 @@ export const Questions = ({
             />
           ))}
 
-          {choicesIdQuery.isLoading ? (
+          {choicesIdQuery.isPending ? (
             <>
               {Array.from({ length: 10 }).map((_, idx) => (
                 <BasicLoading key={idx} />
@@ -85,7 +85,7 @@ export const Questions = ({
             </>
           ) : null}
 
-          {choicesIdQuery.isLoading ? (
+          {choicesIdQuery.isPending ? (
             <Button className="h-full w-full p-5" variant="outline" disabled>
               <Loader2 className="h-6 w-6 animate-spin" />
             </Button>
@@ -93,14 +93,14 @@ export const Questions = ({
             <Button
               variant="outline"
               className="h-full w-full p-5"
-              disabled={createNewChoiceMutation.isLoading}
+              disabled={createNewChoiceMutation.isPending}
               onClick={() =>
                 createNewChoiceMutation.mutate({
                   questionId,
                 })
               }
             >
-              {createNewChoiceMutation.isLoading ? (
+              {createNewChoiceMutation.isPending ? (
                 <Loader2 className="h-6 w-6 animate-spin" />
               ) : (
                 <PlusCircle className="h-6 w-6" />
@@ -125,7 +125,7 @@ export const Questions = ({
               />
             ))}
 
-            {essaysIdQuery.isLoading ? (
+            {essaysIdQuery.isPending ? (
               <>
                 {Array.from({ length: 5 }).map((_, idx) => (
                   <BasicLoading key={idx} />
@@ -133,7 +133,7 @@ export const Questions = ({
               </>
             ) : null}
 
-            {essaysIdQuery.isLoading ? (
+            {essaysIdQuery.isPending ? (
               <Button className="h-full w-full p-5" variant="outline" disabled>
                 <Loader2 className="h-6 w-6 animate-spin" />
               </Button>
@@ -141,14 +141,14 @@ export const Questions = ({
               <Button
                 variant="outline"
                 className="h-full w-full p-5"
-                disabled={createNewEssayMutation.isLoading}
+                disabled={createNewEssayMutation.isPending}
                 onClick={() =>
                   createNewEssayMutation.mutate({
                     questionId,
                   })
                 }
               >
-                {createNewEssayMutation.isLoading ? (
+                {createNewEssayMutation.isPending ? (
                   <Loader2 className="h-6 w-6 animate-spin" />
                 ) : (
                   <PlusCircle className="h-6 w-6" />

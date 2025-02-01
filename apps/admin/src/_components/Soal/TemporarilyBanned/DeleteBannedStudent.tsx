@@ -63,7 +63,7 @@ export const DeleteSingleBannedStudent = ({
     <Dialog
       open={isDialogOpen}
       onOpenChange={() => {
-        if (deleteBannedStudent.isLoading) return;
+        if (deleteBannedStudent.isPending) return;
 
         setDialogOpen((prev) => !prev);
       }}
@@ -80,15 +80,15 @@ export const DeleteSingleBannedStudent = ({
         <DialogFooter className="sm:justify-start">
           <Button
             onClick={() => deleteBannedStudent.mutate({ id })}
-            disabled={deleteBannedStudent.isLoading}
+            disabled={deleteBannedStudent.isPending}
           >
             Hapus
           </Button>
-          <DialogClose asChild disabled={deleteBannedStudent.isLoading}>
+          <DialogClose asChild disabled={deleteBannedStudent.isPending}>
             <Button
               type="button"
               variant="secondary"
-              disabled={deleteBannedStudent.isLoading}
+              disabled={deleteBannedStudent.isPending}
             >
               Batal
             </Button>
@@ -140,7 +140,7 @@ export const DeleteManyBannedStudent = ({
     <Dialog
       open={dialogOpen}
       onOpenChange={() => {
-        if (deleteManyBannedStudent.isLoading) return;
+        if (deleteManyBannedStudent.isPending) return;
 
         setDialogOpen((prev) => !prev);
       }}
@@ -170,15 +170,15 @@ export const DeleteManyBannedStudent = ({
         <DialogFooter className="sm:justify-start">
           <Button
             onClick={() => deleteManyBannedStudent.mutate({ ids: allIds })}
-            disabled={deleteManyBannedStudent.isLoading}
+            disabled={deleteManyBannedStudent.isPending}
           >
             Hapus
           </Button>
-          <DialogClose asChild disabled={deleteManyBannedStudent.isLoading}>
+          <DialogClose asChild disabled={deleteManyBannedStudent.isPending}>
             <Button
               type="button"
               variant="secondary"
-              disabled={deleteManyBannedStudent.isLoading}
+              disabled={deleteManyBannedStudent.isPending}
             >
               Batal
             </Button>

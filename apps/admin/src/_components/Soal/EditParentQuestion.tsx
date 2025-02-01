@@ -134,8 +134,8 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
             <FormItem>
               <FormLabel>Judul Soal</FormLabel>
               <FormControl>
-                {currentQuestionQuery.isLoading ||
-                subgradeForAllowListQuery.isLoading ? (
+                {currentQuestionQuery.isPending ||
+                subgradeForAllowListQuery.isPending ? (
                   <Skeleton className="h-10 w-full" />
                 ) : (
                   <Input
@@ -143,9 +143,9 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                     autoComplete="off"
                     placeholder="MATEMATIKA WAJIB XII"
                     disabled={
-                      currentQuestionQuery.isLoading ||
-                      subgradeForAllowListQuery.isLoading ||
-                      editQuestionMutation.isLoading
+                      currentQuestionQuery.isPending ||
+                      subgradeForAllowListQuery.isPending ||
+                      editQuestionMutation.isPending
                     }
                   />
                 )}
@@ -165,8 +165,8 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
             <FormItem>
               <FormLabel>Kode Soal</FormLabel>
               <FormControl>
-                {currentQuestionQuery.isLoading ||
-                subgradeForAllowListQuery.isLoading ? (
+                {currentQuestionQuery.isPending ||
+                subgradeForAllowListQuery.isPending ? (
                   <Skeleton className="h-10 w-full" />
                 ) : (
                   <Input
@@ -182,7 +182,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                     }
                     autoComplete="off"
                     placeholder="MATWA-XII"
-                    disabled={editQuestionMutation.isLoading}
+                    disabled={editQuestionMutation.isPending}
                   />
                 )}
               </FormControl>
@@ -197,8 +197,8 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
 
         <FormItem>
           <FormLabel>Jumlah opsi pilihan ganda</FormLabel>
-          {currentQuestionQuery.isLoading ||
-          subgradeForAllowListQuery.isLoading ? (
+          {currentQuestionQuery.isPending ||
+          subgradeForAllowListQuery.isPending ? (
             <Skeleton className="h-10 w-full" />
           ) : (
             <Select
@@ -232,8 +232,8 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
               <FormItem className="w-full">
                 <FormLabel>Waktu Mulai</FormLabel>
                 <FormControl>
-                  {currentQuestionQuery.isLoading ||
-                  subgradeForAllowListQuery.isLoading ? (
+                  {currentQuestionQuery.isPending ||
+                  subgradeForAllowListQuery.isPending ? (
                     <Skeleton className="h-10 w-full" />
                   ) : (
                     <Input
@@ -251,9 +251,9 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                           : field.onChange(new Date(e.target.value))
                       }
                       disabled={
-                        currentQuestionQuery.isLoading ||
-                        subgradeForAllowListQuery.isLoading ||
-                        editQuestionMutation.isLoading
+                        currentQuestionQuery.isPending ||
+                        subgradeForAllowListQuery.isPending ||
+                        editQuestionMutation.isPending
                       }
                     />
                   )}
@@ -273,8 +273,8 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
               <FormItem className="w-full">
                 <FormLabel>Waktu Selesai</FormLabel>
                 <FormControl>
-                  {currentQuestionQuery.isLoading ||
-                  subgradeForAllowListQuery.isLoading ? (
+                  {currentQuestionQuery.isPending ||
+                  subgradeForAllowListQuery.isPending ? (
                     <Skeleton className="h-10 w-full" />
                   ) : (
                     <Input
@@ -298,10 +298,10 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                           : field.onChange(new Date(e.target.value))
                       }
                       disabled={
-                        currentQuestionQuery.isLoading ||
-                        subgradeForAllowListQuery.isLoading ||
+                        currentQuestionQuery.isPending ||
+                        subgradeForAllowListQuery.isPending ||
                         !form.getValues("startedAt") ||
-                        editQuestionMutation.isLoading
+                        editQuestionMutation.isPending
                       }
                     />
                   )}
@@ -324,12 +324,12 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
               <FormLabel>Daftar Putih Pengerjaan Soal</FormLabel>
               <FormControl>
                 <div className="flex flex-col gap-8 py-5">
-                  {subgradeForAllowListQuery.isLoading &&
+                  {subgradeForAllowListQuery.isPending &&
                     !subgradeForAllowListQuery.isError && (
                       <Skeleton className="h-32 w-full" />
                     )}
 
-                  {!subgradeForAllowListQuery.isLoading &&
+                  {!subgradeForAllowListQuery.isPending &&
                     !subgradeForAllowListQuery.isError &&
                     subgradeForAllowListQuery?.data.map((grade) => (
                       <>
@@ -356,8 +356,8 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                                       );
                                 }}
                                 disabled={
-                                  currentQuestionQuery.isLoading ||
-                                  editQuestionMutation.isLoading
+                                  currentQuestionQuery.isPending ||
+                                  editQuestionMutation.isPending
                                 }
                               />
                               <p>Kelas {grade.label}</p>
@@ -396,8 +396,8 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                                                   );
                                             }}
                                             disabled={
-                                              currentQuestionQuery.isLoading ||
-                                              editQuestionMutation.isLoading
+                                              currentQuestionQuery.isPending ||
+                                              editQuestionMutation.isPending
                                             }
                                           />
                                         </FormControl>
@@ -425,12 +425,12 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
         <Button
           type="submit"
           disabled={
-            currentQuestionQuery.isLoading ||
-            subgradeForAllowListQuery.isLoading ||
-            editQuestionMutation.isLoading
+            currentQuestionQuery.isPending ||
+            subgradeForAllowListQuery.isPending ||
+            editQuestionMutation.isPending
           }
         >
-          {editQuestionMutation.isLoading ? (
+          {editQuestionMutation.isPending ? (
             <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
           ) : null}
           Perbaiki

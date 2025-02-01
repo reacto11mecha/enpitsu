@@ -268,7 +268,7 @@ export function DataTable() {
               </TableRow>
             ) : null}
 
-            {blocklistsQuery.isLoading && !blocklistsQuery.isError ? (
+            {blocklistsQuery.isPending && !blocklistsQuery.isError ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <TableRow key={idx}>
@@ -298,7 +298,7 @@ export function DataTable() {
               ))
             ) : (
               <>
-                {!blocklistsQuery.isLoading && (
+                {!blocklistsQuery.isPending && (
                   <>
                     {!blocklistsQuery.isError && (
                       <TableRow>

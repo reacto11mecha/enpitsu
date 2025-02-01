@@ -125,7 +125,7 @@ export const Correction = ({
               Pilihan Ganda
             </h3>
 
-            {multipleChoicesQuery.isLoading ? (
+            {multipleChoicesQuery.isPending ? (
               <Skeleton className="w-15 h-6" />
             ) : !multipleChoicesQuery.isError ? (
               <span>
@@ -147,7 +147,7 @@ export const Correction = ({
           </div>
 
           <div className="flex flex-col gap-5">
-            {multipleChoicesQuery.isLoading ? (
+            {multipleChoicesQuery.isPending ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <Skeleton key={idx} className="h-[18rem] w-full" />
@@ -210,7 +210,7 @@ export const Correction = ({
               Esai
             </h3>
 
-            {essaysQuery.isLoading || essayScoresQuery.isLoading ? (
+            {essaysQuery.isPending || essayScoresQuery.isPending ? (
               <Skeleton className="w-15 h-6" />
             ) : !essaysQuery.isError && !essayScoresQuery.isError ? (
               <span>
@@ -226,7 +226,7 @@ export const Correction = ({
           </div>
 
           <div className="flex flex-col gap-5">
-            {essaysQuery.isLoading ? (
+            {essaysQuery.isPending ? (
               <>
                 {Array.from({ length: 5 }).map((_, idx) => (
                   <Skeleton key={idx} className="h-[18rem] w-full" />
@@ -264,7 +264,7 @@ export const Correction = ({
                 <Separator />
                 <CardFooter className="space-x-5 p-6">
                   <p>Poin:</p>
-                  {essayScoresQuery.isLoading && !essayScoresQuery.data ? (
+                  {essayScoresQuery.isPending && !essayScoresQuery.data ? (
                     <Skeleton className="h-30 w-full" />
                   ) : (
                     <UpdateEssayScore

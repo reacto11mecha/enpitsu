@@ -70,7 +70,7 @@ export const NewAngkatan = () => {
             name="label"
             render={({ field }) => (
               <FormItem
-                aria-disabled={gradeMutation.isLoading}
+                aria-disabled={gradeMutation.isPending}
                 className="w-full"
               >
                 <FormLabel>Nama Kelas</FormLabel>
@@ -80,11 +80,11 @@ export const NewAngkatan = () => {
                       placeholder="X"
                       {...field}
                       autoComplete="off"
-                      disabled={gradeMutation.isLoading}
+                      disabled={gradeMutation.isPending}
                     />
                   </FormControl>
-                  <Button disabled={gradeMutation.isLoading} type="submit">
-                    {gradeMutation.isLoading ? (
+                  <Button disabled={gradeMutation.isPending} type="submit">
+                    {gradeMutation.isPending ? (
                       <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
                     ) : null}
                     Tambah

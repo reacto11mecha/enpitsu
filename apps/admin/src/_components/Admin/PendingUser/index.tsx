@@ -138,21 +138,21 @@ export const columns: ColumnDef<PendingUserList>[] = [
             isOpen={isOpen}
             toggleOpen={toggleOpen}
             isDisabled={
-              rejectUserMutation.isLoading || acceptUserMutation.isLoading
+              rejectUserMutation.isPending || acceptUserMutation.isPending
             }
-            isLoading={acceptUserMutation.isLoading}
+            isLoading={acceptUserMutation.isPending}
           />
 
           <Button
             variant="destructive"
             disabled={
-              acceptUserMutation.isLoading || rejectUserMutation.isLoading
+              acceptUserMutation.isPending || rejectUserMutation.isPending
             }
             onClick={() => {
               rejectUserMutation.mutate({ id: row.original.id });
             }}
           >
-            {rejectUserMutation.isLoading ? (
+            {rejectUserMutation.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Tolak
@@ -222,7 +222,7 @@ export function PendingUser() {
               </TableRow>
             ) : null}
 
-            {pendingUserQuery.isLoading && !pendingUserQuery.isError ? (
+            {pendingUserQuery.isPending && !pendingUserQuery.isError ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <TableRow key={idx}>
@@ -252,7 +252,7 @@ export function PendingUser() {
               ))
             ) : (
               <>
-                {!pendingUserQuery.isLoading && (
+                {!pendingUserQuery.isPending && (
                   <>
                     {!pendingUserQuery.isError && (
                       <TableRow>

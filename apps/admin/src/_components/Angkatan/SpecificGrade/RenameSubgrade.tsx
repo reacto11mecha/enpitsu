@@ -93,7 +93,7 @@ export const RenameSubgrade = ({
     <Dialog
       open={openEdit}
       onOpenChange={() => {
-        if (!editSubgradeMutation.isLoading) setOpenEdit((prev) => !prev);
+        if (!editSubgradeMutation.isPending) setOpenEdit((prev) => !prev);
       }}
     >
       <DialogContent>
@@ -119,7 +119,7 @@ export const RenameSubgrade = ({
                           placeholder="1"
                           {...field}
                           autoComplete="off"
-                          disabled={editSubgradeMutation.isLoading}
+                          disabled={editSubgradeMutation.isPending}
                         />
                       </FormControl>
                       <FormMessage />
@@ -135,17 +135,17 @@ export const RenameSubgrade = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={editSubgradeMutation.isLoading}
+              disabled={editSubgradeMutation.isPending}
             >
               Batal
             </Button>
           </DialogClose>
           <Button
             type="button"
-            disabled={isSameEditValue || editSubgradeMutation.isLoading}
+            disabled={isSameEditValue || editSubgradeMutation.isPending}
             onClick={() => form.handleSubmit(onSubmit)()}
           >
-            {editSubgradeMutation.isLoading ? (
+            {editSubgradeMutation.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Ubah

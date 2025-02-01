@@ -356,7 +356,7 @@ export function DataTable({
                 </TableRow>
               ) : null}
 
-              {specificAnswerByQuestionQuery.isLoading &&
+              {specificAnswerByQuestionQuery.isPending &&
               !specificAnswerByQuestionQuery.isError ? (
                 <>
                   {Array.from({ length: 10 }).map((_, idx) => (
@@ -387,7 +387,7 @@ export function DataTable({
                 ))
               ) : (
                 <>
-                  {!specificAnswerByQuestionQuery.isLoading && (
+                  {!specificAnswerByQuestionQuery.isPending && (
                     <>
                       {!specificAnswerByQuestionQuery.isError && (
                         <TableRow>

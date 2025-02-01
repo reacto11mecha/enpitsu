@@ -328,7 +328,7 @@ export function DataTable() {
               </TableRow>
             ) : null}
 
-            {temporarilyBannedQuery.isLoading &&
+            {temporarilyBannedQuery.isPending &&
             !temporarilyBannedQuery.isError ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
@@ -359,7 +359,7 @@ export function DataTable() {
               ))
             ) : (
               <>
-                {!temporarilyBannedQuery.isLoading && (
+                {!temporarilyBannedQuery.isPending && (
                   <>
                     {!temporarilyBannedQuery.isError && (
                       <TableRow>

@@ -225,8 +225,8 @@ export const SpecificExcelAnswerDownload = ({
     });
 
   const onOpenChange = useCallback(() => {
-    if (!excelMutationApi.isLoading) setOpen((prev) => !prev);
-  }, [excelMutationApi.isLoading]);
+    if (!excelMutationApi.isPending) setOpen((prev) => !prev);
+  }, [excelMutationApi.isPending]);
 
   const triggerDownload = useCallback(
     () => excelMutationApi.mutate({ questionId }),
@@ -239,7 +239,7 @@ export const SpecificExcelAnswerDownload = ({
     <ReusableDialog
       open={open}
       onOpenChange={onOpenChange}
-      isLoading={excelMutationApi.isLoading}
+      isLoading={excelMutationApi.isPending}
       triggerDownload={triggerDownload}
       title={title}
     />
@@ -399,8 +399,8 @@ export const AggregateExcelAnswerDownload = () => {
     });
 
   const onOpenChange = useCallback(() => {
-    if (!excelMutationApi.isLoading) setOpen((prev) => !prev);
-  }, [excelMutationApi.isLoading]);
+    if (!excelMutationApi.isPending) setOpen((prev) => !prev);
+  }, [excelMutationApi.isPending]);
 
   const triggerDownload = useCallback(
     () => excelMutationApi.mutate(),
@@ -413,7 +413,7 @@ export const AggregateExcelAnswerDownload = () => {
     <ReusableDialog
       open={open}
       onOpenChange={onOpenChange}
-      isLoading={excelMutationApi.isLoading}
+      isLoading={excelMutationApi.isPending}
       triggerDownload={triggerDownload}
     />
   );

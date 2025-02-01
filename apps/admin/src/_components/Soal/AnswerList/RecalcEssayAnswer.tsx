@@ -49,7 +49,7 @@ export const RecalcEssayAnswer = ({
     <Dialog
       open={open}
       onOpenChange={() => {
-        if (!recalcMutationApi.isLoading) setOpen((prev) => !prev);
+        if (!recalcMutationApi.isPending) setOpen((prev) => !prev);
       }}
     >
       <DialogTrigger asChild>
@@ -75,14 +75,14 @@ export const RecalcEssayAnswer = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={recalcMutationApi.isLoading}
+              disabled={recalcMutationApi.isPending}
             >
               Batal
             </Button>
           </DialogClose>
           <Button
             onClick={() => recalcMutationApi.mutate({ questionId })}
-            disabled={recalcMutationApi.isLoading}
+            disabled={recalcMutationApi.isPending}
           >
             Kalkulasi Ulang
           </Button>

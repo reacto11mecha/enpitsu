@@ -211,7 +211,7 @@ export function DataTable({
               </TableRow>
             ) : null}
 
-            {subgradesQuery.isLoading && !subgradesQuery.isError ? (
+            {subgradesQuery.isPending && !subgradesQuery.isError ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <TableRow key={idx}>
@@ -241,7 +241,7 @@ export function DataTable({
               ))
             ) : (
               <>
-                {!subgradesQuery.isLoading && (
+                {!subgradesQuery.isPending && (
                   <>
                     {!subgradesQuery.isError && (
                       <TableRow>

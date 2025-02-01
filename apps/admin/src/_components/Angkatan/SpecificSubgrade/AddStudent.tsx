@@ -115,7 +115,7 @@ export const AddStudent = ({
     <Dialog
       open={open}
       onOpenChange={() => {
-        if (!createStudentMutation.isLoading) setOpen((prev) => !prev);
+        if (!createStudentMutation.isPending) setOpen((prev) => !prev);
         form.reset();
       }}
     >
@@ -146,7 +146,7 @@ export const AddStudent = ({
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={createStudentMutation.isLoading}
+                      disabled={createStudentMutation.isPending}
                     />
                   </FormControl>
                   <FormDescription>
@@ -166,7 +166,7 @@ export const AddStudent = ({
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={createStudentMutation.isLoading}
+                      disabled={createStudentMutation.isPending}
                     />
                   </FormControl>
                   <FormDescription>
@@ -186,7 +186,7 @@ export const AddStudent = ({
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={createStudentMutation.isLoading}
+                      disabled={createStudentMutation.isPending}
                     />
                   </FormControl>
                   <FormDescription>
@@ -206,7 +206,7 @@ export const AddStudent = ({
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={createStudentMutation.isLoading}
+                      disabled={createStudentMutation.isPending}
                     />
                   </FormControl>
                   <FormDescription>
@@ -223,16 +223,16 @@ export const AddStudent = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={createStudentMutation.isLoading}
+              disabled={createStudentMutation.isPending}
             >
               Batal
             </Button>
           </DialogClose>
           <Button
-            disabled={createStudentMutation.isLoading}
+            disabled={createStudentMutation.isPending}
             onClick={() => form.handleSubmit(onSubmit)()}
           >
-            {createStudentMutation.isLoading ? (
+            {createStudentMutation.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Tambah

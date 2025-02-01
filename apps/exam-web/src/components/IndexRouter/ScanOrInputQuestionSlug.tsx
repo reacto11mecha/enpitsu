@@ -1,3 +1,4 @@
+import type { z } from "zod";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +16,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
-import { z } from "zod";
 
 import { ModeToggle } from "../mode-toggle";
 import { Precaution } from "./Precaution";
@@ -85,7 +85,7 @@ export const ScanOrInputQuestionSlug = ({
                   <FormControl>
                     <div className="flex flex-row gap-3">
                       <Input
-                        disabled={getQuestionMutation.isLoading}
+                        disabled={getQuestionMutation.isPending}
                         placeholder="Masukan kode soal"
                         autoComplete="off"
                         autoCorrect="off"
@@ -102,9 +102,9 @@ export const ScanOrInputQuestionSlug = ({
                       />
                       <Button
                         type="submit"
-                        disabled={getQuestionMutation.isLoading}
+                        disabled={getQuestionMutation.isPending}
                       >
-                        {getQuestionMutation.isLoading ? (
+                        {getQuestionMutation.isPending ? (
                           <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
                         ) : null}
                         Kerjakan
@@ -122,7 +122,7 @@ export const ScanOrInputQuestionSlug = ({
 
         <ScannerWrapper
           sendMutate={sendMutate}
-          isDisabled={getQuestionMutation.isLoading}
+          isDisabled={getQuestionMutation.isPending}
         />
       </div>
 
