@@ -1,5 +1,12 @@
 "use client";
 
+import type { RouterOutputs } from "@enpitsu/api";
+import type {
+  ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
+} from "@tanstack/react-table";
 import { useCallback, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
@@ -30,13 +37,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { RouterOutputs } from "@enpitsu/api";
-import type {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-} from "@tanstack/react-table";
 import {
   flexRender,
   getCoreRowModel,

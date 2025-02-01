@@ -1,3 +1,4 @@
+import type { TRPCRouterRecord } from "@trpc/server";
 import { cache } from "@enpitsu/cache";
 import { and, asc, count, desc, eq, inArray } from "@enpitsu/db";
 import {
@@ -6,7 +7,6 @@ import {
   studentRespondsData,
 } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
-import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 

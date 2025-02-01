@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactQuillProps } from "react-quill";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +19,6 @@ import katex from "katex";
 import Delta from "quill-delta";
 import { useForm } from "react-hook-form";
 import ReactQuill from "react-quill";
-import type { ReactQuillProps } from "react-quill";
 import { z } from "zod";
 
 import "katex/dist/katex.min.css";

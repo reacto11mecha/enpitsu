@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import type { RouterOutputs } from "@enpitsu/api";
 import type { Dispatch, SetStateAction } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,7 +15,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import type { RouterOutputs } from "@enpitsu/api";
 import { Trash2 } from "lucide-react";
 
 import { api } from "~/utils/api";

@@ -1,5 +1,7 @@
 "use client";
 
+import type { RouterOutputs } from "@enpitsu/api";
+import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 // import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
@@ -31,8 +33,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import type { RouterOutputs } from "@enpitsu/api";
-import type { ColumnDef } from "@tanstack/react-table";
 import {
   flexRender,
   getCoreRowModel,

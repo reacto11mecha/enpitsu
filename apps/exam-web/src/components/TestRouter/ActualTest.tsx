@@ -28,6 +28,7 @@ import { useWakeLock } from "react-screen-wake-lock";
 import { useDebounceCallback } from "usehooks-ts";
 import { z } from "zod";
 
+import type { Props, TFormSchema } from "./utils";
 import { ModeToggle } from "../mode-toggle";
 import {
   AnsweredQuestionsList,
@@ -37,12 +38,7 @@ import {
   GoToHome,
   ScreenWakeLockFail,
 } from "./AllAlert";
-import {
-  formSchema,
-  shuffleArray,
-  type Props,
-  type TFormSchema,
-} from "./utils";
+import { formSchema, shuffleArray } from "./utils";
 
 import "katex/dist/katex.min.css";
 import "react-quill/dist/quill.snow.css";

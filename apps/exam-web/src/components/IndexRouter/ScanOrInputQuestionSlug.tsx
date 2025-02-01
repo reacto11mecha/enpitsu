@@ -69,7 +69,7 @@ export const ScanOrInputQuestionSlug = ({
 
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-center px-5">
-      <h3 className="font-ibm mb-5 text-3xl text-gray-700 dark:text-gray-300">
+      <h3 className="mb-5 font-ibm text-3xl text-gray-700 dark:text-gray-300">
         enpitsu
       </h3>
 
@@ -118,7 +118,7 @@ export const ScanOrInputQuestionSlug = ({
           </form>
         </Form>
 
-        <p className="text-muted-foreground mb-1 mt-5 text-center">atau</p>
+        <p className="mb-1 mt-5 text-center text-muted-foreground">atau</p>
 
         <ScannerWrapper
           sendMutate={sendMutate}

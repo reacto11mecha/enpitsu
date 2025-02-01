@@ -1,3 +1,4 @@
+import type { TRPCRouterRecord } from "@trpc/server";
 import { cache } from "@enpitsu/cache";
 import { eq } from "@enpitsu/db";
 import {
@@ -7,12 +8,11 @@ import {
   preparedStudentIsTemporarilyBanned,
 } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
-import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { studentProcedure } from "../trpc";
 import type { TStudent } from "../trpc";
+import { studentProcedure } from "../trpc";
 import { compareTwoStringLikability } from "../utils";
 
 type TQuestion = NonNullable<

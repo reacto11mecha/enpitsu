@@ -38,7 +38,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
       <html lang="en">
         <body
           className={cn(
-            "bg-background min-h-screen font-sans antialiased",
+            "font-sans min-h-screen bg-background antialiased",
             fontSans.variable,
           )}
         >
@@ -82,7 +82,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
     <html lang="en">
       <body
         className={cn(
-          "bg-background min-h-screen font-sans antialiased",
+          "font-sans min-h-screen bg-background antialiased",
           fontSans.variable,
           QuranFont.variable,
         )}

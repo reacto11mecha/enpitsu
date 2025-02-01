@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "license": "MIT",
-  "files": [
-    "./base.js",
-    "./nextjs.js",
-    "./react.js"
-  ],
+  "exports": {
+    "./base": "./base.js",
+    "./nextjs": "./nextjs.js",
+    "./react": "./react.js"
+  },
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
     "lint": "eslint",

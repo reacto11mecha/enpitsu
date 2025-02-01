@@ -275,7 +275,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
             {specificEssayMutation.error ? (
               <div className="flex flex-col items-center justify-center gap-2">
                 <NuhUh className="h-8 w-8 text-red-600 dark:text-red-500" />
-                <small className="text-muted-foreground font-mono text-red-600 dark:text-red-500">
+                <small className="font-mono text-muted-foreground text-red-600 dark:text-red-500">
                   Error, perubahan tidak disimpan
                 </small>
               </div>
@@ -283,8 +283,8 @@ export const EssayEditor = memo(function EssayEditorConstructor({
               <>
                 {specificEssayMutation.isLoading ? (
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <RefreshCw className="text-muted-foreground animate-spin" />
-                    <small className="text-muted-foreground font-mono">
+                    <RefreshCw className="animate-spin text-muted-foreground" />
+                    <small className="font-mono text-muted-foreground">
                       Menyimpan...
                     </small>
                   </div>

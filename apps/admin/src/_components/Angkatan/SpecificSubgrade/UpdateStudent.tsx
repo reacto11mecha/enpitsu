@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import type { RouterOutputs } from "@enpitsu/api";
 import type { Dispatch, SetStateAction } from "react";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,7 +21,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import type { RouterOutputs } from "@enpitsu/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";

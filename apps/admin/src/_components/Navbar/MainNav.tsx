@@ -37,7 +37,7 @@ export function MainNav({
           <Link
             key={link.href}
             href={link.href}
-            className="hover:text-primary text-base font-medium transition-colors"
+            className="text-base font-medium transition-colors hover:text-primary"
           >
             {link.label}
           </Link>

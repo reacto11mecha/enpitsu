@@ -1,8 +1,8 @@
+import type { TRPCRouterRecord } from "@trpc/server";
 import { cache } from "@enpitsu/cache";
 import { asc, eq } from "@enpitsu/db";
 import * as schema from "@enpitsu/db/schema";
 import { validateId } from "@enpitsu/token-generator";
-import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 

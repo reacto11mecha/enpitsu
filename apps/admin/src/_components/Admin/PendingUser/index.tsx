@@ -1,5 +1,11 @@
 "use client";
 
+import type { RouterOutputs } from "@enpitsu/api";
+import type {
+  ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+} from "@tanstack/react-table";
 import { useCallback, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -20,12 +26,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import type { RouterOutputs } from "@enpitsu/api";
-import type {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-} from "@tanstack/react-table";
 import {
   flexRender,
   getCoreRowModel,

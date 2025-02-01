@@ -1,5 +1,12 @@
 "use client";
 
+import type { RouterOutputs } from "@enpitsu/api";
+import type {
+  ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
+} from "@tanstack/react-table";
 import { createContext, useContext, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
@@ -33,13 +40,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { RouterOutputs } from "@enpitsu/api";
-import type {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-} from "@tanstack/react-table";
 import {
   flexRender,
   getCoreRowModel,
@@ -491,7 +491,7 @@ export function DataTable({
           </Table>
         </div>
         <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="text-muted-foreground flex flex-1 flex-row items-center">
+          <div className="flex flex-1 flex-row items-center text-muted-foreground">
             <p className="text-sm">
               {table.getFilteredSelectedRowModel().rows.length} dari{" "}
               {table.getFilteredRowModel().rows.length} baris dipilih.
