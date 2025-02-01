@@ -6,15 +6,14 @@
  * tl;dr - this is where all the tRPC server stuff is created and plugged in.
  * The pieces you will need to use are documented accordingly near the end
  */
+import type { Session } from "@enpitsu/auth";
+import { auth, validateToken } from "@enpitsu/auth";
+import { cache } from "@enpitsu/cache";
+import { db, preparedGetStudent } from "@enpitsu/db/client";
+import { validateId } from "@enpitsu/token-generator";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
-
-import { cache } from "@enpitsu/cache";
-import type { Session } from "@enpitsu/auth";
-import { auth, validateToken } from "@enpitsu/auth";
-import { validateId } from "@enpitsu/token-generator";
-import { db, preparedGetStudent } from "@enpitsu/db/client";
 
 export type TStudent = NonNullable<Awaited<ReturnType<typeof getStudent>>>;
 
@@ -54,8 +53,8 @@ export const createTRPCContext = async (opts: {
   const source = opts.headers.get("x-trpc-source") ?? "unknown";
   console.log(">>> tRPC Request from", source, "by", session?.user);
 
-  const studentToken = opts.headers.get("authorization")?.split("Student")?.at(1)?.trim() ??
-    null;
+  const studentToken =
+    opts.headers.get("authorization")?.split("Student")?.at(1)?.trim() ?? null;
 
   return {
     session,
@@ -155,7 +154,6 @@ export const protectedProcedure = t.procedure
     });
   });
 
-
 const enforceUserIsAuthedAsAdmin = t.middleware(({ ctx, next }) => {
   if (!ctx.session?.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
@@ -173,7 +171,9 @@ const enforceUserIsAuthedAsAdmin = t.middleware(({ ctx, next }) => {
   });
 });
 
-export const adminProcedure = t.procedure.use(timingMiddleware).use(enforceUserIsAuthedAsAdmin);
+export const adminProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(enforceUserIsAuthedAsAdmin);
 
 const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
   if (!ctx.studentToken) {
@@ -243,4 +243,6 @@ const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
   });
 });
 
-export const studentProcedure = t.procedure.use(timingMiddleware).use(enforceUserIsStudent);
+export const studentProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(enforceUserIsStudent);

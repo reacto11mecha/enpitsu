@@ -25,7 +25,7 @@
       "@enpitsu/eslint-config/base"
     ]
   },
-  "prettier": "catalog:",
+  "prettier": "@enpitsu/prettier-config",
   "dependencies": {
     "ioredis": "^5.4.2"
   }

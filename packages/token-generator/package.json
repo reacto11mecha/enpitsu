@@ -30,7 +30,7 @@
       "@enpitsu/eslint-config/base"
     ]
   },
-  "prettier": "catalog:",
+  "prettier": "@enpitsu/prettier-config",
   "dependencies": {
     "nanoid": "5.0.9"
   },

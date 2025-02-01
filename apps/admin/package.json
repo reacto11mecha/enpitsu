@@ -2,6 +2,7 @@
   "name": "@enpitsu/admin",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "pnpm with-env next build",
     "clean": "git clean -xdf .next .turbo node_modules",
@@ -92,6 +93,5 @@
       "@enpitsu/eslint-config/react"
     ]
   },
-  "prettier": "catalog:",
-  "type": "module"
+  "prettier": "@enpitsu/prettier-config"
 }

@@ -304,9 +304,8 @@ export const NewParentQuestion = () => {
                             <div className="flex flex-row items-center gap-2">
                               <Checkbox
                                 id={`parent-grade-${grade.id}`}
-                                checked={grade.subgrades.every(
-                                  (subgrade) =>
-                                    field.value?.includes(subgrade.id),
+                                checked={grade.subgrades.every((subgrade) =>
+                                  field.value?.includes(subgrade.id),
                                 )}
                                 onCheckedChange={(checked) => {
                                   return checked

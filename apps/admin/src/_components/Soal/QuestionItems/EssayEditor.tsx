@@ -140,9 +140,8 @@ export const EssayEditor = memo(function EssayEditorConstructor({
       });
 
       // Optimistically update the data with our new post
-      utils.question.getEssaysIdByQuestionId.setData(
-        { questionId },
-        (old) => old?.filter((dat) => dat.iqid !== deletedEssay.essayIqid),
+      utils.question.getEssaysIdByQuestionId.setData({ questionId }, (old) =>
+        old?.filter((dat) => dat.iqid !== deletedEssay.essayIqid),
       );
 
       // Return the previous data so we can revert if something goes wrong

@@ -2,7 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-import * as schema from "./schema/_main"
+import * as schema from "./schema/_main";
 
 export const db = drizzle(postgres(process.env.DATABASE_URL!), {
   schema,

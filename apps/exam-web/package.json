@@ -83,5 +83,5 @@
       "@enpitsu/eslint-config/react"
     ]
   },
-  "prettier": "catalog:"
+  "prettier": "@enpitsu/prettier-config"
 }

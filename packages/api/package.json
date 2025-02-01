@@ -43,6 +43,6 @@
       "@enpitsu/eslint-config/base"
     ]
   },
-  "prettier": "catalog:",
+  "prettier": "@enpitsu/prettier-config",
   "type": "module"
 }

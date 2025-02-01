@@ -1,18 +1,17 @@
+import { skipCSRFCheck } from "@auth/core";
+import Google from "@auth/core/providers/google";
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { db } from "@enpitsu/db/client";
+import * as schema from "@enpitsu/db/schema";
 import type {
   DefaultSession,
   NextAuthConfig,
   Session as NextAuthSession,
 } from "next-auth";
-import { skipCSRFCheck } from "@auth/core";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import Google from "@auth/core/providers/google";
-
-import { db } from "@enpitsu/db/client";
-import * as schema from "@enpitsu/db/schema"
 
 import { env } from "../env";
 
-type SelectUsers = typeof schema.users.$inferSelect
+type SelectUsers = typeof schema.users.$inferSelect;
 
 declare module "@auth/core/adapters" {
   interface AdapterUser extends SelectUsers {
@@ -60,7 +59,7 @@ export const authConfig = {
           ...opts.session.user,
           id: opts.user.id,
           role: opts.user.role,
-        emailVerified: opts.user.emailVerified,
+          emailVerified: opts.user.emailVerified,
         },
       };
     },

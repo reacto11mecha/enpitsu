@@ -17,13 +17,13 @@ import { students, subGrades } from "./grade";
 
 export const questions = myPgTable(
   "question",
-  t => ({
+  (t) => ({
     id: t.serial("id").primaryKey(),
     slug: t.varchar("slug", { length: 50 }).notNull(),
     title: t.varchar("title", { length: 255 }).notNull(),
     multipleChoiceOptions: t.integer("multiple_choice_options").notNull(),
-    startedAt:t.timestamp("started_at", { mode: "date" }).notNull(),
-    endedAt:t.timestamp("ended_at", { mode: "date" }).notNull(),
+    startedAt: t.timestamp("started_at", { mode: "date" }).notNull(),
+    endedAt: t.timestamp("ended_at", { mode: "date" }).notNull(),
     authorId: t.varchar("author_id").notNull(),
   }),
   (table) => [uniqueIndex("slug_idx").on(table.slug)],
@@ -116,7 +116,10 @@ export const studentResponds = myPgTable(
       .notNull()
       .references(() => students.id),
   },
-  (table) => [index("question_idx").on(table.questionId), index("student_idx").on(table.studentId)],
+  (table) => [
+    index("question_idx").on(table.questionId),
+    index("student_idx").on(table.studentId),
+  ],
 );
 
 export const studentRespondRelations = relations(
@@ -222,7 +225,7 @@ export const studentTemporaryBans = myPgTable(
       .references(() => students.id),
     reason: text("reason").notNull(),
   },
-  (table) => [uniqueIndex("uniq_student_id").on(table.studentId)]
+  (table) => [uniqueIndex("uniq_student_id").on(table.studentId)],
 );
 
 export const studentTemporaryBanRelations = relations(

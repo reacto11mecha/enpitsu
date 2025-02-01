@@ -75,7 +75,7 @@ export const NewAngkatan = () => {
               >
                 <FormLabel>Nama Kelas</FormLabel>
                 <div className="flex w-full flex-row gap-5">
-                  <FormControl className=" md:w-[25rem]">
+                  <FormControl className="md:w-[25rem]">
                     <Input
                       placeholder="X"
                       {...field}

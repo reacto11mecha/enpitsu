@@ -160,9 +160,8 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
       });
 
       // Optimistically update the data with our new post
-      utils.question.getChoicesIdByQuestionId.setData(
-        { questionId },
-        (old) => old?.filter((dat) => dat.iqid !== deletedChoice.id),
+      utils.question.getChoicesIdByQuestionId.setData({ questionId }, (old) =>
+        old?.filter((dat) => dat.iqid !== deletedChoice.id),
       );
 
       // Return the previous data so we can revert if something goes wrong
