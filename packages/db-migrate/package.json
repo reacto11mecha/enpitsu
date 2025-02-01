@@ -24,7 +24,7 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
-    "drizzle-orm": "^0.29.1",
+    "drizzle-orm": "^0.39.1",
     "postgres": "^3.4.3"
   },
   "devDependencies": {
@@ -32,12 +32,12 @@
     "@enpitsu/prettier-config": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
     "dotenv-cli": "^7.3.0",
-    "drizzle-kit": "^0.20.17",
-    "eslint": "^8.55.0",
+    "drizzle-kit": "^0.30.4",
+    "eslint": "catalog:",
     "pg": "^8.11.3",
-    "prettier": "^3.1.0",
-    "tsup": "^8.0.1",
-    "typescript": "^5.3.3"
+    "prettier": "catalog:",
+    "tsup": "^8.3.6",
+    "typescript": "catalog:"
   },
   "eslintConfig": {
     "root": true,
@@ -45,5 +45,5 @@
       "@enpitsu/eslint-config/base"
     ]
   },
-  "prettier": "@enpitsu/prettier-config"
+  "prettier": "catalog:"
 }

@@ -16,17 +16,17 @@
     "@enpitsu/eslint-config": "workspace:^0.2.0",
     "@enpitsu/prettier-config": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
-    "eslint": "^8.55.0",
-    "prettier": "^3.1.0",
-    "typescript": "^5.3.3"
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:"
   },
   "eslintConfig": {
     "extends": [
       "@enpitsu/eslint-config/base"
     ]
   },
-  "prettier": "@enpitsu/prettier-config",
+  "prettier": "catalog:",
   "dependencies": {
-    "ioredis": "^5.4.1"
+    "ioredis": "^5.4.2"
   }
 }

@@ -22,16 +22,17 @@
     "@enpitsu/eslint-config": "workspace:^0.2.0",
     "@enpitsu/prettier-config": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
-    "eslint": "^8.55.0",
-    "typescript": "^5.3.3"
+    "eslint": "catalog:",
+    "typescript": "catalog:"
   },
   "eslintConfig": {
     "extends": [
       "@enpitsu/eslint-config/base"
     ]
   },
-  "prettier": "@enpitsu/prettier-config",
+  "prettier": "catalog:",
   "dependencies": {
-    "nanoid": "3.x.x"
-  }
+    "nanoid": "5.0.9"
+  },
+  "type": "module"
 }

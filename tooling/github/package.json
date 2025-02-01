@@ -1,3 +1,4 @@
 {
-  "name": "@enpitsu/github"
+  "name": "@enpitsu/github",
+  "type": "module"
 }

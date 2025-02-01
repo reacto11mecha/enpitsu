@@ -15,15 +15,15 @@
   },
   "dependencies": {
     "autoprefixer": "^10.4.16",
-    "tailwindcss": "3.3.6"
+    "tailwindcss": "catalog:"
   },
   "devDependencies": {
     "@enpitsu/eslint-config": "workspace:^0.2.0",
     "@enpitsu/prettier-config": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
-    "eslint": "^8.55.0",
-    "prettier": "^3.1.0",
-    "typescript": "^5.3.3"
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:"
   },
   "eslintConfig": {
     "root": true,
@@ -31,5 +31,6 @@
       "@enpitsu/eslint-config/base"
     ]
   },
-  "prettier": "@enpitsu/prettier-config"
+  "prettier": "catalog:",
+  "type": "module"
 }

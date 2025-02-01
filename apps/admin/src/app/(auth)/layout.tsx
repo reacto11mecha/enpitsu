@@ -7,13 +7,12 @@ import { auth, signOut } from "@enpitsu/auth";
 import "~/styles/globals.css";
 
 import localFont from "next/font/local";
-import { headers } from "next/headers";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 
 import { Navbar } from "~/_components/Navbar";
 import { ThemeProvider } from "~/_components/theme-provider";
-import { TRPCReactProvider } from "./providers";
+import { TRPCReactProvider } from "~/trpc/react";
 
 const QuranFont = localFont({
   src: "../../fonts/LPMQ-IsepMisbah.ttf",
@@ -94,7 +93,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          <TRPCReactProvider headers={headers()}>
+          <TRPCReactProvider>
             <Navbar user={session.user} />
             {props.children}
           </TRPCReactProvider>
