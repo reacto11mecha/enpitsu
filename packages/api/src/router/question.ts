@@ -1,3 +1,5 @@
+import type { TRPCRouterRecord } from "@trpc/server";
+
 import { cache } from "@enpitsu/cache";
 import {
   and,
@@ -6,18 +8,20 @@ import {
   desc,
   eq,
   inArray,
-  schema,
+} from "@enpitsu/db";
+import {
   specificQuestionData,
   studentRespondsByQuestionData,
   studentRespondsData,
-} from "@enpitsu/db";
+} from "@enpitsu/db/client"
+import * as schema from "@enpitsu/db/schema"
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { adminProcedure, createTRPCRouter, protectedProcedure } from "../trpc";
+import { adminProcedure, protectedProcedure } from "../trpc";
 import { compareTwoStringLikability } from "../utils";
 
-export const questionRouter = createTRPCRouter({
+export const questionRouter = {
   getQuestions: protectedProcedure.query(({ ctx }) =>
     ctx.db.query.questions.findMany({
       orderBy: [asc(schema.questions.title)],
@@ -1528,4 +1532,4 @@ export const questionRouter = createTRPCRouter({
       return sortedData;
     },
   ),
-});
+} satisfies TRPCRouterRecord;

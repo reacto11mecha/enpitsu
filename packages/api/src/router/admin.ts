@@ -1,11 +1,14 @@
+import type {TRPCRouterRecord} from "@trpc/server"
+
 import { cache } from "@enpitsu/cache";
-import { and, eq, not, schema, sql } from "@enpitsu/db";
+import { and, eq, not, sql } from "@enpitsu/db";
+import * as schema from "@enpitsu/db/schema"
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { adminProcedure, createTRPCRouter } from "../trpc";
+import { adminProcedure } from "../trpc";
 
-export const adminRouter = createTRPCRouter({
+export const adminRouter = {
   // Can login status
   getCanLoginStatus: adminProcedure.query(async () => {
     try {
@@ -158,4 +161,4 @@ export const adminRouter = createTRPCRouter({
           .where(eq(schema.users.id, input.id));
       }),
     ),
-});
+} satisfies TRPCRouterRecord;

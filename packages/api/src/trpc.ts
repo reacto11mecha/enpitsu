@@ -6,78 +6,63 @@
  * tl;dr - this is where all the tRPC server stuff is created and plugged in.
  * The pieces you will need to use are documented accordingly near the end
  */
-import { auth } from "@enpitsu/auth";
-import type { Session } from "@enpitsu/auth";
-import { cache } from "@enpitsu/cache";
-import { db, preparedGetStudent } from "@enpitsu/db";
-import { validateId } from "@enpitsu/token-generator";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
+import { cache } from "@enpitsu/cache";
+import type { Session } from "@enpitsu/auth";
+import { auth, validateToken } from "@enpitsu/auth";
+import { validateId } from "@enpitsu/token-generator";
+import { db, preparedGetStudent } from "@enpitsu/db/client";
+
+export type TStudent = NonNullable<Awaited<ReturnType<typeof getStudent>>>;
+
 const getStudent = async (token: string) =>
   await preparedGetStudent.execute({ token });
 
-export type TStudent = NonNullable<Awaited<ReturnType<typeof getStudent>>>;
+/**
+ * Isomorphic Session getter for API requests
+ * - Expo requests will have a session token in the Authorization header
+ * - Next.js requests will have a session token in cookies
+ */
+const isomorphicGetSession = async (headers: Headers) => {
+  const authToken = headers.get("Authorization") ?? null;
+  if (authToken) return validateToken(authToken);
+  return auth();
+};
 
 /**
  * 1. CONTEXT
  *
- * This section defines the "contexts" that are available in the backend API
+ * This section defines the "contexts" that are available in the backend API.
  *
- * These allow you to access things like the database, the session, etc, when
- * processing a request
+ * These allow you to access things when processing a request, like the database, the session, etc.
  *
- */
-interface CreateContextOptions {
-  session: Session | null;
-  studentToken: string | null;
-}
-
-/**
- * This helper generates the "internals" for a tRPC context. If you need to use
- * it, you can export it from here
+ * This helper generates the "internals" for a tRPC context. The API handler and RSC clients each
+ * wrap this and provides the required context.
  *
- * Examples of things you may need it for:
- * - testing, so we dont have to mock Next.js' req/res
- * - trpc's `createSSGHelpers` where we don't have req/res
- * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
- */
-const createInnerTRPCContext = (opts: CreateContextOptions) => {
-  return {
-    studentToken: opts.studentToken,
-    session: opts.session,
-    db,
-  };
-};
-
-/**
- * This is the actual context you'll use in your router. It will be used to
- * process every request that goes through your tRPC endpoint
- * @link https://trpc.io/docs/context
+ * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: {
-  req?: Request;
-  auth: Session | null;
+  headers: Headers;
+  session: Session | null;
 }) => {
-  const session = opts.auth ?? (await auth());
-  const source = opts.req?.headers.get("x-trpc-source") ?? "unknown";
+  const authToken = opts.headers.get("Authorization") ?? null;
+  const session = await isomorphicGetSession(opts.headers);
 
-  const studentToken =
-    opts.req?.headers.get("authorization")?.split("Student")?.at(1)?.trim() ??
+  const source = opts.headers.get("x-trpc-source") ?? "unknown";
+  console.log(">>> tRPC Request from", source, "by", session?.user);
+
+  const studentToken = opts.headers.get("authorization")?.split("Student")?.at(1)?.trim() ??
     null;
 
-  console.log(
-    ">>> tRPC Request from",
-    source,
-    "by",
-    session?.user ?? studentToken,
-  );
-
-  return createInnerTRPCContext({
+  return {
     session,
+    db,
     studentToken,
-  });
+    token: authToken,
+  };
 };
 
 /**
@@ -88,17 +73,20 @@ export const createTRPCContext = async (opts: {
  */
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
-  errorFormatter({ shape, error }) {
-    return {
-      ...shape,
-      data: {
-        ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
-      },
-    };
-  },
+  errorFormatter: ({ shape, error }) => ({
+    ...shape,
+    data: {
+      ...shape.data,
+      zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
+    },
+  }),
 });
+
+/**
+ * Create a server-side caller
+ * @see https://trpc.io/docs/server/server-side-calls
+ */
+export const createCallerFactory = t.createCallerFactory;
 
 /**
  * 3. ROUTER & PROCEDURE (THE IMPORTANT BIT)
@@ -114,43 +102,59 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 export const createTRPCRouter = t.router;
 
 /**
+ * Middleware for timing procedure execution and adding an articifial delay in development.
+ *
+ * You can remove this if you don't like it, but it can help catch unwanted waterfalls by simulating
+ * network latency that would occur in production but not in local development.
+ */
+const timingMiddleware = t.middleware(async ({ next, path }) => {
+  const start = Date.now();
+
+  if (t._config.isDev) {
+    // artificial delay in dev 100-500ms
+    const waitMs = Math.floor(Math.random() * 400) + 100;
+    await new Promise((resolve) => setTimeout(resolve, waitMs));
+  }
+
+  const result = await next();
+
+  const end = Date.now();
+  console.log(`[TRPC] ${path} took ${end - start}ms to execute`);
+
+  return result;
+});
+
+/**
  * Public (unauthed) procedure
  *
  * This is the base piece you use to build new queries and mutations on your
  * tRPC API. It does not guarantee that a user querying is authorized, but you
  * can still access user session data if they are logged in
  */
-export const publicProcedure = t.procedure;
+export const publicProcedure = t.procedure.use(timingMiddleware);
 
 /**
- * Reusable middleware that enforces users are logged in before running the
- * procedure
- */
-const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
-  if (!ctx.session?.user) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
-  } else if (!ctx.session.user.emailVerified) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
-  }
-
-  return next({
-    ctx: {
-      // infers the `session` as non-nullable
-      session: { ...ctx.session, user: ctx.session.user },
-    },
-  });
-});
-
-/**
- * Protected (authed) procedure
+ * Protected (authenticated) procedure
  *
- * If you want a query or mutation to ONLY be accessible to logged in users, use
- * this. It verifies the session is valid and guarantees ctx.session.user is not
- * null
+ * If you want a query or mutation to ONLY be accessible to logged in users, use this. It verifies
+ * the session is valid and guarantees `ctx.session.user` is not null.
  *
  * @see https://trpc.io/docs/procedures
  */
-export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
+export const protectedProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    if (!ctx.session?.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    return next({
+      ctx: {
+        // infers the `session` as non-nullable
+        session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
+  });
+
 
 const enforceUserIsAuthedAsAdmin = t.middleware(({ ctx, next }) => {
   if (!ctx.session?.user) {
@@ -169,7 +173,7 @@ const enforceUserIsAuthedAsAdmin = t.middleware(({ ctx, next }) => {
   });
 });
 
-export const adminProcedure = t.procedure.use(enforceUserIsAuthedAsAdmin);
+export const adminProcedure = t.procedure.use(timingMiddleware).use(enforceUserIsAuthedAsAdmin);
 
 const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
   if (!ctx.studentToken) {
@@ -239,4 +243,4 @@ const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
   });
 });
 
-export const studentProcedure = t.procedure.use(enforceUserIsStudent);
+export const studentProcedure = t.procedure.use(timingMiddleware).use(enforceUserIsStudent);
