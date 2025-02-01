@@ -31,7 +31,7 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 const FormSchema = z.object({
   role: z.enum(["user", "admin"], {

@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
-import { count, db, eq, schema } from "@enpitsu/db";
+import { count, eq } from "@enpitsu/db";
+import { db } from "@enpitsu/db/client";
+import * as schema from "@enpitsu/db/schema";
 
 import { EditParentQuestion } from "~/_components/Soal/EditParentQuestion";
 

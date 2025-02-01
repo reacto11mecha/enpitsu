@@ -1,7 +1,9 @@
 {
   "extends": "@enpitsu/tsconfig/base.json",
   "compilerOptions": {
+    "lib": ["ES2022", "dom", "dom.iterable"],
     "baseUrl": ".",
+    "module": "esnext",
     "paths": {
       "~/*": ["./src/*"],
       "@/*": ["./@/*"]

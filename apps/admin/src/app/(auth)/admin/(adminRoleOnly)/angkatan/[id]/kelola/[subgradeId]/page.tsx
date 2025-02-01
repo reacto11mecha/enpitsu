@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
-import { asc, db, eq, schema } from "@enpitsu/db";
+import { asc, eq } from "@enpitsu/db";
+import { db } from "@enpitsu/db/client";
+import * as schema from "@enpitsu/db/schema";
 
 import { DataTable } from "~/_components/Angkatan/SpecificSubgrade/DataTable";
 

@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Trash2 } from "lucide-react";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 type AnsweredListByQuestion =
   RouterOutputs["question"]["getStudentAnswersByQuestion"];

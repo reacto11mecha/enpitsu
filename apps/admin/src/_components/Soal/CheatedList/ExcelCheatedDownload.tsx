@@ -16,7 +16,7 @@ import { useToast } from "@/components/ui/use-toast";
 import ExcelJS from "exceljs";
 import { Sheet } from "lucide-react";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 import { excelNormalizeTime } from "~/utils/time";
 
 const ReusableDialog = ({

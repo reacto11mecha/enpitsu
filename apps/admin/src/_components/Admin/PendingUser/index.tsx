@@ -42,7 +42,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 import { AcceptUser } from "./AcceptUser";
 
 type PendingUserList = RouterOutputs["admin"]["getPendingUser"][number];

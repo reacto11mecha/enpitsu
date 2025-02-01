@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 import "katex/dist/katex.min.css";
 

@@ -52,7 +52,7 @@ import {
   PencilLine,
 } from "lucide-react";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 import { UpdateRole } from "./UpdateRole";
 
 type PendingUserList = RouterOutputs["admin"]["getAllRegisteredUser"][number];

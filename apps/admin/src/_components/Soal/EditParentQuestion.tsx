@@ -30,7 +30,7 @@ import { useForm } from "react-hook-form";
 import slugify from "slugify";
 import { z } from "zod";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 const formSchema = z
   .object({

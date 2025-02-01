@@ -15,7 +15,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { ListRestart } from "lucide-react";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 export const RecalcEssayAnswer = ({
   questionId,

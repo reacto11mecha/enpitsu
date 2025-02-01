@@ -23,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { ChevronsRight, Loader2, Trash2 } from "lucide-react";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 export const AngkatanViewer = () => {
   const { toast } = useToast();

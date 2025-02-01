@@ -17,7 +17,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Trash2 } from "lucide-react";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 type StudentTempoban = RouterOutputs["question"]["getStudentTempobans"];
 

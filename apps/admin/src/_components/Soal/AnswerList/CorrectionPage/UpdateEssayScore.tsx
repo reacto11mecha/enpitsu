@@ -15,7 +15,7 @@ import { Loader2, X as NuhUh, Check as YuhUh } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 const formSchema = z.object({
   score: z.coerce

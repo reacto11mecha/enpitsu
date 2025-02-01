@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@enpitsu/auth";
-import { db, eq, schema } from "@enpitsu/db";
+import { eq } from "@enpitsu/db";
+import { db } from "@enpitsu/db/client";
+import * as schema from "@enpitsu/db/schema";
 
 import { DataTable } from "~/_components/Soal/CheatedList/DataTable";
 

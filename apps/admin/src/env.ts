@@ -33,7 +33,6 @@ export const env = createEnv({
    */
   experimental__runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
-    VERCEL_URL: process.env.VERCEL_URL,
     PORT: process.env.PORT,
     DATABASE_URL: process.env.DATABASE_URL,
     REDIS_URL: process.env.REDIS_URL,

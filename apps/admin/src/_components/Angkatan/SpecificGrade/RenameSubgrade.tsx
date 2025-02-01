@@ -25,7 +25,7 @@ import { Loader2 } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 const schema = z.object({
   label: z.string().min(1, { message: "Harus ada isinya!" }),

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, PlusCircle } from "lucide-react";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 import { ChoiceEditor } from "./ChoiceEditor";
 import { EssayEditor } from "./EssayEditor";
 import { BasicLoading } from "./NewLoadingQuestion";

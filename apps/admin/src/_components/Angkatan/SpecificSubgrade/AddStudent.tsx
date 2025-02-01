@@ -29,7 +29,7 @@ import { Loader2, UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 const formSchema = z.object({
   name: z

@@ -2,7 +2,7 @@ import { appRouter, createTRPCContext } from "@enpitsu/api";
 import { auth } from "@enpitsu/auth";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 
-import { env } from "~/env.mjs";
+import { env } from "~/env";
 
 /**
  * Configure basic CORS headers
@@ -15,20 +15,24 @@ function setCorsHeaders(res: Response) {
   res.headers.set("Access-Control-Allow-Headers", "*");
 }
 
-export function OPTIONS() {
+export const OPTIONS = () => {
   const response = new Response(null, {
     status: 204,
   });
   setCorsHeaders(response);
   return response;
-}
+};
 
 const handler = auth(async (req) => {
   const response = await fetchRequestHandler({
     endpoint: "/api/trpc",
     router: appRouter,
     req,
-    createContext: () => createTRPCContext({ auth: req.auth, req }),
+    createContext: () =>
+      createTRPCContext({
+        session: req.auth,
+        headers: req.headers,
+      }),
     onError({ error, path }) {
       console.error(`>>> tRPC Error on '${path}'`, error);
     },

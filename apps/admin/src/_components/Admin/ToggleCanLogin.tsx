@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -14,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 const FormSchema = z.object({
   canLogin: z.boolean(),
@@ -26,11 +27,12 @@ export const ToggleCanLogin = () => {
     resolver: zodResolver(FormSchema),
   });
 
-  const canLoginQuery = api.admin.getCanLoginStatus.useQuery(undefined, {
-    onSuccess(result) {
-      form.setValue("canLogin", result.canLogin);
-    },
-  });
+  const canLoginQuery = api.admin.getCanLoginStatus.useQuery();
+
+  useEffect(() => {
+    if (!canLoginQuery.isPending && canLoginQuery.data)
+      form.setValue("canLogin", canLoginQuery.data.canLogin);
+  }, [canLoginQuery, form]);
 
   const canLoginMutation = api.admin.updateCanLogin.useMutation({
     async onMutate(newValue) {
@@ -82,7 +84,7 @@ export const ToggleCanLogin = () => {
                   <FormControl>
                     <Switch
                       disabled={
-                        canLoginQuery.isLoading || canLoginMutation.isLoading
+                        canLoginQuery.isPending || canLoginMutation.isPending
                       }
                       checked={field.value}
                       onCheckedChange={(val) => {

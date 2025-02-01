@@ -54,7 +54,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 import { ExcelStudentsBySubgradeDownload } from "../ExcelStudentsActivity";
 import { AddStudent } from "./AddStudent";
 import { DeleteStudent } from "./DeleteStudent";

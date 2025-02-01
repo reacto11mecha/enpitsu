@@ -36,7 +36,7 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 import { useDebounce } from "./utils";
 
 const Editor = dynamic(() => import("./Editor"), {

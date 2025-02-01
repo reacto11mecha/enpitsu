@@ -67,7 +67,7 @@ import {
   UserRoundX,
 } from "lucide-react";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 import { CreateQRCodes } from "./CreateQRCodes";
 import { DeleteParentQuestion } from "./DeleteParentQuestion";
 

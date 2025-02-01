@@ -51,7 +51,7 @@ import {
   Users,
 } from "lucide-react";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 import { CreateSubgrade } from "./CreateSubgrade";
 import { DeleteSubgrade } from "./DeleteSubgrade";
 import { RenameSubgrade } from "./RenameSubgrade";
