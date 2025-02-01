@@ -14,15 +14,12 @@ export const env = createEnv({
       // Since NextAuth.js automatically uses the VERCEL_URL if present.
       (str) => process.env.VERCEL_URL ?? str,
       // VERCEL_URL doesn't include `https` so it cant be validated as a URL
-      process.env.VERCEL ? z.string() : z.string().url(),
+      process.env.VERCEL ? z.string() : z.string().url(),  
     ),
+    
+    NODE_ENV: z.enum(["development", "production"]).optional(),
   },
   client: {},
-  runtimeEnv: {
-    AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
-    AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
-    AUTH_SECRET: process.env.AUTH_SECRET,
-    AUTH_URL: process.env.AUTH_URL,
-  },
+  experimental__runtimeEnv: {},
   skipValidation: !!process.env.CI || !!process.env.SKIP_ENV_VALIDATION,
 });

@@ -1,8 +1,5 @@
 {
   "extends": "@enpitsu/tsconfig/base.json",
-  "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json"
-  },
-  "include": ["."],
+  "include": ["src", "*.ts"],
   "exclude": ["node_modules"]
 }
