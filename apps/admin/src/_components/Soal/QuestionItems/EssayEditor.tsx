@@ -72,23 +72,24 @@ export const EssayEditor = memo(function EssayEditorConstructor({
     { essayIqid },
     {
       refetchOnWindowFocus: false,
-      onSuccess(data) {
-        if (data && Object.keys(form.getValues()).length <= 1) {
-          form.setValue("question", data.question);
-          form.setValue("answer", data.answer);
-          form.setValue("isStrictEqual", data.isStrictEqual);
-          console.log(data);
-        }
-      },
-      onError() {
-        toast({
-          variant: "destructive",
-          title: `Gagal mengambil data soal nomor ${questionNo}`,
-          description: "Mohon refresh halaman ini",
-        });
-      },
     },
   );
+
+  useEffect(() => {
+    if (specificEssayQuery.data) {
+      if (Object.keys(form.getValues()).length <= 1) {
+        form.setValue("question", specificEssayQuery.data.question);
+        form.setValue("answer", specificEssayQuery.data.answer);
+        form.setValue("isStrictEqual", specificEssayQuery.data.isStrictEqual);
+      }
+    } else if (specificEssayQuery.error) {
+      toast({
+        variant: "destructive",
+        title: `Gagal mengambil data soal nomor ${questionNo}`,
+        description: "Mohon refresh halaman ini",
+      });
+    }
+  }, [specificEssayQuery.data, specificEssayQuery.error, form, toast]);
 
   const specificEssayMutation = api.question.updateSpecificEssay.useMutation({
     async onMutate(updatedChoice) {

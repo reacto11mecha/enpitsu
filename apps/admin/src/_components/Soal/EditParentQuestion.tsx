@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -74,27 +75,27 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
     {
       retry: false,
       refetchOnWindowFocus: false,
-      onSuccess(data) {
-        if (data) {
-          form.setValue(
-            "allowLists",
-            data.allowLists.map((allow) => allow.subgradeId),
-          );
-          form.setValue("title", data.title);
-          form.setValue("slug", data.slug);
-          form.setValue("startedAt", data.startedAt);
-          form.setValue("endedAt", data.endedAt);
-        }
-      },
-      onError(error) {
-        toast({
-          variant: "destructive",
-          title: "Gagal mengambil data pertanyaan ke server",
-          description: `Terjadi kesalahan, Error: ${error.message}`,
-        });
-      },
     },
   );
+
+  useEffect(() => {
+    if (currentQuestionQuery.data) {
+      form.setValue(
+        "allowLists",
+        currentQuestionQuery.data.allowLists.map((allow) => allow.subgradeId),
+      );
+      form.setValue("title", currentQuestionQuery.data.title);
+      form.setValue("slug", currentQuestionQuery.data.slug);
+      form.setValue("startedAt", currentQuestionQuery.data.startedAt);
+      form.setValue("endedAt", currentQuestionQuery.data.endedAt);
+    } else if (currentQuestionQuery.error) {
+      toast({
+        variant: "destructive",
+        title: "Gagal mengambil data pertanyaan ke server",
+        description: `Terjadi kesalahan, Error: ${currentQuestionQuery.error.message}`,
+      });
+    }
+  }, [currentQuestionQuery.data, currentQuestionQuery.error, form, toast]);
 
   const subgradeForAllowListQuery =
     api.question.getSubgradeForAllowList.useQuery();

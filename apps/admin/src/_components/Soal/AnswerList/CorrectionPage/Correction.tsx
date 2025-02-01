@@ -68,11 +68,14 @@ export const Correction = ({
     },
     {
       refetchOnWindowFocus: false,
-      async onSuccess() {
-        await essayScoresQuery.refetch();
-      },
     },
   );
+
+  useEffect(() => {
+    const triggerRefetch = () => essayScoresQuery.refetch();
+
+    if (essaysQuery.dataUpdatedAt) void triggerRefetch();
+  }, [essaysQuery, essayScoresQuery]);
 
   useEffect(() => {
     void import("katex").then((katex) => {

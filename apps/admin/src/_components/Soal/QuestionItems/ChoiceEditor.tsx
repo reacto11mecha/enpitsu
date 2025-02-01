@@ -91,24 +91,53 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
     { choiceIqid },
     {
       refetchOnWindowFocus: false,
-      onSuccess(data) {
-        if (data && Object.keys(form.getValues()).length <= 1) {
-          form.setValue("question", data.question);
+      //   onSuccess(data) {
+      //     if (data && Object.keys(form.getValues()).length <= 1) {
+      //       form.setValue("question", data.question);
 
-          data.options.forEach((d, idx) => optionsField.update(idx, d));
+      //       data.options.forEach((d, idx) => optionsField.update(idx, d));
 
-          form.setValue("correctAnswerOrder", data.correctAnswerOrder);
-        }
-      },
-      onError() {
-        toast({
-          variant: "destructive",
-          title: `Gagal mengambil data soal nomor ${questionNo}`,
-          description: "Mohon refresh halaman ini",
-        });
-      },
+      //       form.setValue("correctAnswerOrder", data.correctAnswerOrder);
+      //     }
+      //   },
+      //   onError() {
+      //     toast({
+      //       variant: "destructive",
+      //       title: `Gagal mengambil data soal nomor ${questionNo}`,
+      //       description: "Mohon refresh halaman ini",
+      //     });
+      //   },
     },
   );
+
+  useEffect(() => {
+    if (specificChoiceQuery.data) {
+      if (Object.keys(form.getValues()).length <= 1) {
+        form.setValue("question", specificChoiceQuery.data.question);
+
+        specificChoiceQuery.data.options.forEach((d, idx) =>
+          optionsField.update(idx, d),
+        );
+
+        form.setValue(
+          "correctAnswerOrder",
+          specificChoiceQuery.data.correctAnswerOrder,
+        );
+      }
+    } else if (specificChoiceQuery.error) {
+      toast({
+        variant: "destructive",
+        title: `Gagal mengambil data soal nomor ${questionNo}`,
+        description: "Mohon refresh halaman ini",
+      });
+    }
+  }, [
+    specificChoiceQuery.data,
+    specificChoiceQuery.error,
+    form,
+    optionsField.update,
+    toast,
+  ]);
 
   const specificChoiceMutation = api.question.updateSpecificChoice.useMutation({
     async onMutate(updatedChoice) {
@@ -171,7 +200,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
       // If the mutation fails, use the context-value from onMutate
       utils.question.getChoicesIdByQuestionId.setData(
         { questionId },
-        ctx!.prevData,
+        ctx?.prevData,
       );
 
       toast({

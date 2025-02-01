@@ -14,7 +14,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import katex from "katex";
+
+import "katex";
+
 // @ts-expect-error there's actually a type for this package, but dont know why this still yell for a missing type
 import Delta from "quill-delta";
 import { useForm } from "react-hook-form";
@@ -62,7 +64,7 @@ Font.whitelist = ["lpmqisepmisbah"];
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 Quill.register(Font, true);
 
-window.katex = katex;
+// window.katex = katex;
 
 const quillModules: ReactQuillProps["modules"] = {
   toolbar: [
