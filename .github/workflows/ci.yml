@@ -32,7 +32,7 @@ jobs:
         run: cp .env.example .env
 
       - name: Lint
-        run: pnpm lint && pnpm lint:ws
+        run: pnpm pre-build && pnpm lint && pnpm lint:ws
 
   format:
     runs-on: ubuntu-latest
@@ -54,4 +54,4 @@ jobs:
         uses: ./tooling/github/setup
 
       - name: Typecheck
-        run: turbo typecheck
+        run: pnpm pre-build && turbo typecheck
