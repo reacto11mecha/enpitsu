@@ -265,6 +265,9 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.19.0(jiti@2.4.2)
+      jiti:
+        specifier: ^2.4.2
+        version: 2.4.2
       prettier:
         specifier: 'catalog:'
         version: 3.4.2
@@ -15518,8 +15521,7 @@ snapshots:
 
   jiti@1.21.7: {}
 
-  jiti@2.4.2:
-    optional: true
+  jiti@2.4.2: {}
 
   joi@17.13.3:
     dependencies:

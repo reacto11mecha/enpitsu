@@ -79,6 +79,7 @@
     "@types/string-similarity": "^4.0.2",
     "dotenv-cli": "^7.3.0",
     "eslint": "catalog:",
+    "jiti": "^2.4.2",
     "prettier": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"

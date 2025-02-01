@@ -10,11 +10,11 @@ if (!process.env.DATABASE_URL) {
 }
 
 export default {
+  dialect: "postgresql",
   schema: "./schema",
   out: "../db-migrate/migrations",
-  driver: "pg",
   dbCredentials: {
-    connectionString: process.env.DATABASE_URL,
+    url: process.env.DATABASE_URL,
   },
   tablesFilter: ["enpitsu_*"],
 } satisfies Config;

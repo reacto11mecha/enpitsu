@@ -2,17 +2,36 @@
   "name": "@enpitsu/db",
   "version": "0.1.0",
   "private": true,
-  "main": "./index.ts",
-  "types": "./index.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "default": "./src/client.ts"
+    },
+    "./schema": {
+      "types": "./dist/schema/_main.d.ts",
+      "default": "./src/schema/_main.ts"
+    },
+    "./schema-grouped": {
+      "types": "./dist/schema/_main-grouped.d.ts",
+      "default": "./src/schema/_main-grouped.ts"
+    }
+  },
   "license": "MIT",
   "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
     "clean": "rm -rf .turbo node_modules",
-    "lint": "eslint .",
+    "lint": "eslint",
     "format": "prettier --check . --ignore-path ../../.gitignore",
-    "push": "drizzle-kit push:pg",
-    "generate": "drizzle-kit generate:pg",
-    "studio": "drizzle-kit studio",
-    "typecheck": "tsc --noEmit"
+    "push": "pnpm with-env drizzle-kit push  --config src/config.ts",
+    "generate": "pnpm with-env drizzle-kit generate  --config src/config.ts",
+    "studio": "pnpm with-env drizzle-kit studio  --config src/config.ts",
+    "typecheck": "tsc --noEmit",
+    "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
     "drizzle-orm": "^0.39.1",

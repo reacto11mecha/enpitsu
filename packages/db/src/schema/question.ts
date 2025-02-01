@@ -9,7 +9,6 @@ import {
   text,
   timestamp,
   uniqueIndex,
-  varchar,
 } from "drizzle-orm/pg-core";
 
 import { myPgTable } from "./_table";
@@ -18,16 +17,16 @@ import { students, subGrades } from "./grade";
 
 export const questions = myPgTable(
   "question",
-  {
-    id: serial("id").primaryKey(),
-    slug: varchar("slug", { length: 50 }).notNull(),
-    title: varchar("title", { length: 255 }).notNull(),
-    multipleChoiceOptions: integer("multiple_choice_options").notNull(),
-    startedAt: timestamp("started_at", { mode: "date" }).notNull(),
-    endedAt: timestamp("ended_at", { mode: "date" }).notNull(),
-    authorId: varchar("author_id").notNull(),
-  },
-  (table) => ({ slugIdx: uniqueIndex("slug_idx").on(table.slug) }),
+  t => ({
+    id: t.serial("id").primaryKey(),
+    slug: t.varchar("slug", { length: 50 }).notNull(),
+    title: t.varchar("title", { length: 255 }).notNull(),
+    multipleChoiceOptions: t.integer("multiple_choice_options").notNull(),
+    startedAt:t.timestamp("started_at", { mode: "date" }).notNull(),
+    endedAt:t.timestamp("ended_at", { mode: "date" }).notNull(),
+    authorId: t.varchar("author_id").notNull(),
+  }),
+  (table) => [uniqueIndex("slug_idx").on(table.slug)],
 );
 
 export const questionRelations = relations(questions, ({ one, many }) => ({
@@ -117,10 +116,7 @@ export const studentResponds = myPgTable(
       .notNull()
       .references(() => students.id),
   },
-  (table) => ({
-    questionIdx: index("question_idx").on(table.questionId),
-    studentIdx: index("student_idx").on(table.studentId),
-  }),
+  (table) => [index("question_idx").on(table.questionId), index("student_idx").on(table.studentId)],
 );
 
 export const studentRespondRelations = relations(
@@ -226,9 +222,7 @@ export const studentTemporaryBans = myPgTable(
       .references(() => students.id),
     reason: text("reason").notNull(),
   },
-  (table) => ({
-    studentIdx: uniqueIndex("uniq_student_id").on(table.studentId),
-  }),
+  (table) => [uniqueIndex("uniq_student_id").on(table.studentId)]
 );
 
 export const studentTemporaryBanRelations = relations(
