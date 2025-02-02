@@ -72,8 +72,6 @@ export const columns: ColumnDef<PendingUserList>[] = [
     id: "accept",
     enableHiding: false,
     cell: ({ row }) => {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-
       const apiUtils = api.useUtils();
 
       // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -228,7 +226,7 @@ export function PendingUser() {
               </>
             ) : null}
 
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}

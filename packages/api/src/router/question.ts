@@ -599,7 +599,7 @@ export const questionRouter = {
           .where(eq(schema.multipleChoices.iqid, input.iqid))
           .for("update");
 
-        if (currentChoiceData.length < 1 || !currentChoiceData?.at(0))
+        if (currentChoiceData.length < 1 || !currentChoiceData.at(0))
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Soal tidak ditemukan!",
@@ -645,7 +645,7 @@ export const questionRouter = {
           .where(eq(schema.multipleChoices.iqid, input.id))
           .for("update");
 
-        if (currentChoiceData.length < 1 || !currentChoiceData?.at(0))
+        if (currentChoiceData.length < 1 || !currentChoiceData.at(0))
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Soal tidak ditemukan!",
@@ -754,7 +754,7 @@ export const questionRouter = {
           .where(eq(schema.questions.id, input.questionId))
           .for("update");
 
-        if (currentParentQuestion.length < 1 || !currentParentQuestion?.at(0))
+        if (currentParentQuestion.length < 1 || !currentParentQuestion.at(0))
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Gagal membuat soal baru, mata pelajaran tidak ditemukan",
@@ -762,7 +762,7 @@ export const questionRouter = {
 
         try {
           await cache.del(
-            `trpc-get-question-slug-${currentParentQuestion?.at(0)!.slug}`,
+            `trpc-get-question-slug-${currentParentQuestion.at(0)!.slug}`,
           );
         } catch (_) {
           console.error({
@@ -812,7 +812,7 @@ export const questionRouter = {
           .where(eq(schema.essays.iqid, input.iqid))
           .for("update");
 
-        if (currentEssayData.length < 1 || !currentEssayData?.at(0))
+        if (currentEssayData.length < 1 || !currentEssayData.at(0))
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Soal tidak ditemukan!",
@@ -858,7 +858,7 @@ export const questionRouter = {
           .where(eq(schema.essays.iqid, input.essayIqid))
           .for("update");
 
-        if (currentEssayData.length < 1 || !currentEssayData?.at(0))
+        if (currentEssayData.length < 1 || !currentEssayData.at(0))
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Soal tidak ditemukan!",

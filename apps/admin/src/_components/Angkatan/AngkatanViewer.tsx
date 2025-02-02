@@ -114,7 +114,7 @@ export const AngkatanViewer = () => {
                 kelas{" "}
                 {grades.data &&
                   currentDeleteID &&
-                  grades.data?.find((grade) => grade.id === currentDeleteID)!
+                  grades.data.find((grade) => grade.id === currentDeleteID)!
                     .label}
               </b>
               .

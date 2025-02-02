@@ -81,8 +81,6 @@ export const columns: ColumnDef<SubgradeList>[] = [
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const params = useParams();
 
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-
       return (
         <>
           <DropdownMenu>
@@ -220,7 +218,7 @@ export function DataTable({
               </>
             ) : null}
 
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}

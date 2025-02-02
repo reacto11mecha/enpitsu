@@ -150,7 +150,7 @@ export const AnsweredQuestionsList = ({
                         }, 1500);
                       }}
                       className={`${
-                        currentQuestion?.multipleChoices?.find(
+                        currentQuestion?.multipleChoices.find(
                           (answered) => answered.iqid === choice.iqid,
                         )
                           ? "bg-green-700 dark:bg-green-800 dark:text-white"
@@ -193,7 +193,7 @@ export const AnsweredQuestionsList = ({
                         // Find specific answer content, but the form will be empty (undefined) at
                         // initialization, so using empty string as fallback fixed this problem.
                         // (Weird but as long the problem solved, doesnt really matter)
-                        (currentQuestion?.essays?.find(
+                        (currentQuestion?.essays.find(
                           (answered) => answered.iqid === essay.iqid,
                         )?.answer ?? "")
                           ? "bg-green-700 dark:bg-green-800 dark:text-white"

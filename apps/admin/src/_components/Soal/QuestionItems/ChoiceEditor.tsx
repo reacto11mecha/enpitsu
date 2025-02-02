@@ -189,7 +189,6 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
   });
 
   const triggerUpdate = useDebounce(
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     form.handleSubmit((d) =>
       specificChoiceMutation.mutate({ ...d, iqid: choiceIqid }),
     ),

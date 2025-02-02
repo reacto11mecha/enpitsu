@@ -325,14 +325,14 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
 
                   {!subgradeForAllowListQuery.isPending &&
                     !subgradeForAllowListQuery.isError &&
-                    subgradeForAllowListQuery?.data.map((grade) => (
+                    subgradeForAllowListQuery.data.map((grade) => (
                       <>
                         {grade.subgrades.length > 0 && (
                           <div key={grade.id}>
                             <div className="flex flex-row items-center gap-2">
                               <Checkbox
                                 checked={grade.subgrades.every((subgrade) =>
-                                  field.value?.includes(subgrade.id),
+                                  field.value.includes(subgrade.id),
                                 )}
                                 onCheckedChange={(checked) => {
                                   return checked
@@ -341,7 +341,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                                         ...grade.subgrades.map((s) => s.id),
                                       ])
                                     : field.onChange(
-                                        field.value?.filter(
+                                        field.value.filter(
                                           (value) =>
                                             !grade.subgrades
                                               .map((s) => s.id)
@@ -373,7 +373,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                                       >
                                         <FormControl>
                                           <Checkbox
-                                            checked={field.value?.includes(
+                                            checked={field.value.includes(
                                               subgrade.id,
                                             )}
                                             onCheckedChange={(checked) => {
@@ -383,7 +383,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                                                     subgrade.id,
                                                   ])
                                                 : field.onChange(
-                                                    field.value?.filter(
+                                                    field.value.filter(
                                                       (value) =>
                                                         value !== subgrade.id,
                                                     ),

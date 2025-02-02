@@ -54,7 +54,7 @@ export const createTRPCContext = async (opts: {
   console.log(">>> tRPC Request from", source, "by", session?.user);
 
   const studentToken =
-    opts.headers.get("authorization")?.split("Student")?.at(1)?.trim() ?? null;
+    opts.headers.get("authorization")?.split("Student").at(1)?.trim() ?? null;
 
   return {
     session,

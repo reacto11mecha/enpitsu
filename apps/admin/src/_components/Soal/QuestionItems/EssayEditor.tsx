@@ -161,7 +161,6 @@ export const EssayEditor = memo(function EssayEditorConstructor({
   });
 
   const triggerUpdate = useDebounce(
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     form.handleSubmit((d) =>
       specificEssayMutation.mutate({ ...d, iqid: essayIqid }),
     ),
