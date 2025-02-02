@@ -3,7 +3,7 @@ import baseConfig from "@enpitsu/tailwind-config/web";
 import { fontFamily } from "tailwindcss/defaultTheme";
 
 export default {
-  content: [...baseConfig.content],
+  content: [...baseConfig.content, "../../packages/ui/src/*.{ts,tsx}"],
   presets: [baseConfig],
   theme: {
     extend: {
