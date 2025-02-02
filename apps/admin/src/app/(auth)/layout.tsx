@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { Manrope as FontSans } from "next/font/google";
 import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { auth, signOut } from "@enpitsu/auth";
+import { Button } from "@enpitsu/ui/button";
 
 import "~/styles/globals.css";
 
 import localFont from "next/font/local";
-import { Toaster } from "@/components/ui/toaster";
-import { cn } from "@/lib/utils";
+import { cn } from "@enpitsu/ui";
+import { Toaster } from "@enpitsu/ui/sonner";
 
 import { Navbar } from "~/_components/Navbar";
 import { ThemeProvider } from "~/_components/theme-provider";
@@ -73,7 +73,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
               </form>
             </div>
           </ThemeProvider>
-          <Toaster />
+          <Toaster richColors />
         </body>
       </html>
     );

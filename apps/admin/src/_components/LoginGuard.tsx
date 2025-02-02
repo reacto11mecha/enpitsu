@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@enpitsu/ui/skeleton";
 
 export function LoginGuard({ children }: { children: React.ReactNode }) {
   const [canLogin, setLogin] = useState(false);

@@ -3,12 +3,13 @@ import baseConfig from "@enpitsu/tailwind-config/web";
 import { fontFamily } from "tailwindcss/defaultTheme";
 
 export default {
-  content: [...baseConfig.content],
+  content: [...baseConfig.content, "./@/**/*.{ts,tsx}"],
   presets: [baseConfig],
   theme: {
     extend: {
       fontFamily: {
         sans: ["var(--font-manrope)", ...fontFamily.sans],
+        mono: fontFamily.mono,
       },
     },
   },

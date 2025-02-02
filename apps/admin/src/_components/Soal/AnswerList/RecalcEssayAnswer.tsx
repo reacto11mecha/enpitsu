@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -11,9 +11,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/dialog";
 import { ListRestart } from "lucide-react";
+import { toast } from "sonner";
 
 import { api } from "~/trpc/react";
 
@@ -26,20 +26,15 @@ export const RecalcEssayAnswer = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  const { toast } = useToast();
-
   const recalcMutationApi = api.question.recalcEssayScore.useMutation({
     onSuccess() {
-      toast({
-        title: "Berhasil dikalkulasi ulang!",
+      toast.success("Berhasil dikalkulasi ulang!", {
         description: "Semua respon jawaban dari peserta berhasil terkalkulasi!",
       });
       setOpen(false);
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },

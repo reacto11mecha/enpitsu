@@ -3,10 +3,10 @@
 import type { RouterOutputs } from "@enpitsu/api";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
-// import { Checkbox } from "@/components/ui/checkbox";
+// import { Checkbox } from "@enpitsu/ui/checkbox";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   DropdownMenu,
   // DropdownMenuCheckboxItem,
@@ -15,15 +15,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@enpitsu/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@enpitsu/ui/select";
+import { Skeleton } from "@enpitsu/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -31,8 +31,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/table";
 import {
   flexRender,
   getCoreRowModel,
@@ -50,6 +49,7 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { api } from "~/trpc/react";
 import { CreateSubgrade } from "./CreateSubgrade";
@@ -82,7 +82,6 @@ export const columns: ColumnDef<SubgradeList>[] = [
       const params = useParams();
 
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      const { toast } = useToast();
 
       return (
         <>
@@ -113,9 +112,7 @@ export const columns: ColumnDef<SubgradeList>[] = [
 
                   await navigator.clipboard.writeText(url);
 
-                  toast({
-                    description: "Berhasil disalin!",
-                  });
+                  toast.success("Berhasil disalin!");
                 }}
               >
                 <ClipboardCopy className="mr-2 h-4 md:w-4" />

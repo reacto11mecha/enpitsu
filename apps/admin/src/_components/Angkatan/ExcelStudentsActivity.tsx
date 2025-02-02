@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { validateId } from "@enpitsu/token-generator";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -10,8 +11,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+} from "@enpitsu/ui/alert-dialog";
+import { Button } from "@enpitsu/ui/button";
 import {
   Form,
   FormControl,
@@ -20,14 +21,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import { validateId } from "@enpitsu/token-generator";
+} from "@enpitsu/ui/form";
+import { Input } from "@enpitsu/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ExcelJS from "exceljs";
 import { HardDriveUpload, Sheet } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { api } from "~/trpc/react";
@@ -105,8 +105,6 @@ export const ExcelStudentsByGradeDownload = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  const { toast } = useToast();
-
   const excelMutationApi = api.grade.downloadSpecificGradeExcel.useMutation({
     async onSuccess(result) {
       const workbook = new ExcelJS.Workbook();
@@ -148,9 +146,7 @@ export const ExcelStudentsByGradeDownload = ({
       setOpen(false);
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -184,8 +180,6 @@ export const ExcelStudentsBySubgradeDownload = ({
   subgradeId: number;
 }) => {
   const [open, setOpen] = useState(false);
-
-  const { toast } = useToast();
 
   const excelMutationApi = api.grade.downloadSpecificSubgradeExcel.useMutation({
     async onSuccess(result) {
@@ -226,9 +220,7 @@ export const ExcelStudentsBySubgradeDownload = ({
       setOpen(false);
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -263,24 +255,19 @@ export const ExcelUploadStudentsByGrade = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  const { toast } = useToast();
-
   const excelMutationApi = api.grade.uploadSpecificGradeExcel.useMutation({
     onSuccess() {
       setOpen(false);
 
       form.reset();
 
-      toast({
-        title: "Upload Data Peserta Berhasil!",
+      toast.success("Upload Data Peserta Berhasil!", {
         description:
           "Mohon untuk mengecek kembali apakah data yang di upload sudah sesuai atau belum.",
       });
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Upload Gagal",
+      toast.error("Operasi Upload Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -345,9 +332,7 @@ export const ExcelUploadStudentsByGrade = ({
     const result = await FileValueSchema.safeParseAsync(records);
 
     if (!result.success) {
-      toast({
-        variant: "destructive",
-        title: "Format file tidak sesuai!",
+      toast.error("Format file tidak sesuai!", {
         description:
           "Mohon periksa kembali format file yang ingin di upload, masih ada kesalahan.",
       });

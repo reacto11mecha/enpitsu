@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import { useCallback, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { api } from "@/utils/api";
+import { Button } from "@enpitsu/ui/button";
 import {
   Form,
   FormControl,
@@ -8,14 +9,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import { api } from "@/utils/api";
+} from "@enpitsu/ui/form";
+import { Input } from "@enpitsu/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
+import { toast } from "sonner";
 
 import { ModeToggle } from "../mode-toggle";
 import { Precaution } from "./Precaution";
@@ -27,7 +27,6 @@ export const ScanOrInputQuestionSlug = ({
 }: {
   closeScanner: () => void;
 }) => {
-  const { toast } = useToast();
   const [isPrecautionOpen, setOpen] = useState(false);
 
   const getQuestionMutation = api.exam.getQuestion.useMutation({
@@ -35,12 +34,11 @@ export const ScanOrInputQuestionSlug = ({
       setOpen(true);
     },
     onError(error) {
-      toast({
+      toast.error("Gagal meraih server", {
         duration: 9500,
-        variant: "destructive",
         description:
           error.message === "Failed to fetch"
-            ? "Gagal meraih server"
+            ? "Anda mungkin sedang offline"
             : error.message,
       });
     },

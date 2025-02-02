@@ -10,9 +10,9 @@ import type {
 import { useCallback, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
-import { badgeVariants } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { badgeVariants } from "@enpitsu/ui/badge";
+import { Button } from "@enpitsu/ui/button";
+import { Checkbox } from "@enpitsu/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -20,16 +20,16 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+} from "@enpitsu/ui/dropdown-menu";
+import { Input } from "@enpitsu/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@enpitsu/ui/select";
+import { Skeleton } from "@enpitsu/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -37,7 +37,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@enpitsu/ui/table";
 import {
   flexRender,
   getCoreRowModel,

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { validateId } from "@enpitsu/token-generator";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -11,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@enpitsu/ui/dialog";
 import {
   Form,
   FormControl,
@@ -20,14 +21,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import { validateId } from "@enpitsu/token-generator";
+} from "@enpitsu/ui/form";
+import { Input } from "@enpitsu/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { parse as parseCSV } from "csv-parse";
 import { FileSpreadsheet, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { api } from "~/trpc/react";
@@ -71,8 +71,6 @@ export const UploadCSV = ({
   const [open, setOpen] = useState(false);
   const [readLock, setReadLock] = useState(false);
 
-  const { toast } = useToast();
-
   const apiUtils = api.useUtils();
 
   const formSchema = z.object({
@@ -101,16 +99,13 @@ export const UploadCSV = ({
 
       setOpen(false);
 
-      toast({
-        title: "Penambahan Berhasil!",
+      toast.success("Penambahan Berhasil!", {
         description: `Berhasil menambahkan banyak murid baru di kelas ${grade.label} ${subgrade.label}.`,
       });
     },
 
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -125,9 +120,7 @@ export const UploadCSV = ({
     parseCSV(text, { columns: true, trim: true }, (err, records) => {
       if (err) {
         setReadLock(false);
-        toast({
-          variant: "destructive",
-          title: "Gagal Membaca File",
+        toast.error("Gagal Membaca File", {
           description: `Terjadi kesalahan, Error: ${err.message}`,
         });
         return;
@@ -136,9 +129,7 @@ export const UploadCSV = ({
       const result = FileValueSchema.safeParse(records);
 
       if (!result.success) {
-        toast({
-          variant: "destructive",
-          title: "Format file tidak sesuai!",
+        toast.error("Format file tidak sesuai!", {
           description: `Mohon periksa kembali format file yang ingin di upload, masih ada kesalahan.`,
         });
 

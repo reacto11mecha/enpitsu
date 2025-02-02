@@ -2,7 +2,7 @@
 
 import { memo, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   Card,
   CardContent,
@@ -10,7 +10,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@enpitsu/ui/card";
 import {
   Form,
   FormControl,
@@ -19,12 +19,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/form";
+import { Separator } from "@enpitsu/ui/separator";
+import { Skeleton } from "@enpitsu/ui/skeleton";
+import { Switch } from "@enpitsu/ui/switch";
+import { Textarea } from "@enpitsu/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Loader2,
@@ -34,6 +33,7 @@ import {
   Check as YuhUh,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { api } from "~/trpc/react";
@@ -61,7 +61,6 @@ export const EssayEditor = memo(function EssayEditorConstructor({
   questionNo: number;
   title: string;
 }) {
-  const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
@@ -83,9 +82,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
         form.setValue("isStrictEqual", specificEssayQuery.data.isStrictEqual);
       }
     } else if (specificEssayQuery.error) {
-      toast({
-        variant: "destructive",
-        title: `Gagal mengambil data soal nomor ${questionNo}`,
+      toast.error(`Gagal mengambil data soal nomor ${questionNo}`, {
         description: "Mohon refresh halaman ini",
       });
     }
@@ -117,9 +114,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
         ctx!.prevData,
       );
 
-      toast({
-        variant: "destructive",
-        title: "Gagal memperbarui soal",
+      toast.error("Gagal memperbarui soal", {
         description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
       });
     },
@@ -155,9 +150,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
         ctx!.prevData,
       );
 
-      toast({
-        variant: "destructive",
-        title: "Gagal menghapus soal",
+      toast.error("Gagal menghapus soal", {
         description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
       });
     },

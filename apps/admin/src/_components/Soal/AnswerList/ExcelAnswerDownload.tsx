@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -11,10 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/dialog";
 import ExcelJS from "exceljs";
 import { Sheet } from "lucide-react";
+import { toast } from "sonner";
 
 import { api } from "~/trpc/react";
 import { excelNormalizeTime } from "~/utils/time";
@@ -76,8 +76,6 @@ export const SpecificExcelAnswerDownload = ({
   title: string;
 }) => {
   const [open, setOpen] = useState(false);
-
-  const { toast } = useToast();
 
   const excelMutationApi =
     api.question.downloadStudentResponsesExcelById.useMutation({
@@ -216,9 +214,7 @@ export const SpecificExcelAnswerDownload = ({
         setOpen(false);
       },
       onError(error) {
-        toast({
-          variant: "destructive",
-          title: "Operasi Gagal",
+        toast.error("Operasi Gagal", {
           description: `Terjadi kesalahan, Error: ${error.message}`,
         });
       },
@@ -248,8 +244,6 @@ export const SpecificExcelAnswerDownload = ({
 
 export const AggregateExcelAnswerDownload = () => {
   const [open, setOpen] = useState(false);
-
-  const { toast } = useToast();
 
   const excelMutationApi =
     api.question.downloadStudentResponsesExcelAggregate.useMutation({
@@ -390,9 +384,7 @@ export const AggregateExcelAnswerDownload = () => {
         setOpen(false);
       },
       onError(error) {
-        toast({
-          variant: "destructive",
-          title: "Operasi Gagal",
+        toast.error("Operasi Gagal", {
           description: `Terjadi kesalahan, Error: ${error.message}`,
         });
       },

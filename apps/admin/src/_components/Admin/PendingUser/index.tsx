@@ -7,16 +7,16 @@ import type {
   SortingState,
 } from "@tanstack/react-table";
 import { useCallback, useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@enpitsu/ui/avatar";
+import { Button } from "@enpitsu/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@enpitsu/ui/select";
+import { Skeleton } from "@enpitsu/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -24,8 +24,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/table";
 import {
   flexRender,
   getCoreRowModel,
@@ -41,6 +40,7 @@ import {
   ChevronsRight,
   Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { api } from "~/trpc/react";
 import { AcceptUser } from "./AcceptUser";
@@ -73,7 +73,7 @@ export const columns: ColumnDef<PendingUserList>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      const { toast } = useToast();
+
       const apiUtils = api.useUtils();
 
       // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -84,8 +84,7 @@ export const columns: ColumnDef<PendingUserList>[] = [
 
       const acceptUserMutation = api.admin.acceptPendingUser.useMutation({
         async onSuccess() {
-          toast({
-            title: "Berhasil menerima pengguna baru!",
+          toast.success("Berhasil menerima pengguna baru!", {
             description: "Pengguna berhasil di approve.",
           });
 
@@ -94,9 +93,7 @@ export const columns: ColumnDef<PendingUserList>[] = [
           await apiUtils.admin.getAllRegisteredUser.invalidate();
         },
         onError(error) {
-          toast({
-            variant: "destructive",
-            title: "Operasi Gagal",
+          toast.error("Operasi Gagal", {
             description: `Terjadi kesalahan, Error: ${error.message}`,
           });
         },
@@ -114,15 +111,12 @@ export const columns: ColumnDef<PendingUserList>[] = [
 
       const rejectUserMutation = api.admin.rejectPendingUser.useMutation({
         onSuccess() {
-          toast({
-            title: "Berhasil menolak pengguna!",
+          toast.success("Berhasil menolak pengguna!", {
             description: "Pengguna berhasil dihapus.",
           });
         },
         onError(error) {
-          toast({
-            variant: "destructive",
-            title: "Operasi Gagal",
+          toast.error("Operasi Gagal", {
             description: `Terjadi kesalahan, Error: ${error.message}`,
           });
         },

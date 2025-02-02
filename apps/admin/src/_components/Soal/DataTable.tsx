@@ -10,10 +10,10 @@ import type {
 import { createContext, useContext, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge, badgeVariants } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarFallback, AvatarImage } from "@enpitsu/ui/avatar";
+import { Badge, badgeVariants } from "@enpitsu/ui/badge";
+import { Button } from "@enpitsu/ui/button";
+import { Checkbox } from "@enpitsu/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -22,16 +22,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+} from "@enpitsu/ui/dropdown-menu";
+import { Input } from "@enpitsu/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@enpitsu/ui/select";
+import { Skeleton } from "@enpitsu/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -39,7 +39,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@enpitsu/ui/table";
 import {
   flexRender,
   getCoreRowModel,

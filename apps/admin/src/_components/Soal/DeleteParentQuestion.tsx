@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,10 +9,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/dialog";
+import { Input } from "@enpitsu/ui/input";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { api } from "~/trpc/react";
 
@@ -29,8 +29,6 @@ export const DeleteParentQuestion = ({
 }) => {
   const apiUtils = api.useUtils();
 
-  const { toast } = useToast();
-
   const [confirmationText, setConfirmText] = useState("");
 
   const reallySure = useMemo(
@@ -46,15 +44,12 @@ export const DeleteParentQuestion = ({
 
       await apiUtils.question.getQuestions.invalidate();
 
-      toast({
-        title: "Penghapusan Berhasil!",
+      toast.success("Penghapusan Berhasil!", {
         description: "Berhasil menghapus soal spesifik.",
       });
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },

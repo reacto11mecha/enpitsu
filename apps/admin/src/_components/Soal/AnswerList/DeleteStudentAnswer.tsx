@@ -1,6 +1,6 @@
 import type { RouterOutputs } from "@enpitsu/api";
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -10,10 +10,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/dialog";
+import { Input } from "@enpitsu/ui/input";
 import { Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { api } from "~/trpc/react";
 
@@ -35,8 +35,6 @@ export const DeleteSingleStudentAnswer = ({
 }) => {
   const apiUtils = api.useUtils();
 
-  const { toast } = useToast();
-
   const [confirmationText, setConfirmText] = useState("");
 
   const reallySure = useMemo(
@@ -57,15 +55,12 @@ export const DeleteSingleStudentAnswer = ({
           await apiUtils.question.getStudentAnswersByQuestion.invalidate();
         }
 
-        toast({
-          title: "Penghapusan Berhasil!",
+        toast.success("Penghapusan Berhasil!", {
           description: "Berhasil menghapus jawaban peserta.",
         });
       },
       onError(error) {
-        toast({
-          variant: "destructive",
-          title: "Operasi Gagal",
+        toast.error("Operasi Gagal", {
           description: `Terjadi kesalahan, Error: ${error.message}`,
         });
       },
@@ -160,8 +155,6 @@ export const DeleteManyStudentAnswer = ({
 
   const apiUtils = api.useUtils();
 
-  const { toast } = useToast();
-
   const deleteManyStudentAnswers = api.question.deleteManyAnswer.useMutation({
     async onSuccess() {
       setDialogOpen(false);
@@ -172,15 +165,12 @@ export const DeleteManyStudentAnswer = ({
 
       resetSelection();
 
-      toast({
-        title: "Penghapusan Berhasil!",
+      toast.success("Penghapusan Berhasil!", {
         description: "Berhasil menghapus banyak jawaban peserta.",
       });
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },

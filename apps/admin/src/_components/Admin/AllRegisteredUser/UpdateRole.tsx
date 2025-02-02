@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,7 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@enpitsu/ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,18 +17,18 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@enpitsu/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { api } from "~/trpc/react";
@@ -50,21 +50,16 @@ export const UpdateRole = ({
   userId: string;
   toggleOpen: () => void;
 }) => {
-  const { toast } = useToast();
-
   const utils = api.useUtils();
   const updateRoleMutation = api.admin.updateUserRole.useMutation({
     onSuccess() {
-      toast({
-        title: "Berhasil memperbarui pengguna!",
+      toast.success("Berhasil memperbarui pengguna!", {
         description: "Status pengguna berhasil diperbarui.",
       });
       toggleOpen();
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },

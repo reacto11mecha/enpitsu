@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { studentAnswerAtom } from "@/lib/atom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,8 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+} from "@enpitsu/ui/alert-dialog";
+import { Button } from "@enpitsu/ui/button";
 import {
   Drawer,
   DrawerClose,
@@ -20,8 +21,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer";
-import { studentAnswerAtom } from "@/lib/atom";
+} from "@enpitsu/ui/drawer";
 import { useAtomValue } from "jotai";
 import { Home, LayoutList } from "lucide-react";
 import { Link } from "react-router-dom";

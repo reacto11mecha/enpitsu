@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@enpitsu/ui/button";
+import { Checkbox } from "@enpitsu/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -12,23 +12,23 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@enpitsu/ui/form";
+import { Input } from "@enpitsu/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/select";
+import { Separator } from "@enpitsu/ui/separator";
+import { Skeleton } from "@enpitsu/ui/skeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, startOfDay } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { api } from "~/trpc/react";
@@ -54,8 +54,6 @@ const formSchema = z
 
 export const EditParentQuestion = ({ id }: { id: number }) => {
   const router = useRouter();
-
-  const { toast } = useToast();
 
   const apiUtils = api.useUtils();
 
@@ -89,9 +87,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
       form.setValue("startedAt", currentQuestionQuery.data.startedAt);
       form.setValue("endedAt", currentQuestionQuery.data.endedAt);
     } else if (currentQuestionQuery.error) {
-      toast({
-        variant: "destructive",
-        title: "Gagal mengambil data pertanyaan ke server",
+      toast.error("Gagal mengambil data pertanyaan ke server", {
         description: `Terjadi kesalahan, Error: ${currentQuestionQuery.error.message}`,
       });
     }
@@ -104,8 +100,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
     async onSuccess() {
       await apiUtils.grade.getStudents.invalidate();
 
-      toast({
-        title: "Perbaikan Berhasil!",
+      toast.success("Perbaikan Berhasil!", {
         description: `Berhasil memperbaiki soal ${form.getValues("title")}!`,
       });
 
@@ -113,9 +108,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
     },
 
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },

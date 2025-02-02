@@ -2,7 +2,7 @@
 
 import { memo, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   Card,
   CardContent,
@@ -10,8 +10,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+} from "@enpitsu/ui/card";
+import { Checkbox } from "@enpitsu/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -19,16 +19,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/form";
+import { Popover, PopoverContent, PopoverTrigger } from "@enpitsu/ui/popover";
+import { RadioGroup, RadioGroupItem } from "@enpitsu/ui/radio-group";
+import { Separator } from "@enpitsu/ui/separator";
+import { Skeleton } from "@enpitsu/ui/skeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ClipboardCheck,
@@ -39,6 +34,7 @@ import {
   Check as YuhUh,
 } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { api } from "~/trpc/react";
@@ -75,7 +71,6 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
   questionNo: number;
   title: string;
 }) {
-  const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
@@ -91,22 +86,6 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
     { choiceIqid },
     {
       refetchOnWindowFocus: false,
-      //   onSuccess(data) {
-      //     if (data && Object.keys(form.getValues()).length <= 1) {
-      //       form.setValue("question", data.question);
-
-      //       data.options.forEach((d, idx) => optionsField.update(idx, d));
-
-      //       form.setValue("correctAnswerOrder", data.correctAnswerOrder);
-      //     }
-      //   },
-      //   onError() {
-      //     toast({
-      //       variant: "destructive",
-      //       title: `Gagal mengambil data soal nomor ${questionNo}`,
-      //       description: "Mohon refresh halaman ini",
-      //     });
-      //   },
     },
   );
 
@@ -125,9 +104,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
         );
       }
     } else if (specificChoiceQuery.error) {
-      toast({
-        variant: "destructive",
-        title: `Gagal mengambil data soal nomor ${questionNo}`,
+      toast.error(`Gagal mengambil data soal nomor ${questionNo}`, {
         description: "Mohon refresh halaman ini",
       });
     }
@@ -165,9 +142,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
         ctx!.prevData,
       );
 
-      toast({
-        variant: "destructive",
-        title: "Gagal memperbarui soal",
+      toast.error("Gagal memperbarui soal", {
         description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
       });
     },
@@ -203,9 +178,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
         ctx?.prevData,
       );
 
-      toast({
-        variant: "destructive",
-        title: "Gagal menghapus soal",
+      toast.error("Gagal menghapus soal", {
         description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
       });
     },

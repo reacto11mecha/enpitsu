@@ -24,7 +24,8 @@
     "lint": "turbo lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
     "lint:fix": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
     "lint:ws": "pnpm dlx sherif@latest",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "ui-add": "turbo run ui-add"
   },
   "devDependencies": {
     "@enpitsu/prettier-config": "workspace:^0.1.0",

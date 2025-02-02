@@ -8,11 +8,11 @@ import {
   CardFooter,
   CardHeader,
   // CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
+} from "@enpitsu/ui/card";
+import { Label } from "@enpitsu/ui/label";
+import { RadioGroup, RadioGroupItem } from "@enpitsu/ui/radio-group";
+import { Skeleton } from "@enpitsu/ui/skeleton";
+import { Textarea } from "@enpitsu/ui/textarea";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 
@@ -20,7 +20,7 @@ import { api } from "~/trpc/react";
 
 import "katex/dist/katex.min.css";
 
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@enpitsu/ui/separator";
 
 import { UpdateEssayScore } from "./UpdateEssayScore";
 

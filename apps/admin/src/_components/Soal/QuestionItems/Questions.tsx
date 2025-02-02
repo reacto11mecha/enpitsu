@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@enpitsu/ui/button";
 import { Loader2, PlusCircle } from "lucide-react";
+import { toast } from "sonner";
 
 import { api } from "~/trpc/react";
 import { ChoiceEditor } from "./ChoiceEditor";
@@ -16,7 +16,6 @@ export const Questions = ({
   questionId: number;
   title: string;
 }) => {
-  const { toast } = useToast();
   const utils = api.useUtils();
 
   const choicesIdQuery = api.question.getChoicesIdByQuestionId.useQuery(
@@ -30,9 +29,7 @@ export const Questions = ({
       await utils.question.getChoicesIdByQuestionId.invalidate();
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: `Gagal Membuat Soal PG`,
+      toast.error(`Gagal Membuat Soal PG`, {
         description: `Terjadi kesalahan, coba lagi nanti. Error: ${error.message}`,
       });
     },
@@ -51,9 +48,7 @@ export const Questions = ({
       await utils.question.getEssaysIdByQuestionId.invalidate();
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: `Gagal Membuat Soal Esai`,
+      toast.error(`Gagal Membuat Soal Esai`, {
         description: `Terjadi kesalahan, coba lagi nanti. Error: ${error.message}`,
       });
     },

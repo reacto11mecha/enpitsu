@@ -8,11 +8,11 @@ import {
   FormField,
   FormItem,
   FormLabel,
-} from "@/components/ui/form";
-import { Switch } from "@/components/ui/switch";
-import { toast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/form";
+import { Switch } from "@enpitsu/ui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { api } from "~/trpc/react";
@@ -43,16 +43,12 @@ export const ToggleCanLogin = () => {
     onError(err) {
       utils.admin.getCanLoginStatus.setData(undefined, { canLogin: false });
 
-      toast({
-        title: "Gagal memperbarui status login",
+      toast.error("Gagal memperbarui status login", {
         description: err.message,
-        variant: "destructive",
       });
     },
     onSuccess() {
-      toast({
-        title: "Berhasil memperbarui status login!",
-      });
+      toast.success("Berhasil memperbarui status login!");
     },
     async onSettled() {
       await utils.admin.getCanLoginStatus.invalidate();

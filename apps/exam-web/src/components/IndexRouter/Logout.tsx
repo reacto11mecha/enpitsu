@@ -1,3 +1,4 @@
+import { studentAnswerAtom, studentTokenAtom } from "@/lib/atom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,9 +9,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { studentAnswerAtom, studentTokenAtom } from "@/lib/atom";
+} from "@enpitsu/ui/alert-dialog";
+import { Button } from "@enpitsu/ui/button";
 import { useSetAtom } from "jotai";
 import { RESET } from "jotai/utils";
 import { LogOut } from "lucide-react";

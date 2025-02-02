@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   Form,
   FormControl,
@@ -8,12 +8,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/form";
+import { Input } from "@enpitsu/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { api } from "~/trpc/react";
@@ -25,8 +25,6 @@ const formSchema = z.object({
 });
 
 export const CreateSubgrade = ({ gradeId }: { gradeId: number }) => {
-  const { toast } = useToast();
-
   const apiUtils = api.useUtils();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -42,16 +40,13 @@ export const CreateSubgrade = ({ gradeId }: { gradeId: number }) => {
 
       await apiUtils.grade.getSubgrades.invalidate();
 
-      toast({
-        title: "Penambahan Berhasil!",
+      toast.success("Penambahan Berhasil!", {
         description: "Berhasil menambahkan kelas baru.",
       });
     },
 
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },

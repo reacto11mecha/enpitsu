@@ -1,25 +1,25 @@
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useCountdown } from "@/hooks/useCountdown";
+import { useNetworkState } from "@/hooks/useNetworkState";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
+import { studentAnswerAtom, studentTokenAtom } from "@/lib/atom";
+import { api } from "@/utils/api";
+import { Button } from "@enpitsu/ui/button";
+import { Card, CardContent, CardHeader } from "@enpitsu/ui/card";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "@/components/ui/form";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
-import { useCountdown } from "@/hooks/useCountdown";
-import { useNetworkState } from "@/hooks/useNetworkState";
-import { usePageVisibility } from "@/hooks/usePageVisibility";
-import { studentAnswerAtom, studentTokenAtom } from "@/lib/atom";
-import { api } from "@/utils/api";
+} from "@enpitsu/ui/form";
+import { Label } from "@enpitsu/ui/label";
+import { RadioGroup, RadioGroupItem } from "@enpitsu/ui/radio-group";
+import { Separator } from "@enpitsu/ui/separator";
+import { Textarea } from "@enpitsu/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtomValue, useSetAtom } from "jotai";
+import { toast } from "sonner";
 
 import "katex";
 
@@ -76,8 +76,6 @@ const Test = ({ data, initialData }: Props) => {
   );
   const [isEnded, setEnded] = useState(false);
 
-  const { toast } = useToast();
-
   const studentToken = useAtomValue(studentTokenAtom);
   const setStudentAnswers = useSetAtom(studentAnswerAtom);
 
@@ -88,9 +86,7 @@ const Test = ({ data, initialData }: Props) => {
       );
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi gagal", {
         description: `Gagal menyimpan status kecurangan. Error: ${error.message}`,
       });
     },
@@ -103,9 +99,7 @@ const Test = ({ data, initialData }: Props) => {
       );
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Gagal menyimpan jawaban. Error: ${error.message}`,
       });
     },

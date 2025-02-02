@@ -3,7 +3,7 @@
 import type { RouterOutputs } from "@enpitsu/api";
 import type { Dispatch, SetStateAction } from "react";
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -13,9 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/dialog";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { api } from "~/trpc/react";
 
@@ -34,16 +34,13 @@ export const DeleteSingleBannedStudent = ({
   isDialogOpen: boolean;
   setDialogOpen: Dispatch<SetStateAction<boolean>>;
 }) => {
-  const { toast } = useToast();
-
   const apiUtils = api.useUtils();
 
   const deleteBannedStudent = api.grade.deleteSingleTemporaryBan.useMutation({
     async onSuccess() {
       await apiUtils.question.getStudentTempobans.invalidate();
 
-      toast({
-        title: "Penghapusan Larangan Berhasil!",
+      toast.success("Penghapusan Larangan Berhasil!", {
         description: `Berhasil menghapus peserta!`,
       });
 
@@ -51,9 +48,7 @@ export const DeleteSingleBannedStudent = ({
     },
 
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -112,8 +107,6 @@ export const DeleteManyBannedStudent = ({
 
   const apiUtils = api.useUtils();
 
-  const { toast } = useToast();
-
   const deleteManyBannedStudent = api.grade.deleteManyTemporaryBan.useMutation({
     async onSuccess() {
       setDialogOpen(false);
@@ -122,15 +115,12 @@ export const DeleteManyBannedStudent = ({
 
       resetSelection();
 
-      toast({
-        title: "Penghapusan Berhasil!",
+      toast.success("Penghapusan Berhasil!", {
         description: "Berhasil menghapus banyak larangan sementara peserta.",
       });
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
