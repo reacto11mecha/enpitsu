@@ -110,7 +110,9 @@ export const gradeRouter = {
 
           for (const student of allStudents)
             await cache.del(`student-trpc-token-${student.token}`);
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           console.error(
             JSON.stringify({
               time: Date.now().valueOf(),
@@ -183,7 +185,9 @@ export const gradeRouter = {
             try {
               for (const { token } of subgrade.students)
                 await cache.del(`student-trpc-token-${token}`);
-            } catch (_) {
+
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (err: unknown) {
               console.error(
                 JSON.stringify({
                   time: Date.now().valueOf(),

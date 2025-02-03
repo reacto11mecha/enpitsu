@@ -196,7 +196,9 @@ const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
           student: JSON.parse(cachedStudentInfo) as TStudent,
         },
       });
-  } catch (_) {
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err: unknown) {
     console.error(
       JSON.stringify({
         time: Date.now().valueOf(),
@@ -224,7 +226,9 @@ const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
       // 2 weeks cache
       14 * 24 * 60 * 60,
     );
-  } catch (_) {
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err: unknown) {
     console.error(
       JSON.stringify({
         time: Date.now().valueOf(),

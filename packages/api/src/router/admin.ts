@@ -16,7 +16,9 @@ export const adminRouter = {
       return status
         ? { canLogin: JSON.parse(status) as boolean }
         : { canLogin: true };
-    } catch (_) {
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err: unknown) {
       return { canLogin: false };
     }
   }),
@@ -26,7 +28,9 @@ export const adminRouter = {
     .mutation(async ({ input }) => {
       try {
         return await cache.set("login-status", JSON.stringify(input.canLogin));
-      } catch (_) {
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (err: unknown) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message:

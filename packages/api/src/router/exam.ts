@@ -130,7 +130,9 @@ export const examRouter = {
           "EX",
           25 * 10,
         );
-      } catch (_) {
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (err: unknown) {
         console.error(
           JSON.stringify({
             time: Date.now().valueOf(),
@@ -191,7 +193,9 @@ export const examRouter = {
           // 2 hours
           2 * 60 * 60,
         );
-      } catch (_) {
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (err: unknown) {
         console.error(
           JSON.stringify({
             time: Date.now().valueOf(),

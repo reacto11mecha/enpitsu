@@ -468,7 +468,9 @@ export const questionRouter = {
 
         try {
           await cache.del(`trpc-get-question-slug-${input.slug}`);
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Terjadi masalah terhadap konektivitas sistem cache",
@@ -535,7 +537,9 @@ export const questionRouter = {
 
           try {
             await cache.del(`trpc-get-question-slug-${currentQuestion.slug}`);
-          } catch (_) {
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch (err: unknown) {
             throw new TRPCError({
               code: "INTERNAL_SERVER_ERROR",
               message: "Terjadi masalah terhadap konektivitas sistem cache",
@@ -614,7 +618,9 @@ export const questionRouter = {
 
         try {
           await cache.del(`trpc-get-question-slug-${parentQuestion!.slug}`);
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           console.error({
             code: "REDIS_ERR",
             message:
@@ -660,7 +666,9 @@ export const questionRouter = {
 
         try {
           await cache.del(`trpc-get-question-slug-${parentQuestion!.slug}`);
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           console.error({
             code: "REDIS_ERR",
             message:
@@ -707,7 +715,9 @@ export const questionRouter = {
 
         try {
           await cache.del(`trpc-get-question-slug-${parentQuestion.slug}`);
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           console.error({
             code: "REDIS_ERR",
             message:
@@ -764,7 +774,9 @@ export const questionRouter = {
           await cache.del(
             `trpc-get-question-slug-${currentParentQuestion.at(0)!.slug}`,
           );
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           console.error({
             code: "REDIS_ERR",
             message:
@@ -827,7 +839,9 @@ export const questionRouter = {
 
         try {
           await cache.del(`trpc-get-question-slug-${parentQuestion!.slug}`);
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           console.error({
             code: "REDIS_ERR",
             message:
@@ -873,7 +887,9 @@ export const questionRouter = {
 
         try {
           await cache.del(`trpc-get-question-slug-${parentQuestion!.slug}`);
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           console.error({
             code: "REDIS_ERR",
             message:
