@@ -12,6 +12,7 @@
     "VITE_TRPC_URL"
   ],
   "globalPassThroughEnv": [
+    "PORT",
     "NODE_ENV",
     "CI",
     "VERCEL",
@@ -41,16 +42,16 @@
       "cache": false
     },
     "format": {
-      "outputs": ["node_modules/.cache/.prettiercache"],
+      "outputs": [".cache/.prettiercache"],
       "outputLogs": "new-only"
     },
     "lint": {
-      "dependsOn": ["^topo"],
-      "outputs": ["node_modules/.cache/.eslintcache"]
+      "dependsOn": ["^topo", "^build"],
+      "outputs": [".cache/.eslintcache"]
     },
     "typecheck": {
-      "dependsOn": ["^topo"],
-      "outputs": ["node_modules/.cache/tsbuildinfo.json"]
+      "dependsOn": ["^topo", "^build"],
+      "outputs": [".cache/tsbuildinfo.json"]
     },
     "clean": {
       "cache": false
