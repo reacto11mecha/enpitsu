@@ -204,9 +204,7 @@ export function DataTable({
                   Error: {subgradesQuery.error.message}
                 </TableCell>
               </TableRow>
-            ) : null}
-
-            {subgradesQuery.isPending && !subgradesQuery.isError ? (
+            ) : subgradesQuery.isPending ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <TableRow key={idx}>

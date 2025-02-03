@@ -182,6 +182,7 @@ export function DataTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const table = useReactTable({
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     data: studentsQuery.data ?? [],
     columns,
     onSortingChange: setSorting,
@@ -209,6 +210,7 @@ export function DataTable({
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter berdasarkan nama..."
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -272,9 +274,8 @@ export function DataTable({
                   Error: {studentsQuery.error.message}
                 </TableCell>
               </TableRow>
-            ) : null}
-
-            {studentsQuery.isPending && !studentsQuery.isError ? (
+            ) : // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            studentsQuery.isPending ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <TableRow key={idx}>
@@ -304,6 +305,7 @@ export function DataTable({
               ))
             ) : (
               <>
+                {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
                 {!studentsQuery.isPending && (
                   <>
                     {!studentsQuery.isError && (

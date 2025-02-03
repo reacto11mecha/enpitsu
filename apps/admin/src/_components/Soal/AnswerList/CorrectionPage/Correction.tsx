@@ -267,7 +267,7 @@ export const Correction = ({
                 <Separator />
                 <CardFooter className="space-x-5 p-6">
                   <p>Poin:</p>
-                  {essayScoresQuery.isPending && !essayScoresQuery.data ? (
+                  {essayScoresQuery.isPending ? (
                     <Skeleton className="h-30 w-full" />
                   ) : (
                     <UpdateEssayScore

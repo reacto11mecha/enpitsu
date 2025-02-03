@@ -75,7 +75,7 @@ export const columns: ColumnDef<PendingUserList>[] = [
           </AvatarFallback>
         </Avatar>
         <div className="flex flex-col">
-          <p>{row.original.name ? row.original.name : "N/A"}</p>
+          <p>{row.original.name ?? "N/A"}</p>
           <small className="text-muted-foreground">
             {row.original.email ? row.original.email : "N/A"}
           </small>
@@ -206,10 +206,7 @@ export function AllRegisteredUser() {
                   Error: {allRegisteredUserQuery.error.message}
                 </TableCell>
               </TableRow>
-            ) : null}
-
-            {allRegisteredUserQuery.isPending &&
-            !allRegisteredUserQuery.isError ? (
+            ) : allRegisteredUserQuery.isPending ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <TableRow key={idx}>

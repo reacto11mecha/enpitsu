@@ -312,6 +312,7 @@ export const ExcelUploadStudentsByGrade = ({
 
       const sheetValues = w.getSheetValues() as TSheetValue[];
       const sheetVal = sheetValues
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         .filter((d) => !!d)
         .map((d) => d.filter((e) => !!e));
       const keys = sheetVal.shift()!;

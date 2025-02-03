@@ -91,7 +91,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
         description: `Terjadi kesalahan, Error: ${currentQuestionQuery.error.message}`,
       });
     }
-  }, [currentQuestionQuery.data, currentQuestionQuery.error, form, toast]);
+  }, [currentQuestionQuery.data, currentQuestionQuery.error, form]);
 
   const subgradeForAllowListQuery =
     api.question.getSubgradeForAllowList.useQuery();
@@ -136,11 +136,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                     {...field}
                     autoComplete="off"
                     placeholder="MATEMATIKA WAJIB XII"
-                    disabled={
-                      currentQuestionQuery.isPending ||
-                      subgradeForAllowListQuery.isPending ||
-                      editQuestionMutation.isPending
-                    }
+                    disabled={editQuestionMutation.isPending}
                   />
                 )}
               </FormControl>
@@ -235,6 +231,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                       type="datetime-local"
                       min={format(startOfDay(new Date()), "yyyy-MM-dd'T'HH:mm")}
                       value={
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         field.value
                           ? format(field.value, "yyyy-MM-dd'T'HH:mm")
                           : ""
@@ -244,11 +241,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                           ? field.onChange(undefined)
                           : field.onChange(new Date(e.target.value))
                       }
-                      disabled={
-                        currentQuestionQuery.isPending ||
-                        subgradeForAllowListQuery.isPending ||
-                        editQuestionMutation.isPending
-                      }
+                      disabled={editQuestionMutation.isPending}
                     />
                   )}
                 </FormControl>
@@ -274,6 +267,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                     <Input
                       type="datetime-local"
                       min={
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         form.getValues("startedAt")
                           ? format(
                               form.getValues("startedAt"),
@@ -282,6 +276,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                           : ""
                       }
                       value={
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         field.value
                           ? format(field.value, "yyyy-MM-dd'T'HH:mm")
                           : ""
@@ -292,8 +287,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                           : field.onChange(new Date(e.target.value))
                       }
                       disabled={
-                        currentQuestionQuery.isPending ||
-                        subgradeForAllowListQuery.isPending ||
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         !form.getValues("startedAt") ||
                         editQuestionMutation.isPending
                       }
@@ -318,10 +312,9 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
               <FormLabel>Daftar Putih Pengerjaan Soal</FormLabel>
               <FormControl>
                 <div className="flex flex-col gap-8 py-5">
-                  {subgradeForAllowListQuery.isPending &&
-                    !subgradeForAllowListQuery.isError && (
-                      <Skeleton className="h-32 w-full" />
-                    )}
+                  {subgradeForAllowListQuery.isPending ? (
+                    <Skeleton className="h-32 w-full" />
+                  ) : null}
 
                   {!subgradeForAllowListQuery.isPending &&
                     !subgradeForAllowListQuery.isError &&

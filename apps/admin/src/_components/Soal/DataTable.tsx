@@ -119,7 +119,7 @@ export const columns: ColumnDef<QuestionList>[] = [
           </AvatarFallback>
         </Avatar>
         <div className="flex flex-col">
-          <p>{row.original.user.name ? row.original.user.name : "N/A"}</p>
+          <p>{row.original.user.name ?? "N/A"}</p>
           <small className="text-muted-foreground">
             {row.original.user.email ? row.original.user.email : "N/A"}
           </small>
@@ -364,6 +364,7 @@ export function DataTable({
         <div className="flex items-center pb-4">
           <Input
             placeholder="Filter berdasarkan judul soal..."
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
               table.getColumn("title")?.setFilterValue(event.target.value)
@@ -439,9 +440,7 @@ export function DataTable({
                     Error: {questionsQuery.error.message}
                   </TableCell>
                 </TableRow>
-              ) : null}
-
-              {questionsQuery.isPending && !questionsQuery.isError ? (
+              ) : questionsQuery.isPending ? (
                 <>
                   {Array.from({ length: 10 }).map((_, idx) => (
                     <TableRow key={idx}>

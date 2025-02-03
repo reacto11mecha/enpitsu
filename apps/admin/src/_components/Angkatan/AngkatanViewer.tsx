@@ -56,7 +56,7 @@ export const AngkatanViewer = () => {
 
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
-      {grades.isPending && !grades.isError ? (
+      {grades.isPending ? (
         <>
           <Skeleton className="h-48 w-full" />
           <Skeleton className="h-48 w-full" />
