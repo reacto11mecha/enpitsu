@@ -46,7 +46,7 @@ const NonInitVer = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setToken(values.token);
 
-    navigate("/");
+    await navigate("/");
   };
 
   return (

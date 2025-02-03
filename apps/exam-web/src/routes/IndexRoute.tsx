@@ -35,7 +35,7 @@ export default function IndexRoute() {
             : studentQuery.error.message
         }`,
       });
-  }, [studentQuery, toast]);
+  }, [studentQuery]);
 
   if (!studentQuery.isError && isCorrect)
     return <ScanOrInputQuestionSlug closeScanner={closeQuestionScan} />;

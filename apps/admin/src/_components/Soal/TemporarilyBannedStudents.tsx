@@ -248,6 +248,7 @@ export function DataTable() {
         <Input
           placeholder="Filter berdasarkan nama peserta..."
           value={
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             (table.getColumn("studentName")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
@@ -326,10 +327,7 @@ export function DataTable() {
                   Error: {temporarilyBannedQuery.error.message}
                 </TableCell>
               </TableRow>
-            ) : null}
-
-            {temporarilyBannedQuery.isPending &&
-            !temporarilyBannedQuery.isError ? (
+            ) : temporarilyBannedQuery.isPending ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <TableRow key={idx}>

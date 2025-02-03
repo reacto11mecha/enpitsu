@@ -139,6 +139,7 @@ export default function Editor({
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (quillRef.current) {
       quillRef.current
         .getEditor()

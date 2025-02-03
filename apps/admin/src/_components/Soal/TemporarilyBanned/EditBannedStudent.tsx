@@ -162,6 +162,7 @@ export function EditBannedStudent({
                             "yyyy-MM-dd'T'HH:mm",
                           )}
                           value={
+                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             field.value
                               ? format(field.value, "yyyy-MM-dd'T'HH:mm")
                               : ""
@@ -193,6 +194,7 @@ export function EditBannedStudent({
                         <Input
                           type="datetime-local"
                           min={
+                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             form.getValues("startedAt")
                               ? format(
                                   form.getValues("startedAt"),
@@ -201,6 +203,7 @@ export function EditBannedStudent({
                               : ""
                           }
                           value={
+                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             field.value
                               ? format(field.value, "yyyy-MM-dd'T'HH:mm")
                               : ""

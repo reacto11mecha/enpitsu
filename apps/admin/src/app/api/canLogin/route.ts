@@ -11,6 +11,8 @@ async function handler() {
           { status: 200 },
         )
       : NextResponse.json({ canLogin: true }, { status: 200 });
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_) {
     return NextResponse.json({ canLogin: false }, { status: 200 });
   }

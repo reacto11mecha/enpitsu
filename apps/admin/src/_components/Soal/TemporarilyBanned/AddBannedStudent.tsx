@@ -257,6 +257,7 @@ export function AddBannedStudent() {
                             "yyyy-MM-dd'T'HH:mm",
                           )}
                           value={
+                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             field.value
                               ? format(field.value, "yyyy-MM-dd'T'HH:mm")
                               : ""
@@ -293,6 +294,7 @@ export function AddBannedStudent() {
                         <Input
                           type="datetime-local"
                           min={
+                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             form.getValues("startedAt")
                               ? format(
                                   form.getValues("startedAt"),
@@ -301,6 +303,7 @@ export function AddBannedStudent() {
                               : ""
                           }
                           value={
+                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             field.value
                               ? format(field.value, "yyyy-MM-dd'T'HH:mm")
                               : ""
@@ -314,6 +317,7 @@ export function AddBannedStudent() {
                             !selectedSubgradeId ||
                             studentLists.isPending ||
                             studentLists.isError ||
+                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             !form.getValues("startedAt") ||
                             addNewBannedStudent.isPending
                           }

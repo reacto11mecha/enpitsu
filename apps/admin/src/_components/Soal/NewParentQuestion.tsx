@@ -210,6 +210,7 @@ export const NewParentQuestion = () => {
                     type="datetime-local"
                     min={format(startOfDay(new Date()), "yyyy-MM-dd'T'HH:mm")}
                     value={
+                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                       field.value
                         ? format(field.value, "yyyy-MM-dd'T'HH:mm")
                         : ""
@@ -243,6 +244,7 @@ export const NewParentQuestion = () => {
                   <Input
                     type="datetime-local"
                     min={
+                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                       form.getValues("startedAt")
                         ? format(
                             form.getValues("startedAt"),
@@ -251,6 +253,7 @@ export const NewParentQuestion = () => {
                         : ""
                     }
                     value={
+                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                       field.value
                         ? format(field.value, "yyyy-MM-dd'T'HH:mm")
                         : ""
@@ -262,6 +265,7 @@ export const NewParentQuestion = () => {
                     }
                     disabled={
                       subgradeForAllowListQuery.isPending ||
+                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                       !form.getValues("startedAt") ||
                       createQuestionMutation.isPending
                     }
@@ -285,10 +289,9 @@ export const NewParentQuestion = () => {
               <FormLabel>Daftar Putih Pengerjaan Soal</FormLabel>
               <FormControl>
                 <div className="flex flex-col gap-8 py-5">
-                  {subgradeForAllowListQuery.isPending &&
-                    !subgradeForAllowListQuery.isError && (
-                      <Skeleton className="h-32 w-full" />
-                    )}
+                  {subgradeForAllowListQuery.isPending ? (
+                    <Skeleton className="h-32 w-full" />
+                  ) : null}
 
                   {!subgradeForAllowListQuery.isPending &&
                     !subgradeForAllowListQuery.isError &&
