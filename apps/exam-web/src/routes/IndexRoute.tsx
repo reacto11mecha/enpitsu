@@ -71,7 +71,7 @@ export default function IndexRoute() {
               </tbody>
             ) : (
               <tbody className="w-full">
-                {!studentQuery.isPending && studentQuery.data.student ? (
+                {!studentQuery.isPending ? (
                   <tr className="w-full">
                     <td>No Peserta</td>
                     <td className="px-1">:</td>
@@ -85,7 +85,7 @@ export default function IndexRoute() {
                   </tr>
                 )}
 
-                {!studentQuery.isPending && studentQuery.data.student ? (
+                {!studentQuery.isPending ? (
                   <tr className="w-full">
                     <td>Nama</td>
                     <td className="px-1">:</td>
@@ -99,7 +99,7 @@ export default function IndexRoute() {
                   </tr>
                 )}
 
-                {!studentQuery.isPending && studentQuery.data.student ? (
+                {!studentQuery.isPending ? (
                   <tr className="w-full">
                     <td>Kelas</td>
                     <td className="px-1">:</td>
@@ -116,7 +116,7 @@ export default function IndexRoute() {
                   </tr>
                 )}
 
-                {!studentQuery.isPending && studentQuery.data.student ? (
+                {!studentQuery.isPending ? (
                   <tr className="w-full">
                     <td>Ruangan</td>
                     <td className="px-1">:</td>
@@ -130,7 +130,7 @@ export default function IndexRoute() {
                   </tr>
                 )}
 
-                {!studentQuery.isPending && studentQuery.data.student ? (
+                {!studentQuery.isPending ? (
                   <tr className="w-full">
                     <td>Token</td>
                     <td className="px-1">:</td>

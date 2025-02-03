@@ -976,7 +976,7 @@ export const questionRouter = {
           },
         });
 
-        if (!essaysResponds || essaysResponds.length < 1)
+        if (essaysResponds.length < 1)
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Tidak ada jawaban yang disubmit berdasarkan soal ini!",
@@ -1004,7 +1004,7 @@ export const questionRouter = {
         // This condition would not likely to happen, like,
         // this case scenario is really impossible thanks
         // to relational database like postgresql
-        if (!essayAnswers || essayAnswers.length < 1)
+        if (essayAnswers.length < 1)
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Tidak ada soal dari jawaban ini!",

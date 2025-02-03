@@ -23,9 +23,9 @@ const Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
   useEffect(() => {
     const qrScanner = new QrScanner(
       videoRef.current,
-      async ({ data: slug }) => {
+      ({ data: slug }) => {
         if (slug || slug !== "") {
-          const result = await formSchema.safeParseAsync({ slug });
+          const result = formSchema.safeParse({ slug });
 
           if (!result.success) {
             const error = JSON.parse(result.error.message) as {
@@ -56,7 +56,7 @@ const Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
       },
     );
 
-    qrScanner.start();
+    void qrScanner.start();
 
     return () => {
       qrScanner.destroy();

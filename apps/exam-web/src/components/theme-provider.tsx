@@ -27,6 +27,7 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
   );
 
@@ -63,10 +64,10 @@ export function ThemeProvider({
   );
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (context === undefined)
     throw new Error("useTheme must be used within a ThemeProvider");
 

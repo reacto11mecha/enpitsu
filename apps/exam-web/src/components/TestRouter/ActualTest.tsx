@@ -1,3 +1,4 @@
+// TODO: Please investigate the useWakeLock hook
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useNetworkState } from "@/hooks/useNetworkState";
@@ -301,7 +302,7 @@ const Test = ({ data, initialData }: Props) => {
         : prev,
     );
 
-    if (isSupported) request();
+    if (isSupported) void request();
     else {
       setCanUpdateDishonesty(false);
       setWakeLockError(true);
@@ -310,7 +311,7 @@ const Test = ({ data, initialData }: Props) => {
     return () => {
       window.removeEventListener("contextmenu", preventContextMenu);
 
-      release();
+      void release();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
