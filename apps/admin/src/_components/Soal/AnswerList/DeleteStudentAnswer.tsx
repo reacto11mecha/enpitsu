@@ -189,7 +189,7 @@ export const DeleteManyStudentAnswer = ({
       <DialogTrigger asChild>
         <Button variant="destructive">
           <Trash2 className="mr-2 h-4 md:w-4" />
-          Hapus semua jawaban peserta yang dipilih
+          Hapus jawaban yang dipilih
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[80vh] max-w-lg md:max-w-3xl">

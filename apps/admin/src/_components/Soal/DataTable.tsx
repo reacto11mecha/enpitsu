@@ -1,12 +1,7 @@
 "use client";
 
 import type { RouterOutputs } from "@enpitsu/api";
-import type {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-} from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { createContext, useContext, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
@@ -16,7 +11,6 @@ import { Button } from "@enpitsu/ui/button";
 import { Checkbox } from "@enpitsu/ui/checkbox";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -24,39 +18,10 @@ import {
   DropdownMenuTrigger,
 } from "@enpitsu/ui/dropdown-menu";
 import { Input } from "@enpitsu/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@enpitsu/ui/select";
-import { Skeleton } from "@enpitsu/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@enpitsu/ui/table";
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 import {
   ArrowUpDown,
-  ChevronDown,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronsLeft,
-  ChevronsRight,
   ClipboardCheck,
   LayoutList,
   ListX,
@@ -67,6 +32,7 @@ import {
   UserRoundX,
 } from "lucide-react";
 
+import { ReusableDataTable } from "~/_components/data-table";
 import { api } from "~/trpc/react";
 import { CreateQRCodes } from "./CreateQRCodes";
 import { DeleteParentQuestion } from "./DeleteParentQuestion";
@@ -296,32 +262,7 @@ export function DataTable({
   countValue: number;
   currUserRole: "admin" | "user";
 }) {
-  const questionsQuery = api.question.getQuestions.useQuery(undefined);
-
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
-
-  const table = useReactTable({
-    data: questionsQuery.data ?? [],
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    initialState: { pagination: { pageSize: 20 } },
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
-  });
+  const questionsQuery = api.question.getQuestions.useQuery();
 
   return (
     <RoleContext.Provider value={currUserRole}>
@@ -361,208 +302,40 @@ export function DataTable({
           )}
         </div>
 
-        <div className="flex items-center pb-4">
-          <Input
-            placeholder="Filter berdasarkan judul soal..."
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn("title")?.setFilterValue(event.target.value)
-            }
-            className="max-w-md"
-          />
+        <ReusableDataTable
+          columns={columns}
+          data={questionsQuery.data ?? []}
+          queryIsPending={questionsQuery.isPending}
+          queryIsError={questionsQuery.isError}
+          queryErrorMessage={questionsQuery.error?.message}
+          showTableControl
+          additionalControl={(table) => (
+            <>
+              <Input
+                placeholder="Filter berdasarkan judul soal..."
+                value={
+                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                  (table.getColumn("title")?.getFilterValue() as string) ?? ""
+                }
+                onChange={(event) =>
+                  table.getColumn("title")?.setFilterValue(event.target.value)
+                }
+                className="w-full md:max-w-md"
+              />
 
-          {table.getFilteredSelectedRowModel().rows.length > 0 && (
-            <CreateQRCodes
-              selectedData={table
-                .getFilteredSelectedRowModel()
-                .rows.map((row) => ({
-                  slug: row.original.slug,
-                  title: row.original.title,
-                }))}
-            />
-          )}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                Kolom-Kolom <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {questionsQuery.isError ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    Error: {questionsQuery.error.message}
-                  </TableCell>
-                </TableRow>
-              ) : questionsQuery.isPending ? (
-                <>
-                  {Array.from({ length: 10 }).map((_, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell colSpan={columns.length}>
-                        <Skeleton className="h-5 w-full" />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </>
-              ) : null}
-
-              {table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <>
-                  {!questionsQuery.isPending && (
-                    <>
-                      {!questionsQuery.isError && (
-                        <TableRow>
-                          <TableCell
-                            colSpan={columns.length}
-                            className="h-24 text-center"
-                          >
-                            Tidak ada data.
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </>
-                  )}
-                </>
+              {table.getFilteredSelectedRowModel().rows.length > 0 && (
+                <CreateQRCodes
+                  selectedData={table
+                    .getFilteredSelectedRowModel()
+                    .rows.map((row) => ({
+                      slug: row.original.slug,
+                      title: row.original.title,
+                    }))}
+                />
               )}
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="flex flex-1 flex-row items-center text-muted-foreground">
-            <p className="text-sm">
-              {table.getFilteredSelectedRowModel().rows.length} dari{" "}
-              {table.getFilteredRowModel().rows.length} baris dipilih.
-            </p>
-          </div>
-          <div className="flex items-center space-x-6 lg:space-x-8">
-            <div className="flex items-center space-x-2">
-              <p className="text-sm font-medium">Baris per halaman</p>
-              <Select
-                value={`${table.getState().pagination.pageSize}`}
-                onValueChange={(value: string) => {
-                  table.setPageSize(Number(value));
-                }}
-              >
-                <SelectTrigger className="h-8 w-[70px]">
-                  <SelectValue
-                    placeholder={table.getState().pagination.pageSize}
-                  />
-                </SelectTrigger>
-                <SelectContent side="top">
-                  {[20, 40, 60, 80, 100].map((pageSize) => (
-                    <SelectItem key={pageSize} value={`${pageSize}`}>
-                      {pageSize}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-              Halaman {table.getState().pagination.pageIndex + 1} dari{" "}
-              {table.getPageCount()}
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
-                onClick={() => table.setPageIndex(0)}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Go to first page</span>
-                <ChevronsLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Go to previous page</span>
-                <ChevronLeftIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Go to next page</span>
-                <ChevronRightIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Go to last page</span>
-                <ChevronsRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
+            </>
+          )}
+        />
       </div>
     </RoleContext.Provider>
   );
