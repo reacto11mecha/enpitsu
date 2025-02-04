@@ -58,7 +58,7 @@ interface AdditionalProps {
   queryIsPending: boolean;
 }
 
-export function DataTable<TData, TValue>({
+export function ReusableDataTable<TData, TValue>({
   columns,
   data,
   showTableControl,

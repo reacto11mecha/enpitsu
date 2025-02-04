@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { DataTable } from "~/_components/data-table";
+import { ReusableDataTable } from "~/_components/data-table";
 import { api } from "~/trpc/react";
 import { CreateSubgrade } from "./CreateSubgrade";
 import { DeleteSubgrade } from "./DeleteSubgrade";
@@ -139,7 +139,7 @@ export function DataTable({
   return (
     <div className="w-full">
       <CreateSubgrade gradeId={currentGrade.id} />
-      <DataTable
+      <ReusableDataTable
         columns={columns}
         data={subgradesQuery.data ?? []}
         queryIsPending={subgradesQuery.isPending}

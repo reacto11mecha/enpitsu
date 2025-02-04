@@ -17,7 +17,7 @@ import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { MoreHorizontal, PencilLine } from "lucide-react";
 
-import { DataTable } from "~/_components/data-table";
+import { ReusableDataTable } from "~/_components/data-table";
 import { api } from "~/trpc/react";
 import { UpdateRole } from "./UpdateRole";
 
@@ -120,7 +120,7 @@ export function AllRegisteredUser() {
 
   return (
     <div className="w-full">
-      <DataTable
+      <ReusableDataTable
         columns={columns}
         data={allRegisteredUserQuery.data ?? []}
         queryIsPending={allRegisteredUserQuery.isPending}

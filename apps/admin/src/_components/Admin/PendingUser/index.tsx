@@ -8,7 +8,7 @@ import { Button } from "@enpitsu/ui/button";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { DataTable } from "~/_components/data-table";
+import { ReusableDataTable } from "~/_components/data-table";
 import { api } from "~/trpc/react";
 import { AcceptUser } from "./AcceptUser";
 
@@ -127,7 +127,7 @@ export function PendingUser() {
 
   return (
     <div className="w-full">
-      <DataTable
+      <ReusableDataTable
         columns={columns}
         data={pendingUserQuery.data ?? []}
         queryIsPending={pendingUserQuery.isPending}

@@ -19,6 +19,7 @@ import {
   Trash2,
 } from "lucide-react";
 
+import { ReusableDataTable } from "~/_components/data-table";
 import { api } from "~/trpc/react";
 import { ExcelStudentsBySubgradeDownload } from "../ExcelStudentsActivity";
 import { AddStudent } from "./AddStudent";
@@ -149,7 +150,7 @@ export function DataTable({
         <UploadCSV subgrade={subgrade} grade={grade} />
         <ExcelStudentsBySubgradeDownload subgradeId={subgrade.id} />
       </div>
-      <DataTable
+      <ReusableDataTable
         columns={columns}
         data={studentsQuery.data ?? []}
         queryIsPending={studentsQuery.isPending}
