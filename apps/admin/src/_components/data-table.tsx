@@ -4,6 +4,7 @@ import type {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
+  Table as TableType,
   VisibilityState,
 } from "@tanstack/react-table";
 import { useState } from "react";
@@ -49,6 +50,7 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  additionalControl?: (table: TableType<TData>) => React.ReactNode | undefined;
 }
 
 interface AdditionalProps {
@@ -62,6 +64,7 @@ export function ReusableDataTable<TData, TValue>({
   columns,
   data,
   showTableControl,
+  additionalControl,
   queryIsError,
   queryErrorMessage,
   queryIsPending,
@@ -99,7 +102,8 @@ export function ReusableDataTable<TData, TValue>({
     <>
       {showTableControl ? (
         <div className="flex items-center py-4">
-          {/* implement children component here for filtering */}
+          {additionalControl ? additionalControl(table) : null}
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">

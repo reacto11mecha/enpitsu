@@ -147,6 +147,5 @@ export function DataTable({
         queryErrorMessage={subgradesQuery.error?.message}
       />
     </div>
-  )
+  );
 }
-
