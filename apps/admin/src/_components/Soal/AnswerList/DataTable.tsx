@@ -242,7 +242,7 @@ export function DataTable({
                 />
 
                 {table.getFilteredSelectedRowModel().rows.length > 0 ? (
-                  <div className="flex flex-col gap-2 pb-4 md:flex-row md:items-center">
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:px-2">
                     <DeleteManyStudentAnswer
                       data={table
                         .getFilteredSelectedRowModel()
@@ -251,7 +251,7 @@ export function DataTable({
                       resetSelection={resetSelection}
                     />
                     <Button variant="outline" onClick={resetSelection}>
-                      Batalkan semua pilihan
+                      Batalkan pilihan
                     </Button>
                   </div>
                 ) : null}

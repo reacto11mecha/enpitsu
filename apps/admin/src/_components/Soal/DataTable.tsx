@@ -320,7 +320,7 @@ export function DataTable({
                 onChange={(event) =>
                   table.getColumn("title")?.setFilterValue(event.target.value)
                 }
-                className="max-w-md"
+                className="w-full md:max-w-md"
               />
 
               {table.getFilteredSelectedRowModel().rows.length > 0 && (

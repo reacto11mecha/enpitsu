@@ -101,12 +101,12 @@ export function ReusableDataTable<TData, TValue>({
   return (
     <>
       {showTableControl ? (
-        <div className="flex items-center py-4">
+        <div className="flex flex-col justify-center gap-2 py-4 md:flex-row">
           {additionalControl ? additionalControl(table) : null}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
+              <Button variant="outline" className="w-full md:ml-auto md:w-auto">
                 Kolom-kolom <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
