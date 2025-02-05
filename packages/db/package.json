@@ -12,12 +12,12 @@
       "default": "./src/client.ts"
     },
     "./schema": {
-      "types": "./dist/schema/_main.d.ts",
-      "default": "./src/schema/_main.ts"
+      "types": "./dist/_main.d.ts",
+      "default": "./src/_main.ts"
     },
     "./schema-grouped": {
-      "types": "./dist/schema/_main-grouped.d.ts",
-      "default": "./src/schema/_main-grouped.ts"
+      "types": "./dist/_main-grouped.d.ts",
+      "default": "./src/_main-grouped.ts"
     }
   },
   "license": "MIT",
@@ -27,9 +27,9 @@
     "clean": "rm -rf .turbo node_modules",
     "lint": "eslint",
     "format": "prettier --check . --ignore-path ../../.gitignore",
-    "push": "pnpm with-env drizzle-kit push  --config src/config.ts",
-    "generate": "pnpm with-env drizzle-kit generate  --config src/config.ts",
-    "studio": "pnpm with-env drizzle-kit studio  --config src/config.ts",
+    "push": "pnpm with-env drizzle-kit push",
+    "generate": "pnpm with-env drizzle-kit generate",
+    "studio": "pnpm with-env drizzle-kit studio",
     "typecheck": "tsc --noEmit",
     "with-env": "dotenv -e ../../.env --"
   },
@@ -44,7 +44,7 @@
     "@enpitsu/token-generator": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
     "dotenv-cli": "^7.3.0",
-    "drizzle-kit": "^0.30.4",
+    "drizzle-kit": "^0.30.2",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"

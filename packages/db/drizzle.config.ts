@@ -1,9 +1,4 @@
 import type { Config } from "drizzle-kit";
-import * as dotenv from "dotenv";
-
-dotenv.config({
-  path: "../../.env",
-});
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");
@@ -11,10 +6,11 @@ if (!process.env.DATABASE_URL) {
 
 export default {
   dialect: "postgresql",
-  schema: "./schema",
+  schema: "./src/_main.ts",
   out: "../db-migrate/migrations",
   dbCredentials: {
     url: process.env.DATABASE_URL,
   },
+  casing: "snake_case",
   tablesFilter: ["enpitsu_*"],
 } satisfies Config;

@@ -1,9 +1,6 @@
 import { relations } from "drizzle-orm";
 import { pgEnum, primaryKey } from "drizzle-orm/pg-core";
 
-// import { drizzle } from "drizzle-orm/postgres-js";
-// import postgres from "postgres";
-
 import { myPgTable } from "./_table";
 import { questions } from "./question";
 

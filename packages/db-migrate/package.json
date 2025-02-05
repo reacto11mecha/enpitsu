@@ -34,7 +34,7 @@
     "@enpitsu/prettier-config": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
     "dotenv-cli": "^7.3.0",
-    "drizzle-kit": "^0.30.4",
+    "drizzle-kit": "^0.30.2",
     "eslint": "catalog:",
     "pg": "^8.11.3",
     "prettier": "catalog:",

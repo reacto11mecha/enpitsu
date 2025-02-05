@@ -24,7 +24,10 @@ export const questions = myPgTable(
     multipleChoiceOptions: t.integer("multiple_choice_options").notNull(),
     startedAt: t.timestamp("started_at", { mode: "date" }).notNull(),
     endedAt: t.timestamp("ended_at", { mode: "date" }).notNull(),
-    authorId: t.varchar("author_id").notNull(),
+    authorId: t
+      .uuid("author_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
   }),
   (table) => [uniqueIndex("slug_idx").on(table.slug)],
 );
