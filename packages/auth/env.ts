@@ -18,6 +18,11 @@ export const env = createEnv({
     ),
 
     NODE_ENV: z.enum(["development", "production"]).optional(),
+
+    SPECIAL_ADMIN_USERS: z
+      .string()
+      .transform((s) => (s.includes(",") ? s.split(",") : [s]))
+      .pipe(z.array(z.string().email())),
   },
   client: {},
   experimental__runtimeEnv: {},

@@ -6,6 +6,7 @@ import type {
 import { skipCSRFCheck } from "@auth/core";
 import Google from "@auth/core/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { and, eq } from "@enpitsu/db";
 import { db } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
 
@@ -49,9 +50,39 @@ export const authConfig = {
   secret: env.AUTH_SECRET,
   providers: [Google],
   callbacks: {
-    session: (opts) => {
+    session: async (opts) => {
       if (!("user" in opts))
         throw new Error("unreachable with session strategy");
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      if (env.SPECIAL_ADMIN_USERS.includes(opts.user.email)) {
+        if (!opts.user.emailVerified) {
+          const emailVerified = new Date();
+
+          await db
+            .update(schema.users)
+            .set({
+              role: "admin",
+              emailVerified,
+            })
+            .where(
+              and(
+                eq(schema.users.email, opts.user.email),
+                eq(schema.users.id, opts.user.id),
+              ),
+            );
+
+          return {
+            ...opts.session,
+            user: {
+              ...opts.session.user,
+              id: opts.user.id,
+              role: "admin",
+              emailVerified,
+            },
+          };
+        }
+      }
 
       return {
         ...opts.session,
