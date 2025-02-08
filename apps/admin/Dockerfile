@@ -69,7 +69,7 @@ ENV PORT 3000
 
 ENV NODE_ENV production
 
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/next.config.mjs .
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/next.config.js .
 COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/package.json .
 
 # Automatically leverage output traces to reduce image size
