@@ -9,7 +9,7 @@ console.log("launched...");
 
 const connectionString = env.DATABASE_URL;
 const sql = postgres(connectionString, { max: 1 });
-const db = drizzle(sql);
+const db = drizzle(sql, { casing: "snake_case" });
 
 (async () => {
   console.log("migrating database...");
