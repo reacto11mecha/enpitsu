@@ -21,7 +21,10 @@ import { ArrowUpRight, MoreHorizontal, Trash2 } from "lucide-react";
 
 import { ReusableDataTable } from "~/_components/data-table";
 import { api } from "~/trpc/react";
-import { DeleteSingleCheatedStudent } from "./CheatedList/DeleteCheatedStudent";
+import {
+  AggregateDeleteCheatedStudent,
+  DeleteSingleCheatedStudent,
+} from "./CheatedList/DeleteCheatedStudent";
 import { AggregateExcelCheatDownload } from "./CheatedList/ExcelCheatedDownload";
 
 type BlocklistByQuestion =
@@ -135,6 +138,7 @@ export function DataTable() {
     <div className="w-full">
       <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center">
         <AggregateExcelCheatDownload />
+        <AggregateDeleteCheatedStudent />
       </div>
 
       <ReusableDataTable

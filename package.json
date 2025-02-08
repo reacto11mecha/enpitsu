@@ -6,8 +6,9 @@
   },
   "packageManager": "pnpm@9.10.0",
   "scripts": {
-    "pre-build": "turbo build --filter @enpitsu/db",
     "build": "turbo build",
+    "build:admin": "turbo build --filter @enpitsu/admin",
+    "build:exam": "turbo build --filter @enpitsu/exam-web",
     "clean": "git clean -xdf node_modules",
     "clean:workspaces": "turbo clean",
     "postinstall": "pnpm lint:ws",
