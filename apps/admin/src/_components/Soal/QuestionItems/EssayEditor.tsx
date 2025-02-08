@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect } from "react";
+import { memo, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Button } from "@enpitsu/ui/button";
 import {
@@ -61,8 +61,13 @@ export const EssayEditor = memo(function EssayEditorConstructor({
   questionNo: number;
   title: string;
 }) {
+  const [dataAlreadyInitialized, setInitialized] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      isStrictEqual: false,
+    },
   });
 
   const utils = api.useUtils();
@@ -74,19 +79,30 @@ export const EssayEditor = memo(function EssayEditorConstructor({
     },
   );
 
+  console.log("isPending: ", specificEssayQuery.isPending);
+  console.log("dataAlreadyInitialized: ", dataAlreadyInitialized);
+
   useEffect(() => {
-    if (specificEssayQuery.data) {
-      if (Object.keys(form.getValues()).length <= 1) {
-        form.setValue("question", specificEssayQuery.data.question);
-        form.setValue("answer", specificEssayQuery.data.answer);
-        form.setValue("isStrictEqual", specificEssayQuery.data.isStrictEqual);
+    if (!dataAlreadyInitialized) {
+      if (specificEssayQuery.data) {
+        if (Object.keys(form.getValues()).length > 0) {
+          form.setValue("question", specificEssayQuery.data.question);
+          form.setValue("answer", specificEssayQuery.data.answer);
+          form.setValue("isStrictEqual", specificEssayQuery.data.isStrictEqual);
+
+          console.log("masuk sini");
+
+          setInitialized(true);
+        }
+      } else if (specificEssayQuery.error) {
+        toast.error(`Gagal mengambil data soal nomor ${questionNo}`, {
+          description: "Mohon refresh halaman ini",
+        });
+
+        setInitialized(true);
       }
-    } else if (specificEssayQuery.error) {
-      toast.error(`Gagal mengambil data soal nomor ${questionNo}`, {
-        description: "Mohon refresh halaman ini",
-      });
     }
-  }, [specificEssayQuery.data, specificEssayQuery.error, form, toast]);
+  }, [specificEssayQuery.data, specificEssayQuery.error, form]);
 
   const specificEssayMutation = api.question.updateSpecificEssay.useMutation({
     async onMutate(updatedChoice) {
@@ -192,7 +208,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
         </CardHeader>
 
         <CardContent className="flex flex-col gap-5">
-          {specificEssayQuery.isPending ? (
+          {specificEssayQuery.isPending || !dataAlreadyInitialized ? (
             <Skeleton className="h-10 w-full" />
           ) : (
             <FormField
@@ -210,7 +226,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
             />
           )}
 
-          {specificEssayQuery.isPending ? (
+          {specificEssayQuery.isPending || !dataAlreadyInitialized ? (
             <Skeleton className="h-10 w-full" />
           ) : (
             <FormField
@@ -231,7 +247,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
             />
           )}
 
-          {specificEssayQuery.isPending ? (
+          {specificEssayQuery.isPending || !dataAlreadyInitialized ? (
             <Skeleton className="h-10 w-full" />
           ) : (
             <FormField

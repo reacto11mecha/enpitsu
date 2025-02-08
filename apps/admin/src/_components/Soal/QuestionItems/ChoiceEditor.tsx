@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect } from "react";
+import { memo, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { Button } from "@enpitsu/ui/button";
 import {
@@ -71,6 +71,8 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
   questionNo: number;
   title: string;
 }) {
+  const dataAlreadyInitialized = useRef(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
@@ -90,23 +92,29 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
   );
 
   useEffect(() => {
-    if (specificChoiceQuery.data) {
-      if (Object.keys(form.getValues()).length <= 1) {
-        form.setValue("question", specificChoiceQuery.data.question);
+    if (!dataAlreadyInitialized.current) {
+      if (specificChoiceQuery.data) {
+        if (Object.keys(form.getValues()).length >= 1) {
+          form.setValue("question", specificChoiceQuery.data.question);
 
-        specificChoiceQuery.data.options.forEach((d, idx) =>
-          optionsField.update(idx, d),
-        );
+          specificChoiceQuery.data.options.forEach((d, idx) =>
+            optionsField.update(idx, d),
+          );
 
-        form.setValue(
-          "correctAnswerOrder",
-          specificChoiceQuery.data.correctAnswerOrder,
-        );
+          form.setValue(
+            "correctAnswerOrder",
+            specificChoiceQuery.data.correctAnswerOrder,
+          );
+
+          dataAlreadyInitialized.current = true;
+        }
+      } else if (specificChoiceQuery.error) {
+        toast.error(`Gagal mengambil data soal nomor ${questionNo}`, {
+          description: "Mohon refresh halaman ini",
+        });
+
+        dataAlreadyInitialized.current = true;
       }
-    } else if (specificChoiceQuery.error) {
-      toast.error(`Gagal mengambil data soal nomor ${questionNo}`, {
-        description: "Mohon refresh halaman ini",
-      });
     }
   }, [
     specificChoiceQuery.data,
@@ -220,7 +228,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
         </CardHeader>
 
         <CardContent className="flex flex-col gap-5">
-          {specificChoiceQuery.isPending ? (
+          {specificChoiceQuery.isPending || !dataAlreadyInitialized.current ? (
             <Skeleton className="h-10 w-full" />
           ) : (
             <FormField
@@ -242,7 +250,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
             />
           )}
 
-          {specificChoiceQuery.isPending ? (
+          {specificChoiceQuery.isPending || !dataAlreadyInitialized.current ? (
             <div className="space-y-5">
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
@@ -328,55 +336,59 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
         <CardFooter className="flex flex-row p-5">
           <div className="flex w-full flex-row justify-between">
             <div className="flex flex-row items-center gap-5">
-              <Popover>
-                <PopoverTrigger className="flex flex-row items-center gap-2 text-sky-600 dark:text-sky-500">
-                  <ClipboardCheck />
-                  Kunci jawaban
-                </PopoverTrigger>
-                <PopoverContent className="space-y-4">
-                  <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
-                    Pilih jawaban benar
-                  </h4>
+              {dataAlreadyInitialized.current ? (
+                <Popover>
+                  <PopoverTrigger className="flex flex-row items-center gap-2 text-sky-600 dark:text-sky-500">
+                    <ClipboardCheck />
+                    Kunci jawaban
+                  </PopoverTrigger>
+                  <PopoverContent className="space-y-4">
+                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+                      Pilih jawaban benar
+                    </h4>
 
-                  <FormField
-                    control={form.control}
-                    name={"correctAnswerOrder"}
-                    render={({ field: currentField }) => (
-                      <FormItem className="space-y-5">
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={(val) =>
-                              currentField.onChange(parseInt(val))
-                            }
-                            defaultValue={String(currentField.value)}
-                            className="flex flex-col space-y-1"
-                          >
-                            {form.getValues("options").map((option) => (
-                              <FormItem
-                                key={`answer.${option.order}`}
-                                className="flex items-center space-x-3 space-y-0"
-                              >
-                                <FormControl>
-                                  <RadioGroupItem
-                                    value={String(option.order)}
+                    <FormField
+                      control={form.control}
+                      name={"correctAnswerOrder"}
+                      render={({ field: currentField }) => (
+                        <FormItem className="space-y-5">
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={(val) =>
+                                currentField.onChange(parseInt(val))
+                              }
+                              defaultValue={String(currentField.value)}
+                              className="flex flex-col space-y-1"
+                            >
+                              {form.getValues("options").map((option) => (
+                                <FormItem
+                                  key={`answer.${option.order}`}
+                                  className="flex items-center space-x-3 space-y-0"
+                                >
+                                  <FormControl>
+                                    <RadioGroupItem
+                                      value={String(option.order)}
+                                    />
+                                  </FormControl>
+                                  <FormLabel
+                                    className="font-base font-normal"
+                                    dangerouslySetInnerHTML={{
+                                      __html: option.answer,
+                                    }}
                                   />
-                                </FormControl>
-                                <FormLabel
-                                  className="font-base font-normal"
-                                  dangerouslySetInnerHTML={{
-                                    __html: option.answer,
-                                  }}
-                                />
-                              </FormItem>
-                            ))}
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </PopoverContent>
-              </Popover>
+                                </FormItem>
+                              ))}
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                false
+              )}
 
               {form.getValues("correctAnswerOrder") < 1 ? (
                 <NuhUh className="h-8 w-8 text-red-600 dark:text-red-500" />
