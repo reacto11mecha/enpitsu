@@ -12,11 +12,9 @@ pnpm dev:exam
 ## manual build
 
 ```sh
-cd apps/admin
-pnpm build
+pnpm build:admin
 
-cd apps/exam-web
-pnpm build
+pnpm build:exam
 ```
 
 ```sh
@@ -30,7 +28,7 @@ pnpm preview
 ## docker
 
 ```
-cp docker-compose.yml ../somewhere-else/docker-compose.yml
+cp docker-compose.yml ../somewhere-else/docker-compose.yaml
 cp .env.docker.example ../somewhere-else/.env
 docker compose up -d
 ```

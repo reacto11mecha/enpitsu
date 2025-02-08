@@ -328,6 +328,10 @@ export const questionRouter = {
       }),
     ),
 
+  wipeBlocklistRecord: adminProcedure.mutation(({ ctx }) =>
+    ctx.db.delete(schema.studentBlocklists),
+  ),
+
   createQuestion: protectedProcedure
     .input(
       z.object({
@@ -340,7 +344,6 @@ export const questionRouter = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      console.log(input);
       try {
         return await ctx.db.transaction(async (tx) => {
           const question = await tx

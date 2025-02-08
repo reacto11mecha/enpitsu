@@ -260,3 +260,112 @@ export const DeleteManyCheatedStudent = ({
     </Dialog>
   );
 };
+
+export const AggregateDeleteCheatedStudent = () => {
+  const apiUtils = api.useUtils();
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [confirmationText, setConfirmText] = useState("");
+
+  const reallySure = useMemo(
+    () =>
+      confirmationText ===
+      "saya ingin menghapus seluruh data kecurangan peserta pada aplikasi ini",
+    [confirmationText],
+  );
+
+  const wipeCheatedStudentRecord = api.question.wipeBlocklistRecord.useMutation(
+    {
+      async onSuccess() {
+        setDialogOpen(false);
+
+        setConfirmText("");
+
+        await apiUtils.question.getStudentBlocklists.invalidate();
+
+        toast.success("Penghapusan Berhasil!", {
+          description: "Berhasil mengosongkan catatan kecurangan peserta.",
+        });
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    },
+  );
+
+  return (
+    <Dialog
+      open={dialogOpen}
+      onOpenChange={() => {
+        if (wipeCheatedStudentRecord.isPending) return;
+
+        setDialogOpen((prev) => !prev);
+        setConfirmText("");
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button variant="secondary">
+          <Trash2 className="mr-2 h-4 md:w-4" />
+          Hapus seluruh data kecurangan
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[80vh] max-w-lg md:max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Hapus Seluruh Data Kecurangan Peserta</DialogTitle>
+          <DialogDescription>
+            Anda akan menghapus seluruh data kecurangan yang tercatat pada
+            sistem. Mohon pikirkan kembali apakah aksi yang akan anda lakukan
+            berada pada waktu yang tepat atau tidak. Data yang anda hapus tidak
+            bisa dikembalikan.
+          </DialogDescription>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
+              <DialogDescription className="text-start">
+                Jika anda yakin dan ingin melanjutkan, ketik{" "}
+                <b className="select-none">
+                  saya ingin menghapus seluruh data kecurangan peserta pada
+                  aplikasi ini
+                </b>{" "}
+                pada kolom dibawah:
+              </DialogDescription>
+              <Input
+                type="text"
+                autoComplete="false"
+                autoCorrect="false"
+                onPaste={(e) => e.preventDefault()}
+                disabled={wipeCheatedStudentRecord.isPending}
+                value={confirmationText}
+                onChange={(e) => setConfirmText(e.target.value)}
+              />
+            </div>
+          </div>
+        </DialogHeader>
+        <DialogFooter className="gap-2 sm:justify-start">
+          <DialogClose asChild>
+            <Button
+              variant="secondary"
+              disabled={wipeCheatedStudentRecord.isPending}
+            >
+              Batal
+            </Button>
+          </DialogClose>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={!reallySure || wipeCheatedStudentRecord.isPending}
+            onClick={() => {
+              if (reallySure) wipeCheatedStudentRecord.mutate();
+            }}
+          >
+            {wipeCheatedStudentRecord.isPending ? (
+              <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
+            ) : null}
+            Hapus
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};

@@ -79,9 +79,6 @@ export const EssayEditor = memo(function EssayEditorConstructor({
     },
   );
 
-  console.log("isPending: ", specificEssayQuery.isPending);
-  console.log("dataAlreadyInitialized: ", dataAlreadyInitialized);
-
   useEffect(() => {
     if (!dataAlreadyInitialized) {
       if (specificEssayQuery.data) {
@@ -89,8 +86,6 @@ export const EssayEditor = memo(function EssayEditorConstructor({
           form.setValue("question", specificEssayQuery.data.question);
           form.setValue("answer", specificEssayQuery.data.answer);
           form.setValue("isStrictEqual", specificEssayQuery.data.isStrictEqual);
-
-          console.log("masuk sini");
 
           setInitialized(true);
         }
