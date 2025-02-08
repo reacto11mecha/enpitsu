@@ -9,12 +9,12 @@ export const NewLoadingQuestion = () => {
 
   return (
     <div
-      className={"bg-muted h-[35rem] w-full animate-pulse rounded-md"}
+      className={"h-[35rem] w-full animate-pulse rounded-md bg-muted"}
       ref={loadingRef}
     />
   );
 };
 
 export const BasicLoading = () => (
-  <div className={"bg-muted h-[35rem] w-full animate-pulse rounded-md"} />
+  <div className={"h-[35rem] w-full animate-pulse rounded-md bg-muted"} />
 );

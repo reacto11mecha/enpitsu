@@ -2,20 +2,39 @@
   "name": "@enpitsu/db",
   "version": "0.1.0",
   "private": true,
-  "main": "./index.ts",
-  "types": "./index.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "default": "./src/client.ts"
+    },
+    "./schema": {
+      "types": "./dist/_main.d.ts",
+      "default": "./src/_main.ts"
+    },
+    "./schema-grouped": {
+      "types": "./dist/_main-grouped.d.ts",
+      "default": "./src/_main-grouped.ts"
+    }
+  },
   "license": "MIT",
   "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
     "clean": "rm -rf .turbo node_modules",
-    "lint": "eslint .",
+    "lint": "eslint",
     "format": "prettier --check . --ignore-path ../../.gitignore",
-    "push": "drizzle-kit push:pg",
-    "generate": "drizzle-kit generate:pg",
-    "studio": "drizzle-kit studio",
-    "typecheck": "tsc --noEmit"
+    "push": "pnpm with-env drizzle-kit push",
+    "generate": "pnpm with-env drizzle-kit generate",
+    "studio": "pnpm with-env drizzle-kit studio",
+    "typecheck": "tsc --noEmit",
+    "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
-    "drizzle-orm": "^0.29.1",
+    "drizzle-orm": "^0.39.1",
     "pg": "^8.11.3",
     "postgres": "^3.4.3"
   },
@@ -25,10 +44,10 @@
     "@enpitsu/token-generator": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
     "dotenv-cli": "^7.3.0",
-    "drizzle-kit": "^0.20.17",
-    "eslint": "^8.55.0",
-    "prettier": "^3.1.0",
-    "typescript": "^5.3.3"
+    "drizzle-kit": "^0.30.2",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:"
   },
   "eslintConfig": {
     "root": true,
@@ -36,5 +55,6 @@
       "@enpitsu/eslint-config/base"
     ]
   },
-  "prettier": "@enpitsu/prettier-config"
+  "prettier": "@enpitsu/prettier-config",
+  "type": "module"
 }

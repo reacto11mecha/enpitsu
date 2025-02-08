@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { validateId } from "@enpitsu/token-generator";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -10,8 +11,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+} from "@enpitsu/ui/alert-dialog";
+import { Button } from "@enpitsu/ui/button";
 import {
   Form,
   FormControl,
@@ -20,17 +21,16 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import { validateId } from "@enpitsu/token-generator";
+} from "@enpitsu/ui/form";
+import { Input } from "@enpitsu/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ExcelJS from "exceljs";
 import { HardDriveUpload, Sheet } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 const FileValueSchema = z.array(
   z.object({
@@ -105,8 +105,6 @@ export const ExcelStudentsByGradeDownload = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  const { toast } = useToast();
-
   const excelMutationApi = api.grade.downloadSpecificGradeExcel.useMutation({
     async onSuccess(result) {
       const workbook = new ExcelJS.Workbook();
@@ -148,17 +146,15 @@ export const ExcelStudentsByGradeDownload = ({
       setOpen(false);
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
   });
 
   const onOpenChange = useCallback(() => {
-    if (!excelMutationApi.isLoading) setOpen((prev) => !prev);
-  }, [excelMutationApi.isLoading]);
+    if (!excelMutationApi.isPending) setOpen((prev) => !prev);
+  }, [excelMutationApi.isPending]);
 
   const triggerDownload = useCallback(
     () => excelMutationApi.mutate({ gradeId }),
@@ -172,7 +168,7 @@ export const ExcelStudentsByGradeDownload = ({
       open={open}
       desc="Unduh data angkatan ini dalam bentuk excel. Mohon tunggu jika proses ini berjalan lama."
       onOpenChange={onOpenChange}
-      isLoading={excelMutationApi.isLoading}
+      isLoading={excelMutationApi.isPending}
       triggerDownload={triggerDownload}
     />
   );
@@ -184,8 +180,6 @@ export const ExcelStudentsBySubgradeDownload = ({
   subgradeId: number;
 }) => {
   const [open, setOpen] = useState(false);
-
-  const { toast } = useToast();
 
   const excelMutationApi = api.grade.downloadSpecificSubgradeExcel.useMutation({
     async onSuccess(result) {
@@ -226,17 +220,15 @@ export const ExcelStudentsBySubgradeDownload = ({
       setOpen(false);
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
   });
 
   const onOpenChange = useCallback(() => {
-    if (!excelMutationApi.isLoading) setOpen((prev) => !prev);
-  }, [excelMutationApi.isLoading]);
+    if (!excelMutationApi.isPending) setOpen((prev) => !prev);
+  }, [excelMutationApi.isPending]);
 
   const triggerDownload = useCallback(
     () => excelMutationApi.mutate({ subgradeId }),
@@ -250,7 +242,7 @@ export const ExcelStudentsBySubgradeDownload = ({
       open={open}
       desc="Unduh data kelas ini dalam bentuk excel. Mohon tunggu jika proses ini berjalan lama."
       onOpenChange={onOpenChange}
-      isLoading={excelMutationApi.isLoading}
+      isLoading={excelMutationApi.isPending}
       triggerDownload={triggerDownload}
     />
   );
@@ -263,32 +255,27 @@ export const ExcelUploadStudentsByGrade = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  const { toast } = useToast();
-
   const excelMutationApi = api.grade.uploadSpecificGradeExcel.useMutation({
     onSuccess() {
       setOpen(false);
 
       form.reset();
 
-      toast({
-        title: "Upload Data Peserta Berhasil!",
+      toast.success("Upload Data Peserta Berhasil!", {
         description:
           "Mohon untuk mengecek kembali apakah data yang di upload sudah sesuai atau belum.",
       });
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Upload Gagal",
+      toast.error("Operasi Upload Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
   });
 
   const onOpenChange = useCallback(() => {
-    if (!excelMutationApi.isLoading) setOpen((prev) => !prev);
-  }, [excelMutationApi.isLoading]);
+    if (!excelMutationApi.isPending) setOpen((prev) => !prev);
+  }, [excelMutationApi.isPending]);
 
   const formSchema = z.object({
     xlsx: z
@@ -325,6 +312,7 @@ export const ExcelUploadStudentsByGrade = ({
 
       const sheetValues = w.getSheetValues() as TSheetValue[];
       const sheetVal = sheetValues
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         .filter((d) => !!d)
         .map((d) => d.filter((e) => !!e));
       const keys = sheetVal.shift()!;
@@ -345,9 +333,7 @@ export const ExcelUploadStudentsByGrade = ({
     const result = await FileValueSchema.safeParseAsync(records);
 
     if (!result.success) {
-      toast({
-        variant: "destructive",
-        title: "Format file tidak sesuai!",
+      toast.error("Format file tidak sesuai!", {
         description:
           "Mohon periksa kembali format file yang ingin di upload, masih ada kesalahan.",
       });
@@ -392,7 +378,7 @@ export const ExcelUploadStudentsByGrade = ({
                       type="file"
                       disabled={
                         form.formState.isSubmitting ||
-                        excelMutationApi.isLoading
+                        excelMutationApi.isPending
                       }
                       {...form.register("xlsx")}
                     />
@@ -410,7 +396,7 @@ export const ExcelUploadStudentsByGrade = ({
                   type="button"
                   variant="secondary"
                   disabled={
-                    form.formState.isSubmitting || excelMutationApi.isLoading
+                    form.formState.isSubmitting || excelMutationApi.isPending
                   }
                 >
                   Batal
@@ -419,7 +405,7 @@ export const ExcelUploadStudentsByGrade = ({
               <Button
                 type="submit"
                 disabled={
-                  form.formState.isSubmitting || excelMutationApi.isLoading
+                  form.formState.isSubmitting || excelMutationApi.isPending
                 }
               >
                 Unggah Data

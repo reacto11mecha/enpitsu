@@ -103,7 +103,7 @@
 
 .ql-font-lpmqisepmisbah {
   direction: rtl;
-  @apply font-lpmq text-right text-3xl leading-[4.5rem];
+  @apply text-right font-lpmq text-3xl leading-[4.5rem];
 }
 
 .correction .ql-align-center {

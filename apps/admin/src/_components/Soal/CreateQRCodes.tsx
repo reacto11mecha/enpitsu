@@ -11,8 +11,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+} from "@enpitsu/ui/alert-dialog";
+import { Button } from "@enpitsu/ui/button";
 import JSzip from "jszip";
 import { QrCode } from "lucide-react";
 import QRCode from "qrcode";
@@ -39,10 +39,7 @@ export const CreateQRCodes = ({
 
   return (
     <AlertDialog open={open}>
-      <AlertDialogTrigger
-        className="ml-2 w-fit cursor-pointer space-x-3"
-        asChild
-      >
+      <AlertDialogTrigger className="cursor-pointer space-x-3 md:w-fit" asChild>
         <Button variant="outline" onClick={() => setOpen(true)}>
           <QrCode className="mr-2 h-4 md:w-4" />
           Buat QR Code

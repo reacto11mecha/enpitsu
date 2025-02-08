@@ -1,5 +1,7 @@
+import type { z } from "zod";
 import { useCallback, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { api } from "@/utils/api";
+import { Button } from "@enpitsu/ui/button";
 import {
   Form,
   FormControl,
@@ -7,15 +9,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import { api } from "@/utils/api";
+} from "@enpitsu/ui/form";
+import { Input } from "@enpitsu/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
-import { z } from "zod";
+import { toast } from "sonner";
 
 import { ModeToggle } from "../mode-toggle";
 import { Precaution } from "./Precaution";
@@ -27,7 +27,6 @@ export const ScanOrInputQuestionSlug = ({
 }: {
   closeScanner: () => void;
 }) => {
-  const { toast } = useToast();
   const [isPrecautionOpen, setOpen] = useState(false);
 
   const getQuestionMutation = api.exam.getQuestion.useMutation({
@@ -35,12 +34,11 @@ export const ScanOrInputQuestionSlug = ({
       setOpen(true);
     },
     onError(error) {
-      toast({
+      toast.error("Gagal meraih server", {
         duration: 9500,
-        variant: "destructive",
         description:
           error.message === "Failed to fetch"
-            ? "Gagal meraih server"
+            ? "Anda mungkin sedang offline"
             : error.message,
       });
     },
@@ -69,7 +67,7 @@ export const ScanOrInputQuestionSlug = ({
 
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-center px-5">
-      <h3 className="font-ibm mb-5 text-3xl text-gray-700 dark:text-gray-300">
+      <h3 className="mb-5 font-ibm text-3xl text-gray-700 dark:text-gray-300">
         enpitsu
       </h3>
 
@@ -85,7 +83,7 @@ export const ScanOrInputQuestionSlug = ({
                   <FormControl>
                     <div className="flex flex-row gap-3">
                       <Input
-                        disabled={getQuestionMutation.isLoading}
+                        disabled={getQuestionMutation.isPending}
                         placeholder="Masukan kode soal"
                         autoComplete="off"
                         autoCorrect="off"
@@ -102,9 +100,9 @@ export const ScanOrInputQuestionSlug = ({
                       />
                       <Button
                         type="submit"
-                        disabled={getQuestionMutation.isLoading}
+                        disabled={getQuestionMutation.isPending}
                       >
-                        {getQuestionMutation.isLoading ? (
+                        {getQuestionMutation.isPending ? (
                           <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
                         ) : null}
                         Kerjakan
@@ -118,11 +116,11 @@ export const ScanOrInputQuestionSlug = ({
           </form>
         </Form>
 
-        <p className="text-muted-foreground mb-1 mt-5 text-center">atau</p>
+        <p className="mb-1 mt-5 text-center text-muted-foreground">atau</p>
 
         <ScannerWrapper
           sendMutate={sendMutate}
-          isDisabled={getQuestionMutation.isLoading}
+          isDisabled={getQuestionMutation.isPending}
         />
       </div>
 

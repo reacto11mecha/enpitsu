@@ -1,23 +1,19 @@
+import type { TRPCRouterRecord } from "@trpc/server";
 import { cache } from "@enpitsu/cache";
+import { and, asc, count, desc, eq, inArray } from "@enpitsu/db";
 import {
-  and,
-  asc,
-  count,
-  desc,
-  eq,
-  inArray,
-  schema,
   specificQuestionData,
   studentRespondsByQuestionData,
   studentRespondsData,
-} from "@enpitsu/db";
+} from "@enpitsu/db/client";
+import * as schema from "@enpitsu/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { adminProcedure, createTRPCRouter, protectedProcedure } from "../trpc";
+import { adminProcedure, protectedProcedure } from "../trpc";
 import { compareTwoStringLikability } from "../utils";
 
-export const questionRouter = createTRPCRouter({
+export const questionRouter = {
   getQuestions: protectedProcedure.query(({ ctx }) =>
     ctx.db.query.questions.findMany({
       orderBy: [asc(schema.questions.title)],
@@ -472,7 +468,9 @@ export const questionRouter = createTRPCRouter({
 
         try {
           await cache.del(`trpc-get-question-slug-${input.slug}`);
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Terjadi masalah terhadap konektivitas sistem cache",
@@ -539,7 +537,9 @@ export const questionRouter = createTRPCRouter({
 
           try {
             await cache.del(`trpc-get-question-slug-${currentQuestion.slug}`);
-          } catch (_) {
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch (err: unknown) {
             throw new TRPCError({
               code: "INTERNAL_SERVER_ERROR",
               message: "Terjadi masalah terhadap konektivitas sistem cache",
@@ -603,7 +603,7 @@ export const questionRouter = createTRPCRouter({
           .where(eq(schema.multipleChoices.iqid, input.iqid))
           .for("update");
 
-        if (currentChoiceData.length < 1 || !currentChoiceData?.at(0))
+        if (currentChoiceData.length < 1 || !currentChoiceData.at(0))
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Soal tidak ditemukan!",
@@ -618,7 +618,9 @@ export const questionRouter = createTRPCRouter({
 
         try {
           await cache.del(`trpc-get-question-slug-${parentQuestion!.slug}`);
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           console.error({
             code: "REDIS_ERR",
             message:
@@ -649,7 +651,7 @@ export const questionRouter = createTRPCRouter({
           .where(eq(schema.multipleChoices.iqid, input.id))
           .for("update");
 
-        if (currentChoiceData.length < 1 || !currentChoiceData?.at(0))
+        if (currentChoiceData.length < 1 || !currentChoiceData.at(0))
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Soal tidak ditemukan!",
@@ -664,7 +666,9 @@ export const questionRouter = createTRPCRouter({
 
         try {
           await cache.del(`trpc-get-question-slug-${parentQuestion!.slug}`);
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           console.error({
             code: "REDIS_ERR",
             message:
@@ -711,7 +715,9 @@ export const questionRouter = createTRPCRouter({
 
         try {
           await cache.del(`trpc-get-question-slug-${parentQuestion.slug}`);
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           console.error({
             code: "REDIS_ERR",
             message:
@@ -758,7 +764,7 @@ export const questionRouter = createTRPCRouter({
           .where(eq(schema.questions.id, input.questionId))
           .for("update");
 
-        if (currentParentQuestion.length < 1 || !currentParentQuestion?.at(0))
+        if (currentParentQuestion.length < 1 || !currentParentQuestion.at(0))
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Gagal membuat soal baru, mata pelajaran tidak ditemukan",
@@ -766,9 +772,11 @@ export const questionRouter = createTRPCRouter({
 
         try {
           await cache.del(
-            `trpc-get-question-slug-${currentParentQuestion?.at(0)!.slug}`,
+            `trpc-get-question-slug-${currentParentQuestion.at(0)!.slug}`,
           );
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           console.error({
             code: "REDIS_ERR",
             message:
@@ -816,7 +824,7 @@ export const questionRouter = createTRPCRouter({
           .where(eq(schema.essays.iqid, input.iqid))
           .for("update");
 
-        if (currentEssayData.length < 1 || !currentEssayData?.at(0))
+        if (currentEssayData.length < 1 || !currentEssayData.at(0))
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Soal tidak ditemukan!",
@@ -831,7 +839,9 @@ export const questionRouter = createTRPCRouter({
 
         try {
           await cache.del(`trpc-get-question-slug-${parentQuestion!.slug}`);
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           console.error({
             code: "REDIS_ERR",
             message:
@@ -862,7 +872,7 @@ export const questionRouter = createTRPCRouter({
           .where(eq(schema.essays.iqid, input.essayIqid))
           .for("update");
 
-        if (currentEssayData.length < 1 || !currentEssayData?.at(0))
+        if (currentEssayData.length < 1 || !currentEssayData.at(0))
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Soal tidak ditemukan!",
@@ -877,7 +887,9 @@ export const questionRouter = createTRPCRouter({
 
         try {
           await cache.del(`trpc-get-question-slug-${parentQuestion!.slug}`);
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           console.error({
             code: "REDIS_ERR",
             message:
@@ -964,7 +976,7 @@ export const questionRouter = createTRPCRouter({
           },
         });
 
-        if (!essaysResponds || essaysResponds.length < 1)
+        if (essaysResponds.length < 1)
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Tidak ada jawaban yang disubmit berdasarkan soal ini!",
@@ -992,7 +1004,7 @@ export const questionRouter = createTRPCRouter({
         // This condition would not likely to happen, like,
         // this case scenario is really impossible thanks
         // to relational database like postgresql
-        if (!essayAnswers || essayAnswers.length < 1)
+        if (essayAnswers.length < 1)
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Tidak ada soal dari jawaban ini!",
@@ -1528,4 +1540,4 @@ export const questionRouter = createTRPCRouter({
       return sortedData;
     },
   ),
-});
+} satisfies TRPCRouterRecord;

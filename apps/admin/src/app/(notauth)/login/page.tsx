@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { auth, signIn } from "@enpitsu/auth";
+import { Button } from "@enpitsu/ui/button";
 import { FcGoogle } from "react-icons/fc";
 
 import { LoginGuard } from "~/_components/LoginGuard";

@@ -1,19 +1,18 @@
 import type { Metadata } from "next";
 import { Manrope as FontSans } from "next/font/google";
 import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { auth, signOut } from "@enpitsu/auth";
+import { Button } from "@enpitsu/ui/button";
 
 import "~/styles/globals.css";
 
 import localFont from "next/font/local";
-import { headers } from "next/headers";
-import { Toaster } from "@/components/ui/toaster";
-import { cn } from "@/lib/utils";
+import { cn } from "@enpitsu/ui";
+import { Toaster } from "@enpitsu/ui/sonner";
 
 import { Navbar } from "~/_components/Navbar";
 import { ThemeProvider } from "~/_components/theme-provider";
-import { TRPCReactProvider } from "./providers";
+import { TRPCReactProvider } from "~/trpc/react";
 
 const QuranFont = localFont({
   src: "../../fonts/LPMQ-IsepMisbah.ttf",
@@ -39,7 +38,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
       <html lang="en">
         <body
           className={cn(
-            "bg-background min-h-screen font-sans antialiased",
+            "font-sans min-h-screen bg-background antialiased",
             fontSans.variable,
           )}
         >
@@ -74,7 +73,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
               </form>
             </div>
           </ThemeProvider>
-          <Toaster />
+          <Toaster richColors />
         </body>
       </html>
     );
@@ -83,7 +82,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
     <html lang="en">
       <body
         className={cn(
-          "bg-background min-h-screen font-sans antialiased",
+          "font-sans min-h-screen bg-background antialiased",
           fontSans.variable,
           QuranFont.variable,
         )}
@@ -94,7 +93,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          <TRPCReactProvider headers={headers()}>
+          <TRPCReactProvider>
             <Navbar user={session.user} />
             {props.children}
           </TRPCReactProvider>

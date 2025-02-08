@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import type { RouterOutputs } from "@enpitsu/api";
 import type { Dispatch, SetStateAction } from "react";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -12,12 +13,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
-import type { RouterOutputs } from "@enpitsu/api";
+} from "@enpitsu/ui/dialog";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 type StudentTempoban = RouterOutputs["question"]["getStudentTempobans"];
 
@@ -34,16 +34,13 @@ export const DeleteSingleBannedStudent = ({
   isDialogOpen: boolean;
   setDialogOpen: Dispatch<SetStateAction<boolean>>;
 }) => {
-  const { toast } = useToast();
-
   const apiUtils = api.useUtils();
 
   const deleteBannedStudent = api.grade.deleteSingleTemporaryBan.useMutation({
     async onSuccess() {
       await apiUtils.question.getStudentTempobans.invalidate();
 
-      toast({
-        title: "Penghapusan Larangan Berhasil!",
+      toast.success("Penghapusan Larangan Berhasil!", {
         description: `Berhasil menghapus peserta!`,
       });
 
@@ -51,9 +48,7 @@ export const DeleteSingleBannedStudent = ({
     },
 
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -63,7 +58,7 @@ export const DeleteSingleBannedStudent = ({
     <Dialog
       open={isDialogOpen}
       onOpenChange={() => {
-        if (deleteBannedStudent.isLoading) return;
+        if (deleteBannedStudent.isPending) return;
 
         setDialogOpen((prev) => !prev);
       }}
@@ -80,15 +75,15 @@ export const DeleteSingleBannedStudent = ({
         <DialogFooter className="sm:justify-start">
           <Button
             onClick={() => deleteBannedStudent.mutate({ id })}
-            disabled={deleteBannedStudent.isLoading}
+            disabled={deleteBannedStudent.isPending}
           >
             Hapus
           </Button>
-          <DialogClose asChild disabled={deleteBannedStudent.isLoading}>
+          <DialogClose asChild disabled={deleteBannedStudent.isPending}>
             <Button
               type="button"
               variant="secondary"
-              disabled={deleteBannedStudent.isLoading}
+              disabled={deleteBannedStudent.isPending}
             >
               Batal
             </Button>
@@ -112,8 +107,6 @@ export const DeleteManyBannedStudent = ({
 
   const apiUtils = api.useUtils();
 
-  const { toast } = useToast();
-
   const deleteManyBannedStudent = api.grade.deleteManyTemporaryBan.useMutation({
     async onSuccess() {
       setDialogOpen(false);
@@ -122,15 +115,12 @@ export const DeleteManyBannedStudent = ({
 
       resetSelection();
 
-      toast({
-        title: "Penghapusan Berhasil!",
+      toast.success("Penghapusan Berhasil!", {
         description: "Berhasil menghapus banyak larangan sementara peserta.",
       });
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -140,7 +130,7 @@ export const DeleteManyBannedStudent = ({
     <Dialog
       open={dialogOpen}
       onOpenChange={() => {
-        if (deleteManyBannedStudent.isLoading) return;
+        if (deleteManyBannedStudent.isPending) return;
 
         setDialogOpen((prev) => !prev);
       }}
@@ -148,7 +138,7 @@ export const DeleteManyBannedStudent = ({
       <DialogTrigger asChild>
         <Button variant="destructive">
           <Trash2 className="mr-2 h-4 md:w-4" />
-          Hapus semua larangan peserta yang dipilih
+          Hapus peserta yang dipilih
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[80vh] max-w-lg md:max-w-3xl">
@@ -170,15 +160,15 @@ export const DeleteManyBannedStudent = ({
         <DialogFooter className="sm:justify-start">
           <Button
             onClick={() => deleteManyBannedStudent.mutate({ ids: allIds })}
-            disabled={deleteManyBannedStudent.isLoading}
+            disabled={deleteManyBannedStudent.isPending}
           >
             Hapus
           </Button>
-          <DialogClose asChild disabled={deleteManyBannedStudent.isLoading}>
+          <DialogClose asChild disabled={deleteManyBannedStudent.isPending}>
             <Button
               type="button"
               variant="secondary"
-              disabled={deleteManyBannedStudent.isLoading}
+              disabled={deleteManyBannedStudent.isPending}
             >
               Batal
             </Button>

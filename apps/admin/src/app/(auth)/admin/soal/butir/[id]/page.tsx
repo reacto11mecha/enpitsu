@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
-import { db, eq, schema } from "@enpitsu/db";
+import { eq } from "@enpitsu/db";
+import { db } from "@enpitsu/db/client";
+import * as schema from "@enpitsu/db/schema";
 
 import { Questions } from "~/_components/Soal/QuestionItems/Questions";
 
@@ -26,7 +28,7 @@ export default async function QuestionItemsPage({
       <div className="w-full md:w-[80%]">
         <div className="mb-5 space-y-0.5">
           <h2 className="text-2xl font-bold tracking-tight">Butir Soal</h2>
-          <p className="text-muted-foreground w-full md:w-[80%] lg:w-[70%]">
+          <p className="w-full text-muted-foreground md:w-[80%] lg:w-[70%]">
             Tambah, ubah, edit, dan hapus soal pilihan ganda dan esai pada
             halaman ini. Jangan lupa tentukan jawaban benar pada setiap soal.
           </p>

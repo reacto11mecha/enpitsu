@@ -2,13 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Button } from "@enpitsu/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@enpitsu/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -17,17 +12,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/dialog";
+import { Input } from "@enpitsu/ui/input";
+import { Skeleton } from "@enpitsu/ui/skeleton";
 import { ChevronsRight, Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 export const AngkatanViewer = () => {
-  const { toast } = useToast();
-
   const [open, setOpen] = useState(false);
   const [currentDeleteID, setCurrentDeleteID] = useState<null | number>(null);
   const [confirmationText, setConfirmText] = useState("");
@@ -50,15 +43,12 @@ export const AngkatanViewer = () => {
 
       await apiUtils.grade.invalidate();
 
-      toast({
-        title: "Penghapusan Berhasil!",
+      toast.success("Penghapusan Berhasil!", {
         description: "Berhasil menghapus seluruh data angkatan.",
       });
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -66,7 +56,7 @@ export const AngkatanViewer = () => {
 
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
-      {grades.isLoading && !grades.isError ? (
+      {grades.isPending ? (
         <>
           <Skeleton className="h-48 w-full" />
           <Skeleton className="h-48 w-full" />
@@ -74,11 +64,11 @@ export const AngkatanViewer = () => {
         </>
       ) : null}
 
-      {!grades.isLoading && grades.data && grades.data.length === 0
+      {!grades.isPending && grades.data && grades.data.length === 0
         ? "Belum ada data."
         : null}
 
-      {!grades.isLoading &&
+      {!grades.isPending &&
         grades.data?.map((grade) => (
           <Card key={grade.id}>
             <CardHeader />
@@ -109,7 +99,7 @@ export const AngkatanViewer = () => {
       <Dialog
         open={open}
         onOpenChange={() => {
-          if (!gradeDeleteMutation.isLoading) setOpen((prev) => !prev);
+          if (!gradeDeleteMutation.isPending) setOpen((prev) => !prev);
 
           if (confirmationText.length > 0) setConfirmText("");
         }}
@@ -124,7 +114,7 @@ export const AngkatanViewer = () => {
                 kelas{" "}
                 {grades.data &&
                   currentDeleteID &&
-                  grades.data?.find((grade) => grade.id === currentDeleteID)!
+                  grades.data.find((grade) => grade.id === currentDeleteID)!
                     .label}
               </b>
               .
@@ -137,7 +127,7 @@ export const AngkatanViewer = () => {
               type="text"
               autoComplete="false"
               autoCorrect="false"
-              disabled={gradeDeleteMutation.isLoading}
+              disabled={gradeDeleteMutation.isPending}
               value={confirmationText}
               onChange={(e) => setConfirmText(e.target.value)}
             />
@@ -147,7 +137,7 @@ export const AngkatanViewer = () => {
               <Button
                 type="button"
                 variant="secondary"
-                disabled={gradeDeleteMutation.isLoading}
+                disabled={gradeDeleteMutation.isPending}
               >
                 Batal
               </Button>
@@ -155,12 +145,12 @@ export const AngkatanViewer = () => {
             <Button
               type="button"
               variant="destructive"
-              disabled={!reallySure || gradeDeleteMutation.isLoading}
+              disabled={!reallySure || gradeDeleteMutation.isPending}
               onClick={() => {
                 if (reallySure) gradeDeleteMutation.mutate(currentDeleteID!);
               }}
             >
-              {gradeDeleteMutation.isLoading ? (
+              {gradeDeleteMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
               ) : null}
               Hapus

@@ -1,33 +1,37 @@
+// TODO: Please investigate the useWakeLock hook
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useCountdown } from "@/hooks/useCountdown";
+import { useNetworkState } from "@/hooks/useNetworkState";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
+import { studentAnswerAtom, studentTokenAtom } from "@/lib/atom";
+import { api } from "@/utils/api";
+import { Button } from "@enpitsu/ui/button";
+import { Card, CardContent, CardHeader } from "@enpitsu/ui/card";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "@/components/ui/form";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
-import { useCountdown } from "@/hooks/useCountdown";
-import { useNetworkState } from "@/hooks/useNetworkState";
-import { usePageVisibility } from "@/hooks/usePageVisibility";
-import { studentAnswerAtom, studentTokenAtom } from "@/lib/atom";
-import { api } from "@/utils/api";
+} from "@enpitsu/ui/form";
+import { Label } from "@enpitsu/ui/label";
+import { RadioGroup, RadioGroupItem } from "@enpitsu/ui/radio-group";
+import { Separator } from "@enpitsu/ui/separator";
+import { Textarea } from "@enpitsu/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtomValue, useSetAtom } from "jotai";
-import katex from "katex";
+import { toast } from "sonner";
+
+import "katex";
+
+import type { z } from "zod";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { useWakeLock } from "react-screen-wake-lock";
 import { useDebounceCallback } from "usehooks-ts";
-import { z } from "zod";
 
+import type { Props, TFormSchema } from "./utils";
 import { ModeToggle } from "../mode-toggle";
 import {
   AnsweredQuestionsList,
@@ -37,17 +41,10 @@ import {
   GoToHome,
   ScreenWakeLockFail,
 } from "./AllAlert";
-import {
-  formSchema,
-  shuffleArray,
-  type Props,
-  type TFormSchema,
-} from "./utils";
+import { formSchema, shuffleArray } from "./utils";
 
 import "katex/dist/katex.min.css";
 import "react-quill/dist/quill.snow.css";
-
-window.katex = katex;
 
 export const CountdownIsolation = memo(function Countdown({
   endedAt,
@@ -80,8 +77,6 @@ const Test = ({ data, initialData }: Props) => {
   );
   const [isEnded, setEnded] = useState(false);
 
-  const { toast } = useToast();
-
   const studentToken = useAtomValue(studentTokenAtom);
   const setStudentAnswers = useSetAtom(studentAnswerAtom);
 
@@ -92,9 +87,7 @@ const Test = ({ data, initialData }: Props) => {
       );
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi gagal", {
         description: `Gagal menyimpan status kecurangan. Error: ${error.message}`,
       });
     },
@@ -107,9 +100,7 @@ const Test = ({ data, initialData }: Props) => {
       );
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Gagal menyimpan jawaban. Error: ${error.message}`,
       });
     },
@@ -311,7 +302,7 @@ const Test = ({ data, initialData }: Props) => {
         : prev,
     );
 
-    if (isSupported) request();
+    if (isSupported) void request();
     else {
       setCanUpdateDishonesty(false);
       setWakeLockError(true);
@@ -320,7 +311,7 @@ const Test = ({ data, initialData }: Props) => {
     return () => {
       window.removeEventListener("contextmenu", preventContextMenu);
 
-      release();
+      void release();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -381,7 +372,7 @@ const Test = ({ data, initialData }: Props) => {
         </h2>
         <p className="text-center text-lg md:w-[75%]">
           Anda sudah tiga kali beralih dari tab ini,{" "}
-          {!blocklistMutation.isLoading && blocklistMutation.isSuccess ? (
+          {!blocklistMutation.isPending && blocklistMutation.isSuccess ? (
             <>
               kami berhasil menyimpan status anda sudah melakukan kecurangan.
               Anda akan terlihat oleh panitia sudah melakukan kecurangan, lain
@@ -405,10 +396,10 @@ const Test = ({ data, initialData }: Props) => {
         <Button
           variant="outline"
           size="icon"
-          asChild={!blocklistMutation.isLoading}
-          disabled={blocklistMutation.isLoading}
+          asChild={!blocklistMutation.isPending}
+          disabled={blocklistMutation.isPending}
         >
-          {blocklistMutation.isLoading ? (
+          {blocklistMutation.isPending ? (
             <ArrowLeft />
           ) : (
             <Link to="/">
@@ -553,7 +544,7 @@ const Test = ({ data, initialData }: Props) => {
                                       choosedAnswer: parseInt(val),
                                     });
                                   }}
-                                  disabled={submitAnswerMutation.isLoading}
+                                  disabled={submitAnswerMutation.isPending}
                                 >
                                   {field.options.map((option, idx) => (
                                     <div
@@ -564,7 +555,7 @@ const Test = ({ data, initialData }: Props) => {
                                         value={String(option.order)}
                                         id={`options.${field.iqid}.opt.${idx}`}
                                         disabled={
-                                          submitAnswerMutation.isLoading
+                                          submitAnswerMutation.isPending
                                         }
                                       />
                                       <Label
@@ -632,7 +623,7 @@ const Test = ({ data, initialData }: Props) => {
                                       answer: e.target.value,
                                     });
                                   }}
-                                  disabled={submitAnswerMutation.isLoading}
+                                  disabled={submitAnswerMutation.isPending}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -651,9 +642,9 @@ const Test = ({ data, initialData }: Props) => {
                 type="submit"
                 variant="ghost"
                 className="uppercase"
-                disabled={submitAnswerMutation.isLoading}
+                disabled={submitAnswerMutation.isPending}
               >
-                {submitAnswerMutation.isLoading ? (
+                {submitAnswerMutation.isPending ? (
                   <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
                 ) : null}{" "}
                 Submit

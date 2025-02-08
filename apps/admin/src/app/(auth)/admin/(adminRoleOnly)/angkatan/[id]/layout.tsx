@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
-import { db, eq, schema } from "@enpitsu/db";
+import { eq } from "@enpitsu/db";
+import { db } from "@enpitsu/db/client";
+import * as schema from "@enpitsu/db/schema";
 
 export default async function Layout(props: {
   children: React.ReactNode;

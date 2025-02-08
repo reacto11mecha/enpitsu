@@ -1,8 +1,9 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Logout } from "@/components/IndexRouter/Logout";
 import { ScanOrInputQuestionSlug } from "@/components/IndexRouter/ScanOrInputQuestionSlug";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Button } from "@/components/ui/button";
+import { api } from "@/utils/api";
+import { Button } from "@enpitsu/ui/button";
 import {
   Card,
   CardContent,
@@ -10,35 +11,31 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
-import { api } from "@/utils/api";
+} from "@enpitsu/ui/card";
+import { Separator } from "@enpitsu/ui/separator";
+import { Skeleton } from "@enpitsu/ui/skeleton";
 import { Settings } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function IndexRoute() {
-  const { toast } = useToast();
-
   const [isCorrect, setCorrect] = useState(false);
 
   const closeQuestionScan = useCallback(() => setCorrect(false), []);
 
-  const studentQuery = api.exam.getStudent.useQuery(undefined, {
-    onError(error) {
-      toast({
+  const studentQuery = api.exam.getStudent.useQuery();
+
+  useEffect(() => {
+    if (studentQuery.error)
+      toast.error("Gagal mengambil data pribadi", {
         duration: 9500,
-        variant: "destructive",
-        title: "Gagal mengambil data pribadi",
         description: `Operasi mengambil data gagal, mohon coba lagi. Error: ${
-          error.message === "Failed to fetch"
+          studentQuery.error.message === "Failed to fetch"
             ? "Gagal meraih server"
-            : error.message
+            : studentQuery.error.message
         }`,
       });
-    },
-  });
+  }, [studentQuery]);
 
   if (!studentQuery.isError && isCorrect)
     return <ScanOrInputQuestionSlug closeScanner={closeQuestionScan} />;
@@ -74,9 +71,7 @@ export default function IndexRoute() {
               </tbody>
             ) : (
               <tbody className="w-full">
-                {!studentQuery.isLoading &&
-                studentQuery.data &&
-                studentQuery.data.student ? (
+                {!studentQuery.isPending ? (
                   <tr className="w-full">
                     <td>No Peserta</td>
                     <td className="px-1">:</td>
@@ -90,9 +85,7 @@ export default function IndexRoute() {
                   </tr>
                 )}
 
-                {!studentQuery.isLoading &&
-                studentQuery.data &&
-                studentQuery.data.student ? (
+                {!studentQuery.isPending ? (
                   <tr className="w-full">
                     <td>Nama</td>
                     <td className="px-1">:</td>
@@ -106,9 +99,7 @@ export default function IndexRoute() {
                   </tr>
                 )}
 
-                {!studentQuery.isLoading &&
-                studentQuery.data &&
-                studentQuery.data.student ? (
+                {!studentQuery.isPending ? (
                   <tr className="w-full">
                     <td>Kelas</td>
                     <td className="px-1">:</td>
@@ -125,9 +116,7 @@ export default function IndexRoute() {
                   </tr>
                 )}
 
-                {!studentQuery.isLoading &&
-                studentQuery.data &&
-                studentQuery.data.student ? (
+                {!studentQuery.isPending ? (
                   <tr className="w-full">
                     <td>Ruangan</td>
                     <td className="px-1">:</td>
@@ -141,9 +130,7 @@ export default function IndexRoute() {
                   </tr>
                 )}
 
-                {!studentQuery.isLoading &&
-                studentQuery.data &&
-                studentQuery.data.student ? (
+                {!studentQuery.isPending ? (
                   <tr className="w-full">
                     <td>Token</td>
                     <td className="px-1">:</td>

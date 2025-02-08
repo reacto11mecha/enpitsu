@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@enpitsu/ui/avatar";
+import { Button } from "@enpitsu/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@enpitsu/ui/dropdown-menu";
 
 export function UserNav({
   name,
@@ -46,7 +46,7 @@ export function UserNav({
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{name}</p>
-            <p className="text-muted-foreground text-xs leading-none">
+            <p className="text-xs leading-none text-muted-foreground">
               {email}
             </p>
           </div>

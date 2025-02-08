@@ -1,12 +1,14 @@
+import type { TRPCRouterRecord } from "@trpc/server";
 import { cache } from "@enpitsu/cache";
-import { asc, eq, schema } from "@enpitsu/db";
+import { asc, eq } from "@enpitsu/db";
+import * as schema from "@enpitsu/db/schema";
 import { validateId } from "@enpitsu/token-generator";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { adminProcedure, createTRPCRouter } from "../trpc";
+import { adminProcedure } from "../trpc";
 
-export const gradeRouter = createTRPCRouter({
+export const gradeRouter = {
   getGrades: adminProcedure.query(({ ctx }) => ctx.db.query.grades.findMany()),
 
   getSubgrades: adminProcedure
@@ -108,7 +110,9 @@ export const gradeRouter = createTRPCRouter({
 
           for (const student of allStudents)
             await cache.del(`student-trpc-token-${student.token}`);
-        } catch (_) {
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
           console.error(
             JSON.stringify({
               time: Date.now().valueOf(),
@@ -181,7 +185,9 @@ export const gradeRouter = createTRPCRouter({
             try {
               for (const { token } of subgrade.students)
                 await cache.del(`student-trpc-token-${token}`);
-            } catch (_) {
+
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (err: unknown) {
               console.error(
                 JSON.stringify({
                   time: Date.now().valueOf(),
@@ -452,4 +458,4 @@ export const gradeRouter = createTRPCRouter({
         }
       }),
     ),
-});
+} satisfies TRPCRouterRecord;

@@ -1,4 +1,6 @@
-import { Button } from "@/components/ui/button";
+import { studentTokenAtom } from "@/lib/atom";
+import { validateId } from "@enpitsu/token-generator";
+import { Button } from "@enpitsu/ui/button";
 import {
   Form,
   FormControl,
@@ -7,10 +9,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { studentTokenAtom } from "@/lib/atom";
-import { validateId } from "@enpitsu/token-generator";
+} from "@enpitsu/ui/form";
+import { Input } from "@enpitsu/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
 import { ArrowLeft } from "lucide-react";
@@ -46,7 +46,7 @@ const NonInitVer = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setToken(values.token);
 
-    navigate("/");
+    await navigate("/");
   };
 
   return (

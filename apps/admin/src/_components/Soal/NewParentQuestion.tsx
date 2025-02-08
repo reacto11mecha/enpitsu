@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@enpitsu/ui/button";
+import { Checkbox } from "@enpitsu/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -11,26 +11,26 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@enpitsu/ui/form";
+import { Input } from "@enpitsu/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/select";
+import { Separator } from "@enpitsu/ui/separator";
+import { Skeleton } from "@enpitsu/ui/skeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, startOfDay } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
+import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 const formSchema = z
   .object({
@@ -61,8 +61,6 @@ const formSchema = z
 export const NewParentQuestion = () => {
   const router = useRouter();
 
-  const { toast } = useToast();
-
   const apiUtils = api.useUtils();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -84,8 +82,7 @@ export const NewParentQuestion = () => {
 
       await apiUtils.grade.getStudents.invalidate();
 
-      toast({
-        title: "Penambahan Berhasil!",
+      toast.success("Penambahan Berhasil!", {
         description: `Berhasil menambahkan soal baru!`,
       });
 
@@ -93,9 +90,7 @@ export const NewParentQuestion = () => {
     },
 
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -120,8 +115,8 @@ export const NewParentQuestion = () => {
                   autoComplete="off"
                   placeholder="MATEMATIKA WAJIB XII"
                   disabled={
-                    subgradeForAllowListQuery.isLoading ||
-                    createQuestionMutation.isLoading
+                    subgradeForAllowListQuery.isPending ||
+                    createQuestionMutation.isPending
                   }
                 />
               </FormControl>
@@ -154,8 +149,8 @@ export const NewParentQuestion = () => {
                   autoComplete="off"
                   placeholder="MATWA-XII"
                   disabled={
-                    subgradeForAllowListQuery.isLoading ||
-                    createQuestionMutation.isLoading
+                    subgradeForAllowListQuery.isPending ||
+                    createQuestionMutation.isPending
                   }
                 />
               </FormControl>
@@ -181,8 +176,8 @@ export const NewParentQuestion = () => {
                 <FormControl>
                   <SelectTrigger
                     disabled={
-                      subgradeForAllowListQuery.isLoading ||
-                      createQuestionMutation.isLoading
+                      subgradeForAllowListQuery.isPending ||
+                      createQuestionMutation.isPending
                     }
                   >
                     <SelectValue placeholder="Mohon pilih salah satu" />
@@ -215,6 +210,7 @@ export const NewParentQuestion = () => {
                     type="datetime-local"
                     min={format(startOfDay(new Date()), "yyyy-MM-dd'T'HH:mm")}
                     value={
+                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                       field.value
                         ? format(field.value, "yyyy-MM-dd'T'HH:mm")
                         : ""
@@ -225,8 +221,8 @@ export const NewParentQuestion = () => {
                         : field.onChange(new Date(e.target.value))
                     }
                     disabled={
-                      subgradeForAllowListQuery.isLoading ||
-                      createQuestionMutation.isLoading
+                      subgradeForAllowListQuery.isPending ||
+                      createQuestionMutation.isPending
                     }
                   />
                 </FormControl>
@@ -248,6 +244,7 @@ export const NewParentQuestion = () => {
                   <Input
                     type="datetime-local"
                     min={
+                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                       form.getValues("startedAt")
                         ? format(
                             form.getValues("startedAt"),
@@ -256,6 +253,7 @@ export const NewParentQuestion = () => {
                         : ""
                     }
                     value={
+                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                       field.value
                         ? format(field.value, "yyyy-MM-dd'T'HH:mm")
                         : ""
@@ -266,9 +264,10 @@ export const NewParentQuestion = () => {
                         : field.onChange(new Date(e.target.value))
                     }
                     disabled={
-                      subgradeForAllowListQuery.isLoading ||
+                      subgradeForAllowListQuery.isPending ||
+                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                       !form.getValues("startedAt") ||
-                      createQuestionMutation.isLoading
+                      createQuestionMutation.isPending
                     }
                   />
                 </FormControl>
@@ -290,23 +289,21 @@ export const NewParentQuestion = () => {
               <FormLabel>Daftar Putih Pengerjaan Soal</FormLabel>
               <FormControl>
                 <div className="flex flex-col gap-8 py-5">
-                  {subgradeForAllowListQuery.isLoading &&
-                    !subgradeForAllowListQuery.isError && (
-                      <Skeleton className="h-32 w-full" />
-                    )}
+                  {subgradeForAllowListQuery.isPending ? (
+                    <Skeleton className="h-32 w-full" />
+                  ) : null}
 
-                  {!subgradeForAllowListQuery.isLoading &&
+                  {!subgradeForAllowListQuery.isPending &&
                     !subgradeForAllowListQuery.isError &&
-                    subgradeForAllowListQuery?.data.map((grade) => (
+                    subgradeForAllowListQuery.data.map((grade) => (
                       <>
                         {grade.subgrades.length > 0 && (
                           <div key={grade.id}>
                             <div className="flex flex-row items-center gap-2">
                               <Checkbox
                                 id={`parent-grade-${grade.id}`}
-                                checked={grade.subgrades.every(
-                                  (subgrade) =>
-                                    field.value?.includes(subgrade.id),
+                                checked={grade.subgrades.every((subgrade) =>
+                                  field.value.includes(subgrade.id),
                                 )}
                                 onCheckedChange={(checked) => {
                                   return checked
@@ -315,7 +312,7 @@ export const NewParentQuestion = () => {
                                         ...grade.subgrades.map((s) => s.id),
                                       ])
                                     : field.onChange(
-                                        field.value?.filter(
+                                        field.value.filter(
                                           (value) =>
                                             !grade.subgrades
                                               .map((s) => s.id)
@@ -323,7 +320,7 @@ export const NewParentQuestion = () => {
                                         ),
                                       );
                                 }}
-                                disabled={createQuestionMutation.isLoading}
+                                disabled={createQuestionMutation.isPending}
                               />
                               <label
                                 htmlFor={`parent-grade-${grade.id}`}
@@ -349,7 +346,7 @@ export const NewParentQuestion = () => {
                                       >
                                         <FormControl>
                                           <Checkbox
-                                            checked={field.value?.includes(
+                                            checked={field.value.includes(
                                               subgrade.id,
                                             )}
                                             onCheckedChange={(checked) => {
@@ -359,14 +356,14 @@ export const NewParentQuestion = () => {
                                                     subgrade.id,
                                                   ])
                                                 : field.onChange(
-                                                    field.value?.filter(
+                                                    field.value.filter(
                                                       (value) =>
                                                         value !== subgrade.id,
                                                     ),
                                                   );
                                             }}
                                             disabled={
-                                              createQuestionMutation.isLoading
+                                              createQuestionMutation.isPending
                                             }
                                           />
                                         </FormControl>
@@ -394,11 +391,11 @@ export const NewParentQuestion = () => {
         <Button
           type="submit"
           disabled={
-            subgradeForAllowListQuery.isLoading ||
-            createQuestionMutation.isLoading
+            subgradeForAllowListQuery.isPending ||
+            createQuestionMutation.isPending
           }
         >
-          {createQuestionMutation.isLoading ? (
+          {createQuestionMutation.isPending ? (
             <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
           ) : null}
           Buat

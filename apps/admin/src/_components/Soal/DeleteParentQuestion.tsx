@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,12 +9,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/dialog";
+import { Input } from "@enpitsu/ui/input";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 export const DeleteParentQuestion = ({
   openDelete,
@@ -28,8 +28,6 @@ export const DeleteParentQuestion = ({
   id: number;
 }) => {
   const apiUtils = api.useUtils();
-
-  const { toast } = useToast();
 
   const [confirmationText, setConfirmText] = useState("");
 
@@ -46,15 +44,12 @@ export const DeleteParentQuestion = ({
 
       await apiUtils.question.getQuestions.invalidate();
 
-      toast({
-        title: "Penghapusan Berhasil!",
+      toast.success("Penghapusan Berhasil!", {
         description: "Berhasil menghapus soal spesifik.",
       });
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -64,7 +59,7 @@ export const DeleteParentQuestion = ({
     <Dialog
       open={openDelete}
       onOpenChange={() => {
-        if (!deleteQuestionMutation.isLoading) setOpenDelete((prev) => !prev);
+        if (!deleteQuestionMutation.isPending) setOpenDelete((prev) => !prev);
 
         if (confirmationText.length > 0) setConfirmText("");
       }}
@@ -85,7 +80,7 @@ export const DeleteParentQuestion = ({
             type="text"
             autoComplete="false"
             autoCorrect="false"
-            disabled={deleteQuestionMutation.isLoading}
+            disabled={deleteQuestionMutation.isPending}
             value={confirmationText}
             onChange={(e) => setConfirmText(e.target.value)}
           />
@@ -95,7 +90,7 @@ export const DeleteParentQuestion = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={deleteQuestionMutation.isLoading}
+              disabled={deleteQuestionMutation.isPending}
             >
               Batal
             </Button>
@@ -103,12 +98,12 @@ export const DeleteParentQuestion = ({
           <Button
             type="button"
             variant="destructive"
-            disabled={!reallySure || deleteQuestionMutation.isLoading}
+            disabled={!reallySure || deleteQuestionMutation.isPending}
             onClick={() => {
               if (reallySure) deleteQuestionMutation.mutate({ id });
             }}
           >
-            {deleteQuestionMutation.isLoading ? (
+            {deleteQuestionMutation.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Hapus
