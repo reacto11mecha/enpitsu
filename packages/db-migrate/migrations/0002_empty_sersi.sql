@@ -1,0 +1,1 @@
+ALTER TABLE "enpitsu_question" ADD COLUMN "detailed_not_eligible" json NOT NULL;

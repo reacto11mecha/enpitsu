@@ -121,7 +121,6 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
     specificChoiceQuery.error,
     form,
     optionsField.update,
-    toast,
   ]);
 
   const specificChoiceMutation = api.question.updateSpecificChoice.useMutation({

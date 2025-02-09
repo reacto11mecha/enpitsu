@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { api } from "~/trpc/react";
 import { ChoiceEditor } from "./ChoiceEditor";
+import { EligibleStatus } from "./EligibleStatus";
 import { EssayEditor } from "./EssayEditor";
 import { BasicLoading } from "./NewLoadingQuestion";
 
@@ -152,6 +153,8 @@ export const Questions = ({
             )}
           </div>
         </div>
+
+        <EligibleStatus />
       </div>
     </div>
   );

@@ -8,8 +8,8 @@
  */
 import type { Session } from "@enpitsu/auth";
 import { auth, validateToken } from "@enpitsu/auth";
-import { cache } from "@enpitsu/cache";
 import { db, preparedGetStudent } from "@enpitsu/db/client";
+import { cache } from "@enpitsu/redis";
 import { validateId } from "@enpitsu/token-generator";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";

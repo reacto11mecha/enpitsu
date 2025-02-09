@@ -57,6 +57,8 @@ export const preparedQuestionSelect = db.query.questions
       slug: true,
       startedAt: true,
       endedAt: true,
+      eligible: true,
+      notEligibleReason: true,
     },
     with: {
       allowLists: {

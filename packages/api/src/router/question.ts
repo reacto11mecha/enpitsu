@@ -1,5 +1,4 @@
 import type { TRPCRouterRecord } from "@trpc/server";
-import { cache } from "@enpitsu/cache";
 import { and, asc, count, desc, eq, inArray } from "@enpitsu/db";
 import {
   specificQuestionData,
@@ -7,6 +6,7 @@ import {
   studentRespondsData,
 } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
+import { cache } from "@enpitsu/redis";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -627,9 +627,16 @@ export const questionRouter = {
           console.error({
             code: "REDIS_ERR",
             message:
-              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek",
           });
         }
+
+        await tx
+          .update(schema.questions)
+          .set({
+            eligible: "PROCESSING",
+          })
+          .where(eq(schema.questions.id, currentChoiceData.at(0)!.questionId));
 
         return await tx
           .update(schema.multipleChoices)
@@ -851,6 +858,13 @@ export const questionRouter = {
               "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
           });
         }
+
+        await tx
+          .update(schema.questions)
+          .set({
+            eligible: "PROCESSING",
+          })
+          .where(eq(schema.questions.id, currentEssayData.at(0)!.questionId));
 
         return await tx
           .update(schema.essays)

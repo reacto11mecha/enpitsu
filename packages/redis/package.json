@@ -1,5 +1,5 @@
 {
-  "name": "@enpitsu/cache",
+  "name": "@enpitsu/redis",
   "private": true,
   "version": "0.1.0",
   "type": "module",
