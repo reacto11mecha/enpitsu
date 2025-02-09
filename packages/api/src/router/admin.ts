@@ -1,11 +1,13 @@
+import type { TRPCRouterRecord } from "@trpc/server";
 import { cache } from "@enpitsu/cache";
-import { and, eq, not, schema, sql } from "@enpitsu/db";
+import { and, eq, not, sql } from "@enpitsu/db";
+import * as schema from "@enpitsu/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { adminProcedure, createTRPCRouter } from "../trpc";
+import { adminProcedure } from "../trpc";
 
-export const adminRouter = createTRPCRouter({
+export const adminRouter = {
   // Can login status
   getCanLoginStatus: adminProcedure.query(async () => {
     try {
@@ -14,7 +16,9 @@ export const adminRouter = createTRPCRouter({
       return status
         ? { canLogin: JSON.parse(status) as boolean }
         : { canLogin: true };
-    } catch (_) {
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err: unknown) {
       return { canLogin: false };
     }
   }),
@@ -24,7 +28,9 @@ export const adminRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       try {
         return await cache.set("login-status", JSON.stringify(input.canLogin));
-      } catch (_) {
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (err: unknown) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -158,4 +164,4 @@ export const adminRouter = createTRPCRouter({
           .where(eq(schema.users.id, input.id));
       }),
     ),
-});
+} satisfies TRPCRouterRecord;

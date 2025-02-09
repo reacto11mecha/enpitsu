@@ -1,8 +1,8 @@
 import { lazy, Suspense } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
 import enpitsuLogo from "@/icon.png";
 import { studentTokenAtom } from "@/lib/atom";
+import { Toaster } from "@enpitsu/ui/sonner";
 import { useAtom } from "jotai";
 import { RefreshCw } from "lucide-react";
 import { UAParser } from "ua-parser-js";

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { studentAnswerAtom } from "@/lib/atom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,8 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+} from "@enpitsu/ui/alert-dialog";
+import { Button } from "@enpitsu/ui/button";
 import {
   Drawer,
   DrawerClose,
@@ -20,8 +21,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer";
-import { studentAnswerAtom } from "@/lib/atom";
+} from "@enpitsu/ui/drawer";
 import { useAtomValue } from "jotai";
 import { Home, LayoutList } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -150,7 +150,7 @@ export const AnsweredQuestionsList = ({
                         }, 1500);
                       }}
                       className={`${
-                        currentQuestion?.multipleChoices?.find(
+                        currentQuestion?.multipleChoices.find(
                           (answered) => answered.iqid === choice.iqid,
                         )
                           ? "bg-green-700 dark:bg-green-800 dark:text-white"
@@ -193,9 +193,9 @@ export const AnsweredQuestionsList = ({
                         // Find specific answer content, but the form will be empty (undefined) at
                         // initialization, so using empty string as fallback fixed this problem.
                         // (Weird but as long the problem solved, doesnt really matter)
-                        currentQuestion?.essays?.find(
+                        (currentQuestion?.essays.find(
                           (answered) => answered.iqid === essay.iqid,
-                        )?.answer ?? ""
+                        )?.answer ?? "")
                           ? "bg-green-700 dark:bg-green-800 dark:text-white"
                           : "bg-rose-700 dark:bg-rose-800 dark:text-white"
                       }`}

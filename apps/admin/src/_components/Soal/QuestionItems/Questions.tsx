@@ -1,10 +1,10 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@enpitsu/ui/button";
 import { Loader2, PlusCircle } from "lucide-react";
+import { toast } from "sonner";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 import { ChoiceEditor } from "./ChoiceEditor";
 import { EssayEditor } from "./EssayEditor";
 import { BasicLoading } from "./NewLoadingQuestion";
@@ -16,7 +16,6 @@ export const Questions = ({
   questionId: number;
   title: string;
 }) => {
-  const { toast } = useToast();
   const utils = api.useUtils();
 
   const choicesIdQuery = api.question.getChoicesIdByQuestionId.useQuery(
@@ -30,9 +29,7 @@ export const Questions = ({
       await utils.question.getChoicesIdByQuestionId.invalidate();
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: `Gagal Membuat Soal PG`,
+      toast.error(`Gagal Membuat Soal PG`, {
         description: `Terjadi kesalahan, coba lagi nanti. Error: ${error.message}`,
       });
     },
@@ -51,9 +48,7 @@ export const Questions = ({
       await utils.question.getEssaysIdByQuestionId.invalidate();
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: `Gagal Membuat Soal Esai`,
+      toast.error(`Gagal Membuat Soal Esai`, {
         description: `Terjadi kesalahan, coba lagi nanti. Error: ${error.message}`,
       });
     },
@@ -77,7 +72,7 @@ export const Questions = ({
             />
           ))}
 
-          {choicesIdQuery.isLoading ? (
+          {choicesIdQuery.isPending ? (
             <>
               {Array.from({ length: 10 }).map((_, idx) => (
                 <BasicLoading key={idx} />
@@ -85,7 +80,7 @@ export const Questions = ({
             </>
           ) : null}
 
-          {choicesIdQuery.isLoading ? (
+          {choicesIdQuery.isPending ? (
             <Button className="h-full w-full p-5" variant="outline" disabled>
               <Loader2 className="h-6 w-6 animate-spin" />
             </Button>
@@ -93,14 +88,14 @@ export const Questions = ({
             <Button
               variant="outline"
               className="h-full w-full p-5"
-              disabled={createNewChoiceMutation.isLoading}
+              disabled={createNewChoiceMutation.isPending}
               onClick={() =>
                 createNewChoiceMutation.mutate({
                   questionId,
                 })
               }
             >
-              {createNewChoiceMutation.isLoading ? (
+              {createNewChoiceMutation.isPending ? (
                 <Loader2 className="h-6 w-6 animate-spin" />
               ) : (
                 <PlusCircle className="h-6 w-6" />
@@ -125,7 +120,7 @@ export const Questions = ({
               />
             ))}
 
-            {essaysIdQuery.isLoading ? (
+            {essaysIdQuery.isPending ? (
               <>
                 {Array.from({ length: 5 }).map((_, idx) => (
                   <BasicLoading key={idx} />
@@ -133,7 +128,7 @@ export const Questions = ({
               </>
             ) : null}
 
-            {essaysIdQuery.isLoading ? (
+            {essaysIdQuery.isPending ? (
               <Button className="h-full w-full p-5" variant="outline" disabled>
                 <Loader2 className="h-6 w-6 animate-spin" />
               </Button>
@@ -141,14 +136,14 @@ export const Questions = ({
               <Button
                 variant="outline"
                 className="h-full w-full p-5"
-                disabled={createNewEssayMutation.isLoading}
+                disabled={createNewEssayMutation.isPending}
                 onClick={() =>
                   createNewEssayMutation.mutate({
                     questionId,
                   })
                 }
               >
-                {createNewEssayMutation.isLoading ? (
+                {createNewEssayMutation.isPending ? (
                   <Loader2 className="h-6 w-6 animate-spin" />
                 ) : (
                   <PlusCircle className="h-6 w-6" />

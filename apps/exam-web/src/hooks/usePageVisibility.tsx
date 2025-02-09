@@ -20,6 +20,8 @@ export const usePageVisibility = () => {
               if (err instanceof Error) {
                 reject(err);
               }
+
+              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
               reject(new Error(`An error has occurred:${err}`));
             }
           }, delay);
@@ -33,8 +35,8 @@ export const usePageVisibility = () => {
       450,
     );
 
-    const cbBlur = () => updater(false);
-    const cbFocus = () => updater(true);
+    const cbBlur = () => void updater(false);
+    const cbFocus = () => void updater(true);
 
     window.addEventListener("blur", cbBlur);
     window.addEventListener("focus", cbFocus);

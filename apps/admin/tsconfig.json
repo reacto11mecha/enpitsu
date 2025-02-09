@@ -1,7 +1,9 @@
 {
   "extends": "@enpitsu/tsconfig/base.json",
   "compilerOptions": {
+    "lib": ["ES2022", "dom", "dom.iterable"],
     "baseUrl": ".",
+    "module": "esnext",
     "paths": {
       "~/*": ["./src/*"],
       "@/*": ["./@/*"]
@@ -11,7 +13,8 @@
         "name": "next"
       }
     ],
-    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json"
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
+    "jsx": "preserve"
   },
   "include": [".", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

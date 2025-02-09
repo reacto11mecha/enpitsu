@@ -1,8 +1,8 @@
 import { ActualTest } from "@/components/TestRouter/ActualTest";
-import { Button } from "@/components/ui/button";
 import enpitsuLogo from "@/icon.png";
 import { studentAnswerAtom } from "@/lib/atom";
 import { api } from "@/utils/api";
+import { Button } from "@enpitsu/ui/button";
 import { useAtomValue } from "jotai";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
@@ -41,7 +41,7 @@ export default function TestRoute() {
       </div>
     );
 
-  if (questionQuery.isLoading)
+  if (questionQuery.isPending)
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center gap-5">
         <img src={enpitsuLogo} className="w-28 rounded-lg" />

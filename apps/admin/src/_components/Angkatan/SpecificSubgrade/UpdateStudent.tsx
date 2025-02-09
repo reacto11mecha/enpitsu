@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import type { RouterOutputs } from "@enpitsu/api";
 import type { Dispatch, SetStateAction } from "react";
-import { Button } from "@/components/ui/button";
+import { useMemo } from "react";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,7 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@enpitsu/ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,16 +18,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import type { RouterOutputs } from "@enpitsu/api";
+} from "@enpitsu/ui/form";
+import { Input } from "@enpitsu/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 const schema = z.object({
   name: z
@@ -57,8 +57,6 @@ export const UpdateStudent = ({
   student: StudentType;
 }) => {
   const apiUtils = api.useUtils();
-
-  const { toast } = useToast();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -107,16 +105,13 @@ export const UpdateStudent = ({
 
       setOpenEdit(false);
 
-      toast({
-        title: "Pembaruan Berhasil!",
+      toast.success("Pembaruan Berhasil!", {
         description: "Berhasil memperbarui identitas murid.",
       });
     },
 
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -129,7 +124,7 @@ export const UpdateStudent = ({
     <Dialog
       open={openEdit}
       onOpenChange={() => {
-        if (!editStudentMutation.isLoading) setOpenEdit((prev) => !prev);
+        if (!editStudentMutation.isPending) setOpenEdit((prev) => !prev);
       }}
     >
       <DialogContent className="md:max-w-screen-md">
@@ -156,7 +151,7 @@ export const UpdateStudent = ({
                           placeholder="1"
                           {...field}
                           autoComplete="off"
-                          disabled={editStudentMutation.isLoading}
+                          disabled={editStudentMutation.isPending}
                         />
                       </FormControl>
                       <FormMessage />
@@ -175,7 +170,7 @@ export const UpdateStudent = ({
                           placeholder="1"
                           {...field}
                           autoComplete="off"
-                          disabled={editStudentMutation.isLoading}
+                          disabled={editStudentMutation.isPending}
                         />
                       </FormControl>
                       <FormMessage />
@@ -194,7 +189,7 @@ export const UpdateStudent = ({
                           placeholder="1"
                           {...field}
                           autoComplete="off"
-                          disabled={editStudentMutation.isLoading}
+                          disabled={editStudentMutation.isPending}
                         />
                       </FormControl>
                       <FormMessage />
@@ -210,17 +205,17 @@ export const UpdateStudent = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={editStudentMutation.isLoading}
+              disabled={editStudentMutation.isPending}
             >
               Batal
             </Button>
           </DialogClose>
           <Button
             type="button"
-            disabled={isTheSameValue || editStudentMutation.isLoading}
+            disabled={isTheSameValue || editStudentMutation.isPending}
             onClick={() => form.handleSubmit(onSubmit)()}
           >
-            {editStudentMutation.isLoading ? (
+            {editStudentMutation.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Ubah

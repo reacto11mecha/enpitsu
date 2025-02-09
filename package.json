@@ -7,6 +7,8 @@
   "packageManager": "pnpm@9.10.0",
   "scripts": {
     "build": "turbo build",
+    "build:admin": "turbo build --filter @enpitsu/admin",
+    "build:exam": "turbo build --filter @enpitsu/exam-web",
     "clean": "git clean -xdf node_modules",
     "clean:workspaces": "turbo clean",
     "postinstall": "pnpm lint:ws",
@@ -14,23 +16,24 @@
     "db:generate": "pnpm -F db generate",
     "db:studio": "pnpm -F db studio",
     "dev": "turbo dev --parallel",
-    "dev:admin": "turbo dev --scope admin",
-    "dev:exam": "turbo dev --scope exam-web",
-    "dev:web": "turbo dev --filter admin --filter exam-web",
+    "dev:admin": "turbo dev --filter @enpitsu/admin",
+    "dev:exam": "turbo dev --filter @enpitsu/exam-web",
+    "dev:web": "turbo dev --filter @enpitsu/admin --filter enpitsu/exam-web",
     "dev:mobile": "turbo dev --filter mobile --filter native-renderer",
-    "format": "turbo format --continue -- --cache --cache-location node_modules/.cache/.prettiercache",
-    "format:fix": "turbo format --continue -- --write --cache --cache-location node_modules/.cache/.prettiercache",
-    "lint": "turbo lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
-    "lint:fix": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
+    "format": "turbo run format --continue -- --cache --cache-location .cache/.prettiercache",
+    "format:fix": "turbo run format --continue -- --write --cache --cache-location .cache/.prettiercache",
+    "lint": "turbo run lint --continue -- --cache --cache-location .cache/.eslintcache",
+    "lint:fix": "turbo run lint --continue -- --fix --cache --cache-location .cache/.eslintcache",
     "lint:ws": "pnpm dlx sherif@latest",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "ui-add": "turbo run ui-add"
   },
   "devDependencies": {
     "@enpitsu/prettier-config": "workspace:^0.1.0",
-    "@turbo/gen": "^1.11.1",
-    "prettier": "^3.1.0",
-    "turbo": "^2.0.11",
-    "typescript": "^5.3.3"
+    "@turbo/gen": "2.4.0",
+    "prettier": "catalog:",
+    "turbo": "2.4.0",
+    "typescript": "catalog:"
   },
   "pnpm": {
     "overrides": {

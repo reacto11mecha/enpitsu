@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { validateId } from "@enpitsu/token-generator";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -11,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@enpitsu/ui/dialog";
 import {
   Form,
   FormControl,
@@ -20,16 +21,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import { validateId } from "@enpitsu/token-generator";
+} from "@enpitsu/ui/form";
+import { Input } from "@enpitsu/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 const formSchema = z.object({
   name: z
@@ -49,8 +49,8 @@ const formSchema = z.object({
     .min(1, {
       message: "Token wajib di isi!",
     })
-    .min(13, { message: "Panjang nomor peserta wajib 13 karakter!" })
-    .max(13, { message: "Panjang nomor peserta tidak boleh dari 13 karakter!" })
+    .min(6, { message: "Panjang token wajib 6 karakter!" })
+    .max(6, { message: "Panjang token tidak boleh dari 6 karakter!" })
     .refine(validateId, { message: "Format token tidak sesuai!" }),
 });
 
@@ -72,8 +72,6 @@ export const AddStudent = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  const { toast } = useToast();
-
   const apiUtils = api.useUtils();
 
   const form = useForm<FormValues>({
@@ -92,16 +90,13 @@ export const AddStudent = ({
 
       setOpen(false);
 
-      toast({
-        title: "Penambahan Berhasil!",
+      toast.success("Penambahan Berhasil!", {
         description: `Berhasil menambahkan murid baru di kelas ${grade.label} ${subgrade.label}.`,
       });
     },
 
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -115,7 +110,7 @@ export const AddStudent = ({
     <Dialog
       open={open}
       onOpenChange={() => {
-        if (!createStudentMutation.isLoading) setOpen((prev) => !prev);
+        if (!createStudentMutation.isPending) setOpen((prev) => !prev);
         form.reset();
       }}
     >
@@ -146,7 +141,7 @@ export const AddStudent = ({
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={createStudentMutation.isLoading}
+                      disabled={createStudentMutation.isPending}
                     />
                   </FormControl>
                   <FormDescription>
@@ -166,7 +161,7 @@ export const AddStudent = ({
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={createStudentMutation.isLoading}
+                      disabled={createStudentMutation.isPending}
                     />
                   </FormControl>
                   <FormDescription>
@@ -186,7 +181,7 @@ export const AddStudent = ({
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={createStudentMutation.isLoading}
+                      disabled={createStudentMutation.isPending}
                     />
                   </FormControl>
                   <FormDescription>
@@ -206,7 +201,7 @@ export const AddStudent = ({
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={createStudentMutation.isLoading}
+                      disabled={createStudentMutation.isPending}
                     />
                   </FormControl>
                   <FormDescription>
@@ -223,16 +218,16 @@ export const AddStudent = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={createStudentMutation.isLoading}
+              disabled={createStudentMutation.isPending}
             >
               Batal
             </Button>
           </DialogClose>
           <Button
-            disabled={createStudentMutation.isLoading}
+            disabled={createStudentMutation.isPending}
             onClick={() => form.handleSubmit(onSubmit)()}
           >
-            {createStudentMutation.isLoading ? (
+            {createStudentMutation.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Tambah

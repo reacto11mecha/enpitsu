@@ -14,13 +14,13 @@ export const useCountdown = (targetDate: Date) => {
     const timeDifference = differenceInMilliseconds(targetDate, currentTime);
 
     if (timeDifference <= 0) {
-      cancelAnimationFrame(requestRef.current as number);
+      cancelAnimationFrame(requestRef.current!);
       // Handle when the countdown reaches zero or goes negative
     } else {
       requestRef.current = requestAnimationFrame(animate);
     }
 
-    return () => cancelAnimationFrame(requestRef.current as number);
+    return () => cancelAnimationFrame(requestRef.current!);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetDate, currentTime]);

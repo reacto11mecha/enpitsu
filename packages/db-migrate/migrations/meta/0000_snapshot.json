@@ -1,16 +1,16 @@
 {
-  "id": "906091be-976f-45b4-97ad-4c0aba25bff6",
+  "id": "065f8ec5-97ad-459b-88c4-8a5d93c4b120",
   "prevId": "00000000-0000-0000-0000-000000000000",
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "enpitsu_account": {
+    "public.enpitsu_account": {
       "name": "enpitsu_account",
       "schema": "",
       "columns": {
-        "userId": {
-          "name": "userId",
-          "type": "varchar(255)",
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -26,8 +26,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "providerAccountId": {
-          "name": "providerAccountId",
+        "provider_account_id": {
+          "name": "provider_account_id",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
@@ -40,7 +40,7 @@
         },
         "access_token": {
           "name": "access_token",
-          "type": "varchar(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -75,65 +75,80 @@
           "notNull": false
         }
       },
-      "indexes": {
-        "userId_idx": {
-          "name": "userId_idx",
-          "columns": ["userId"],
-          "isUnique": false
+      "indexes": {},
+      "foreignKeys": {
+        "enpitsu_account_user_id_enpitsu_user_id_fk": {
+          "name": "enpitsu_account_user_id_enpitsu_user_id_fk",
+          "tableFrom": "enpitsu_account",
+          "tableTo": "enpitsu_user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
-      "foreignKeys": {},
       "compositePrimaryKeys": {
-        "enpitsu_account_provider_providerAccountId_pk": {
-          "name": "enpitsu_account_provider_providerAccountId_pk",
-          "columns": ["provider", "providerAccountId"]
+        "enpitsu_account_provider_provider_account_id_pk": {
+          "name": "enpitsu_account_provider_provider_account_id_pk",
+          "columns": ["provider", "provider_account_id"]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "enpitsu_session": {
+    "public.enpitsu_session": {
       "name": "enpitsu_session",
       "schema": "",
       "columns": {
-        "sessionToken": {
-          "name": "sessionToken",
+        "session_token": {
+          "name": "session_token",
           "type": "varchar(255)",
           "primaryKey": true,
           "notNull": true
         },
-        "userId": {
-          "name": "userId",
-          "type": "varchar(255)",
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
         "expires": {
           "name": "expires",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true
         }
       },
-      "indexes": {
-        "userId_idx": {
-          "name": "userId_idx",
-          "columns": ["userId"],
-          "isUnique": false
+      "indexes": {},
+      "foreignKeys": {
+        "enpitsu_session_user_id_enpitsu_user_id_fk": {
+          "name": "enpitsu_session_user_id_enpitsu_user_id_fk",
+          "tableFrom": "enpitsu_session",
+          "tableTo": "enpitsu_user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "enpitsu_user": {
+    "public.enpitsu_user": {
       "name": "enpitsu_user",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "varchar(255)",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
@@ -147,15 +162,16 @@
           "primaryKey": false,
           "notNull": true
         },
-        "emailVerified": {
-          "name": "emailVerified",
-          "type": "timestamp",
+        "email_verified": {
+          "name": "email_verified",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },
         "role": {
           "name": "role",
           "type": "role",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
           "default": "'user'"
@@ -170,9 +186,12 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "enpitsu_grade": {
+    "public.enpitsu_grade": {
       "name": "enpitsu_grade",
       "schema": "",
       "columns": {
@@ -192,9 +211,12 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "enpitsu_student": {
+    "public.enpitsu_student": {
       "name": "enpitsu_student",
       "schema": "",
       "columns": {
@@ -214,7 +236,7 @@
           "name": "token",
           "type": "varchar(35)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "participant_number": {
           "name": "participant_number",
@@ -238,8 +260,18 @@
       "indexes": {
         "token_idx": {
           "name": "token_idx",
-          "columns": ["token"],
-          "isUnique": true
+          "columns": [
+            {
+              "expression": "token",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -254,9 +286,12 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "enpitsu_subgrade": {
+    "public.enpitsu_subgrade": {
       "name": "enpitsu_subgrade",
       "schema": "",
       "columns": {
@@ -282,9 +317,12 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "enpitsu_allowList": {
+    "public.enpitsu_allowList": {
       "name": "enpitsu_allowList",
       "schema": "",
       "columns": {
@@ -329,9 +367,12 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "enpitsu_essay": {
+    "public.enpitsu_essay": {
       "name": "enpitsu_essay",
       "schema": "",
       "columns": {
@@ -380,9 +421,12 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "enpitsu_multipleChoice": {
+    "public.enpitsu_multipleChoice": {
       "name": "enpitsu_multipleChoice",
       "schema": "",
       "columns": {
@@ -430,9 +474,12 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "enpitsu_question": {
+    "public.enpitsu_question": {
       "name": "enpitsu_question",
       "schema": "",
       "columns": {
@@ -454,6 +501,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "multiple_choice_options": {
+          "name": "multiple_choice_options",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
         "started_at": {
           "name": "started_at",
           "type": "timestamp",
@@ -468,7 +521,7 @@
         },
         "author_id": {
           "name": "author_id",
-          "type": "varchar",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         }
@@ -476,15 +529,38 @@
       "indexes": {
         "slug_idx": {
           "name": "slug_idx",
-          "columns": ["slug"],
-          "isUnique": true
+          "columns": [
+            {
+              "expression": "slug",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "enpitsu_question_author_id_enpitsu_user_id_fk": {
+          "name": "enpitsu_question_author_id_enpitsu_user_id_fk",
+          "tableFrom": "enpitsu_question",
+          "tableTo": "enpitsu_user",
+          "columnsFrom": ["author_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "enpitsu_studentBlocklist": {
+    "public.enpitsu_studentBlocklist": {
       "name": "enpitsu_studentBlocklist",
       "schema": "",
       "columns": {
@@ -535,9 +611,12 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "enpitsu_studentResponChoice": {
+    "public.enpitsu_studentResponChoice": {
       "name": "enpitsu_studentResponChoice",
       "schema": "",
       "columns": {
@@ -589,9 +668,12 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "enpitsu_studentRespondEssay": {
+    "public.enpitsu_studentRespondEssay": {
       "name": "enpitsu_studentRespondEssay",
       "schema": "",
       "columns": {
@@ -648,9 +730,12 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "enpitsu_studentRespond": {
+    "public.enpitsu_studentRespond": {
       "name": "enpitsu_studentRespond",
       "schema": "",
       "columns": {
@@ -685,7 +770,38 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "question_idx": {
+          "name": "question_idx",
+          "columns": [
+            {
+              "expression": "question_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "student_idx": {
+          "name": "student_idx",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "enpitsu_studentRespond_question_id_enpitsu_question_id_fk": {
           "name": "enpitsu_studentRespond_question_id_enpitsu_question_id_fk",
@@ -707,22 +823,96 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.enpitsu_studentTemporaryBan": {
+      "name": "enpitsu_studentTemporaryBan",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ended_at": {
+          "name": "ended_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "uniq_student_id": {
+          "name": "uniq_student_id",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "enpitsu_studentTemporaryBan_student_id_enpitsu_student_id_fk": {
+          "name": "enpitsu_studentTemporaryBan_student_id_enpitsu_student_id_fk",
+          "tableFrom": "enpitsu_studentTemporaryBan",
+          "tableTo": "enpitsu_student",
+          "columnsFrom": ["student_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {
-    "role": {
+    "public.role": {
       "name": "role",
-      "values": {
-        "admin": "admin",
-        "user": "user"
-      }
+      "schema": "public",
+      "values": ["admin", "user"]
     }
   },
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {}
+    "tables": {}
   }
 }

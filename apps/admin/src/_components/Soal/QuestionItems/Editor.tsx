@@ -1,7 +1,8 @@
 "use client";
 
+import type { ReactQuillProps } from "react-quill";
 import { useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   Form,
   FormControl,
@@ -10,15 +11,16 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@enpitsu/ui/form";
+import { Input } from "@enpitsu/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import katex from "katex";
+
+import "katex";
+
 // @ts-expect-error there's actually a type for this package, but dont know why this still yell for a missing type
 import Delta from "quill-delta";
 import { useForm } from "react-hook-form";
 import ReactQuill from "react-quill";
-import type { ReactQuillProps } from "react-quill";
 import { z } from "zod";
 
 import "katex/dist/katex.min.css";
@@ -62,7 +64,7 @@ Font.whitelist = ["lpmqisepmisbah"];
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 Quill.register(Font, true);
 
-window.katex = katex;
+// window.katex = katex;
 
 const quillModules: ReactQuillProps["modules"] = {
   toolbar: [
@@ -137,6 +139,7 @@ export default function Editor({
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (quillRef.current) {
       quillRef.current
         .getEditor()

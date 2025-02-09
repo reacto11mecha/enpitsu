@@ -2,7 +2,7 @@ import { atomWithStorage } from "jotai/utils";
 
 export const studentTokenAtom = atomWithStorage("studentToken", "");
 
-export type TStudentAnswer = {
+export interface TStudentAnswer {
   slug: string;
   dishonestCount: number | undefined;
   checkIn: Date | undefined;
@@ -14,7 +14,7 @@ export type TStudentAnswer = {
     iqid: number;
     answer: string;
   }[];
-};
+}
 
 export const studentAnswerAtom = atomWithStorage<TStudentAnswer[]>(
   "studentAnswer",

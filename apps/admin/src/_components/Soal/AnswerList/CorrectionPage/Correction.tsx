@@ -8,19 +8,19 @@ import {
   CardFooter,
   CardHeader,
   // CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
+} from "@enpitsu/ui/card";
+import { Label } from "@enpitsu/ui/label";
+import { RadioGroup, RadioGroupItem } from "@enpitsu/ui/radio-group";
+import { Skeleton } from "@enpitsu/ui/skeleton";
+import { Textarea } from "@enpitsu/ui/textarea";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 import "katex/dist/katex.min.css";
 
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@enpitsu/ui/separator";
 
 import { UpdateEssayScore } from "./UpdateEssayScore";
 
@@ -68,11 +68,14 @@ export const Correction = ({
     },
     {
       refetchOnWindowFocus: false,
-      async onSuccess() {
-        await essayScoresQuery.refetch();
-      },
     },
   );
+
+  useEffect(() => {
+    const triggerRefetch = () => essayScoresQuery.refetch();
+
+    if (essaysQuery.dataUpdatedAt) void triggerRefetch();
+  }, [essaysQuery, essayScoresQuery]);
 
   useEffect(() => {
     void import("katex").then((katex) => {
@@ -125,7 +128,7 @@ export const Correction = ({
               Pilihan Ganda
             </h3>
 
-            {multipleChoicesQuery.isLoading ? (
+            {multipleChoicesQuery.isPending ? (
               <Skeleton className="w-15 h-6" />
             ) : !multipleChoicesQuery.isError ? (
               <span>
@@ -147,7 +150,7 @@ export const Correction = ({
           </div>
 
           <div className="flex flex-col gap-5">
-            {multipleChoicesQuery.isLoading ? (
+            {multipleChoicesQuery.isPending ? (
               <>
                 {Array.from({ length: 10 }).map((_, idx) => (
                   <Skeleton key={idx} className="h-[18rem] w-full" />
@@ -175,7 +178,7 @@ export const Correction = ({
                   >
                     {choice.options.map((option, idx) => (
                       <div
-                        className={`min-h-10 flex items-center space-x-3 rounded px-2 py-3 ${
+                        className={`flex min-h-10 items-center space-x-3 rounded px-2 py-3 ${
                           option.order === choice.correctAnswerOrder
                             ? "bg-green-500/40 dark:bg-green-700/30"
                             : choices.find((c) => c.choiceId === choice.iqid)!
@@ -210,7 +213,7 @@ export const Correction = ({
               Esai
             </h3>
 
-            {essaysQuery.isLoading || essayScoresQuery.isLoading ? (
+            {essaysQuery.isPending || essayScoresQuery.isPending ? (
               <Skeleton className="w-15 h-6" />
             ) : !essaysQuery.isError && !essayScoresQuery.isError ? (
               <span>
@@ -226,7 +229,7 @@ export const Correction = ({
           </div>
 
           <div className="flex flex-col gap-5">
-            {essaysQuery.isLoading ? (
+            {essaysQuery.isPending ? (
               <>
                 {Array.from({ length: 5 }).map((_, idx) => (
                   <Skeleton key={idx} className="h-[18rem] w-full" />
@@ -264,7 +267,7 @@ export const Correction = ({
                 <Separator />
                 <CardFooter className="space-x-5 p-6">
                   <p>Poin:</p>
-                  {essayScoresQuery.isLoading && !essayScoresQuery.data ? (
+                  {essayScoresQuery.isPending ? (
                     <Skeleton className="h-30 w-full" />
                   ) : (
                     <UpdateEssayScore

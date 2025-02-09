@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,12 +9,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/dialog";
+import { Input } from "@enpitsu/ui/input";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 export const DeleteSubgrade = ({
   openDelete,
@@ -28,8 +28,6 @@ export const DeleteSubgrade = ({
   id: number;
 }) => {
   const apiUtils = api.useUtils();
-
-  const { toast } = useToast();
 
   const [confirmationText, setConfirmText] = useState("");
 
@@ -46,15 +44,12 @@ export const DeleteSubgrade = ({
 
       await apiUtils.grade.getSubgrades.invalidate();
 
-      toast({
-        title: "Penghapusan Berhasil!",
+      toast.success("Penghapusan Berhasil!", {
         description: "Berhasil menghapus seluruh kelas spesifik.",
       });
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -64,7 +59,7 @@ export const DeleteSubgrade = ({
     <Dialog
       open={openDelete}
       onOpenChange={() => {
-        if (!subgradeDeleteMutation.isLoading) setOpenDelete((prev) => !prev);
+        if (!subgradeDeleteMutation.isPending) setOpenDelete((prev) => !prev);
 
         if (confirmationText.length > 0) setConfirmText("");
       }}
@@ -85,7 +80,7 @@ export const DeleteSubgrade = ({
             type="text"
             autoComplete="false"
             autoCorrect="false"
-            disabled={subgradeDeleteMutation.isLoading}
+            disabled={subgradeDeleteMutation.isPending}
             value={confirmationText}
             onChange={(e) => setConfirmText(e.target.value)}
           />
@@ -95,7 +90,7 @@ export const DeleteSubgrade = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={subgradeDeleteMutation.isLoading}
+              disabled={subgradeDeleteMutation.isPending}
             >
               Batal
             </Button>
@@ -103,12 +98,12 @@ export const DeleteSubgrade = ({
           <Button
             type="button"
             variant="destructive"
-            disabled={!reallySure || subgradeDeleteMutation.isLoading}
+            disabled={!reallySure || subgradeDeleteMutation.isPending}
             onClick={() => {
               if (reallySure) subgradeDeleteMutation.mutate(id);
             }}
           >
-            {subgradeDeleteMutation.isLoading ? (
+            {subgradeDeleteMutation.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Hapus

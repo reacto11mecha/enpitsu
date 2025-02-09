@@ -1,5 +1,6 @@
+import type { RouterOutputs } from "@enpitsu/api";
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,13 +10,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import type { RouterOutputs } from "@enpitsu/api";
+} from "@enpitsu/ui/dialog";
+import { Input } from "@enpitsu/ui/input";
 import { Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 type BlocklistByQuestion =
   RouterOutputs["question"]["getStudentBlocklistByQuestion"];
@@ -34,8 +34,6 @@ export const DeleteSingleCheatedStudent = ({
   id: number;
 }) => {
   const apiUtils = api.useUtils();
-
-  const { toast } = useToast();
 
   const [confirmationText, setConfirmText] = useState("");
 
@@ -57,15 +55,12 @@ export const DeleteSingleCheatedStudent = ({
           await apiUtils.question.getStudentBlocklistByQuestion.invalidate();
         }
 
-        toast({
-          title: "Penghapusan Berhasil!",
+        toast.success("Penghapusan Berhasil!", {
           description: "Berhasil menghapus status kecurangan.",
         });
       },
       onError(error) {
-        toast({
-          variant: "destructive",
-          title: "Operasi Gagal",
+        toast.error("Operasi Gagal", {
           description: `Terjadi kesalahan, Error: ${error.message}`,
         });
       },
@@ -75,7 +70,7 @@ export const DeleteSingleCheatedStudent = ({
     <Dialog
       open={openDelete}
       onOpenChange={() => {
-        if (!deleteCheatedStatusMutation.isLoading) closeDialog();
+        if (!deleteCheatedStatusMutation.isPending) closeDialog();
 
         if (confirmationText.length > 0) setConfirmText("");
       }}
@@ -103,7 +98,7 @@ export const DeleteSingleCheatedStudent = ({
             type="text"
             autoComplete="false"
             autoCorrect="false"
-            disabled={deleteCheatedStatusMutation.isLoading}
+            disabled={deleteCheatedStatusMutation.isPending}
             value={confirmationText}
             onChange={(e) => setConfirmText(e.target.value)}
           />
@@ -113,7 +108,7 @@ export const DeleteSingleCheatedStudent = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={deleteCheatedStatusMutation.isLoading}
+              disabled={deleteCheatedStatusMutation.isPending}
             >
               Batal
             </Button>
@@ -121,12 +116,12 @@ export const DeleteSingleCheatedStudent = ({
           <Button
             type="button"
             variant="destructive"
-            disabled={!reallySure || deleteCheatedStatusMutation.isLoading}
+            disabled={!reallySure || deleteCheatedStatusMutation.isPending}
             onClick={() => {
               if (reallySure) deleteCheatedStatusMutation.mutate({ id });
             }}
           >
-            {deleteCheatedStatusMutation.isLoading ? (
+            {deleteCheatedStatusMutation.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Hapus
@@ -161,8 +156,6 @@ export const DeleteManyCheatedStudent = ({
 
   const apiUtils = api.useUtils();
 
-  const { toast } = useToast();
-
   const deleteManyCheatedStudent = api.question.deleteManyBlocklist.useMutation(
     {
       async onSuccess() {
@@ -174,15 +167,12 @@ export const DeleteManyCheatedStudent = ({
 
         resetSelection();
 
-        toast({
-          title: "Penghapusan Berhasil!",
+        toast.success("Penghapusan Berhasil!", {
           description: "Berhasil menghapus banyak kecurangan peserta.",
         });
       },
       onError(error) {
-        toast({
-          variant: "destructive",
-          title: "Operasi Gagal",
+        toast.error("Operasi Gagal", {
           description: `Terjadi kesalahan, Error: ${error.message}`,
         });
       },
@@ -193,7 +183,7 @@ export const DeleteManyCheatedStudent = ({
     <Dialog
       open={dialogOpen}
       onOpenChange={() => {
-        if (deleteManyCheatedStudent.isLoading) return;
+        if (deleteManyCheatedStudent.isPending) return;
 
         setDialogOpen((prev) => !prev);
         setConfirmText("");
@@ -236,7 +226,7 @@ export const DeleteManyCheatedStudent = ({
                 type="text"
                 autoComplete="false"
                 autoCorrect="false"
-                disabled={deleteManyCheatedStudent.isLoading}
+                disabled={deleteManyCheatedStudent.isPending}
                 value={confirmationText}
                 onChange={(e) => setConfirmText(e.target.value)}
               />
@@ -247,7 +237,7 @@ export const DeleteManyCheatedStudent = ({
           <DialogClose asChild>
             <Button
               variant="secondary"
-              disabled={deleteManyCheatedStudent.isLoading}
+              disabled={deleteManyCheatedStudent.isPending}
             >
               Batal
             </Button>
@@ -255,12 +245,121 @@ export const DeleteManyCheatedStudent = ({
           <Button
             type="button"
             variant="destructive"
-            disabled={!reallySure || deleteManyCheatedStudent.isLoading}
+            disabled={!reallySure || deleteManyCheatedStudent.isPending}
             onClick={() => {
               if (reallySure) deleteManyCheatedStudent.mutate({ ids: allIds });
             }}
           >
-            {deleteManyCheatedStudent.isLoading ? (
+            {deleteManyCheatedStudent.isPending ? (
+              <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
+            ) : null}
+            Hapus
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export const AggregateDeleteCheatedStudent = () => {
+  const apiUtils = api.useUtils();
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [confirmationText, setConfirmText] = useState("");
+
+  const reallySure = useMemo(
+    () =>
+      confirmationText ===
+      "saya ingin menghapus seluruh data kecurangan peserta pada aplikasi ini",
+    [confirmationText],
+  );
+
+  const wipeCheatedStudentRecord = api.question.wipeBlocklistRecord.useMutation(
+    {
+      async onSuccess() {
+        setDialogOpen(false);
+
+        setConfirmText("");
+
+        await apiUtils.question.getStudentBlocklists.invalidate();
+
+        toast.success("Penghapusan Berhasil!", {
+          description: "Berhasil mengosongkan catatan kecurangan peserta.",
+        });
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    },
+  );
+
+  return (
+    <Dialog
+      open={dialogOpen}
+      onOpenChange={() => {
+        if (wipeCheatedStudentRecord.isPending) return;
+
+        setDialogOpen((prev) => !prev);
+        setConfirmText("");
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button variant="secondary">
+          <Trash2 className="mr-2 h-4 md:w-4" />
+          Hapus seluruh data kecurangan
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[80vh] max-w-lg md:max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Hapus Seluruh Data Kecurangan Peserta</DialogTitle>
+          <DialogDescription>
+            Anda akan menghapus seluruh data kecurangan yang tercatat pada
+            sistem. Mohon pikirkan kembali apakah aksi yang akan anda lakukan
+            berada pada waktu yang tepat atau tidak. Data yang anda hapus tidak
+            bisa dikembalikan.
+          </DialogDescription>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
+              <DialogDescription className="text-start">
+                Jika anda yakin dan ingin melanjutkan, ketik{" "}
+                <b className="select-none">
+                  saya ingin menghapus seluruh data kecurangan peserta pada
+                  aplikasi ini
+                </b>{" "}
+                pada kolom dibawah:
+              </DialogDescription>
+              <Input
+                type="text"
+                autoComplete="false"
+                autoCorrect="false"
+                onPaste={(e) => e.preventDefault()}
+                disabled={wipeCheatedStudentRecord.isPending}
+                value={confirmationText}
+                onChange={(e) => setConfirmText(e.target.value)}
+              />
+            </div>
+          </div>
+        </DialogHeader>
+        <DialogFooter className="gap-2 sm:justify-start">
+          <DialogClose asChild>
+            <Button
+              variant="secondary"
+              disabled={wipeCheatedStudentRecord.isPending}
+            >
+              Batal
+            </Button>
+          </DialogClose>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={!reallySure || wipeCheatedStudentRecord.isPending}
+            onClick={() => {
+              if (reallySure) wipeCheatedStudentRecord.mutate();
+            }}
+          >
+            {wipeCheatedStudentRecord.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Hapus

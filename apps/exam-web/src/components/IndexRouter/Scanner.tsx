@@ -8,8 +8,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+} from "@enpitsu/ui/alert-dialog";
+import { Button } from "@enpitsu/ui/button";
 import { ScanLine } from "lucide-react";
 import QrScanner from "qr-scanner";
 import slugify from "slugify";
@@ -23,9 +23,9 @@ const Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
   useEffect(() => {
     const qrScanner = new QrScanner(
       videoRef.current,
-      async ({ data: slug }) => {
+      ({ data: slug }) => {
         if (slug || slug !== "") {
-          const result = await formSchema.safeParseAsync({ slug });
+          const result = formSchema.safeParse({ slug });
 
           if (!result.success) {
             const error = JSON.parse(result.error.message) as {
@@ -56,7 +56,7 @@ const Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
       },
     );
 
-    qrScanner.start();
+    void qrScanner.start();
 
     return () => {
       qrScanner.destroy();

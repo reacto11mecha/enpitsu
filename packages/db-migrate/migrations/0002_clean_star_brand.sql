@@ -1,1 +1,0 @@
-ALTER TABLE "enpitsu_student" ALTER COLUMN "token" SET NOT NULL;

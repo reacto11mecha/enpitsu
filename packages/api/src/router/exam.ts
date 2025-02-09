@@ -1,17 +1,18 @@
+import type { TRPCRouterRecord } from "@trpc/server";
 import { cache } from "@enpitsu/cache";
+import { eq } from "@enpitsu/db";
 import {
-  eq,
   preparedQuestionSelect,
   preparedStudentHasAnswered,
   preparedStudentIsCheated,
   preparedStudentIsTemporarilyBanned,
-  schema,
-} from "@enpitsu/db";
+} from "@enpitsu/db/client";
+import * as schema from "@enpitsu/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { createTRPCRouter, studentProcedure } from "../trpc";
 import type { TStudent } from "../trpc";
+import { studentProcedure } from "../trpc";
 import { compareTwoStringLikability } from "../utils";
 
 type TQuestion = NonNullable<
@@ -83,7 +84,7 @@ const getQuestionPrecheck = async (student: TStudent, question: TQuestion) => {
   return sendedData;
 };
 
-export const examRouter = createTRPCRouter({
+export const examRouter = {
   getStudent: studentProcedure.query(({ ctx }) => ({ student: ctx.student })),
 
   getQuestion: studentProcedure
@@ -129,7 +130,9 @@ export const examRouter = createTRPCRouter({
           "EX",
           25 * 10,
         );
-      } catch (_) {
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (err: unknown) {
         console.error(
           JSON.stringify({
             time: Date.now().valueOf(),
@@ -190,7 +193,9 @@ export const examRouter = createTRPCRouter({
           // 2 hours
           2 * 60 * 60,
         );
-      } catch (_) {
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (err: unknown) {
         console.error(
           JSON.stringify({
             time: Date.now().valueOf(),
@@ -350,4 +355,4 @@ export const examRouter = createTRPCRouter({
         .insert(schema.studentBlocklists)
         .values({ ...input, studentId: ctx.student.id });
     }),
-});
+} satisfies TRPCRouterRecord;

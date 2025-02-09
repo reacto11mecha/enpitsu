@@ -1,4 +1,3 @@
-version: "3"
 services:
   db:
     image: postgres
@@ -15,8 +14,8 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - db:/var/lib/postgresql/data
-    expose:
-      - 5432
+    ports:
+      - 5432:5432
 
   cache:
     image: redis:6.2-alpine
@@ -38,20 +37,24 @@ services:
       AUTH_SECRET: ${ENPITSU_AUTH_SECRET}
       AUTH_GOOGLE_ID: ${ENPITSU_AUTH_GOOGLE_ID}
       AUTH_GOOGLE_SECRET: ${ENPITSU_AUTH_GOOGLE_SECRET}
-    expose:
-      - 3000
+      CORS_ORIGIN: ${ENPITSU_CORS_ORIGIN}
+      SPECIAL_ADMIN_USERS: ${ENPITSU_SPECIAL_ADMIN_USERS}
+#     expose:
+#       - 3000
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
+    ports:
+      - 3000:3000
 
-  chibisafe:
-    image: chibisafe/chibisafe:latest
-    restart: always
-    volumes:
-      - chibisafe_db:/home/node/chibisafe/database:rw
-      - chibisafe_uploads:/home/node/chibisafe/uploads:rw
-      - chibisafe_logs:/home/node/chibisafe/logs:rw
-    expose:
-      - 8000
+  # chibisafe:
+  #   image: chibisafe/chibisafe:latest
+  #   restart: always
+  #   volumes:
+  #     - chibisafe_db:/home/node/chibisafe/database:rw
+  #     - chibisafe_uploads:/home/node/chibisafe/uploads:rw
+  #     - chibisafe_logs:/home/node/chibisafe/logs:rw
+  #   expose:
+  #     - 8000
 
   watchtower:
     image: containrrr/watchtower
@@ -68,6 +71,6 @@ services:
 volumes:
   db:
   cache:
-  chibisafe_db:
-  chibisafe_uploads:
-  chibisafe_logs:
+  # chibisafe_db:
+  # chibisafe_uploads:
+  # chibisafe_logs:

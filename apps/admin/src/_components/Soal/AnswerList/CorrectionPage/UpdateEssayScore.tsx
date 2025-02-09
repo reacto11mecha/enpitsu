@@ -8,14 +8,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@enpitsu/ui/form";
+import { Input } from "@enpitsu/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, X as NuhUh, Check as YuhUh } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 const formSchema = z.object({
   score: z.coerce
@@ -53,12 +53,10 @@ export const UpdateEssayScore = ({
       const prevData = apiUtils.question.getEssaysScore.getData();
 
       // Optimistically update the data with our new post
-      apiUtils.question.getEssaysScore.setData(
-        { respondId },
-        (old) =>
-          old?.map((d) =>
-            d.id === id ? { ...d, score: String(updatedData.score) } : d,
-          ),
+      apiUtils.question.getEssaysScore.setData({ respondId }, (old) =>
+        old?.map((d) =>
+          d.id === id ? { ...d, score: String(updatedData.score) } : d,
+        ),
       );
 
       // Return the previous data so we can revert if something goes wrong
@@ -96,10 +94,10 @@ export const UpdateEssayScore = ({
                     max={1}
                     step={0.015}
                     className="w-full"
-                    disabled={updateScoreMutation.isLoading}
+                    disabled={updateScoreMutation.isPending}
                     {...field}
                   />
-                  {updateScoreMutation.isLoading ? (
+                  {updateScoreMutation.isPending ? (
                     <Loader2 className="h-8 w-8 animate-spin" />
                   ) : updateScoreMutation.isError ? (
                     <NuhUh className="h-8 w-8 text-red-600 dark:text-red-500" />

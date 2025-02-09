@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@enpitsu/auth";
-import { db, eq, schema } from "@enpitsu/db";
+import { eq } from "@enpitsu/db";
+import { db } from "@enpitsu/db/client";
+import * as schema from "@enpitsu/db/schema";
 
 import { DataTable } from "~/_components/Soal/CheatedList/DataTable";
 
@@ -32,7 +34,7 @@ export default async function CheatedListPage({
           <h2 className="text-2xl font-bold tracking-tight">
             Daftar Kecurangan Peserta
           </h2>
-          <p className="text-muted-foreground w-full md:w-[85%] lg:w-[75%]">
+          <p className="w-full text-muted-foreground md:w-[85%] lg:w-[75%]">
             Lihat siapa saja yang melakukan kecurangan dan menghapus status
             kecurangan pada halaman ini.
           </p>

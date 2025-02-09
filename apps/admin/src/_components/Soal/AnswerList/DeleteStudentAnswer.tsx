@@ -1,5 +1,6 @@
+import type { RouterOutputs } from "@enpitsu/api";
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,13 +10,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import type { RouterOutputs } from "@enpitsu/api";
+} from "@enpitsu/ui/dialog";
+import { Input } from "@enpitsu/ui/input";
 import { Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 type AnsweredListByQuestion =
   RouterOutputs["question"]["getStudentAnswersByQuestion"];
@@ -34,8 +34,6 @@ export const DeleteSingleStudentAnswer = ({
   id: number;
 }) => {
   const apiUtils = api.useUtils();
-
-  const { toast } = useToast();
 
   const [confirmationText, setConfirmText] = useState("");
 
@@ -57,15 +55,12 @@ export const DeleteSingleStudentAnswer = ({
           await apiUtils.question.getStudentAnswersByQuestion.invalidate();
         }
 
-        toast({
-          title: "Penghapusan Berhasil!",
+        toast.success("Penghapusan Berhasil!", {
           description: "Berhasil menghapus jawaban peserta.",
         });
       },
       onError(error) {
-        toast({
-          variant: "destructive",
-          title: "Operasi Gagal",
+        toast.error("Operasi Gagal", {
           description: `Terjadi kesalahan, Error: ${error.message}`,
         });
       },
@@ -75,7 +70,7 @@ export const DeleteSingleStudentAnswer = ({
     <Dialog
       open={openDelete}
       onOpenChange={() => {
-        if (!deleteSpecificAnswerMutation.isLoading) closeDialog();
+        if (!deleteSpecificAnswerMutation.isPending) closeDialog();
 
         if (confirmationText.length > 0) setConfirmText("");
       }}
@@ -102,7 +97,7 @@ export const DeleteSingleStudentAnswer = ({
             type="text"
             autoComplete="false"
             autoCorrect="false"
-            disabled={deleteSpecificAnswerMutation.isLoading}
+            disabled={deleteSpecificAnswerMutation.isPending}
             value={confirmationText}
             onChange={(e) => setConfirmText(e.target.value)}
           />
@@ -112,7 +107,7 @@ export const DeleteSingleStudentAnswer = ({
             <Button
               type="button"
               variant="secondary"
-              disabled={deleteSpecificAnswerMutation.isLoading}
+              disabled={deleteSpecificAnswerMutation.isPending}
             >
               Batal
             </Button>
@@ -120,12 +115,12 @@ export const DeleteSingleStudentAnswer = ({
           <Button
             type="button"
             variant="destructive"
-            disabled={!reallySure || deleteSpecificAnswerMutation.isLoading}
+            disabled={!reallySure || deleteSpecificAnswerMutation.isPending}
             onClick={() => {
               if (reallySure) deleteSpecificAnswerMutation.mutate({ id });
             }}
           >
-            {deleteSpecificAnswerMutation.isLoading ? (
+            {deleteSpecificAnswerMutation.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Hapus
@@ -160,8 +155,6 @@ export const DeleteManyStudentAnswer = ({
 
   const apiUtils = api.useUtils();
 
-  const { toast } = useToast();
-
   const deleteManyStudentAnswers = api.question.deleteManyAnswer.useMutation({
     async onSuccess() {
       setDialogOpen(false);
@@ -172,15 +165,12 @@ export const DeleteManyStudentAnswer = ({
 
       resetSelection();
 
-      toast({
-        title: "Penghapusan Berhasil!",
+      toast.success("Penghapusan Berhasil!", {
         description: "Berhasil menghapus banyak jawaban peserta.",
       });
     },
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -190,7 +180,7 @@ export const DeleteManyStudentAnswer = ({
     <Dialog
       open={dialogOpen}
       onOpenChange={() => {
-        if (deleteManyStudentAnswers.isLoading) return;
+        if (deleteManyStudentAnswers.isPending) return;
 
         setDialogOpen((prev) => !prev);
         setConfirmText("");
@@ -199,7 +189,7 @@ export const DeleteManyStudentAnswer = ({
       <DialogTrigger asChild>
         <Button variant="destructive">
           <Trash2 className="mr-2 h-4 md:w-4" />
-          Hapus semua jawaban peserta yang dipilih
+          Hapus jawaban yang dipilih
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[80vh] max-w-lg md:max-w-3xl">
@@ -233,7 +223,7 @@ export const DeleteManyStudentAnswer = ({
                 type="text"
                 autoComplete="false"
                 autoCorrect="false"
-                disabled={deleteManyStudentAnswers.isLoading}
+                disabled={deleteManyStudentAnswers.isPending}
                 value={confirmationText}
                 onChange={(e) => setConfirmText(e.target.value)}
               />
@@ -244,7 +234,7 @@ export const DeleteManyStudentAnswer = ({
           <DialogClose asChild>
             <Button
               variant="secondary"
-              disabled={deleteManyStudentAnswers.isLoading}
+              disabled={deleteManyStudentAnswers.isPending}
             >
               Batal
             </Button>
@@ -252,12 +242,12 @@ export const DeleteManyStudentAnswer = ({
           <Button
             type="button"
             variant="destructive"
-            disabled={!reallySure || deleteManyStudentAnswers.isLoading}
+            disabled={!reallySure || deleteManyStudentAnswers.isPending}
             onClick={() => {
               if (reallySure) deleteManyStudentAnswers.mutate({ ids: allIds });
             }}
           >
-            {deleteManyStudentAnswers.isLoading ? (
+            {deleteManyStudentAnswers.isPending ? (
               <Loader2 className="mr-2 h-4 animate-spin md:w-4" />
             ) : null}
             Hapus

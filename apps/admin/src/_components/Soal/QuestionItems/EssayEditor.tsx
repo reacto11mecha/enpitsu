@@ -1,8 +1,8 @@
 "use client";
 
-import { memo, useEffect } from "react";
+import { memo, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   Card,
   CardContent,
@@ -10,7 +10,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@enpitsu/ui/card";
 import {
   Form,
   FormControl,
@@ -19,12 +19,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/form";
+import { Separator } from "@enpitsu/ui/separator";
+import { Skeleton } from "@enpitsu/ui/skeleton";
+import { Switch } from "@enpitsu/ui/switch";
+import { Textarea } from "@enpitsu/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Loader2,
@@ -34,9 +33,10 @@ import {
   Check as YuhUh,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 import { useDebounce } from "./utils";
 
 const Editor = dynamic(() => import("./Editor"), {
@@ -61,9 +61,13 @@ export const EssayEditor = memo(function EssayEditorConstructor({
   questionNo: number;
   title: string;
 }) {
-  const { toast } = useToast();
+  const [dataAlreadyInitialized, setInitialized] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      isStrictEqual: false,
+    },
   });
 
   const utils = api.useUtils();
@@ -72,23 +76,28 @@ export const EssayEditor = memo(function EssayEditorConstructor({
     { essayIqid },
     {
       refetchOnWindowFocus: false,
-      onSuccess(data) {
-        if (data && Object.keys(form.getValues()).length <= 1) {
-          form.setValue("question", data.question);
-          form.setValue("answer", data.answer);
-          form.setValue("isStrictEqual", data.isStrictEqual);
-          console.log(data);
-        }
-      },
-      onError() {
-        toast({
-          variant: "destructive",
-          title: `Gagal mengambil data soal nomor ${questionNo}`,
-          description: "Mohon refresh halaman ini",
-        });
-      },
     },
   );
+
+  useEffect(() => {
+    if (!dataAlreadyInitialized) {
+      if (specificEssayQuery.data) {
+        if (Object.keys(form.getValues()).length > 0) {
+          form.setValue("question", specificEssayQuery.data.question);
+          form.setValue("answer", specificEssayQuery.data.answer);
+          form.setValue("isStrictEqual", specificEssayQuery.data.isStrictEqual);
+
+          setInitialized(true);
+        }
+      } else if (specificEssayQuery.error) {
+        toast.error(`Gagal mengambil data soal nomor ${questionNo}`, {
+          description: "Mohon refresh halaman ini",
+        });
+
+        setInitialized(true);
+      }
+    }
+  }, [specificEssayQuery.data, specificEssayQuery.error, form]);
 
   const specificEssayMutation = api.question.updateSpecificEssay.useMutation({
     async onMutate(updatedChoice) {
@@ -116,9 +125,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
         ctx!.prevData,
       );
 
-      toast({
-        variant: "destructive",
-        title: "Gagal memperbarui soal",
+      toast.error("Gagal memperbarui soal", {
         description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
       });
     },
@@ -140,9 +147,8 @@ export const EssayEditor = memo(function EssayEditorConstructor({
       });
 
       // Optimistically update the data with our new post
-      utils.question.getEssaysIdByQuestionId.setData(
-        { questionId },
-        (old) => old?.filter((dat) => dat.iqid !== deletedEssay.essayIqid),
+      utils.question.getEssaysIdByQuestionId.setData({ questionId }, (old) =>
+        old?.filter((dat) => dat.iqid !== deletedEssay.essayIqid),
       );
 
       // Return the previous data so we can revert if something goes wrong
@@ -155,9 +161,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
         ctx!.prevData,
       );
 
-      toast({
-        variant: "destructive",
-        title: "Gagal menghapus soal",
+      toast.error("Gagal menghapus soal", {
         description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
       });
     },
@@ -168,7 +172,6 @@ export const EssayEditor = memo(function EssayEditorConstructor({
   });
 
   const triggerUpdate = useDebounce(
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     form.handleSubmit((d) =>
       specificEssayMutation.mutate({ ...d, iqid: essayIqid }),
     ),
@@ -200,7 +203,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
         </CardHeader>
 
         <CardContent className="flex flex-col gap-5">
-          {specificEssayQuery.isLoading ? (
+          {specificEssayQuery.isPending || !dataAlreadyInitialized ? (
             <Skeleton className="h-10 w-full" />
           ) : (
             <FormField
@@ -218,7 +221,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
             />
           )}
 
-          {specificEssayQuery.isLoading ? (
+          {specificEssayQuery.isPending || !dataAlreadyInitialized ? (
             <Skeleton className="h-10 w-full" />
           ) : (
             <FormField
@@ -239,7 +242,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
             />
           )}
 
-          {specificEssayQuery.isLoading ? (
+          {specificEssayQuery.isPending || !dataAlreadyInitialized ? (
             <Skeleton className="h-10 w-full" />
           ) : (
             <FormField
@@ -276,16 +279,16 @@ export const EssayEditor = memo(function EssayEditorConstructor({
             {specificEssayMutation.error ? (
               <div className="flex flex-col items-center justify-center gap-2">
                 <NuhUh className="h-8 w-8 text-red-600 dark:text-red-500" />
-                <small className="text-muted-foreground font-mono text-red-600 dark:text-red-500">
+                <small className="font-mono text-muted-foreground text-red-600 dark:text-red-500">
                   Error, perubahan tidak disimpan
                 </small>
               </div>
             ) : (
               <>
-                {specificEssayMutation.isLoading ? (
+                {specificEssayMutation.isPending ? (
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <RefreshCw className="text-muted-foreground animate-spin" />
-                    <small className="text-muted-foreground font-mono">
+                    <RefreshCw className="animate-spin text-muted-foreground" />
+                    <small className="font-mono text-muted-foreground">
                       Menyimpan...
                     </small>
                   </div>
@@ -299,9 +302,9 @@ export const EssayEditor = memo(function EssayEditorConstructor({
               <Button
                 variant="ghost"
                 disabled={
-                  specificEssayQuery.isLoading ||
-                  specificEssayMutation.isLoading ||
-                  deleteEssayMutation.isLoading
+                  specificEssayQuery.isPending ||
+                  specificEssayMutation.isPending ||
+                  deleteEssayMutation.isPending
                 }
                 onClick={() =>
                   deleteEssayMutation.mutate({
@@ -310,7 +313,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
                 }
               >
                 <span className="sr-only">Hapus pertanyaan</span>
-                {deleteEssayMutation.isLoading ? (
+                {deleteEssayMutation.isPending ? (
                   <Loader2 className="h-6 w-6 animate-spin" />
                 ) : (
                   <Trash2 />

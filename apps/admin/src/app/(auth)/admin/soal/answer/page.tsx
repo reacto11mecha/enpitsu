@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@enpitsu/auth";
-import { count, db, schema } from "@enpitsu/db";
+import { count } from "@enpitsu/db";
+import { db } from "@enpitsu/db/client";
+import * as schema from "@enpitsu/db/schema";
 
 import { DataTable } from "~/_components/Soal/AggregateAnswersStudent";
 
@@ -22,7 +24,7 @@ export default async function AggregateAnswersStudent() {
           <h2 className="text-2xl font-bold tracking-tight">
             Data Agregat Jawaban Peserta
           </h2>
-          <p className="text-muted-foreground w-full md:w-[85%] lg:w-[75%]">
+          <p className="w-full text-muted-foreground md:w-[85%] lg:w-[75%]">
             Cek jawaban peserta, ubah nilai esai yang salah, unduh excel jawaban
             pada halaman ini juga.
           </p>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@enpitsu/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@enpitsu/ui/dialog";
 import {
   Form,
   FormControl,
@@ -18,8 +18,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@enpitsu/ui/form";
+import { Input } from "@enpitsu/ui/input";
 import {
   Select,
   SelectContent,
@@ -28,14 +28,14 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+} from "@enpitsu/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, startOfDay } from "date-fns";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/utils/api";
+import { api } from "~/trpc/react";
 
 const formSchema = z
   .object({
@@ -59,8 +59,6 @@ export function AddBannedStudent() {
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [selectedSubgradeId, setSubgradeId] = useState<number | null>(null);
 
-  const { toast } = useToast();
-
   const apiUtils = api.useUtils();
 
   const addNewBannedStudent = api.grade.addTemporaryBan.useMutation({
@@ -70,8 +68,7 @@ export function AddBannedStudent() {
 
       await apiUtils.question.getStudentTempobans.invalidate();
 
-      toast({
-        title: "Penambahan Larangan Berhasil!",
+      toast.success("Penambahan Larangan Berhasil!", {
         description: `Berhasil menambahkan peserta!`,
       });
 
@@ -79,9 +76,7 @@ export function AddBannedStudent() {
     },
 
     onError(error) {
-      toast({
-        variant: "destructive",
-        title: "Operasi Gagal",
+      toast.error("Operasi Gagal", {
         description: `Terjadi kesalahan, Error: ${error.message}`,
       });
     },
@@ -103,7 +98,7 @@ export function AddBannedStudent() {
     <Dialog
       open={isDialogOpen}
       onOpenChange={() => {
-        if (addNewBannedStudent.isLoading) return;
+        if (addNewBannedStudent.isPending) return;
 
         form.reset();
         setSubgradeId(null);
@@ -149,9 +144,9 @@ export function AddBannedStudent() {
                         });
                       }}
                       disabled={
-                        subgradesWithGrade.isLoading ||
+                        subgradesWithGrade.isPending ||
                         subgradesWithGrade.isError ||
-                        addNewBannedStudent.isLoading
+                        addNewBannedStudent.isPending
                       }
                     >
                       <SelectTrigger>
@@ -193,12 +188,12 @@ export function AddBannedStudent() {
                           }
                           value={field.value === 0 ? "" : String(field.value)}
                           disabled={
-                            subgradesWithGrade.isLoading ||
+                            subgradesWithGrade.isPending ||
                             subgradesWithGrade.isError ||
                             !selectedSubgradeId ||
-                            studentLists.isLoading ||
+                            studentLists.isPending ||
                             studentLists.isError ||
-                            addNewBannedStudent.isLoading
+                            addNewBannedStudent.isPending
                           }
                         >
                           <SelectTrigger>
@@ -210,7 +205,7 @@ export function AddBannedStudent() {
                                 Daftar nama peserta
                               </SelectLabel>
 
-                              {!studentLists.isLoading &&
+                              {!studentLists.isPending &&
                               !studentLists.isError ? (
                                 <>
                                   {studentLists.data.length < 1 ? (
@@ -262,6 +257,7 @@ export function AddBannedStudent() {
                             "yyyy-MM-dd'T'HH:mm",
                           )}
                           value={
+                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             field.value
                               ? format(field.value, "yyyy-MM-dd'T'HH:mm")
                               : ""
@@ -273,9 +269,9 @@ export function AddBannedStudent() {
                           }
                           disabled={
                             !selectedSubgradeId ||
-                            studentLists.isLoading ||
+                            studentLists.isPending ||
                             studentLists.isError ||
-                            addNewBannedStudent.isLoading
+                            addNewBannedStudent.isPending
                           }
                         />
                       </FormControl>
@@ -298,6 +294,7 @@ export function AddBannedStudent() {
                         <Input
                           type="datetime-local"
                           min={
+                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             form.getValues("startedAt")
                               ? format(
                                   form.getValues("startedAt"),
@@ -306,6 +303,7 @@ export function AddBannedStudent() {
                               : ""
                           }
                           value={
+                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             field.value
                               ? format(field.value, "yyyy-MM-dd'T'HH:mm")
                               : ""
@@ -317,10 +315,11 @@ export function AddBannedStudent() {
                           }
                           disabled={
                             !selectedSubgradeId ||
-                            studentLists.isLoading ||
+                            studentLists.isPending ||
                             studentLists.isError ||
+                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             !form.getValues("startedAt") ||
-                            addNewBannedStudent.isLoading
+                            addNewBannedStudent.isPending
                           }
                         />
                       </FormControl>
@@ -347,9 +346,9 @@ export function AddBannedStudent() {
                         placeholder="Masukan alasan logis"
                         disabled={
                           !selectedSubgradeId ||
-                          studentLists.isLoading ||
+                          studentLists.isPending ||
                           studentLists.isError ||
-                          addNewBannedStudent.isLoading
+                          addNewBannedStudent.isPending
                         }
                       />
                     </FormControl>
@@ -364,9 +363,9 @@ export function AddBannedStudent() {
                 type="submit"
                 disabled={
                   !selectedSubgradeId ||
-                  studentLists.isLoading ||
+                  studentLists.isPending ||
                   studentLists.isError ||
-                  addNewBannedStudent.isLoading
+                  addNewBannedStudent.isPending
                 }
               >
                 Tambah

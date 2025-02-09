@@ -77,9 +77,9 @@ export default function App() {
         httpBatchLink({
           url: env.VITE_TRPC_URL,
           headers: getHeaders,
+          transformer: superjson,
         }),
       ],
-      transformer: superjson,
     }),
   );
 
