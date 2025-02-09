@@ -1,4 +1,6 @@
+import type { RouterOutputs } from "@enpitsu/api";
 import { memo } from "react";
+import { cn } from "@enpitsu/ui";
 import { Button } from "@enpitsu/ui/button";
 import {
   Sheet,
@@ -8,15 +10,43 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@enpitsu/ui/sheet";
-import { Loader2 } from "lucide-react";
+import {
+  LaptopMinimalCheck,
+  Loader2,
+  LoaderPinwheel,
+  OctagonX,
+} from "lucide-react";
 
-export const EligibleStatus = memo(function EligibleStatus() {
+interface Props {
+  isPending: boolean;
+  isError: boolean;
+  data: RouterOutputs["question"]["getEligibleStatusFromQuestion"];
+}
+
+export const EligibleStatus = memo(function EligibleStatus({
+  isPending,
+  isError,
+  data,
+}: Props) {
   return (
     <div className="w-full md:fixed md:bottom-2 md:right-2 md:w-fit">
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="outline" className="w-full md:w-fit">
-            <Loader2 className="h-10 w-10 animate-spin" />
+          <Button
+            variant={isError ? "destructive" : ""}
+            className="w-full md:w-fit"
+          >
+            {isPending ? (
+              <Loader2 className="h-24 w-24 animate-spin" />
+            ) : data.eligible === "NOT_ELIGIBLE" || isError ? (
+              <OctagonX
+                className={cn("h-24 w-24", !isError && "text-red-500")}
+              />
+            ) : data.eligible === "PROCESSING" ? (
+              <LoaderPinwheel className="h-24 w-24 animate-spin" />
+            ) : (
+              <LaptopMinimalCheck className="h-24 w-24" />
+            )}
           </Button>
         </SheetTrigger>
         <SheetContent>
@@ -31,6 +61,8 @@ export const EligibleStatus = memo(function EligibleStatus() {
             </SheetDescription>
 
             <p className="mt-2">Status: LOADING</p>
+
+            <pre>{JSON.stringify(data, null, 2)}</pre>
           </SheetHeader>
         </SheetContent>
       </Sheet>

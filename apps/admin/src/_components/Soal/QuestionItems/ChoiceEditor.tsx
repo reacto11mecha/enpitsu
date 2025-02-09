@@ -156,6 +156,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
     async onSettled() {
       // Sync with server once mutation has settled
       await utils.question.getSpecificChoiceQuestion.invalidate();
+      await utils.question.getEligibleStatusFromQuestion.invalidate();
     },
   });
 
@@ -192,6 +193,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
     async onSettled() {
       // Sync with server once mutation has settled
       await utils.question.getChoicesIdByQuestionId.invalidate({ questionId });
+      await utils.question.getEligibleStatusFromQuestion.invalidate();
     },
   });
 

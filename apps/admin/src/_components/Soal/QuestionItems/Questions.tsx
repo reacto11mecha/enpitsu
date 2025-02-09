@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button } from "@enpitsu/ui/button";
 import { Loader2, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -19,6 +20,8 @@ export const Questions = ({
 }) => {
   const utils = api.useUtils();
 
+  const [eligibleRefetchInterval, setERI] = useState(0);
+
   const choicesIdQuery = api.question.getChoicesIdByQuestionId.useQuery(
     { questionId },
     {
@@ -28,6 +31,7 @@ export const Questions = ({
   const createNewChoiceMutation = api.question.createNewChoice.useMutation({
     async onSuccess() {
       await utils.question.getChoicesIdByQuestionId.invalidate();
+      await utils.question.getEligibleStatusFromQuestion.invalidate();
     },
     onError(error) {
       toast.error(`Gagal Membuat Soal PG`, {
@@ -47,6 +51,7 @@ export const Questions = ({
   const createNewEssayMutation = api.question.createNewEssay.useMutation({
     async onSuccess() {
       await utils.question.getEssaysIdByQuestionId.invalidate();
+      await utils.question.getEligibleStatusFromQuestion.invalidate();
     },
     onError(error) {
       toast.error(`Gagal Membuat Soal Esai`, {
@@ -54,6 +59,30 @@ export const Questions = ({
       });
     },
   });
+
+  const eligibleQuestionStatus =
+    api.question.getEligibleStatusFromQuestion.useQuery(
+      { questionId },
+      {
+        refetchOnWindowFocus: false,
+        refetchInterval: eligibleRefetchInterval,
+      },
+    );
+
+  useEffect(() => {
+    if (eligibleQuestionStatus.data) {
+      if (
+        eligibleRefetchInterval === 0 &&
+        eligibleQuestionStatus.data.eligible === "PROCESSING"
+      )
+        setERI(5000);
+      else if (
+        eligibleRefetchInterval === 5000 &&
+        eligibleQuestionStatus.data.eligible === "ELIGIBLE"
+      )
+        setERI(0);
+    }
+  }, [eligibleQuestionStatus.data, eligibleRefetchInterval]);
 
   return (
     <div className="mt-5 flex flex-col gap-8 pb-16">
@@ -154,7 +183,11 @@ export const Questions = ({
           </div>
         </div>
 
-        <EligibleStatus />
+        <EligibleStatus
+          isPending={eligibleQuestionStatus.isPending}
+          isError={eligibleQuestionStatus.isError}
+          data={eligibleQuestionStatus.data}
+        />
       </div>
     </div>
   );

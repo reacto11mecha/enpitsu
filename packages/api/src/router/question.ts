@@ -2,6 +2,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { and, asc, count, desc, eq, inArray } from "@enpitsu/db";
 import {
   specificQuestionData,
+  specificQuestionEligibleStatus,
   studentRespondsByQuestionData,
   studentRespondsData,
 } from "@enpitsu/db/client";
@@ -698,6 +699,13 @@ export const questionRouter = {
               "Sudah terdapat jawaban pada soal ini, maka tidak bisa dihapus",
           });
 
+        await tx
+          .update(schema.questions)
+          .set({
+            eligible: "PROCESSING",
+          })
+          .where(eq(schema.questions.id, currentChoiceData.at(0)!.questionId));
+
         return await tx
           .delete(schema.multipleChoices)
           .where(eq(schema.multipleChoices.iqid, input.id))
@@ -734,6 +742,13 @@ export const questionRouter = {
               "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
           });
         }
+
+        await tx
+          .update(schema.questions)
+          .set({
+            eligible: "PROCESSING",
+          })
+          .where(eq(schema.questions.id, input.questionId));
 
         return await tx.insert(schema.multipleChoices).values({
           ...input,
@@ -793,6 +808,13 @@ export const questionRouter = {
               "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
           });
         }
+
+        await tx
+          .update(schema.questions)
+          .set({
+            eligible: "PROCESSING",
+          })
+          .where(eq(schema.questions.id, input.questionId));
 
         return await tx.insert(schema.essays).values({
           question: "",
@@ -914,11 +936,22 @@ export const questionRouter = {
           });
         }
 
+        await tx
+          .update(schema.questions)
+          .set({
+            eligible: "PROCESSING",
+          })
+          .where(eq(schema.questions.id, currentEssayData.at(0)!.questionId));
+
         return await tx
           .delete(schema.essays)
           .where(eq(schema.essays.iqid, input.essayIqid));
       }),
     ),
+
+  getEligibleStatusFromQuestion: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .query(({ ctx, input }) => specificQuestionEligibleStatus.execute(input)),
   // ended at this line
 
   // Correction purpose endpoint started from this line below

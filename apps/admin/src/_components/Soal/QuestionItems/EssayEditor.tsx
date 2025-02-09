@@ -132,6 +132,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
     async onSettled() {
       // Sync with server once mutation has settled
       await utils.question.getSpecificEssayQuestion.invalidate();
+      await utils.question.getEligibleStatusFromQuestion.invalidate();
     },
   });
 
@@ -168,6 +169,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
     async onSettled() {
       // Sync with server once mutation has settled
       await utils.question.getEssaysIdByQuestionId.invalidate({ questionId });
+      await utils.question.getEligibleStatusFromQuestion.invalidate();
     },
   });
 

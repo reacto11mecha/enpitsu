@@ -142,6 +142,17 @@ export const specificQuestionData = db.query.questions
   })
   .prepare("specificQuestionData");
 
+export const specificQuestionEligibleStatus = db.query.questions
+  .findFirst({
+    where: eq(schema.questions.id, sql.placeholder("questionId")),
+    columns: {
+      eligible: true,
+      notEligibleReason: true,
+      detailedNotEligible: true,
+    },
+  })
+  .prepare("specificQuestionEligibleStatus");
+
 export const studentRespondsByQuestionData = db.query.studentResponds
   .findMany({
     where: eq(schema.studentResponds.questionId, sql.placeholder("questionId")),
