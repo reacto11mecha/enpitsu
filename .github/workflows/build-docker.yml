@@ -30,3 +30,10 @@ jobs:
           file: "./apps/admin/Dockerfile"
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/enpitsu:${{ github.ref_name }}
+
+      - name: Deploy
+        uses: darnfish/watchtower-update@v3.2
+        with:
+          url: "${{ secrets.WATCHTOWER_URL }}"
+          api_token: "${{ secrets.WATCHTOWER_API_TOKEN }}"
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/enpitsu:${{ github.ref_name }}
