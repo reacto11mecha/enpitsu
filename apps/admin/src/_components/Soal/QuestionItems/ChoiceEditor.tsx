@@ -220,7 +220,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
 
   return (
     <Form {...form}>
-      <Card>
+      <Card id={`choice-iqid-${choiceIqid}`}>
         <CardHeader>
           <CardTitle>Soal Nomor {questionNo}</CardTitle>
           <CardDescription className="text-muted-foreground">

@@ -53,6 +53,7 @@ export const validateQuestionFromQueue = async (loggerDirectory: string) => {
             eligible: "NOT_ELIGIBLE",
             notEligibleReason:
               "Minimal terdapat satu soal pilihan ganda atau soal esai.",
+            detailedNotEligible: [],
           })
           .where(eq(schema.questions.id, job.data.questionId));
 

@@ -10,7 +10,7 @@ export function checkMultipleChoices(
   choices: TQuestionForCheck["multipleChoices"],
 ): DetailedError[] {
   const allDetectedError = choices
-    .map((choice) => {
+    .map((choice, idx) => {
       const errorMessages = [];
 
       const noQuestion = isEmpty(choice.question.trim());
@@ -21,6 +21,8 @@ export function checkMultipleChoices(
 
       if (!noQuestion && !someOfAnswerOptionsAreEmpty && !noAnswerOrder)
         return null;
+
+      errorMessages.push(`SOAL NOMOR: ${idx + 1};`);
 
       if (noQuestion) {
         errorMessages.push("Pertanyaan masih kosong.");
@@ -49,13 +51,15 @@ export function checkEssays(
   essays: TQuestionForCheck["essays"],
 ): DetailedError[] {
   const allDetectedError = essays
-    .map((essay) => {
+    .map((essay, idx) => {
       const errorMessages = [];
 
       const noQuestion = isEmpty(essay.question.trim());
       const noAnswer = essay.answer.length === 0 || essay.answer === "";
 
       if (!noQuestion && !noAnswer) return null;
+
+      errorMessages.push(`SOAL NOMOR: ${idx + 1};`);
 
       if (noQuestion) {
         errorMessages.push("Pertanyaan masih kosong.");

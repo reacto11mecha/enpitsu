@@ -196,7 +196,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
 
   return (
     <Form {...form}>
-      <Card>
+      <Card id={`essay-iqid-${essayIqid}`}>
         <CardHeader>
           <CardTitle>Esai Nomor {questionNo}</CardTitle>
           <CardDescription className="text-muted-foreground">
