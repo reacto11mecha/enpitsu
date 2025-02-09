@@ -20,11 +20,6 @@
     "prettier": "catalog:",
     "typescript": "catalog:"
   },
-  "eslintConfig": {
-    "extends": [
-      "@enpitsu/eslint-config/base"
-    ]
-  },
   "prettier": "@enpitsu/prettier-config",
   "dependencies": {
     "bullmq": "^5.40.2",

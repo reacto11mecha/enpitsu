@@ -377,6 +377,9 @@ importers:
       bullmq:
         specifier: ^5.40.2
         version: 5.40.2
+      ioredis:
+        specifier: ^5.4.2
+        version: 5.4.2
       pino:
         specifier: ^9.6.0
         version: 9.6.0

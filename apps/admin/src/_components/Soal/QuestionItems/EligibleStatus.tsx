@@ -115,8 +115,7 @@ export const EligibleStatus = memo(function EligibleStatus({
               </p>
             ) : null}
 
-            {currentStatus.showReason &&
-            data?.detailedNotEligible.length > 0 ? (
+            {currentStatus.showReason && data?.detailedNotEligible ? (
               <div className="mt-12 flex max-h-[55vh] flex-col gap-5 overflow-y-auto pb-14">
                 {data.detailedNotEligible.some(
                   (detail) => detail.type === "choice",
