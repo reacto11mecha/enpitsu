@@ -85,6 +85,34 @@ export const preparedQuestionSelect = db.query.questions
   })
   .prepare("unversalQuestionSelect");
 
+export const preparedQuestionForCheck = db.query.questions
+  .findFirst({
+    where: eq(schema.questions.id, sql.placeholder("questionId")),
+    columns: {
+      id: true,
+    },
+    with: {
+      multipleChoices: {
+        orderBy: (choice, { asc }) => [asc(choice.iqid)],
+        columns: {
+          iqid: true,
+          question: true,
+          options: true,
+          correctAnswerOrder: true,
+        },
+      },
+      essays: {
+        orderBy: (essay, { asc }) => [asc(essay.iqid)],
+        columns: {
+          iqid: true,
+          question: true,
+          answer: true,
+        },
+      },
+    },
+  })
+  .prepare("preparedQuestionForCheck");
+
 export const preparedGetStudent = db.query.students
   .findFirst({
     where: eq(schema.students.token, sql.placeholder("token")),

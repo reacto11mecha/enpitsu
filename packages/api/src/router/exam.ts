@@ -22,7 +22,7 @@ type TQuestion = NonNullable<
 const getQuestionPrecheck = async (student: TStudent, question: TQuestion) => {
   const { allowLists, ...sendedData } = question;
 
-  if (!question.eligible)
+  if (question.eligible !== "ELIGIBLE")
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: `Soal yang anda kerjakan tidak layak untuk dikerjakan, mohon informasikan pengawas ruangan. Alasan: ${question.notEligibleReason}`,
@@ -247,6 +247,12 @@ export const examRouter = {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Soal tidak ditemukan.",
+          });
+
+        if (question.eligible !== "ELIGIBLE")
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: `Soal yang anda submit belum layak untuk dikerjakan, mungkin dikarenakan modifikasi oleh panitia. Mohon informasikan pengawas ruangan terkait masalah ini. Alasan: ${question.notEligibleReason}`,
           });
 
         if (question.startedAt >= new Date())

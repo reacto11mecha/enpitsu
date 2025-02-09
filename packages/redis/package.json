@@ -27,6 +27,7 @@
   },
   "prettier": "@enpitsu/prettier-config",
   "dependencies": {
+    "bullmq": "^5.40.2",
     "ioredis": "^5.4.2"
   }
 }

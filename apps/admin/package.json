@@ -59,7 +59,7 @@
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",
     "@types/string-similarity": "^4.0.2",
-    "dotenv-cli": "^7.3.0",
+    "dotenv-cli": "^7.4.4",
     "eslint": "catalog:",
     "jiti": "^2.4.2",
     "prettier": "catalog:",
