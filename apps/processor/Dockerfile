@@ -36,10 +36,10 @@ RUN CI=true SKIP_ENV_VALIDATION=true turbo run build --filter=@enpitsu/processor
 WORKDIR /app/apps/processor
 RUN <<EOF
   mkdir -p /question-processor
-  pnpm pack --pack-destination /question-processor/out.tgz
+  pnpm pack --pack-destination /question-processor/packed
   cd /question-processor
   echo '{ "name": "question-processor", "type": "module" }' > package.json
-  pnpm add ./out.tgz
+  pnpm add ./packed/enpitsu-processor-0.1.0.tgz
 EOF
 
 # Debugging purpose
