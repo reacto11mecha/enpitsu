@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { auth } from "@enpitsu/auth";
 import { eq } from "@enpitsu/db";
 import { db } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
@@ -23,6 +24,8 @@ export default async function QuestionItemsPage({
 
   if (!question) return redirect("/admin/soal");
 
+  const authData = await auth();
+
   return (
     <div className="mt-5 flex flex-col gap-7 px-5 py-5 md:items-center">
       <div className="w-full md:w-[80%]">
@@ -34,7 +37,11 @@ export default async function QuestionItemsPage({
           </p>
         </div>
 
-        <Questions questionId={id} title={question.title} />
+        <Questions
+          userName={authData!.user.name}
+          questionId={id}
+          title={question.title}
+        />
       </div>
     </div>
   );

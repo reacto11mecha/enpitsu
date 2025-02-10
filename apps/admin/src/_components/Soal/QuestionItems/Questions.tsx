@@ -16,9 +16,11 @@ import { BasicLoading } from "./NewLoadingQuestion";
 export const Questions = ({
   questionId,
   title,
+  userName,
 }: {
   questionId: number;
   title: string;
+  userName: string;
 }) => {
   const utils = api.useUtils();
 
@@ -26,7 +28,10 @@ export const Questions = ({
 
   const yDoc = useMemo(() => new Y.Doc(), []);
   const yProvider = useMemo(
-    () => new WebrtcProvider(`question-${questionId}`, yDoc),
+    () =>
+      new WebrtcProvider(`question-${questionId}`, yDoc, {
+        signaling: ["ws://localhost:4444"],
+      }),
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -78,6 +83,12 @@ export const Questions = ({
         refetchInterval: eligibleRefetchInterval,
       },
     );
+
+  useEffect(() => {
+    yProvider.awareness.setLocalStateField("user", { name: userName });
+
+    console.log(yDoc);
+  }, []);
 
   useEffect(() => {
     if (eligibleQuestionStatus.data) {

@@ -39,12 +39,8 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { api } from "~/trpc/react";
+import Editor from "./Editor";
 import { useDebounce } from "./utils";
-
-const Editor = dynamic(() => import("./Editor"), {
-  ssr: false,
-  loading: () => <Skeleton className="h-10 w-full" />,
-});
 
 const formSchema = z.object({
   question: z.string().min(1, { message: "Pertanyaan wajib di isi!" }),
