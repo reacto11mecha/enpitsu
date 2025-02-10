@@ -1,7 +1,8 @@
 "use client";
 
+import type { WebrtcProvider } from "y-webrtc";
+import type { Doc as YDoc } from "yjs";
 import { memo, useEffect, useRef } from "react";
-import dynamic from "next/dynamic";
 import { Button } from "@enpitsu/ui/button";
 import {
   Card,
@@ -38,12 +39,13 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { api } from "~/trpc/react";
+import Editor from "./Editor";
 import { useDebounce } from "./utils";
 
-const Editor = dynamic(() => import("./Editor"), {
-  ssr: false,
-  loading: () => <Skeleton className="h-10 w-full" />,
-});
+// const Editor = dynamic(() => import("./Editor"), {
+//   ssr: false,
+//   loading: () => <Skeleton className="h-10 w-full" />,
+// });
 
 const formSchema = z.object({
   question: z.string().min(1, { message: "Pertanyaan wajib di isi!" }),
@@ -65,11 +67,15 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
   questionId,
   questionNo,
   title,
+  yDoc,
+  yProvider,
 }: {
   choiceIqid: number;
   questionId: number;
   questionNo: number;
   title: string;
+  yDoc: YDoc;
+  yProvider: WebrtcProvider;
 }) {
   const dataAlreadyInitialized = useRef(false);
 
@@ -116,6 +122,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
         dataAlreadyInitialized.current = true;
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     specificChoiceQuery.data,
     specificChoiceQuery.error,
@@ -240,6 +247,9 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
                   <FormLabel>Pertanyaan</FormLabel>
                   <FormControl>
                     <Editor
+                      yProvider={yProvider}
+                      yDoc={yDoc}
+                      namedYText={`choice-iqid-question-${choiceIqid}`}
                       needAudioInput
                       value={field.value}
                       setValue={field.onChange}
@@ -278,7 +288,8 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
                               <FormControl>
                                 <div
                                   className="flex flex-row items-center gap-3"
-                                  onPaste={(e) => {
+                                  onPasteCapture={(e) => {
+                                    console.log(form.getValues("options"));
                                     if (
                                       form
                                         .getValues("options")
@@ -314,6 +325,9 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
                                   <Checkbox disabled className="rounded-full" />
 
                                   <Editor
+                                    yProvider={yProvider}
+                                    yDoc={yDoc}
+                                    namedYText={`choice-iqid-${choiceIqid}-${optIndex}`}
                                     value={currentField.value}
                                     setValue={currentField.onChange}
                                   />

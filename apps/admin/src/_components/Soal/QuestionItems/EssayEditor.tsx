@@ -1,5 +1,7 @@
 "use client";
 
+import type { WebrtcProvider } from "y-webrtc";
+import type { Doc as YDoc } from "yjs";
 import { memo, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Button } from "@enpitsu/ui/button";
@@ -55,11 +57,15 @@ export const EssayEditor = memo(function EssayEditorConstructor({
   questionId,
   questionNo,
   title,
+  yDoc,
+  yProvider,
 }: {
   essayIqid: number;
   questionId: number;
   questionNo: number;
   title: string;
+  yDoc: YDoc;
+  yProvider: WebrtcProvider;
 }) {
   const [dataAlreadyInitialized, setInitialized] = useState(false);
 
@@ -215,7 +221,13 @@ export const EssayEditor = memo(function EssayEditorConstructor({
                 <FormItem>
                   <FormLabel>Pertanyaan</FormLabel>
                   <FormControl>
-                    <Editor value={field.value} setValue={field.onChange} />
+                    <Editor
+                      value={field.value}
+                      setValue={field.onChange}
+                      yProvider={yProvider}
+                      yDoc={yDoc}
+                      namedYText={`essay-iqid-question-${essayIqid}`}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

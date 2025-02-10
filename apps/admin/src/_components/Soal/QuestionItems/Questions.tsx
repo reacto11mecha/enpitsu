@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@enpitsu/ui/button";
 import { Loader2, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
+import { WebrtcProvider } from "y-webrtc";
+import * as Y from "yjs";
 
 import { api } from "~/trpc/react";
 import { ChoiceEditor } from "./ChoiceEditor";
@@ -21,6 +23,14 @@ export const Questions = ({
   const utils = api.useUtils();
 
   const [eligibleRefetchInterval, setERI] = useState(0);
+
+  const yDoc = useMemo(() => new Y.Doc(), []);
+  const yProvider = useMemo(
+    () => new WebrtcProvider(`question-${questionId}`, yDoc),
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   const choicesIdQuery = api.question.getChoicesIdByQuestionId.useQuery(
     { questionId },
@@ -99,6 +109,8 @@ export const Questions = ({
               questionNo={idx + 1}
               title={title}
               questionId={questionId}
+              yDoc={yDoc}
+              yProvider={yProvider}
             />
           ))}
 
@@ -147,6 +159,8 @@ export const Questions = ({
                 questionNo={idx + 1}
                 title={title}
                 questionId={questionId}
+                yDoc={yDoc}
+                yProvider={yProvider}
               />
             ))}
 
