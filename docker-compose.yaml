@@ -53,7 +53,7 @@ services:
       - 3000:3000
 
   processor:
-    container_name: enpitsu_vote_processor
+    container_name: enpitsu_question_processor
     image: rmecha/enpitsu-processor:main
     restart: always
     volumes:
@@ -78,6 +78,7 @@ services:
 volumes:
   db:
   cache:
+  processor_log:
   # chibisafe_db:
   # chibisafe_uploads:
   # chibisafe_logs:
