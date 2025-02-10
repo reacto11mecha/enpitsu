@@ -39,6 +39,7 @@ export default async function QuestionItemsPage({
 
         <Questions
           userName={authData!.user.name}
+          userImage={authData!.user.image}
           questionId={id}
           title={question.title}
         />

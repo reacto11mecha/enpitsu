@@ -1,6 +1,8 @@
 import type { RouterOutputs } from "@enpitsu/api";
-import { memo, useMemo, useState } from "react";
+import type { WebrtcProvider } from "y-webrtc";
+import { memo, useEffect, useMemo, useState } from "react";
 import { cn } from "@enpitsu/ui";
+import { Avatar, AvatarFallback, AvatarImage } from "@enpitsu/ui/avatar";
 import { Button } from "@enpitsu/ui/button";
 import {
   Sheet,
@@ -10,6 +12,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@enpitsu/ui/sheet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@enpitsu/ui/tooltip";
 import {
   LaptopMinimalCheck,
   Loader2,
@@ -21,13 +29,20 @@ interface Props {
   isPending: boolean;
   isError: boolean;
   data: RouterOutputs["question"]["getEligibleStatusFromQuestion"] | undefined;
+  yProvider: WebrtcProvider;
 }
 
 export const EligibleStatus = memo(function EligibleStatus({
   isPending,
   isError,
   data,
+  yProvider,
 }: Props) {
+  const [anotherJoinedUsers, setAnotherUsers] = useState<{
+    name: string;
+    color: string;
+    image: string;
+  }>([]);
   const [sheetOpened, setOpened] = useState(false);
 
   const currentStatus = useMemo(() => {
@@ -65,8 +80,62 @@ export const EligibleStatus = memo(function EligibleStatus({
     }
   }, [isPending, isError, data]);
 
+  useEffect(() => {
+    const evtCallback = () => {
+      const copiedMap = new Map(yProvider.awareness.getStates());
+      copiedMap.delete(yProvider.awareness.clientID);
+
+      const myself = yProvider.awareness.getLocalState();
+
+      if (copiedMap.size === 0) {
+        setAnotherUsers([]);
+
+        return;
+      }
+
+      const newData = Array.from(copiedMap)
+        .map(([_, d]) => d.user)
+        .filter((user) => myself.user.image !== user.image);
+      const removeDuplicate = Array.from(
+        new Set(newData.map((nd) => nd.image)),
+      ).map((img) => newData.find((d) => d.image === img));
+
+      setAnotherUsers(removeDuplicate);
+    };
+
+    yProvider.awareness.on("change", evtCallback);
+
+    return () => {
+      yProvider.awareness.off("change", evtCallback);
+    };
+  }, [yProvider.awareness]);
+
   return (
     <div className="w-full md:fixed md:bottom-2 md:right-2 md:w-fit">
+      {anotherJoinedUsers.length > 0 ? (
+        <div className="mb-2 md:flex md:max-h-[45vh] md:flex-col md:items-center md:justify-center md:gap-1.5 md:overflow-y-auto">
+          <TooltipProvider>
+            {anotherJoinedUsers.map((user) => (
+              <Tooltip key={user.image}>
+                <TooltipTrigger>
+                  <Avatar
+                    className="border"
+                    style={{ borderColor: user.color }}
+                  >
+                    <AvatarImage src={user.image} />
+                    <AvatarFallback className="uppercase">
+                      {user.name ? user.name.slice(0, 2) : "N/A"}
+                    </AvatarFallback>
+                  </Avatar>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{user.name}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </TooltipProvider>
+        </div>
+      ) : null}
       <Sheet
         open={sheetOpened}
         onOpenChange={() => {

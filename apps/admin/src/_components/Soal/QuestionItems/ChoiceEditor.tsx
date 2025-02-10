@@ -196,6 +196,13 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
       // Sync with server once mutation has settled
       await utils.question.getChoicesIdByQuestionId.invalidate({ questionId });
       await utils.question.getEligibleStatusFromQuestion.invalidate();
+
+      const customEvent = yDoc.getMap("customEvents");
+      customEvent.set("enpitsu_custom_event", {
+        type: "choice",
+        event: "delete",
+        clientID: yDoc.clientID,
+      });
     },
   });
 

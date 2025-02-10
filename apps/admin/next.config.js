@@ -16,6 +16,10 @@ const config = {
     "@enpitsu/redis",
   ],
 
+  experimental: {
+    serverComponentsExternalPackages: ["yjs"],
+  },
+
   output: "standalone",
 
   images: {

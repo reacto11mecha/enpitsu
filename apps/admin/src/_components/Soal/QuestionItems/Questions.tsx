@@ -13,14 +13,33 @@ import { EligibleStatus } from "./EligibleStatus";
 import { EssayEditor } from "./EssayEditor";
 import { BasicLoading } from "./NewLoadingQuestion";
 
+const usercolors = [
+  "#30bced",
+  "#6eeb83",
+  "#ee6352",
+  "#9ac2c9",
+  "#8acb88",
+  "#1be7ff",
+];
+const getColor = () =>
+  usercolors[Math.floor(Math.random() * usercolors.length)];
+
+export interface ICustomEvent {
+  type: string;
+  event: string;
+  clientID: number;
+}
+
 export const Questions = ({
   questionId,
   title,
   userName,
+  userImage,
 }: {
   questionId: number;
   title: string;
   userName: string;
+  userImage: string;
 }) => {
   const utils = api.useUtils();
 
@@ -47,6 +66,13 @@ export const Questions = ({
     async onSuccess() {
       await utils.question.getChoicesIdByQuestionId.invalidate();
       await utils.question.getEligibleStatusFromQuestion.invalidate();
+
+      const customEvent = yDoc.getMap("customEvents");
+      customEvent.set("enpitsu_custom_event", {
+        type: "choice",
+        event: "create",
+        clientID: yDoc.clientID,
+      });
     },
     onError(error) {
       toast.error(`Gagal Membuat Soal PG`, {
@@ -67,6 +93,13 @@ export const Questions = ({
     async onSuccess() {
       await utils.question.getEssaysIdByQuestionId.invalidate();
       await utils.question.getEligibleStatusFromQuestion.invalidate();
+
+      const customEvent = yDoc.getMap("customEvents");
+      customEvent.set("enpitsu_custom_event", {
+        type: "essay",
+        event: "create",
+        clientID: yDoc.clientID,
+      });
     },
     onError(error) {
       toast.error(`Gagal Membuat Soal Esai`, {
@@ -85,9 +118,63 @@ export const Questions = ({
     );
 
   useEffect(() => {
-    yProvider.awareness.setLocalStateField("user", { name: userName });
+    yProvider.awareness.setLocalStateField("user", {
+      name: userName,
+      color: getColor(),
+      image: userImage,
+    });
 
-    console.log(yDoc);
+    const customEvents = yDoc.getMap<ICustomEvent>("customEvents");
+
+    const eventListener = (event: Y.YMapEvent<ICustomEvent>) => {
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      void event.changes.keys.forEach(async (_change, key) => {
+        if (key === "enpitsu_custom_event") {
+          const eventData = customEvents.get(key)!;
+
+          if (eventData.clientID !== yDoc.clientID) {
+            if (eventData.type === "choice") {
+              switch (eventData.event) {
+                case "delete":
+                case "create": {
+                  await utils.question.getChoicesIdByQuestionId.invalidate();
+                  await utils.question.getEligibleStatusFromQuestion.invalidate();
+
+                  break;
+                }
+
+                default: {
+                  break;
+                }
+              }
+
+              // this is an essay event handler
+            } else {
+              switch (eventData.event) {
+                case "delete":
+                case "create": {
+                  await utils.question.getEssaysIdByQuestionId.invalidate();
+                  await utils.question.getEligibleStatusFromQuestion.invalidate();
+
+                  break;
+                }
+
+                default: {
+                  break;
+                }
+              }
+            }
+          }
+        }
+      });
+    };
+
+    customEvents.observe(eventListener);
+
+    return () => {
+      customEvents.unobserve(eventListener);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -212,6 +299,7 @@ export const Questions = ({
           isPending={eligibleQuestionStatus.isPending}
           isError={eligibleQuestionStatus.isError}
           data={eligibleQuestionStatus.data}
+          yProvider={yProvider}
         />
       </div>
     </div>

@@ -3,7 +3,6 @@
 import type { WebrtcProvider } from "y-webrtc";
 import type { Doc as YDoc } from "yjs";
 import { memo, useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import { Button } from "@enpitsu/ui/button";
 import {
   Card,
@@ -99,6 +98,8 @@ export const EssayEditor = memo(function EssayEditorConstructor({
         setInitialized(true);
       }
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [specificEssayQuery.data, specificEssayQuery.error, form]);
 
   const specificEssayMutation = api.question.updateSpecificEssay.useMutation({
@@ -172,6 +173,13 @@ export const EssayEditor = memo(function EssayEditorConstructor({
       // Sync with server once mutation has settled
       await utils.question.getEssaysIdByQuestionId.invalidate({ questionId });
       await utils.question.getEligibleStatusFromQuestion.invalidate();
+
+      const customEvent = yDoc.getMap("customEvents");
+      customEvent.set("enpitsu_custom_event", {
+        type: "essay",
+        event: "delete",
+        clientID: yDoc.clientID,
+      });
     },
   });
 
