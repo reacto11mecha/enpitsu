@@ -1,4 +1,5 @@
 CREATE TYPE "public"."role" AS ENUM('admin', 'user');--> statement-breakpoint
+CREATE TYPE "public"."eligible" AS ENUM('ELIGIBLE', 'PROCESSING', 'NOT_ELIGIBLE');--> statement-breakpoint
 CREATE TABLE "enpitsu_account" (
 	"user_id" uuid NOT NULL,
 	"type" varchar(255) NOT NULL,
@@ -78,6 +79,9 @@ CREATE TABLE "enpitsu_question" (
 	"multiple_choice_options" integer NOT NULL,
 	"started_at" timestamp NOT NULL,
 	"ended_at" timestamp NOT NULL,
+	"eligible" "eligible" DEFAULT 'NOT_ELIGIBLE' NOT NULL,
+	"detailed_not_eligible" json,
+	"not_eligible_reason" text DEFAULT 'Soal masih kosong, mohon isi soal terlebih dahulu' NOT NULL,
 	"author_id" uuid NOT NULL
 );
 --> statement-breakpoint
