@@ -4,7 +4,7 @@ FROM node:20 AS base
 RUN <<EOF 
   apt-get update -y
   apt-get install libc6 libc++1 bash -y
-  corepack enable
+  npm install -g pnpm
 EOF
 
 FROM base AS with-turbo
