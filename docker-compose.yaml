@@ -19,8 +19,13 @@ services:
 
   cache:
     image: redis:6.2-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
     restart: always
-    command: redis-server --save 20 1 --loglevel warning --requirepass enpitsu
+    command: redis-server --save 20 1 --loglevel warning --requirepass enpitsu --maxmemory-policy noeviction
     volumes:
       - cache:/data
     expose:
@@ -30,9 +35,14 @@ services:
     container_name: enpitsu_admin
     image: rmecha/enpitsu:main
     restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql://enpitsu:enpitsu@db:5432/enpitsu
-      REDIS_URL: redis://:enpitsu@cache:6379/4
+      REDIS_URL: redis://:enpitsu@cache:6379/
       AUTH_URL: https://${ENPITSU_VIRTUAL_HOST}
       AUTH_SECRET: ${ENPITSU_AUTH_SECRET}
       AUTH_GOOGLE_ID: ${ENPITSU_AUTH_GOOGLE_ID}
@@ -41,6 +51,19 @@ services:
       SPECIAL_ADMIN_USERS: ${ENPITSU_SPECIAL_ADMIN_USERS}
     ports:
       - 3000:3000
+
+  processor:
+    container_name: enpitsu_vote_processor
+    image: rmecha/enpitsu-processor:main
+    restart: always
+    volumes:
+      - processor_log:/vote-processor/logs
+    depends_on:
+      web:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://enpitsu:enpitsu@db:5432/enpitsu
+      REDIS_URL: redis://:enpitsu@cache:6379/
 
   # chibisafe:
   #   image: chibisafe/chibisafe:latest
