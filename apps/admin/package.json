@@ -16,8 +16,8 @@
   "dependencies": {
     "@enpitsu/api": "workspace:^0.1.0",
     "@enpitsu/auth": "workspace:^0.1.0",
-    "@enpitsu/cache": "workspace:^0.1.0",
     "@enpitsu/db": "workspace:^0.1.0",
+    "@enpitsu/redis": "workspace:^0.1.0",
     "@enpitsu/token-generator": "workspace:^0.1.0",
     "@enpitsu/ui": "workspace:^0.1.0",
     "@tanstack/react-query": "catalog:",
@@ -59,7 +59,7 @@
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",
     "@types/string-similarity": "^4.0.2",
-    "dotenv-cli": "^7.3.0",
+    "dotenv-cli": "^7.4.4",
     "eslint": "catalog:",
     "jiti": "^2.4.2",
     "prettier": "catalog:",

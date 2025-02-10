@@ -1,17 +1,60 @@
 import type { TRPCRouterRecord } from "@trpc/server";
-import { cache } from "@enpitsu/cache";
+import type { ExtractTablesWithRelations } from "drizzle-orm";
+import type { PgTransaction } from "drizzle-orm/pg-core";
+import type { PostgresJsQueryResultHKT } from "drizzle-orm/postgres-js";
 import { and, asc, count, desc, eq, inArray } from "@enpitsu/db";
 import {
   specificQuestionData,
+  specificQuestionEligibleStatus,
   studentRespondsByQuestionData,
   studentRespondsData,
 } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
+import { cache, correctionQueue } from "@enpitsu/redis";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { adminProcedure, protectedProcedure } from "../trpc";
 import { compareTwoStringLikability } from "../utils";
+
+const updateQuestionToProcessing = (
+  tx: PgTransaction<
+    PostgresJsQueryResultHKT,
+    typeof schema,
+    ExtractTablesWithRelations<typeof schema>
+  >,
+  questionId: number,
+) =>
+  tx
+    .update(schema.questions)
+    .set({
+      eligible: "PROCESSING",
+    })
+    .where(eq(schema.questions.id, questionId));
+
+const addQuestionToQueueForProcessing = async (questionId: number) => {
+  try {
+    await correctionQueue.add(
+      "check_question",
+      { questionId },
+      {
+        removeOnComplete: true,
+        removeOnFail: true,
+        deduplication: {
+          id: `question-${questionId}`,
+        },
+        attempts: 3,
+      },
+    );
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (e: unknown) {
+    console.error({
+      code: "BULLMQ_ERR",
+      message:
+        "Gagal menambahkan queue ke bullmq, mohon periksa konektivitas redis",
+    });
+  }
+};
 
 export const questionRouter = {
   getQuestions: protectedProcedure.query(({ ctx }) =>
@@ -596,8 +639,10 @@ export const questionRouter = {
         correctAnswerOrder: z.number(),
       }),
     )
-    .mutation(async ({ ctx, input }) =>
-      ctx.db.transaction(async (tx) => {
+    .mutation(async ({ ctx, input }) => {
+      let questionId = 0;
+
+      await ctx.db.transaction(async (tx) => {
         const currentChoiceData = await tx
           .select({
             questionId: schema.multipleChoices.questionId,
@@ -627,9 +672,13 @@ export const questionRouter = {
           console.error({
             code: "REDIS_ERR",
             message:
-              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek",
           });
         }
+
+        questionId = currentChoiceData.at(0)!.questionId;
+
+        await updateQuestionToProcessing(tx, questionId);
 
         return await tx
           .update(schema.multipleChoices)
@@ -639,13 +688,17 @@ export const questionRouter = {
             correctAnswerOrder: input.correctAnswerOrder,
           })
           .where(eq(schema.multipleChoices.iqid, input.iqid));
-      }),
-    ),
+      });
+
+      await addQuestionToQueueForProcessing(questionId);
+    }),
 
   deleteSpecificChoice: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(({ ctx, input }) =>
-      ctx.db.transaction(async (tx) => {
+    .mutation(async ({ ctx, input }) => {
+      let questionId = 0;
+
+      await ctx.db.transaction(async (tx) => {
         const currentChoiceData = await tx
           .select({
             questionId: schema.multipleChoices.questionId,
@@ -691,17 +744,23 @@ export const questionRouter = {
               "Sudah terdapat jawaban pada soal ini, maka tidak bisa dihapus",
           });
 
+        questionId = currentChoiceData.at(0)!.questionId;
+
+        await updateQuestionToProcessing(tx, questionId);
+
         return await tx
           .delete(schema.multipleChoices)
           .where(eq(schema.multipleChoices.iqid, input.id))
           .returning({ iqid: schema.multipleChoices.iqid });
-      }),
-    ),
+      });
+
+      await addQuestionToQueueForProcessing(questionId);
+    }),
 
   createNewChoice: protectedProcedure
     .input(z.object({ questionId: z.number() }))
-    .mutation(async ({ ctx, input }) =>
-      ctx.db.transaction(async (tx) => {
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.transaction(async (tx) => {
         const parentQuestion = await tx.query.questions.findFirst({
           where: eq(schema.questions.id, input.questionId),
           columns: {
@@ -728,6 +787,8 @@ export const questionRouter = {
           });
         }
 
+        await updateQuestionToProcessing(tx, input.questionId);
+
         return await tx.insert(schema.multipleChoices).values({
           ...input,
           question: "",
@@ -739,8 +800,10 @@ export const questionRouter = {
             answer: "",
           })),
         });
-      }),
-    ),
+      });
+
+      await addQuestionToQueueForProcessing(input.questionId);
+    }),
 
   // Essay section
   getEssaysIdByQuestionId: protectedProcedure
@@ -757,8 +820,8 @@ export const questionRouter = {
 
   createNewEssay: protectedProcedure
     .input(z.object({ questionId: z.number() }))
-    .mutation(({ ctx, input }) =>
-      ctx.db.transaction(async (tx) => {
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.transaction(async (tx) => {
         const currentParentQuestion = await tx
           .select({
             slug: schema.questions.slug,
@@ -787,13 +850,17 @@ export const questionRouter = {
           });
         }
 
+        await updateQuestionToProcessing(tx, input.questionId);
+
         return await tx.insert(schema.essays).values({
           question: "",
           answer: "",
           questionId: input.questionId,
         });
-      }),
-    ),
+      });
+
+      await addQuestionToQueueForProcessing(input.questionId);
+    }),
 
   getSpecificEssayQuestion: protectedProcedure
     .input(z.object({ essayIqid: z.number() }))
@@ -817,8 +884,10 @@ export const questionRouter = {
         isStrictEqual: z.boolean(),
       }),
     )
-    .mutation(({ ctx, input }) =>
-      ctx.db.transaction(async (tx) => {
+    .mutation(async ({ ctx, input }) => {
+      let questionId = 0;
+
+      await ctx.db.transaction(async (tx) => {
         const currentEssayData = await tx
           .select({
             questionId: schema.essays.questionId,
@@ -852,6 +921,10 @@ export const questionRouter = {
           });
         }
 
+        questionId = currentEssayData.at(0)!.questionId;
+
+        await updateQuestionToProcessing(tx, questionId);
+
         return await tx
           .update(schema.essays)
           .set({
@@ -860,13 +933,17 @@ export const questionRouter = {
             isStrictEqual: input.isStrictEqual,
           })
           .where(eq(schema.essays.iqid, input.iqid));
-      }),
-    ),
+      });
+
+      await addQuestionToQueueForProcessing(questionId);
+    }),
 
   deleteSpecificEssay: protectedProcedure
     .input(z.object({ essayIqid: z.number() }))
-    .mutation(({ ctx, input }) =>
-      ctx.db.transaction(async (tx) => {
+    .mutation(async ({ ctx, input }) => {
+      let questionId = 0;
+
+      await ctx.db.transaction(async (tx) => {
         const currentEssayData = await tx
           .select({
             questionId: schema.essays.questionId,
@@ -900,11 +977,21 @@ export const questionRouter = {
           });
         }
 
+        questionId = currentEssayData.at(0)!.questionId;
+
+        await updateQuestionToProcessing(tx, questionId);
+
         return await tx
           .delete(schema.essays)
           .where(eq(schema.essays.iqid, input.essayIqid));
-      }),
-    ),
+      });
+
+      await addQuestionToQueueForProcessing(questionId);
+    }),
+
+  getEligibleStatusFromQuestion: protectedProcedure
+    .input(z.object({ questionId: z.number() }))
+    .query(({ input }) => specificQuestionEligibleStatus.execute(input)),
   // ended at this line
 
   // Correction purpose endpoint started from this line below

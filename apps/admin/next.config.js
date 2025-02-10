@@ -13,7 +13,7 @@ const config = {
     "@enpitsu/api",
     "@enpitsu/auth",
     "@enpitsu/db",
-    "@enpitsu/cache",
+    "@enpitsu/redis",
   ],
 
   output: "standalone",

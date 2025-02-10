@@ -121,7 +121,6 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
     specificChoiceQuery.error,
     form,
     optionsField.update,
-    toast,
   ]);
 
   const specificChoiceMutation = api.question.updateSpecificChoice.useMutation({
@@ -157,6 +156,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
     async onSettled() {
       // Sync with server once mutation has settled
       await utils.question.getSpecificChoiceQuestion.invalidate();
+      await utils.question.getEligibleStatusFromQuestion.invalidate();
     },
   });
 
@@ -193,6 +193,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
     async onSettled() {
       // Sync with server once mutation has settled
       await utils.question.getChoicesIdByQuestionId.invalidate({ questionId });
+      await utils.question.getEligibleStatusFromQuestion.invalidate();
     },
   });
 
@@ -219,7 +220,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
 
   return (
     <Form {...form}>
-      <Card>
+      <Card id={`choice-iqid-${choiceIqid}`}>
         <CardHeader>
           <CardTitle>Soal Nomor {questionNo}</CardTitle>
           <CardDescription className="text-muted-foreground">

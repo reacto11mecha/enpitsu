@@ -1,5 +1,4 @@
 import type { TRPCRouterRecord } from "@trpc/server";
-import { cache } from "@enpitsu/cache";
 import { eq } from "@enpitsu/db";
 import {
   preparedQuestionSelect,
@@ -8,6 +7,7 @@ import {
   preparedStudentIsTemporarilyBanned,
 } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
+import { cache } from "@enpitsu/redis";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -22,6 +22,12 @@ type TQuestion = NonNullable<
 const getQuestionPrecheck = async (student: TStudent, question: TQuestion) => {
   const { allowLists, ...sendedData } = question;
 
+  if (question.eligible !== "ELIGIBLE")
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: `Soal yang anda kerjakan tidak layak untuk dikerjakan, mohon informasikan pengawas ruangan. Alasan: ${question.notEligibleReason}`,
+    });
+
   const isTemporarilyBanned = await preparedStudentIsTemporarilyBanned.execute({
     studentId: student.id,
   });
@@ -30,8 +36,8 @@ const getQuestionPrecheck = async (student: TStudent, question: TQuestion) => {
     const nowTime = new Date();
 
     if (
-      (isTemporarilyBanned.startedAt <= nowTime,
-      isTemporarilyBanned.endedAt >= nowTime)
+      isTemporarilyBanned.startedAt <= nowTime &&
+      isTemporarilyBanned.endedAt >= nowTime
     )
       throw new TRPCError({
         code: "BAD_REQUEST",
@@ -241,6 +247,12 @@ export const examRouter = {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Soal tidak ditemukan.",
+          });
+
+        if (question.eligible !== "ELIGIBLE")
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: `Soal yang anda submit belum layak untuk dikerjakan, mungkin dikarenakan modifikasi oleh panitia. Mohon informasikan pengawas ruangan terkait masalah ini. Alasan: ${question.notEligibleReason}`,
           });
 
         if (question.startedAt >= new Date())

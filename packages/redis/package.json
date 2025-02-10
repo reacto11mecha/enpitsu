@@ -1,5 +1,5 @@
 {
-  "name": "@enpitsu/cache",
+  "name": "@enpitsu/redis",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -20,13 +20,9 @@
     "prettier": "catalog:",
     "typescript": "catalog:"
   },
-  "eslintConfig": {
-    "extends": [
-      "@enpitsu/eslint-config/base"
-    ]
-  },
   "prettier": "@enpitsu/prettier-config",
   "dependencies": {
+    "bullmq": "^5.40.2",
     "ioredis": "^5.4.2"
   }
 }

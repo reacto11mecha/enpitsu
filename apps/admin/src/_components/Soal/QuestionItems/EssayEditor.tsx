@@ -132,6 +132,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
     async onSettled() {
       // Sync with server once mutation has settled
       await utils.question.getSpecificEssayQuestion.invalidate();
+      await utils.question.getEligibleStatusFromQuestion.invalidate();
     },
   });
 
@@ -168,6 +169,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
     async onSettled() {
       // Sync with server once mutation has settled
       await utils.question.getEssaysIdByQuestionId.invalidate({ questionId });
+      await utils.question.getEligibleStatusFromQuestion.invalidate();
     },
   });
 
@@ -194,7 +196,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
 
   return (
     <Form {...form}>
-      <Card>
+      <Card id={`essay-iqid-${essayIqid}`}>
         <CardHeader>
           <CardTitle>Esai Nomor {questionNo}</CardTitle>
           <CardDescription className="text-muted-foreground">

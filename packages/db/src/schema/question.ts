@@ -5,6 +5,7 @@ import {
   integer,
   json,
   numeric,
+  pgEnum,
   serial,
   text,
   timestamp,
@@ -15,6 +16,12 @@ import { myPgTable } from "./_table";
 import { users } from "./auth";
 import { students, subGrades } from "./grade";
 
+export const eligibleStatus = pgEnum("eligible", [
+  "ELIGIBLE",
+  "PROCESSING",
+  "NOT_ELIGIBLE",
+]);
+
 export const questions = myPgTable(
   "question",
   (t) => ({
@@ -24,6 +31,16 @@ export const questions = myPgTable(
     multipleChoiceOptions: t.integer("multiple_choice_options").notNull(),
     startedAt: t.timestamp("started_at", { mode: "date" }).notNull(),
     endedAt: t.timestamp("ended_at", { mode: "date" }).notNull(),
+    eligible: eligibleStatus("eligible").notNull().default("NOT_ELIGIBLE"),
+    detailedNotEligible: t
+      .json("detailed_not_eligible")
+      .$type<
+        { type: "choice" | "essay"; iqid: number; errorMessage: string }[]
+      >(),
+    notEligibleReason: t
+      .text()
+      .notNull()
+      .default("Soal masih kosong, mohon isi soal terlebih dahulu"),
     authorId: t
       .uuid("author_id")
       .notNull()

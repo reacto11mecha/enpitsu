@@ -34,7 +34,7 @@ export const ScanOrInputQuestionSlug = ({
       setOpen(true);
     },
     onError(error) {
-      toast.error("Gagal meraih server", {
+      toast.error("Gagal mendapatkan data soal", {
         duration: 9500,
         description:
           error.message === "Failed to fetch"
