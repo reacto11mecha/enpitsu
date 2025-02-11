@@ -32,17 +32,19 @@ interface Props {
   yProvider: WebrtcProvider;
 }
 
+interface UserAwareness {
+  name: string;
+  color: string;
+  image: string;
+}
+
 export const EligibleStatus = memo(function EligibleStatus({
   isPending,
   isError,
   data,
   yProvider,
 }: Props) {
-  const [anotherJoinedUsers, setAnotherUsers] = useState<{
-    name: string;
-    color: string;
-    image: string;
-  }>([]);
+  const [anotherJoinedUsers, setAnotherUsers] = useState<UserAwareness[]>([]);
   const [sheetOpened, setOpened] = useState(false);
 
   const currentStatus = useMemo(() => {
@@ -82,10 +84,9 @@ export const EligibleStatus = memo(function EligibleStatus({
 
   useEffect(() => {
     const evtCallback = () => {
-      const copiedMap = new Map(yProvider.awareness.getStates());
+      // @ts-expect-error udah biarin aja ini mah (famous last word)
+      const copiedMap = new Map<number, { user: UserAwareness }>(yProvider.awareness.getStates());
       copiedMap.delete(yProvider.awareness.clientID);
-
-      const myself = yProvider.awareness.getLocalState();
 
       if (copiedMap.size === 0) {
         setAnotherUsers([]);
@@ -93,12 +94,16 @@ export const EligibleStatus = memo(function EligibleStatus({
         return;
       }
 
+      const myself = yProvider.awareness.getLocalState() as unknown as { user: UserAwareness } | null;
+
+      if (!myself) return;
+
       const newData = Array.from(copiedMap)
         .map(([_, d]) => d.user)
         .filter((user) => myself.user.image !== user.image);
       const removeDuplicate = Array.from(
         new Set(newData.map((nd) => nd.image)),
-      ).map((img) => newData.find((d) => d.image === img));
+      ).map((img) => newData.find((d) => d.image === img)).filter(d => !!d) satisfies UserAwareness[];
 
       setAnotherUsers(removeDuplicate);
     };
