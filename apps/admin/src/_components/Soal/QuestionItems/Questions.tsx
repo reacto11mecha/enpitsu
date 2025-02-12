@@ -1,20 +1,24 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
-import { WebsocketProvider } from 'y-websocket'
-import { IndexeddbPersistence } from 'y-indexeddb'
-import { QuillBinding } from "y-quill";
-import * as Y from "yjs";
+import { useEffect, useMemo, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@enpitsu/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@enpitsu/ui/tooltip";
-import { Avatar, AvatarFallback, AvatarImage } from "@enpitsu/ui/avatar";
+import QuillCursors from "quill-cursors";
 import Delta from "quill-delta";
 import { useQuill } from "react-quilljs";
-import QuillCursors from "quill-cursors";
+import { IndexeddbPersistence } from "y-indexeddb";
+import { QuillBinding } from "y-quill";
+import { WebsocketProvider } from "y-websocket";
+import * as Y from "yjs";
+
+import "katex";
+import "katex/dist/katex.min.css";
+import "quill/dist/quill.snow.css";
 
 const usercolors = [
   "#30bced",
@@ -38,10 +42,6 @@ interface UserAwareness {
   color: string;
   image: string;
 }
-
-import "katex";
-import "katex/dist/katex.min.css";
-import "quill/dist/quill.snow.css";
 
 const toolbar = [
   [{ header: "1" }, { header: "2" }, { font: ["", "lpmqisepmisbah"] }],
@@ -88,15 +88,25 @@ export const Questions = ({
   const [anotherJoinedUsers, setAnotherUsers] = useState<UserAwareness[]>([]);
 
   const yDoc = useMemo(() => new Y.Doc(), []);
-  const yWebsocket = useMemo(() =>
-    new WebsocketProvider("ws://localhost:1234", `question-${questionId}`, yDoc),
-    []
+  const yWebsocket = useMemo(
+    () =>
+      new WebsocketProvider(
+        "ws://localhost:1234",
+        `question-${questionId}`,
+        yDoc,
+      ),
+    [],
   );
-  const yIndexedDB = useMemo(() => new IndexeddbPersistence(`question-${questionId}`, yDoc), []);
+  const yIndexedDB = useMemo(
+    () => new IndexeddbPersistence(`question-${questionId}`, yDoc),
+    [],
+  );
 
   const { Quill, quill, quillRef } = useQuill({
     modules: {
-      cursors: true, toolbar, clipboard: {
+      cursors: true,
+      toolbar,
+      clipboard: {
         matchers: [
           [
             Node.ELEMENT_NODE,
@@ -152,7 +162,6 @@ export const Questions = ({
 
   useEffect(() => {
     if (quill && !initialized) {
-
       const yText = yDoc.getText("");
       const binding = new QuillBinding(yText, quill, yWebsocket.awareness);
 
@@ -160,7 +169,6 @@ export const Questions = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quill, initialized]);
-
 
   useEffect(() => {
     yWebsocket.awareness.setLocalStateField("user", {
@@ -171,11 +179,12 @@ export const Questions = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
   useEffect(() => {
     const evtCallback = () => {
       // @ts-expect-error udah biarin aja ini mah (famous last word)
-      const copiedMap = new Map<number, { user: UserAwareness }>(yWebsocket.awareness.getStates());
+      const copiedMap = new Map<number, { user: UserAwareness }>(
+        yWebsocket.awareness.getStates(),
+      );
       copiedMap.delete(yWebsocket.awareness.clientID);
 
       if (copiedMap.size === 0) {
@@ -184,16 +193,18 @@ export const Questions = ({
         return;
       }
 
-      const myself = yWebsocket.awareness.getLocalState() as unknown as { user: UserAwareness } | null;
+      const myself = yWebsocket.awareness.getLocalState() as unknown as {
+        user: UserAwareness;
+      } | null;
 
       if (!myself) return;
 
       const newData = Array.from(copiedMap)
         .map(([_, d]) => d.user)
         .filter((user) => myself.user.image !== user.image);
-      const removeDuplicate = Array.from(
-        new Set(newData.map((nd) => nd.image)),
-      ).map((img) => newData.find((d) => d.image === img)).filter(d => !!d) satisfies UserAwareness[];
+      const removeDuplicate = Array.from(new Set(newData.map((nd) => nd.image)))
+        .map((img) => newData.find((d) => d.image === img))
+        .filter((d) => !!d) satisfies UserAwareness[];
 
       setAnotherUsers(removeDuplicate);
     };
@@ -221,17 +232,15 @@ export const Questions = ({
           <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
             Esai
           </h3>
-
         </div>
 
         <div className="w-full md:fixed md:bottom-2 md:right-2 md:w-fit">
           {anotherJoinedUsers.length > 0 ? (
             <>
-              <h3 className="scroll-m-20 text-xl font-semibold tracking-tight mb-2.5 md:hidden">
+              <h3 className="mb-2.5 scroll-m-20 text-xl font-semibold tracking-tight md:hidden">
                 Pengguna yang aktif
               </h3>
               <div className="mb-2 grid grid-flow-col grid-cols-10 gap-1.5 md:flex md:max-h-[45vh] md:flex-col md:items-center md:justify-center md:overflow-y-auto">
-
                 <TooltipProvider>
                   {anotherJoinedUsers.map((user) => (
                     <Tooltip key={user.image}>

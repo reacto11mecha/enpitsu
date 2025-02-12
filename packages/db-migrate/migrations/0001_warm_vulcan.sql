@@ -1,0 +1,1 @@
+ALTER TABLE "enpitsu_question" ADD COLUMN "doc_state" "bytea";

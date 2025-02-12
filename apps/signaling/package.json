@@ -2,5 +2,45 @@
   "name": "@enpitsu/signaling",
   "version": "0.1.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf .turbo node_modules",
+    "dev": "pnpm with-env tsx watch ./src/index.ts",
+    "lint": "eslint",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "typecheck": "tsc --noEmit",
+    "with-env": "dotenv -e ../../.env --"
+  },
+  "dependencies": {
+    "@t3-oss/env-core": "^0.12.0",
+    "lib0": "^0.2.99",
+    "lodash": "^4.17.21",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
+    "ws": "^8.18.0",
+    "y-protocols": "^1.0.6",
+    "yjs": "^13.6.23",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@enpitsu/db": "workspace:^0.1.0",
+    "@enpitsu/eslint-config": "workspace:^0.2.0",
+    "@enpitsu/prettier-config": "workspace:^0.1.0",
+    "@enpitsu/redis": "workspace:^0.1.0",
+    "@enpitsu/tsconfig": "workspace:^0.1.0",
+    "@types/lodash": "^4.17.15",
+    "@types/ws": "^8.5.14",
+    "dotenv-cli": "^7.4.4",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tsup": "^8.3.6",
+    "tsx": "^4.19.2",
+    "typescript": "catalog:"
+  },
+  "prettier": "@enpitsu/prettier-config"
 }

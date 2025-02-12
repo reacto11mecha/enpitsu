@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  customType,
   index,
   integer,
   json,
@@ -15,6 +16,16 @@ import {
 import { myPgTable } from "./_table";
 import { users } from "./auth";
 import { students, subGrades } from "./grade";
+
+export const bytea = customType<{
+  data: Buffer;
+  notNull: false;
+  default: false;
+}>({
+  dataType() {
+    return "bytea";
+  },
+});
 
 export const eligibleStatus = pgEnum("eligible", [
   "ELIGIBLE",
@@ -31,6 +42,7 @@ export const questions = myPgTable(
     multipleChoiceOptions: t.integer("multiple_choice_options").notNull(),
     startedAt: t.timestamp("started_at", { mode: "date" }).notNull(),
     endedAt: t.timestamp("ended_at", { mode: "date" }).notNull(),
+    docState: bytea("doc_state"),
     eligible: eligibleStatus("eligible").notNull().default("NOT_ELIGIBLE"),
     detailedNotEligible: t
       .json("detailed_not_eligible")
