@@ -1,17 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Button } from "@enpitsu/ui/button";
-import { Loader2, PlusCircle } from "lucide-react";
-import { toast } from "sonner";
-import { WebrtcProvider } from "y-webrtc";
+import { useEffect, useState, useMemo } from "react";
+import { WebsocketProvider } from 'y-websocket'
+import { IndexeddbPersistence } from 'y-indexeddb'
+import { QuillBinding } from "y-quill";
 import * as Y from "yjs";
-
-import { api } from "~/trpc/react";
-import { ChoiceEditor } from "./ChoiceEditor";
-import { EligibleStatus } from "./EligibleStatus";
-import { EssayEditor } from "./EssayEditor";
-import { BasicLoading } from "./NewLoadingQuestion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@enpitsu/ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from "@enpitsu/ui/avatar";
+import Delta from "quill-delta";
+import { useQuill } from "react-quilljs";
+import QuillCursors from "quill-cursors";
 
 const usercolors = [
   "#30bced",
@@ -30,6 +33,46 @@ export interface ICustomEvent {
   clientID: number;
 }
 
+interface UserAwareness {
+  name: string;
+  color: string;
+  image: string;
+}
+
+import "katex";
+import "katex/dist/katex.min.css";
+import "quill/dist/quill.snow.css";
+
+const toolbar = [
+  [{ header: "1" }, { header: "2" }, { font: ["", "lpmqisepmisbah"] }],
+
+  [{ size: [] }],
+
+  ["bold", "italic", "underline"],
+
+  [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
+
+  ["image", "formula"],
+
+  [{ align: [] }],
+
+  ["clean"],
+];
+
+const formats = [
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "align",
+  "list",
+  "indent",
+  "size",
+  "header",
+  "image",
+  "audio",
+];
+
 export const Questions = ({
   questionId,
   title,
@@ -41,207 +84,137 @@ export const Questions = ({
   userName: string;
   userImage: string;
 }) => {
-  const utils = api.useUtils();
-
-  const [eligibleRefetchInterval, setERI] = useState(0);
+  const [initialized, setInitialized] = useState(false);
+  const [anotherJoinedUsers, setAnotherUsers] = useState<UserAwareness[]>([]);
 
   const yDoc = useMemo(() => new Y.Doc(), []);
-  const yProvider = useMemo(
-    () =>
-      new WebrtcProvider(`question-${questionId}`, yDoc, {
-        signaling: ["ws://localhost:4444"],
-      }),
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+  const yWebsocket = useMemo(() =>
+    new WebsocketProvider("ws://localhost:1234", `question-${questionId}`, yDoc),
+    []
   );
+  const yIndexedDB = useMemo(() => new IndexeddbPersistence(`question-${questionId}`, yDoc), []);
 
-  const choicesIdQuery = api.question.getChoicesIdByQuestionId.useQuery(
-    { questionId },
-    {
-      refetchOnWindowFocus: false,
-    },
-  );
-  const createNewChoiceMutation = api.question.createNewChoice.useMutation({
-    async onSuccess() {
-      await utils.question.getChoicesIdByQuestionId.invalidate();
-      await utils.question.getEligibleStatusFromQuestion.invalidate();
-
-      const customEvent = yDoc.getMap("customEvents");
-      customEvent.set("enpitsu_custom_event", {
-        type: "choice",
-        event: "create",
-        clientID: yDoc.clientID,
-      });
-    },
-    onError(error) {
-      toast.error(`Gagal Membuat Soal PG`, {
-        description: `Terjadi kesalahan, coba lagi nanti. Error: ${error.message}`,
-      });
-    },
-  });
-
-  const essaysIdQuery = api.question.getEssaysIdByQuestionId.useQuery(
-    {
-      questionId,
-    },
-    {
-      refetchOnWindowFocus: false,
-    },
-  );
-  const createNewEssayMutation = api.question.createNewEssay.useMutation({
-    async onSuccess() {
-      await utils.question.getEssaysIdByQuestionId.invalidate();
-      await utils.question.getEligibleStatusFromQuestion.invalidate();
-
-      const customEvent = yDoc.getMap("customEvents");
-      customEvent.set("enpitsu_custom_event", {
-        type: "essay",
-        event: "create",
-        clientID: yDoc.clientID,
-      });
-    },
-    onError(error) {
-      toast.error(`Gagal Membuat Soal Esai`, {
-        description: `Terjadi kesalahan, coba lagi nanti. Error: ${error.message}`,
-      });
-    },
-  });
-
-  const eligibleQuestionStatus =
-    api.question.getEligibleStatusFromQuestion.useQuery(
-      { questionId },
-      {
-        refetchOnWindowFocus: false,
-        refetchInterval: eligibleRefetchInterval,
+  const { Quill, quill, quillRef } = useQuill({
+    modules: {
+      cursors: true, toolbar, clipboard: {
+        matchers: [
+          [
+            Node.ELEMENT_NODE,
+            // @ts-expect-error don't know what to type here
+            function (_node, delta) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+              return delta.compose(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                new Delta().retain(delta.length(), {
+                  color: false,
+                  background: false,
+                  link: false,
+                }),
+              );
+            },
+          ],
+        ],
       },
-    );
+    },
+
+    formats,
+  });
+
+  if (Quill && !quill) {
+    Quill.register("modules/cursors", QuillCursors);
+
+    const Block = Quill.import("blots/block");
+
+    class AudioBlot extends Block {
+      static blotName = "audio";
+      static tagName = "audio";
+
+      static create(url: string) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        const node = super.create() as HTMLAudioElement;
+
+        node.setAttribute("src", url);
+        node.setAttribute("controls", "");
+        node.setAttribute("controlsList", "nodownload");
+
+        node.style.width = "100%";
+
+        return node;
+      }
+
+      static value(node: HTMLAudioElement) {
+        return node.getAttribute("src");
+      }
+    }
+
+    Quill.register(AudioBlot);
+  }
 
   useEffect(() => {
-    yProvider.awareness.setLocalStateField("user", {
+    if (quill && !initialized) {
+
+      const yText = yDoc.getText("");
+      const binding = new QuillBinding(yText, quill, yWebsocket.awareness);
+
+      setInitialized(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quill, initialized]);
+
+
+  useEffect(() => {
+    yWebsocket.awareness.setLocalStateField("user", {
       name: userName,
       color: getColor(),
       image: userImage,
     });
-
-    const customEvents = yDoc.getMap<ICustomEvent>("customEvents");
-
-    const eventListener = (event: Y.YMapEvent<ICustomEvent>) => {
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      void event.changes.keys.forEach(async (_change, key) => {
-        if (key === "enpitsu_custom_event") {
-          const eventData = customEvents.get(key)!;
-
-          if (eventData.clientID !== yDoc.clientID) {
-            if (eventData.type === "choice") {
-              switch (eventData.event) {
-                case "delete":
-                case "create": {
-                  await utils.question.getChoicesIdByQuestionId.invalidate();
-                  await utils.question.getEligibleStatusFromQuestion.invalidate();
-
-                  break;
-                }
-
-                default: {
-                  break;
-                }
-              }
-
-              // this is an essay event handler
-            } else {
-              switch (eventData.event) {
-                case "delete":
-                case "create": {
-                  await utils.question.getEssaysIdByQuestionId.invalidate();
-                  await utils.question.getEligibleStatusFromQuestion.invalidate();
-
-                  break;
-                }
-
-                default: {
-                  break;
-                }
-              }
-            }
-          }
-        }
-      });
-    };
-
-    customEvents.observe(eventListener);
-
-    return () => {
-      customEvents.unobserve(eventListener);
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+
   useEffect(() => {
-    if (eligibleQuestionStatus.data) {
-      if (
-        eligibleRefetchInterval === 0 &&
-        eligibleQuestionStatus.data.eligible === "PROCESSING"
-      )
-        setERI(5000);
-      else if (
-        eligibleRefetchInterval === 5000 &&
-        eligibleQuestionStatus.data.eligible === "ELIGIBLE"
-      )
-        setERI(0);
-    }
-  }, [eligibleQuestionStatus.data, eligibleRefetchInterval]);
+    const evtCallback = () => {
+      // @ts-expect-error udah biarin aja ini mah (famous last word)
+      const copiedMap = new Map<number, { user: UserAwareness }>(yWebsocket.awareness.getStates());
+      copiedMap.delete(yWebsocket.awareness.clientID);
+
+      if (copiedMap.size === 0) {
+        setAnotherUsers([]);
+
+        return;
+      }
+
+      const myself = yWebsocket.awareness.getLocalState() as unknown as { user: UserAwareness } | null;
+
+      if (!myself) return;
+
+      const newData = Array.from(copiedMap)
+        .map(([_, d]) => d.user)
+        .filter((user) => myself.user.image !== user.image);
+      const removeDuplicate = Array.from(
+        new Set(newData.map((nd) => nd.image)),
+      ).map((img) => newData.find((d) => d.image === img)).filter(d => !!d) satisfies UserAwareness[];
+
+      setAnotherUsers(removeDuplicate);
+    };
+
+    yWebsocket.awareness.on("change", evtCallback);
+
+    return () => {
+      yWebsocket.awareness.off("change", evtCallback);
+    };
+  }, [yWebsocket.awareness]);
 
   return (
     <div className="mt-5 flex flex-col gap-8 pb-16">
+      <h1>Soal: {title}</h1>
       <div className="flex flex-col gap-4">
         <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
           Pilihan Ganda
         </h3>
 
-        <div className="flex flex-col gap-5">
-          {choicesIdQuery.data?.map((choice, idx) => (
-            <ChoiceEditor
-              key={choice.iqid}
-              choiceIqid={choice.iqid}
-              questionNo={idx + 1}
-              title={title}
-              questionId={questionId}
-              yDoc={yDoc}
-              yProvider={yProvider}
-            />
-          ))}
-
-          {choicesIdQuery.isPending ? (
-            <>
-              {Array.from({ length: 10 }).map((_, idx) => (
-                <BasicLoading key={idx} />
-              ))}
-            </>
-          ) : null}
-
-          {choicesIdQuery.isPending ? (
-            <Button className="h-full w-full p-5" variant="outline" disabled>
-              <Loader2 className="h-6 w-6 animate-spin" />
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              className="h-full w-full p-5"
-              disabled={createNewChoiceMutation.isPending}
-              onClick={() =>
-                createNewChoiceMutation.mutate({
-                  questionId,
-                })
-              }
-            >
-              {createNewChoiceMutation.isPending ? (
-                <Loader2 className="h-6 w-6 animate-spin" />
-              ) : (
-                <PlusCircle className="h-6 w-6" />
-              )}
-            </Button>
-          )}
+        <div className="w-full">
+          <div ref={quillRef} />
         </div>
 
         <div className="flex flex-col gap-3">
@@ -249,58 +222,40 @@ export const Questions = ({
             Esai
           </h3>
 
-          <div className="flex flex-col gap-5">
-            {essaysIdQuery.data?.map((essay, idx) => (
-              <EssayEditor
-                key={essay.iqid}
-                essayIqid={essay.iqid}
-                questionNo={idx + 1}
-                title={title}
-                questionId={questionId}
-                yDoc={yDoc}
-                yProvider={yProvider}
-              />
-            ))}
-
-            {essaysIdQuery.isPending ? (
-              <>
-                {Array.from({ length: 5 }).map((_, idx) => (
-                  <BasicLoading key={idx} />
-                ))}
-              </>
-            ) : null}
-
-            {essaysIdQuery.isPending ? (
-              <Button className="h-full w-full p-5" variant="outline" disabled>
-                <Loader2 className="h-6 w-6 animate-spin" />
-              </Button>
-            ) : (
-              <Button
-                variant="outline"
-                className="h-full w-full p-5"
-                disabled={createNewEssayMutation.isPending}
-                onClick={() =>
-                  createNewEssayMutation.mutate({
-                    questionId,
-                  })
-                }
-              >
-                {createNewEssayMutation.isPending ? (
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                ) : (
-                  <PlusCircle className="h-6 w-6" />
-                )}
-              </Button>
-            )}
-          </div>
         </div>
 
-        <EligibleStatus
-          isPending={eligibleQuestionStatus.isPending}
-          isError={eligibleQuestionStatus.isError}
-          data={eligibleQuestionStatus.data}
-          yProvider={yProvider}
-        />
+        <div className="w-full md:fixed md:bottom-2 md:right-2 md:w-fit">
+          {anotherJoinedUsers.length > 0 ? (
+            <>
+              <h3 className="scroll-m-20 text-xl font-semibold tracking-tight mb-2.5 md:hidden">
+                Pengguna yang aktif
+              </h3>
+              <div className="mb-2 grid grid-flow-col grid-cols-10 gap-1.5 md:flex md:max-h-[45vh] md:flex-col md:items-center md:justify-center md:overflow-y-auto">
+
+                <TooltipProvider>
+                  {anotherJoinedUsers.map((user) => (
+                    <Tooltip key={user.image}>
+                      <TooltipTrigger>
+                        <Avatar
+                          className="border"
+                          style={{ borderColor: user.color }}
+                        >
+                          <AvatarImage src={user.image} />
+                          <AvatarFallback className="uppercase">
+                            {user.name ? user.name.slice(0, 2) : "N/A"}
+                          </AvatarFallback>
+                        </Avatar>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{user.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </TooltipProvider>
+              </div>
+            </>
+          ) : null}
+        </div>
       </div>
     </div>
   );
