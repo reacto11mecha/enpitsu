@@ -34,30 +34,6 @@ interface Persistence {
 
 let persistence: Persistence | null = null;
 
-// if (typeof persistenceDir === "string") {
-//   console.info(`Persisting documents to "${persistenceDir}"`);
-//   // Importing y-leveldb dynamically and casting the type
-//   const { LeveldbPersistence } = require("y-leveldb") as {
-//     LeveldbPersistence: any;
-//   };
-//   const ldb = new LeveldbPersistence(persistenceDir);
-//   persistence = {
-//     provider: ldb,
-//     bindState: async (docName: string, ydoc: WSSharedDoc) => {
-//       const persistedYdoc = await ldb.getYDoc(docName);
-//       const newUpdates = Y.encodeStateAsUpdate(ydoc);
-//       ldb.storeUpdate(docName, newUpdates);
-//       Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
-//       ydoc.on("update", (update: Uint8Array) => {
-//         ldb.storeUpdate(docName, update);
-//       });
-//     },
-//     writeState: async (_docName: string, _ydoc: WSSharedDoc) => {
-//       /* Write state logic if needed */
-//     },
-//   };
-// }
-
 /* Expose functions to set or get the persistence layer */
 export const setPersistence = (persistence_: Persistence | null): void => {
   persistence = persistence_;

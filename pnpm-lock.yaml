@@ -159,6 +159,9 @@ importers:
       react-quilljs:
         specifier: ^2.0.5
         version: 2.0.5(quill@2.0.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-yjs:
+        specifier: ^2.0.1
+        version: 2.0.1(react@18.3.1)(yjs@13.6.23)
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
@@ -6034,6 +6037,12 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  react-yjs@2.0.1:
+    resolution: {integrity: sha512-x9XiGHnsuFZWHkw2upjmbjMQOirwvnrcbTsWt3rhPhh0Mb8MjtAP0eveyjS6s0EB0vVSs6BHItw1d6eVLH04Vg==}
+    peerDependencies:
+      react: ^18 || ^19
+      yjs: ^13.6.16
 
   react@18.3.1:
     resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
@@ -12123,6 +12132,12 @@ snapshots:
       tslib: 2.8.1
     optionalDependencies:
       '@types/react': 18.3.18
+
+  react-yjs@2.0.1(react@18.3.1)(yjs@13.6.23):
+    dependencies:
+      lib0: 0.2.99
+      react: 18.3.1
+      yjs: 13.6.23
 
   react@18.3.1:
     dependencies:

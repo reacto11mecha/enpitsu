@@ -43,6 +43,7 @@
     "react-hook-form": "^7.54.2",
     "react-icons": "^5.4.0",
     "react-quilljs": "^2.0.5",
+    "react-yjs": "^2.0.1",
     "sharp": "^0.33.5",
     "slugify": "^1.6.6",
     "string-similarity": "^4.0.4",

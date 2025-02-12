@@ -1,6 +1,7 @@
 import { eq } from "@enpitsu/db";
 import { db } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
+import debounce from "lodash/debounce";
 import * as Y from "yjs";
 
 import type { WSSharedDoc } from "./utils";
@@ -25,15 +26,22 @@ export const postgresPersistence = {
       return;
     }
 
-    // Listen for document updates and persist them.
-    ydoc.on("update", async (update: Uint8Array) => {
-      // Compute the current full state.
-      const newState = Y.encodeStateAsUpdate(ydoc);
+    const debouncedWriteState = debounce(
+      async () => {
+        const newState = Y.encodeStateAsUpdate(ydoc);
 
-      await db
-        .update(schema.questions)
-        .set({ docState: Buffer.from(newState) })
-        .where(eq(schema.questions.id, documentId));
+        await db
+          .update(schema.questions)
+          .set({ docState: Buffer.from(newState) })
+          .where(eq(schema.questions.id, documentId));
+      },
+      2000,
+      { maxWait: 10000 },
+    );
+
+    // Listen for document updates and use the debounced writer.
+    ydoc.on("update", () => {
+      debouncedWriteState();
     });
   },
 

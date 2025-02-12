@@ -19,6 +19,7 @@ export default async function QuestionItemsPage({
     where: eq(schema.questions.id, id),
     columns: {
       title: true,
+      multipleChoiceOptions: true,
     },
   });
 
@@ -42,6 +43,7 @@ export default async function QuestionItemsPage({
           userImage={authData!.user.image}
           questionId={id}
           title={question.title}
+          optionsLength={question.multipleChoiceOptions}
         />
       </div>
     </div>
