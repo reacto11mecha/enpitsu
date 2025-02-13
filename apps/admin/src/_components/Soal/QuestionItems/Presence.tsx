@@ -1,7 +1,7 @@
 "use client";
 
 import type { WebsocketProvider } from "y-websocket";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@enpitsu/ui/avatar";
 import {
   Tooltip,
@@ -16,7 +16,7 @@ interface UserAwareness {
   image: string;
 }
 
-export function Presence({
+export const Presence = memo(function Presence({
   awareness,
 }: {
   awareness: WebsocketProvider["awareness"];
@@ -93,4 +93,4 @@ export function Presence({
       ) : null}
     </div>
   );
-}
+});

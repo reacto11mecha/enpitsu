@@ -49,6 +49,7 @@
     "string-similarity": "^4.0.4",
     "superjson": "2.2.2",
     "tailwindcss-animate": "^1.0.7",
+    "uuid": "^11.0.5",
     "y-indexeddb": "^9.0.12",
     "y-quill": "^1.0.0",
     "y-websocket": "^2.1.0",

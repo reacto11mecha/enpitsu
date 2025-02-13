@@ -11,8 +11,8 @@ import "katex";
 import "katex/dist/katex.min.css";
 import "quill/dist/quill.snow.css";
 
-import type { MultipleChoice, MultipleChoicesMap } from "./ChoiceEditor";
-import { addMultipleChoice, ChoiceEditor } from "./ChoiceEditor";
+import type { YMultipleChoice } from "./ChoiceEditor";
+import { ChoiceEditor, createNewMultipleChoice } from "./ChoiceEditor";
 import { Presence } from "./Presence";
 
 const usercolors = [
@@ -28,13 +28,13 @@ const getColor = () =>
 
 export const Questions = ({
   questionId,
-  choiceOptionsLength,
+  optionsLength,
   title,
   userName,
   userImage,
 }: {
   questionId: number;
-  choiceOptionsLength: number;
+  optionsLength: number;
   title: string;
   userName: string;
   userImage: string;
@@ -54,8 +54,8 @@ export const Questions = ({
     [],
   );
 
-  const multipleChoicesMap: MultipleChoicesMap = useMemo(
-    () => yDoc.getMap<MultipleChoice>("multipleChoices"),
+  const yMultipleChoices: Y.Array<YMultipleChoice> = useMemo(
+    () => yDoc.getArray<YMultipleChoice>("multipleChoices"),
     [],
   );
 
@@ -66,7 +66,10 @@ export const Questions = ({
       image: userImage,
     });
 
-    window.multipleChoicesMap = multipleChoicesMap;
+    window.yMultipleChoices = yMultipleChoices;
+
+    // @ts-expect-error debugging purpose only
+    window.Y = Y;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -84,24 +87,16 @@ export const Questions = ({
         <div className="flex flex-col gap-5">
           <ChoiceEditor
             awareness={yWebsocket.awareness}
-            yMap={multipleChoicesMap}
+            yArray={yMultipleChoices}
             title={title}
+            optionsLength={optionsLength}
           />
 
           <Button
             variant="outline"
             className="h-full w-full p-5"
             onClick={() =>
-              addMultipleChoice(
-                multipleChoicesMap,
-                String(Date.now()),
-                "",
-                Array.from({ length: choiceOptionsLength }).map((_, idx) => ({
-                  order: idx + 1,
-                  answer: "",
-                })),
-                0,
-              )
+              createNewMultipleChoice(yMultipleChoices, optionsLength)
             }
           >
             <PlusCircle className="!h-6 !w-6" />

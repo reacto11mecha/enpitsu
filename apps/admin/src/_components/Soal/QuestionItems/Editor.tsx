@@ -3,6 +3,7 @@
 import type { WebsocketProvider } from "y-websocket";
 import type { Text as YText } from "yjs";
 import { useEffect, useState } from "react";
+import Quill from "quill";
 import QuillCursors from "quill-cursors";
 import Delta from "quill-delta";
 import { useQuill } from "react-quilljs";
@@ -38,7 +39,35 @@ const formats = [
   "audio",
 ];
 
-export function Editor({
+Quill.register("modules/cursors", QuillCursors);
+
+const Block = Quill.import("blots/block");
+
+class AudioBlot extends Block {
+  static blotName = "audio";
+  static tagName = "audio";
+
+  static create(url: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    const node = super.create() as HTMLAudioElement;
+
+    node.setAttribute("src", url);
+    node.setAttribute("controls", "");
+    node.setAttribute("controlsList", "nodownload");
+
+    node.style.width = "100%";
+
+    return node;
+  }
+
+  static value(node: HTMLAudioElement) {
+    return node.getAttribute("src");
+  }
+}
+
+Quill.register(AudioBlot);
+
+export default function Editor({
   awareness,
   yText,
 }: {
@@ -47,10 +76,13 @@ export function Editor({
 }) {
   const [initialized, setInitialized] = useState(false);
 
-  const { Quill, quill, quillRef } = useQuill({
+  const { quill, quillRef } = useQuill({
     modules: {
       cursors: true,
       toolbar,
+      history: {
+        userOnly: true,
+      },
       clipboard: {
         matchers: [
           [
@@ -75,42 +107,9 @@ export function Editor({
     formats,
   });
 
-  if (Quill && !quill) {
-    Quill.register("modules/cursors", QuillCursors);
-
-    const Block = Quill.import("blots/block");
-
-    class AudioBlot extends Block {
-      static blotName = "audio";
-      static tagName = "audio";
-
-      static create(url: string) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        const node = super.create() as HTMLAudioElement;
-
-        node.setAttribute("src", url);
-        node.setAttribute("controls", "");
-        node.setAttribute("controlsList", "nodownload");
-
-        node.style.width = "100%";
-
-        return node;
-      }
-
-      static value(node: HTMLAudioElement) {
-        return node.getAttribute("src");
-      }
-    }
-
-    Quill.register(AudioBlot);
-  }
-
   useEffect(() => {
     if (quill && !initialized && yText && awareness) {
-      console.log(yText);
-      console.log(awareness);
-
-      new QuillBinding(yText, quill, awareness);
+      if (yText instanceof Y.Text) new QuillBinding(yText, quill, awareness);
 
       setInitialized(true);
     }

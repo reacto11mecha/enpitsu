@@ -60,6 +60,11 @@ export const questionRouter = {
   getQuestions: protectedProcedure.query(({ ctx }) =>
     ctx.db.query.questions.findMany({
       orderBy: [asc(schema.questions.title)],
+      columns: {
+        docState: false,
+        notEligibleReason: false,
+        detailedNotEligible: false,
+      },
       with: {
         user: {
           columns: {
