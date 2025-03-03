@@ -18,6 +18,12 @@ import {
   DropdownMenuTrigger,
 } from "@enpitsu/ui/dropdown-menu";
 import { Input } from "@enpitsu/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@enpitsu/ui/tooltip";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 import {
@@ -113,6 +119,42 @@ export const columns: ColumnDef<QuestionList>[] = [
     header: "Kode Soal",
     cell: ({ row }) => (
       <pre className={MonoFont.className}>{row.getValue("slug")}</pre>
+    ),
+  },
+  {
+    accessorKey: "eligible",
+    header: "Soal Layak Pengerjaan",
+    cell: ({ row }) => (
+      <div className="flex w-full items-center justify-center">
+        <Tooltip>
+          <TooltipTrigger>
+            <Badge
+              variant={
+                row.original.eligible === "NOT_ELIGIBLE"
+                  ? "destructive"
+                  : row.original.eligible === "PROCESSING"
+                    ? "secondary"
+                    : "default"
+              }
+            >
+              {row.original.eligible === "NOT_ELIGIBLE"
+                ? "TIDAK LAYAK"
+                : row.original.eligible === "PROCESSING"
+                  ? "DI PROSES"
+                  : "LAYAK"}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>
+              {row.original.eligible === "NOT_ELIGIBLE"
+                ? row.original.notEligibleReason
+                : row.original.eligible === "PROCESSING"
+                  ? "Sedang dalam proses pengecekan..."
+                  : "Soal dapat dikerjakan peserta"}
+            </p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
     ),
   },
   {
@@ -302,40 +344,42 @@ export function DataTable({
           )}
         </div>
 
-        <ReusableDataTable
-          columns={columns}
-          data={questionsQuery.data ?? []}
-          queryIsPending={questionsQuery.isPending}
-          queryIsError={questionsQuery.isError}
-          queryErrorMessage={questionsQuery.error?.message}
-          showTableControl
-          additionalControl={(table) => (
-            <>
-              <Input
-                placeholder="Filter berdasarkan judul soal..."
-                value={
-                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                  (table.getColumn("title")?.getFilterValue() as string) ?? ""
-                }
-                onChange={(event) =>
-                  table.getColumn("title")?.setFilterValue(event.target.value)
-                }
-                className="w-full md:max-w-md"
-              />
-
-              {table.getFilteredSelectedRowModel().rows.length > 0 && (
-                <CreateQRCodes
-                  selectedData={table
-                    .getFilteredSelectedRowModel()
-                    .rows.map((row) => ({
-                      slug: row.original.slug,
-                      title: row.original.title,
-                    }))}
+        <TooltipProvider>
+          <ReusableDataTable
+            columns={columns}
+            data={questionsQuery.data ?? []}
+            queryIsPending={questionsQuery.isPending}
+            queryIsError={questionsQuery.isError}
+            queryErrorMessage={questionsQuery.error?.message}
+            showTableControl
+            additionalControl={(table) => (
+              <>
+                <Input
+                  placeholder="Filter berdasarkan judul soal..."
+                  value={
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                    (table.getColumn("title")?.getFilterValue() as string) ?? ""
+                  }
+                  onChange={(event) =>
+                    table.getColumn("title")?.setFilterValue(event.target.value)
+                  }
+                  className="w-full md:max-w-md"
                 />
-              )}
-            </>
-          )}
-        />
+
+                {table.getFilteredSelectedRowModel().rows.length > 0 && (
+                  <CreateQRCodes
+                    selectedData={table
+                      .getFilteredSelectedRowModel()
+                      .rows.map((row) => ({
+                        slug: row.original.slug,
+                        title: row.original.title,
+                      }))}
+                  />
+                )}
+              </>
+            )}
+          />
+        </TooltipProvider>
       </div>
     </RoleContext.Provider>
   );
