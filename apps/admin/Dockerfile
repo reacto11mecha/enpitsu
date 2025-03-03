@@ -6,7 +6,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN <<EOF 
   apt-get update -y
   apt-get install libc6 libc++1 bash -y
-  npm install -g pnpm
+  npm install -g pnpm@9.10.0
 EOF
 
 FROM base AS with-turbo
