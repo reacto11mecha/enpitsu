@@ -317,7 +317,7 @@ export const ExcelUploadStudentsByGrade = ({
         .map((d) => d.filter((e) => !!e));
       const keys = sheetVal.shift()!;
 
-      const data = sheetValues.map((d) => {
+      const data = sheetVal.map((d) => {
         const tmpObj: Record<string, string> = {};
 
         keys.forEach((key, idx: number) => {
@@ -331,6 +331,8 @@ export const ExcelUploadStudentsByGrade = ({
     });
 
     const result = await FileValueSchema.safeParseAsync(records);
+
+    console.log(result, records);
 
     if (!result.success) {
       toast.error("Format file tidak sesuai!", {
