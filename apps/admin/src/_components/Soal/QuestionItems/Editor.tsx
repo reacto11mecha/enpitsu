@@ -97,7 +97,7 @@ const quillModules: ReactQuillProps["modules"] = {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           return delta.compose(
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            new Delta().retain(delta.length(), {
+            new Delta().retain(delta.length() as number, {
               color: false,
               background: false,
               link: false,
