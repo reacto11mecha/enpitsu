@@ -17,7 +17,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import "katex";
 
-// @ts-expect-error there's actually a type for this package, but dont know why this still yell for a missing type
 import Delta from "quill-delta";
 import { useForm } from "react-hook-form";
 import ReactQuill from "react-quill";
