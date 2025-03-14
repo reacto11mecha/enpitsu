@@ -236,7 +236,7 @@ export const gradeRouter = {
                 Nama: z.string().min(2).max(255),
                 "Nomor Peserta": z.string().min(5).max(50),
                 Ruang: z.string().min(1).max(50),
-                Token: z.string().min(13).max(13).refine(validateId),
+                Token: z.string().min(13).max(14).refine(validateId),
               }),
             ),
           }),

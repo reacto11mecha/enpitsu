@@ -52,7 +52,7 @@ const FileValueSchema = z.array(
         Token: z
           .string()
           .min(13, { message: "Panjang token wajib 6 karakter!" })
-          .max(13, { message: "Panjang token tidak boleh dari 6 karakter!" })
+          .max(14, { message: "Panjang token tidak boleh dari 6 karakter!" })
           .refine(validateId, { message: "Format token tidak sesuai!" }),
       }),
     ),
