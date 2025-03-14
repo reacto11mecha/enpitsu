@@ -27,7 +27,7 @@ const formSchema = z.object({
       message: "Nomor peserta wajib di isi!",
     })
     .min(13, { message: "Panjang nomor peserta wajib 13 karakter!" })
-    .max(13, { message: "Panjang nomor peserta tidak boleh dari 13 karakter!" })
+    .max(14, { message: "Panjang nomor peserta tidak boleh dari 14 karakter!" })
     .refine(validateId, { message: "Format token tidak sesuai!" }),
 });
 
@@ -85,7 +85,7 @@ const NonInitVer = () => {
                           className="font-space"
                           //placeholder="AZ-XXX"
                           onChange={(el) =>
-                            el.target.value.trim().length <= 13 &&
+                            el.target.value.trim().length <= 14 &&
                             field.onChange(el.target.value.toUpperCase().trim())
                           }
                           value={field.value}
@@ -169,7 +169,7 @@ const InitVersion = () => {
                           className="font-space"
                           //placeholder="AZ-XXX"
                           onChange={(el) =>
-                            el.target.value.trim().length <= 13 &&
+                            el.target.value.trim().length <= 14 &&
                             field.onChange(el.target.value.toUpperCase().trim())
                           }
                           value={field.value}
