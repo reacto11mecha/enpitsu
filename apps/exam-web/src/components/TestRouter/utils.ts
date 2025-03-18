@@ -40,7 +40,9 @@ export interface Props {
   initialData: TStudentAnswer[];
 }
 
-export function shuffleArray<T>(array: T[]): T[] {
+export function shuffleArray<T>(array: T[], disabled = false): T[] {
+  if (disabled) return array;
+
   const shuffledArray = [...array] as T[];
 
   for (let i = shuffledArray.length - 1; i > 0; i--) {

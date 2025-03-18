@@ -152,13 +152,14 @@ const Test = ({ data, initialData }: Props) => {
 
           return {
             ...d,
-            options: shuffleArray(d.options),
+            options: shuffleArray(d.options, data.slug === "INGTL-PSAJ"),
             choosedAnswer:
               savedAnswer?.multipleChoices.find(
                 (choice) => choice.iqid === d.iqid,
               )?.choosedAnswer ?? 0,
           };
         }),
+        data.slug === "INGTL-PSAJ",
       ),
       essays: shuffleArray(
         data.essays.map((d) => {
