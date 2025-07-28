@@ -7,18 +7,14 @@ import { initAuth } from "@enpitsu/auth";
 import { env } from "~/env";
 
 const baseUrl =
-  env.VERCEL_ENV === "production"
-    ? `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : env.VERCEL_ENV === "preview"
-      ? `https://${env.VERCEL_URL}`
-      : "http://localhost:3000";
+  env.NODE_ENV === "production" ? env.AUTH_URL : "http://localhost:3000";
 
 export const auth = initAuth({
   baseUrl,
-  productionUrl: `https://${env.VERCEL_PROJECT_PRODUCTION_URL ?? "turbo.t3.gg"}`,
+  productionUrl: env.AUTH_URL,
   secret: env.AUTH_SECRET,
-  discordClientId: env.AUTH_DISCORD_ID,
-  discordClientSecret: env.AUTH_DISCORD_SECRET,
+  googleClientId: env.AUTH_GOOGLE_ID,
+  googleClientSecret: env.AUTH_GOOGLE_SECRET,
 });
 
 export const getSession = cache(async () =>
