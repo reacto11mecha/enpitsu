@@ -2,8 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 import { headers } from "next/headers";
-
-import { initAuth } from "@acme/auth";
+import { initAuth } from "@enpitsu/auth";
 
 import { env } from "~/env";
 

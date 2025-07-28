@@ -1,10 +1,10 @@
 import type { BetterAuthOptions } from "better-auth";
-import { expo } from "@better-auth/expo";
+// import { expo } from "@better-auth/expo";
+import { db } from "@enpitsu/db/client";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { oAuthProxy } from "better-auth/plugins";
 
-import { db } from "@acme/db/client";
+// import { oAuthProxy } from "better-auth/plugins";
 
 export function initAuth(options: {
   baseUrl: string;
@@ -20,16 +20,16 @@ export function initAuth(options: {
     }),
     baseURL: options.baseUrl,
     secret: options.secret,
-    plugins: [
-      oAuthProxy({
-        /**
-         * Auto-inference blocked by https://github.com/better-auth/better-auth/pull/2891
-         */
-        currentURL: options.baseUrl,
-        productionURL: options.productionUrl,
-      }),
-      expo(),
-    ],
+    // plugins: [
+    //   oAuthProxy({
+    //     /**
+    //      * Auto-inference blocked by https://github.com/better-auth/better-auth/pull/2891
+    //      */
+    //     currentURL: options.baseUrl,
+    //     productionURL: options.productionUrl,
+    //   }),
+    //   expo(),
+    // ],
     socialProviders: {
       discord: {
         clientId: options.discordClientId,
@@ -37,7 +37,7 @@ export function initAuth(options: {
         redirectURI: `${options.productionUrl}/api/auth/callback/discord`,
       },
     },
-    trustedOrigins: ["expo://"],
+    // trustedOrigins: ["expo://"],
   } satisfies BetterAuthOptions;
 
   return betterAuth(config);
