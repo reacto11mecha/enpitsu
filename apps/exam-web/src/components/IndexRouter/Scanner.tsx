@@ -32,7 +32,7 @@ const Scanner = ({ mutate }: { mutate: (slug: string) => void }) => {
               message: string;
             }[];
 
-            setError(error.at(0)!.message);
+            setError(error[0]!.message);
 
             return;
           }
