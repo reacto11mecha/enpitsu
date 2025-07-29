@@ -11,49 +11,58 @@ import {
 } from "@enpitsu/ui/form";
 import { Switch } from "@enpitsu/ui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 const FormSchema = z.object({
   canLogin: z.boolean(),
 });
 
 export const ToggleCanLogin = () => {
-  const utils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
 
-  const canLoginQuery = api.admin.getCanLoginStatus.useQuery();
+  const canLoginQuery = useQuery(trpc.admin.getCanLoginStatus.queryOptions());
 
   useEffect(() => {
     if (!canLoginQuery.isPending && canLoginQuery.data)
       form.setValue("canLogin", canLoginQuery.data.canLogin);
   }, [canLoginQuery, form]);
 
-  const canLoginMutation = api.admin.updateCanLogin.useMutation({
-    async onMutate(newValue) {
-      await utils.admin.getCanLoginStatus.cancel();
+  const canLoginMutation = useMutation(
+    trpc.admin.updateCanLogin.mutationOptions({
+      async onMutate(newValue) {
+        await queryClient.cancelQueries(
+          trpc.admin.getCanLoginStatus.pathFilter(),
+        );
 
-      utils.admin.getCanLoginStatus.setData(undefined, () => newValue);
-    },
-    onError(err) {
-      utils.admin.getCanLoginStatus.setData(undefined, { canLogin: false });
+        // queryClient.setQueryData(trpc.admin.getCanLoginStatus, () => newValue);
+      },
+      onError(err) {
+        // queryClient.admin.getCanLoginStatus.setData(undefined, { canLogin: false });
 
-      toast.error("Gagal memperbarui status login", {
-        description: err.message,
-      });
-    },
-    onSuccess() {
-      toast.success("Berhasil memperbarui status login!");
-    },
-    async onSettled() {
-      await utils.admin.getCanLoginStatus.invalidate();
-    },
-  });
+        toast.error("Gagal memperbarui status login", {
+          description: err.message,
+        });
+      },
+      onSuccess() {
+        toast.success("Berhasil memperbarui status login!");
+      },
+      async onSettled() {
+        await queryClient.invalidateQueries(
+          trpc.admin.getCanLoginStatus.pathFilter(),
+        );
+      },
+    }),
+  );
 
   const onSubmit = (data: z.infer<typeof FormSchema>) =>
     canLoginMutation.mutate(data);

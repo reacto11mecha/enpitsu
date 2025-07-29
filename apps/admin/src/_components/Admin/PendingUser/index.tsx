@@ -5,11 +5,12 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useCallback, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@enpitsu/ui/avatar";
 import { Button } from "@enpitsu/ui/button";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { ReusableDataTable } from "~/_components/data-table";
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 import { AcceptUser } from "./AcceptUser";
 
 type PendingUserList = RouterOutputs["admin"]["getPendingUser"][number];
@@ -39,7 +40,8 @@ export const columns: ColumnDef<PendingUserList>[] = [
     id: "accept",
     enableHiding: false,
     cell: ({ row }) => {
-      const apiUtils = api.useUtils();
+      const trpc = useTRPC();
+      const queryClient = useQueryClient();
 
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const [isOpen, setOpen] = useState(false);
@@ -47,25 +49,31 @@ export const columns: ColumnDef<PendingUserList>[] = [
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const toggleOpen = useCallback(() => setOpen((prev) => !prev), []);
 
-      const acceptUserMutation = api.admin.acceptPendingUser.useMutation({
-        async onSuccess() {
-          toast.success("Berhasil menerima pengguna baru!", {
-            description: "Pengguna berhasil di approve.",
-          });
+      const acceptUserMutation = useMutation(
+        trpc.admin.acceptPendingUser.mutationOptions({
+          async onSuccess() {
+            toast.success("Berhasil menerima pengguna baru!", {
+              description: "Pengguna berhasil di approve.",
+            });
 
-          toggleOpen();
+            toggleOpen();
 
-          await apiUtils.admin.getAllRegisteredUser.invalidate();
-        },
-        onError(error) {
-          toast.error("Operasi Gagal", {
-            description: `Terjadi kesalahan, Error: ${error.message}`,
-          });
-        },
-        async onSettled() {
-          await apiUtils.admin.getPendingUser.invalidate();
-        },
-      });
+            await queryClient.invalidateQueries(
+              trpc.admin.getAllRegisteredUser.pathFilter(),
+            );
+          },
+          onError(error) {
+            toast.error("Operasi Gagal", {
+              description: `Terjadi kesalahan, Error: ${error.message}`,
+            });
+          },
+          async onSettled() {
+            await queryClient.invalidateQueries(
+              trpc.admin.getPendingUser.pathFilter(),
+            );
+          },
+        }),
+      );
 
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const triggerAcceptCallback = useCallback(
@@ -74,21 +82,25 @@ export const columns: ColumnDef<PendingUserList>[] = [
         [acceptUserMutation, row.original.id],
       );
 
-      const rejectUserMutation = api.admin.rejectPendingUser.useMutation({
-        onSuccess() {
-          toast.success("Berhasil menolak pengguna!", {
-            description: "Pengguna berhasil dihapus.",
-          });
-        },
-        onError(error) {
-          toast.error("Operasi Gagal", {
-            description: `Terjadi kesalahan, Error: ${error.message}`,
-          });
-        },
-        async onSettled() {
-          await apiUtils.admin.getPendingUser.invalidate();
-        },
-      });
+      const rejectUserMutation = useMutation(
+        trpc.admin.rejectPendingUser.mutationOptions({
+          onSuccess() {
+            toast.success("Berhasil menolak pengguna!", {
+              description: "Pengguna berhasil dihapus.",
+            });
+          },
+          onError(error) {
+            toast.error("Operasi Gagal", {
+              description: `Terjadi kesalahan, Error: ${error.message}`,
+            });
+          },
+          async onSettled() {
+            await queryClient.invalidateQueries(
+              trpc.admin.getPendingUser.pathFilter(),
+            );
+          },
+        }),
+      );
 
       return (
         <div className="space-x-5">
@@ -123,7 +135,8 @@ export const columns: ColumnDef<PendingUserList>[] = [
 ];
 
 export function PendingUser() {
-  const pendingUserQuery = api.admin.getPendingUser.useQuery(undefined);
+  const trpc = useTRPC();
+  const pendingUserQuery = useQuery(trpc.admin.getPendingUser.queryOptions());
 
   return (
     <div className="w-full">

@@ -13,12 +13,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@enpitsu/ui/dropdown-menu";
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { MoreHorizontal, PencilLine } from "lucide-react";
 
 import { ReusableDataTable } from "~/_components/data-table";
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 import { UpdateRole } from "./UpdateRole";
 
 type PendingUserList = RouterOutputs["admin"]["getAllRegisteredUser"][number];
@@ -115,8 +116,10 @@ export const columns: ColumnDef<PendingUserList>[] = [
 ];
 
 export function AllRegisteredUser() {
-  const allRegisteredUserQuery =
-    api.admin.getAllRegisteredUser.useQuery(undefined);
+  const trpc = useTRPC();
+  const allRegisteredUserQuery = useQuery(
+    trpc.admin.getAllRegisteredUser.queryOptions(),
+  );
 
   return (
     <div className="w-full">

@@ -32,7 +32,7 @@
   },
   "prettier": "@enpitsu/prettier-config",
   "dependencies": {
-    "nanoid": "5.0.9"
+    "nanoid": "5.1.5"
   },
   "type": "module"
 }

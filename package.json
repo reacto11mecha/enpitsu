@@ -30,15 +30,10 @@
   },
   "devDependencies": {
     "@enpitsu/prettier-config": "workspace:^0.1.0",
-    "@turbo/gen": "2.4.0",
+    "@turbo/gen": "2.5.5",
     "prettier": "catalog:",
-    "turbo": "2.4.0",
+    "turbo": "2.5.5",
     "typescript": "catalog:"
-  },
-  "pnpm": {
-    "overrides": {
-      "@auth/core": "0.18.0"
-    }
   },
   "prettier": "@enpitsu/prettier-config"
 }

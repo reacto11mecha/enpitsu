@@ -34,18 +34,19 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
-    "drizzle-orm": "^0.39.1",
-    "pg": "^8.11.3",
-    "postgres": "^3.4.3"
+    "drizzle-orm": "^0.44.3",
+    "pg": "^8.16.3",
+    "postgres": "^3.4.7"
   },
   "devDependencies": {
     "@enpitsu/eslint-config": "workspace:^0.2.0",
     "@enpitsu/prettier-config": "workspace:^0.1.0",
     "@enpitsu/token-generator": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
-    "dotenv-cli": "^7.4.4",
-    "drizzle-kit": "^0.30.2",
+    "dotenv-cli": "^9.0.0",
+    "drizzle-kit": "^0.31.4",
     "eslint": "catalog:",
+    "minimatch": "^10.0.3",
     "prettier": "catalog:",
     "typescript": "catalog:"
   },
