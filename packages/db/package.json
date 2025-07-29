@@ -46,7 +46,7 @@
     "dotenv-cli": "^9.0.0",
     "drizzle-kit": "^0.31.4",
     "eslint": "catalog:",
-    "minimatch": "^10.0.3",
+    "minimatch": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"
   },

@@ -34,7 +34,7 @@
     "@enpitsu/tsconfig": "workspace:^0.1.0",
     "@types/string-similarity": "^4.0.2",
     "eslint": "catalog:",
-    "minimatch": "^10.0.3",
+    "minimatch": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"
   },
