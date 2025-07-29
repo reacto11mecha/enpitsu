@@ -29,6 +29,7 @@
     "@enpitsu/tsconfig": "workspace:^0.1.0",
     "@types/eslint": "^9.6.1",
     "eslint": "catalog:",
+    "minimatch": "catalog:",
     "typescript": "catalog:"
   },
   "eslintConfig": {

@@ -22,6 +22,7 @@
     "@enpitsu/prettier-config": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
     "eslint": "catalog:",
+    "minimatch": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"
   },
