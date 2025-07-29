@@ -23,6 +23,7 @@ import {
 import { Separator } from "@enpitsu/ui/separator";
 import { Skeleton } from "@enpitsu/ui/skeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfDay } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -30,7 +31,7 @@ import slugify from "slugify";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 const formSchema = z
   .object({
@@ -61,7 +62,8 @@ const formSchema = z
 export const NewParentQuestion = () => {
   const router = useRouter();
 
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,28 +75,33 @@ export const NewParentQuestion = () => {
     },
   });
 
-  const subgradeForAllowListQuery =
-    api.question.getSubgradeForAllowList.useQuery();
+  const subgradeForAllowListQuery = useQuery(
+    trpc.question.getSubgradeForAllowList.queryOptions(),
+  );
 
-  const createQuestionMutation = api.question.createQuestion.useMutation({
-    async onSuccess(result) {
-      form.reset();
+  const createQuestionMutation = useMutation(
+    trpc.question.createQuestion.mutationOptions({
+      async onSuccess(result) {
+        form.reset();
 
-      await apiUtils.grade.getStudents.invalidate();
+        await queryClient.invalidateQueries(
+          trpc.grade.getStudents.pathFilter(),
+        );
 
-      toast.success("Penambahan Berhasil!", {
-        description: `Berhasil menambahkan soal baru!`,
-      });
+        toast.success("Penambahan Berhasil!", {
+          description: `Berhasil menambahkan soal baru!`,
+        });
 
-      router.replace(`/admin/soal/butir/${result.id}`);
-    },
+        router.replace(`/admin/soal/butir/${result.id}`);
+      },
 
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     createQuestionMutation.mutate({ ...values });

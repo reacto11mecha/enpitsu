@@ -16,12 +16,13 @@ import {
   DropdownMenuTrigger,
 } from "@enpitsu/ui/dropdown-menu";
 import { Input } from "@enpitsu/ui/input";
+import { useQuery } from "@tanstack/react-query";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 import { ListChecks, MoreHorizontal, Trash2 } from "lucide-react";
 
 import { ReusableDataTable } from "~/_components/data-table";
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 import {
   DeleteManyStudentAnswer,
   DeleteSingleStudentAnswer,
@@ -194,10 +195,12 @@ export function DataTable({
   title: string;
   currUserRole: "admin" | "user";
 }) {
-  const specificAnswerByQuestionQuery =
-    api.question.getStudentAnswersByQuestion.useQuery({
+  const trpc = useTRPC();
+  const specificAnswerByQuestionQuery = useQuery(
+    trpc.question.getStudentAnswersByQuestion.queryOptions({
       questionId,
-    });
+    }),
+  );
 
   return (
     <RoleContext.Provider value={currUserRole}>

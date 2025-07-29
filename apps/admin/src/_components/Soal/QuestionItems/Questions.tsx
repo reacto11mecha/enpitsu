@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@enpitsu/ui/button";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 import { ChoiceEditor } from "./ChoiceEditor";
 import { EligibleStatus } from "./EligibleStatus";
 import { EssayEditor } from "./EssayEditor";
@@ -18,56 +19,64 @@ export const Questions = ({
   questionId: number;
   title: string;
 }) => {
-  const utils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   const [eligibleRefetchInterval, setERI] = useState(0);
 
-  const choicesIdQuery = api.question.getChoicesIdByQuestionId.useQuery(
-    { questionId },
-    {
-      refetchOnWindowFocus: false,
-    },
+  const choicesIdQuery = useQuery(
+    trpc.question.getChoicesIdByQuestionId.queryOptions(
+      { questionId },
+      {
+        refetchOnWindowFocus: false,
+      },
+    ),
   );
-  const createNewChoiceMutation = api.question.createNewChoice.useMutation({
-    async onSuccess() {
-      await utils.question.getChoicesIdByQuestionId.invalidate();
-      await utils.question.getEligibleStatusFromQuestion.invalidate();
-    },
-    onError(error) {
-      toast.error(`Gagal Membuat Soal PG`, {
-        description: `Terjadi kesalahan, coba lagi nanti. Error: ${error.message}`,
-      });
-    },
-  });
-
-  const essaysIdQuery = api.question.getEssaysIdByQuestionId.useQuery(
-    {
-      questionId,
-    },
-    {
-      refetchOnWindowFocus: false,
-    },
+  const createNewChoiceMutation = useMutation(
+    trpc.question.createNewChoice.mutationOptions({
+      async onSuccess() {
+        await queryClient.invalidateQueries(trpc.question.pathFilter());
+      },
+      onError(error) {
+        toast.error(`Gagal Membuat Soal PG`, {
+          description: `Terjadi kesalahan, coba lagi nanti. Error: ${error.message}`,
+        });
+      },
+    }),
   );
-  const createNewEssayMutation = api.question.createNewEssay.useMutation({
-    async onSuccess() {
-      await utils.question.getEssaysIdByQuestionId.invalidate();
-      await utils.question.getEligibleStatusFromQuestion.invalidate();
-    },
-    onError(error) {
-      toast.error(`Gagal Membuat Soal Esai`, {
-        description: `Terjadi kesalahan, coba lagi nanti. Error: ${error.message}`,
-      });
-    },
-  });
 
-  const eligibleQuestionStatus =
-    api.question.getEligibleStatusFromQuestion.useQuery(
+  const essaysIdQuery = useQuery(
+    trpc.question.getEssaysIdByQuestionId.queryOptions(
+      {
+        questionId,
+      },
+      {
+        refetchOnWindowFocus: false,
+      },
+    ),
+  );
+  const createNewEssayMutation = useMutation(
+    trpc.question.createNewEssay.mutationOptions({
+      async onSuccess() {
+        await queryClient.invalidateQueries(trpc.question.pathFilter());
+      },
+      onError(error) {
+        toast.error(`Gagal Membuat Soal Esai`, {
+          description: `Terjadi kesalahan, coba lagi nanti. Error: ${error.message}`,
+        });
+      },
+    }),
+  );
+
+  const eligibleQuestionStatus = useQuery(
+    trpc.question.getEligibleStatusFromQuestion.queryOptions(
       { questionId },
       {
         refetchOnWindowFocus: false,
         refetchInterval: eligibleRefetchInterval,
       },
-    );
+    ),
+  );
 
   useEffect(() => {
     if (eligibleQuestionStatus.data) {

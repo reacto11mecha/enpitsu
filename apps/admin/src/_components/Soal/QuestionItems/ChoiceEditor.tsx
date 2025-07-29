@@ -25,6 +25,7 @@ import { RadioGroup, RadioGroupItem } from "@enpitsu/ui/radio-group";
 import { Separator } from "@enpitsu/ui/separator";
 import { Skeleton } from "@enpitsu/ui/skeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ClipboardCheck,
   Loader2,
@@ -38,7 +39,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 import { useDebounce } from "./utils";
 
 const Editor = dynamic(() => import("./Editor"), {
@@ -83,13 +84,16 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
     name: "options",
   });
 
-  const utils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const specificChoiceQuery = api.question.getSpecificChoiceQuestion.useQuery(
-    { choiceIqid },
-    {
-      refetchOnWindowFocus: false,
-    },
+  const specificChoiceQuery = useQuery(
+    trpc.question.getSpecificChoiceQuestion.queryOptions(
+      { choiceIqid },
+      {
+        refetchOnWindowFocus: false,
+      },
+    ),
   );
 
   useEffect(() => {
@@ -124,79 +128,85 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
     optionsField.update,
   ]);
 
-  const specificChoiceMutation = api.question.updateSpecificChoice.useMutation({
-    async onMutate(updatedChoice) {
-      // Cancel outgoing fetches (so they don't overwrite our optimistic update)
-      await utils.question.getSpecificChoiceQuestion.cancel({ choiceIqid });
+  const specificChoiceMutation = useMutation(
+    trpc.question.updateSpecificChoice.mutationOptions({
+      // async onMutate(updatedChoice) {
+      //   // Cancel outgoing fetches (so they don't overwrite our optimistic update)
+      //   await utils.question.getSpecificChoiceQuestion.cancel({ choiceIqid });
 
-      // Get the data from the queryCache
-      const prevData = utils.question.getSpecificChoiceQuestion.getData({
-        choiceIqid,
-      });
+      //   // Get the data from the queryCache
+      //   const prevData = utils.question.getSpecificChoiceQuestion.getData({
+      //     choiceIqid,
+      //   });
 
-      // Optimistically update the data with our new post
-      utils.question.getSpecificChoiceQuestion.setData(
-        { choiceIqid },
-        updatedChoice,
-      );
+      //   // Optimistically update the data with our new post
+      //   utils.question.getSpecificChoiceQuestion.setData(
+      //     { choiceIqid },
+      //     updatedChoice,
+      //   );
 
-      // Return the previous data so we can revert if something goes wrong
-      return { prevData };
-    },
-    onError(err, newPost, ctx) {
-      // If the mutation fails, use the context-value from onMutate
-      utils.question.getSpecificChoiceQuestion.setData(
-        { choiceIqid },
-        ctx!.prevData,
-      );
+      //   // Return the previous data so we can revert if something goes wrong
+      //   return { prevData };
+      // },
+      onError(err, newPost, ctx) {
+        // // If the mutation fails, use the context-value from onMutate
+        // utils.question.getSpecificChoiceQuestion.setData(
+        //   { choiceIqid },
+        //   ctx!.prevData,
+        // );
 
-      toast.error("Gagal memperbarui soal", {
-        description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
-      });
-    },
-    async onSettled() {
-      // Sync with server once mutation has settled
-      await utils.question.getSpecificChoiceQuestion.invalidate();
-      await utils.question.getEligibleStatusFromQuestion.invalidate();
-    },
-  });
+        toast.error("Gagal memperbarui soal", {
+          description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
+        });
+      },
+      async onSettled() {
+        // // Sync with server once mutation has settled
+        // await utils.question.getSpecificChoiceQuestion.invalidate();
+        // await utils.question.getEligibleStatusFromQuestion.invalidate();
+        await queryClient.invalidateQueries(trpc.question.pathFilter());
+      },
+    }),
+  );
 
-  const deleteChoiceMutation = api.question.deleteSpecificChoice.useMutation({
-    retry: false,
-    async onMutate(deletedChoice) {
-      // Cancel outgoing fetches (so they don't overwrite our optimistic update)
-      await utils.question.getChoicesIdByQuestionId.cancel({ questionId });
+  const deleteChoiceMutation = useMutation(
+    trpc.question.deleteSpecificChoice.mutationOptions({
+      retry: false,
+      // async onMutate(deletedChoice) {
+      //   // Cancel outgoing fetches (so they don't overwrite our optimistic update)
+      //   await utils.question.getChoicesIdByQuestionId.cancel({ questionId });
 
-      // Get the data from the queryCache
-      const prevData = utils.question.getChoicesIdByQuestionId.getData({
-        questionId,
-      });
+      //   // Get the data from the queryCache
+      //   const prevData = utils.question.getChoicesIdByQuestionId.getData({
+      //     questionId,
+      //   });
 
-      // Optimistically update the data with our new post
-      utils.question.getChoicesIdByQuestionId.setData({ questionId }, (old) =>
-        old?.filter((dat) => dat.iqid !== deletedChoice.id),
-      );
+      //   // Optimistically update the data with our new post
+      //   utils.question.getChoicesIdByQuestionId.setData({ questionId }, (old) =>
+      //     old?.filter((dat) => dat.iqid !== deletedChoice.id),
+      //   );
 
-      // Return the previous data so we can revert if something goes wrong
-      return { prevData };
-    },
-    onError(err, newPost, ctx) {
-      // If the mutation fails, use the context-value from onMutate
-      utils.question.getChoicesIdByQuestionId.setData(
-        { questionId },
-        ctx?.prevData,
-      );
+      //   // Return the previous data so we can revert if something goes wrong
+      //   return { prevData };
+      // },
+      onError(err, newPost, ctx) {
+        // // If the mutation fails, use the context-value from onMutate
+        // utils.question.getChoicesIdByQuestionId.setData(
+        //   { questionId },
+        //   ctx?.prevData,
+        // );
 
-      toast.error("Gagal menghapus soal", {
-        description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
-      });
-    },
-    async onSettled() {
-      // Sync with server once mutation has settled
-      await utils.question.getChoicesIdByQuestionId.invalidate({ questionId });
-      await utils.question.getEligibleStatusFromQuestion.invalidate();
-    },
-  });
+        toast.error("Gagal menghapus soal", {
+          description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
+        });
+      },
+      async onSettled() {
+        // // Sync with server once mutation has settled
+        // await utils.question.getChoicesIdByQuestionId.invalidate({ questionId });
+        // await utils.question.getEligibleStatusFromQuestion.invalidate();
+        await queryClient.invalidateQueries(trpc.question.pathFilter());
+      },
+    }),
+  );
 
   const triggerUpdate = useDebounce(
     form.handleSubmit((d) =>

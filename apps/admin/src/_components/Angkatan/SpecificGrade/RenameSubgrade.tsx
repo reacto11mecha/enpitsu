@@ -25,7 +25,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 const schema = z.object({
   label: z.string().min(1, { message: "Harus ada isinya!" }),
@@ -44,7 +44,7 @@ export const RenameSubgrade = ({
   param: string;
   id: number;
 }) => {
-  const apiUtils = api.useUtils();
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),

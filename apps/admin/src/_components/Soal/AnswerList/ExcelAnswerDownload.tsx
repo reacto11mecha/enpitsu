@@ -12,11 +12,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@enpitsu/ui/dialog";
+import { useMutation } from "@tanstack/react-query";
 import ExcelJS from "exceljs";
 import { Sheet } from "lucide-react";
 import { toast } from "sonner";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 import { excelNormalizeTime } from "~/utils/time";
 
 const ReusableDialog = ({
@@ -77,8 +78,10 @@ export const SpecificExcelAnswerDownload = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  const excelMutationApi =
-    api.question.downloadStudentResponsesExcelById.useMutation({
+  const trpc = useTRPC();
+
+  const excelMutationApi = useMutation(
+    trpc.question.downloadStudentResponsesExcelById.mutationOptions({
       async onSuccess(result) {
         const workbook = new ExcelJS.Workbook();
 
@@ -218,8 +221,8 @@ export const SpecificExcelAnswerDownload = ({
           description: `Terjadi kesalahan, Error: ${error.message}`,
         });
       },
-    });
-
+    }),
+  );
   const onOpenChange = useCallback(() => {
     if (!excelMutationApi.isPending) setOpen((prev) => !prev);
   }, [excelMutationApi.isPending]);
@@ -245,8 +248,10 @@ export const SpecificExcelAnswerDownload = ({
 export const AggregateExcelAnswerDownload = () => {
   const [open, setOpen] = useState(false);
 
-  const excelMutationApi =
-    api.question.downloadStudentResponsesExcelAggregate.useMutation({
+  const trpc = useTRPC();
+
+  const excelMutationApi = useMutation(
+    trpc.question.downloadStudentResponsesExcelAggregate.mutationOptions({
       async onSuccess(results) {
         const workbook = new ExcelJS.Workbook();
 
@@ -388,7 +393,8 @@ export const AggregateExcelAnswerDownload = () => {
           description: `Terjadi kesalahan, Error: ${error.message}`,
         });
       },
-    });
+    }),
+  );
 
   const onOpenChange = useCallback(() => {
     if (!excelMutationApi.isPending) setOpen((prev) => !prev);

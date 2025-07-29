@@ -12,10 +12,11 @@ import {
   DialogTrigger,
 } from "@enpitsu/ui/dialog";
 import { Input } from "@enpitsu/ui/input";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 type AnsweredListByQuestion =
   RouterOutputs["question"]["getStudentAnswersByQuestion"];
@@ -33,7 +34,8 @@ export const DeleteSingleStudentAnswer = ({
   name: string;
   id: number;
 }) => {
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   const [confirmationText, setConfirmText] = useState("");
 
@@ -42,17 +44,21 @@ export const DeleteSingleStudentAnswer = ({
     [confirmationText],
   );
 
-  const deleteSpecificAnswerMutation =
-    api.question.deleteSpecificAnswer.useMutation({
+  const deleteSpecificAnswerMutation = useMutation(
+    trpc.question.deleteSpecificAnswer.mutationOptions({
       async onSuccess() {
         closeDialog();
 
         setConfirmText("");
 
         if (questionTitle) {
-          await apiUtils.question.getStudentAnswers.invalidate();
+          await queryClient.invalidateQueries(
+            trpc.question.getStudentAnswers.pathFilter(),
+          );
         } else {
-          await apiUtils.question.getStudentAnswersByQuestion.invalidate();
+          await queryClient.invalidateQueries(
+            trpc.question.getStudentAnswersByQuestion.pathFilter(),
+          );
         }
 
         toast.success("Penghapusan Berhasil!", {
@@ -64,7 +70,8 @@ export const DeleteSingleStudentAnswer = ({
           description: `Terjadi kesalahan, Error: ${error.message}`,
         });
       },
-    });
+    }),
+  );
 
   return (
     <Dialog
@@ -153,28 +160,33 @@ export const DeleteManyStudentAnswer = ({
 
   const allIds = useMemo(() => data.map((d) => d.id), [data]);
 
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const deleteManyStudentAnswers = api.question.deleteManyAnswer.useMutation({
-    async onSuccess() {
-      setDialogOpen(false);
+  const deleteManyStudentAnswers = useMutation(
+    trpc.question.deleteManyAnswer.mutationOptions({
+      async onSuccess() {
+        setDialogOpen(false);
 
-      setConfirmText("");
+        setConfirmText("");
 
-      await apiUtils.question.getStudentAnswersByQuestion.invalidate();
+        await queryClient.invalidateQueries(
+          trpc.question.getStudentAnswersByQuestion.pathFilter(),
+        );
 
-      resetSelection();
+        resetSelection();
 
-      toast.success("Penghapusan Berhasil!", {
-        description: "Berhasil menghapus banyak jawaban peserta.",
-      });
-    },
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+        toast.success("Penghapusan Berhasil!", {
+          description: "Berhasil menghapus banyak jawaban peserta.",
+        });
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   return (
     <Dialog

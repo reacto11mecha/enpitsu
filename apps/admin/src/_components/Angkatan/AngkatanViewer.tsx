@@ -18,7 +18,7 @@ import { Skeleton } from "@enpitsu/ui/skeleton";
 import { ChevronsRight, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 export const AngkatanViewer = () => {
   const [open, setOpen] = useState(false);
@@ -30,7 +30,7 @@ export const AngkatanViewer = () => {
     [confirmationText],
   );
 
-  const apiUtils = api.useUtils();
+  const queryClient = useQueryClient();
 
   const grades = api.grade.getGrades.useQuery(undefined);
 

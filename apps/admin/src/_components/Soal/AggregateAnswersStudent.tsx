@@ -15,12 +15,13 @@ import {
   DropdownMenuTrigger,
 } from "@enpitsu/ui/dropdown-menu";
 import { Input } from "@enpitsu/ui/input";
+import { useQuery } from "@tanstack/react-query";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 import { ArrowUpRight, ListChecks, MoreHorizontal, Trash2 } from "lucide-react";
 
 import { ReusableDataTable } from "~/_components/data-table";
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 import { DeleteSingleStudentAnswer } from "./AnswerList/DeleteStudentAnswer";
 import { AggregateExcelAnswerDownload } from "./AnswerList/ExcelAnswerDownload";
 
@@ -155,7 +156,10 @@ export const columns: ColumnDef<StudentAnswers>[] = [
 ];
 
 export function DataTable() {
-  const studentAnswerQuery = api.question.getStudentAnswers.useQuery();
+  const trpc = useTRPC();
+  const studentAnswerQuery = useQuery(
+    trpc.question.getStudentAnswers.queryOptions(),
+  );
 
   return (
     <div className="w-full">

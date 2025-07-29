@@ -11,10 +11,11 @@ import {
   DialogTitle,
 } from "@enpitsu/ui/dialog";
 import { Input } from "@enpitsu/ui/input";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 export const DeleteParentQuestion = ({
   openDelete,
@@ -27,7 +28,8 @@ export const DeleteParentQuestion = ({
   title: string;
   id: number;
 }) => {
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   const [confirmationText, setConfirmText] = useState("");
 
@@ -36,24 +38,28 @@ export const DeleteParentQuestion = ({
     [confirmationText],
   );
 
-  const deleteQuestionMutation = api.question.deleteQuestion.useMutation({
-    async onSuccess() {
-      setOpenDelete(false);
+  const deleteQuestionMutation = useMutation(
+    trpc.question.deleteQuestion.mutationOptions({
+      async onSuccess() {
+        setOpenDelete(false);
 
-      setConfirmText("");
+        setConfirmText("");
 
-      await apiUtils.question.getQuestions.invalidate();
+        await queryClient.invalidateQueries(
+          trpc.question.getQuestions.pathFilter(),
+        );
 
-      toast.success("Penghapusan Berhasil!", {
-        description: "Berhasil menghapus soal spesifik.",
-      });
-    },
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+        toast.success("Penghapusan Berhasil!", {
+          description: "Berhasil menghapus soal spesifik.",
+        });
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   return (
     <Dialog

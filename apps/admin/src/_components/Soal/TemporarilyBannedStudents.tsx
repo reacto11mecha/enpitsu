@@ -16,12 +16,13 @@ import {
   DropdownMenuTrigger,
 } from "@enpitsu/ui/dropdown-menu";
 import { Input } from "@enpitsu/ui/input";
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { MoreHorizontal, PencilLine, Trash2 } from "lucide-react";
 
 import { ReusableDataTable } from "~/_components/data-table";
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 import { AddBannedStudent } from "./TemporarilyBanned/AddBannedStudent";
 import {
   DeleteManyBannedStudent,
@@ -174,7 +175,10 @@ export const columns: ColumnDef<StudentTempoban>[] = [
 ];
 
 export function DataTable() {
-  const temporarilyBannedQuery = api.question.getStudentTempobans.useQuery();
+  const trpc = useTRPC();
+  const temporarilyBannedQuery = useQuery(
+    trpc.question.getStudentTempobans.queryOptions(),
+  );
 
   return (
     <div className="w-full">

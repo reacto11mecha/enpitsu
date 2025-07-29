@@ -26,7 +26,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 const schema = z.object({
   name: z
@@ -56,7 +56,7 @@ export const UpdateStudent = ({
   setOpenEdit: Dispatch<SetStateAction<boolean>>;
   student: StudentType;
 }) => {
-  const apiUtils = api.useUtils();
+  const queryClient = useQueryClient();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),

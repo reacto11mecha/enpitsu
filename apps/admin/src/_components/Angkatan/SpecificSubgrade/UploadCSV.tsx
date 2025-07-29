@@ -30,7 +30,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 const FileValueSchema = z.array(
   z.object({
@@ -73,7 +73,7 @@ export const UploadCSV = ({
   const [open, setOpen] = useState(false);
   const [readLock, setReadLock] = useState(false);
 
-  const apiUtils = api.useUtils();
+  const queryClient = useQueryClient();
 
   const formSchema = z.object({
     csv: z

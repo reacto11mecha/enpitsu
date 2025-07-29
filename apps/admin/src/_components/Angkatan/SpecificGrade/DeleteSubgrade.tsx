@@ -14,7 +14,7 @@ import { Input } from "@enpitsu/ui/input";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 export const DeleteSubgrade = ({
   openDelete,
@@ -27,7 +27,7 @@ export const DeleteSubgrade = ({
   label: string;
   id: number;
 }) => {
-  const apiUtils = api.useUtils();
+  const queryClient = useQueryClient();
 
   const [confirmationText, setConfirmText] = useState("");
 

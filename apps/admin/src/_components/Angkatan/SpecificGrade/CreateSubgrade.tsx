@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 const formSchema = z.object({
   label: z.string().min(1, {
@@ -25,7 +25,7 @@ const formSchema = z.object({
 });
 
 export const CreateSubgrade = ({ gradeId }: { gradeId: number }) => {
-  const apiUtils = api.useUtils();
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

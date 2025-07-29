@@ -15,12 +15,13 @@ import {
   DropdownMenuTrigger,
 } from "@enpitsu/ui/dropdown-menu";
 import { Input } from "@enpitsu/ui/input";
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { ArrowUpRight, MoreHorizontal, Trash2 } from "lucide-react";
 
 import { ReusableDataTable } from "~/_components/data-table";
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 import {
   AggregateDeleteCheatedStudent,
   DeleteSingleCheatedStudent,
@@ -132,7 +133,10 @@ export const columns: ColumnDef<BlocklistByQuestion>[] = [
 ];
 
 export function DataTable() {
-  const blocklistsQuery = api.question.getStudentBlocklists.useQuery();
+  const trpc = useTRPC();
+  const blocklistsQuery = useQuery(
+    trpc.question.getStudentBlocklists.queryOptions(),
+  );
 
   return (
     <div className="w-full">

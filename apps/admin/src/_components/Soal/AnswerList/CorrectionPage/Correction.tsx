@@ -16,11 +16,12 @@ import { Textarea } from "@enpitsu/ui/textarea";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 import "katex/dist/katex.min.css";
 
 import { Separator } from "@enpitsu/ui/separator";
+import { useQuery } from "@tanstack/react-query";
 
 import { UpdateEssayScore } from "./UpdateEssayScore";
 
@@ -45,30 +46,38 @@ export const Correction = ({
   choices: { choiceId: number; answer: number }[];
   essays: { id: number; essayId: number; answer: string }[];
 }) => {
-  const multipleChoicesQuery = api.question.getMultipleChoices.useQuery(
-    {
-      questionId,
-    },
-    {
-      refetchOnWindowFocus: false,
-    },
+  const trpc = useTRPC();
+
+  const multipleChoicesQuery = useQuery(
+    trpc.question.getMultipleChoices.queryOptions(
+      {
+        questionId,
+      },
+      {
+        refetchOnWindowFocus: false,
+      },
+    ),
   );
 
-  const essayScoresQuery = api.question.getEssaysScore.useQuery(
-    {
-      respondId,
-    },
-    {
-      enabled: false,
-    },
+  const essayScoresQuery = useQuery(
+    trpc.question.getEssaysScore.queryOptions(
+      {
+        respondId,
+      },
+      {
+        enabled: false,
+      },
+    ),
   );
-  const essaysQuery = api.question.getEssays.useQuery(
-    {
-      questionId,
-    },
-    {
-      refetchOnWindowFocus: false,
-    },
+  const essaysQuery = useQuery(
+    trpc.question.getEssays.queryOptions(
+      {
+        questionId,
+      },
+      {
+        refetchOnWindowFocus: false,
+      },
+    ),
   );
 
   useEffect(() => {

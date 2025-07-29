@@ -24,6 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@enpitsu/ui/tooltip";
+import { useQuery } from "@tanstack/react-query";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 import {
@@ -39,7 +40,7 @@ import {
 } from "lucide-react";
 
 import { ReusableDataTable } from "~/_components/data-table";
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 import { CreateQRCodes } from "./CreateQRCodes";
 import { DeleteParentQuestion } from "./DeleteParentQuestion";
 
@@ -304,7 +305,8 @@ export function DataTable({
   countValue: number;
   currUserRole: "admin" | "user";
 }) {
-  const questionsQuery = api.question.getQuestions.useQuery();
+  const trpc = useTRPC();
+  const questionsQuery = useQuery(trpc.question.getQuestions.queryOptions());
 
   return (
     <RoleContext.Provider value={currUserRole}>

@@ -29,7 +29,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 const formSchema = z.object({
   name: z
@@ -72,7 +72,7 @@ export const AddStudent = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  const apiUtils = api.useUtils();
+  const queryClient = useQueryClient();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

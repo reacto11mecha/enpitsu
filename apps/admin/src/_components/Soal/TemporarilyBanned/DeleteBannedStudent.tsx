@@ -14,10 +14,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@enpitsu/ui/dialog";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 type StudentTempoban = RouterOutputs["question"]["getStudentTempobans"];
 
@@ -34,25 +35,30 @@ export const DeleteSingleBannedStudent = ({
   isDialogOpen: boolean;
   setDialogOpen: Dispatch<SetStateAction<boolean>>;
 }) => {
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const deleteBannedStudent = api.grade.deleteSingleTemporaryBan.useMutation({
-    async onSuccess() {
-      await apiUtils.question.getStudentTempobans.invalidate();
+  const deleteBannedStudent = useMutation(
+    trpc.grade.deleteSingleTemporaryBan.mutationOptions({
+      async onSuccess() {
+        await queryClient.invalidateQueries(
+          trpc.question.getStudentTempobans.pathFilter(),
+        );
 
-      toast.success("Penghapusan Larangan Berhasil!", {
-        description: `Berhasil menghapus peserta!`,
-      });
+        toast.success("Penghapusan Larangan Berhasil!", {
+          description: `Berhasil menghapus peserta!`,
+        });
 
-      setDialogOpen(false);
-    },
+        setDialogOpen(false);
+      },
 
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   return (
     <Dialog
@@ -105,26 +111,31 @@ export const DeleteManyBannedStudent = ({
 
   const allIds = useMemo(() => data.map((d) => d.id), [data]);
 
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const deleteManyBannedStudent = api.grade.deleteManyTemporaryBan.useMutation({
-    async onSuccess() {
-      setDialogOpen(false);
+  const deleteManyBannedStudent = useMutation(
+    trpc.grade.deleteManyTemporaryBan.mutationOptions({
+      async onSuccess() {
+        setDialogOpen(false);
 
-      await apiUtils.question.getStudentTempobans.invalidate();
+        await queryClient.invalidateQueries(
+          trpc.question.getStudentTempobans.pathFilter(),
+        );
 
-      resetSelection();
+        resetSelection();
 
-      toast.success("Penghapusan Berhasil!", {
-        description: "Berhasil menghapus banyak larangan sementara peserta.",
-      });
-    },
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+        toast.success("Penghapusan Berhasil!", {
+          description: "Berhasil menghapus banyak larangan sementara peserta.",
+        });
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   return (
     <Dialog

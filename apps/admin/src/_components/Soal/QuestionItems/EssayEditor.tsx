@@ -25,6 +25,7 @@ import { Skeleton } from "@enpitsu/ui/skeleton";
 import { Switch } from "@enpitsu/ui/switch";
 import { Textarea } from "@enpitsu/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Loader2,
   X as NuhUh,
@@ -36,7 +37,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 import { useDebounce } from "./utils";
 
 const Editor = dynamic(() => import("./Editor"), {
@@ -70,13 +71,16 @@ export const EssayEditor = memo(function EssayEditorConstructor({
     },
   });
 
-  const utils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const specificEssayQuery = api.question.getSpecificEssayQuestion.useQuery(
-    { essayIqid },
-    {
-      refetchOnWindowFocus: false,
-    },
+  const specificEssayQuery = useQuery(
+    trpc.question.getSpecificEssayQuestion.queryOptions(
+      { essayIqid },
+      {
+        refetchOnWindowFocus: false,
+      },
+    ),
   );
 
   useEffect(() => {
@@ -99,79 +103,85 @@ export const EssayEditor = memo(function EssayEditorConstructor({
     }
   }, [specificEssayQuery.data, specificEssayQuery.error, form]);
 
-  const specificEssayMutation = api.question.updateSpecificEssay.useMutation({
-    async onMutate(updatedChoice) {
-      // Cancel outgoing fetches (so they don't overwrite our optimistic update)
-      await utils.question.getSpecificEssayQuestion.cancel({ essayIqid });
+  const specificEssayMutation = useMutation(
+    trpc.question.updateSpecificEssay.mutationOptions({
+      // async onMutate(updatedChoice) {
+      //   // Cancel outgoing fetches (so they don't overwrite our optimistic update)
+      //   await utils.question.getSpecificEssayQuestion.cancel({ essayIqid });
 
-      // Get the data from the queryCache
-      const prevData = utils.question.getSpecificEssayQuestion.getData({
-        essayIqid,
-      });
+      //   // Get the data from the queryCache
+      //   const prevData = utils.question.getSpecificEssayQuestion.getData({
+      //     essayIqid,
+      //   });
 
-      // Optimistically update the data with our new post
-      utils.question.getSpecificEssayQuestion.setData(
-        { essayIqid },
-        updatedChoice,
-      );
+      //   // Optimistically update the data with our new post
+      //   utils.question.getSpecificEssayQuestion.setData(
+      //     { essayIqid },
+      //     updatedChoice,
+      //   );
 
-      // Return the previous data so we can revert if something goes wrong
-      return { prevData };
-    },
-    onError(err, newPost, ctx) {
-      // If the mutation fails, use the context-value from onMutate
-      utils.question.getSpecificEssayQuestion.setData(
-        { essayIqid },
-        ctx!.prevData,
-      );
+      //   // Return the previous data so we can revert if something goes wrong
+      //   return { prevData };
+      // },
+      onError(err, newPost, ctx) {
+        // // If the mutation fails, use the context-value from onMutate
+        // utils.question.getSpecificEssayQuestion.setData(
+        //   { essayIqid },
+        //   ctx!.prevData,
+        // );
 
-      toast.error("Gagal memperbarui soal", {
-        description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
-      });
-    },
-    async onSettled() {
-      // Sync with server once mutation has settled
-      await utils.question.getSpecificEssayQuestion.invalidate();
-      await utils.question.getEligibleStatusFromQuestion.invalidate();
-    },
-  });
+        toast.error("Gagal memperbarui soal", {
+          description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
+        });
+      },
+      async onSettled() {
+        // // Sync with server once mutation has settled
+        // await utils.question.getSpecificEssayQuestion.invalidate();
+        // await utils.question.getEligibleStatusFromQuestion.invalidate();
+        await queryClient.invalidateQueries(trpc.question.pathFilter());
+      },
+    }),
+  );
 
-  const deleteEssayMutation = api.question.deleteSpecificEssay.useMutation({
-    retry: false,
-    async onMutate(deletedEssay) {
-      // Cancel outgoing fetches (so they don't overwrite our optimistic update)
-      await utils.question.getEssaysIdByQuestionId.cancel({ questionId });
+  const deleteEssayMutation = useMutation(
+    trpc.question.deleteSpecificEssay.mutationOptions({
+      retry: false,
+      // async onMutate(deletedEssay) {
+      //   // Cancel outgoing fetches (so they don't overwrite our optimistic update)
+      //   await utils.question.getEssaysIdByQuestionId.cancel({ questionId });
 
-      // Get the data from the queryCache
-      const prevData = utils.question.getEssaysIdByQuestionId.getData({
-        questionId,
-      });
+      //   // Get the data from the queryCache
+      //   const prevData = utils.question.getEssaysIdByQuestionId.getData({
+      //     questionId,
+      //   });
 
-      // Optimistically update the data with our new post
-      utils.question.getEssaysIdByQuestionId.setData({ questionId }, (old) =>
-        old?.filter((dat) => dat.iqid !== deletedEssay.essayIqid),
-      );
+      //   // Optimistically update the data with our new post
+      //   utils.question.getEssaysIdByQuestionId.setData({ questionId }, (old) =>
+      //     old?.filter((dat) => dat.iqid !== deletedEssay.essayIqid),
+      //   );
 
-      // Return the previous data so we can revert if something goes wrong
-      return { prevData };
-    },
-    onError(err, newPost, ctx) {
-      // If the mutation fails, use the context-value from onMutate
-      utils.question.getEssaysIdByQuestionId.setData(
-        { questionId },
-        ctx!.prevData,
-      );
+      //   // Return the previous data so we can revert if something goes wrong
+      //   return { prevData };
+      // },
+      onError(err, newPost, ctx) {
+        // // If the mutation fails, use the context-value from onMutate
+        // utils.question.getEssaysIdByQuestionId.setData(
+        //   { questionId },
+        //   ctx!.prevData,
+        // );
 
-      toast.error("Gagal menghapus soal", {
-        description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
-      });
-    },
-    async onSettled() {
-      // Sync with server once mutation has settled
-      await utils.question.getEssaysIdByQuestionId.invalidate({ questionId });
-      await utils.question.getEligibleStatusFromQuestion.invalidate();
-    },
-  });
+        toast.error("Gagal menghapus soal", {
+          description: `Terjadi kesalahan, coba lagi nanti. Error: ${err.message}`,
+        });
+      },
+      async onSettled() {
+        // // Sync with server once mutation has settled
+        // await utils.question.getEssaysIdByQuestionId.invalidate({ questionId });
+        // await utils.question.getEligibleStatusFromQuestion.invalidate();
+        await queryClient.invalidateQueries(trpc.question.pathFilter());
+      },
+    }),
+  );
 
   const triggerUpdate = useDebounce(
     form.handleSubmit((d) =>

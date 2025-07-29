@@ -24,6 +24,7 @@ import {
 import { Separator } from "@enpitsu/ui/separator";
 import { Skeleton } from "@enpitsu/ui/skeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfDay } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -31,7 +32,7 @@ import slugify from "slugify";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 const formSchema = z
   .object({
@@ -55,7 +56,8 @@ const formSchema = z
 export const EditParentQuestion = ({ id }: { id: number }) => {
   const router = useRouter();
 
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -68,12 +70,14 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
     },
   });
 
-  const currentQuestionQuery = api.question.getQuestionForEdit.useQuery(
-    { id },
-    {
-      retry: false,
-      refetchOnWindowFocus: false,
-    },
+  const currentQuestionQuery = useQuery(
+    trpc.question.getQuestionForEdit.queryOptions(
+      { id },
+      {
+        retry: false,
+        refetchOnWindowFocus: false,
+      },
+    ),
   );
 
   useEffect(() => {
@@ -93,26 +97,31 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
     }
   }, [currentQuestionQuery.data, currentQuestionQuery.error, form]);
 
-  const subgradeForAllowListQuery =
-    api.question.getSubgradeForAllowList.useQuery();
+  const subgradeForAllowListQuery = useQuery(
+    trpc.question.getSubgradeForAllowList.queryOptions(),
+  );
 
-  const editQuestionMutation = api.question.editParentQuestion.useMutation({
-    async onSuccess() {
-      await apiUtils.grade.getStudents.invalidate();
+  const editQuestionMutation = useMutation(
+    trpc.question.editParentQuestion.mutationOptions({
+      async onSuccess() {
+        await queryClient.invalidateQueries(
+          trpc.grade.getStudents.pathFilter(),
+        );
 
-      toast.success("Perbaikan Berhasil!", {
-        description: `Berhasil memperbaiki soal ${form.getValues("title")}!`,
-      });
+        toast.success("Perbaikan Berhasil!", {
+          description: `Berhasil memperbaiki soal ${form.getValues("title")}!`,
+        });
 
-      router.replace("/admin/soal");
-    },
+        router.replace("/admin/soal");
+      },
 
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     editQuestionMutation.mutate({ id, ...values });

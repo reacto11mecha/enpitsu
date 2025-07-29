@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@enpitsu/ui/dropdown-menu";
+import { useQuery } from "@tanstack/react-query";
 import {
   ClipboardCopy,
   MoreHorizontal,
@@ -24,7 +25,7 @@ import {
 import { toast } from "sonner";
 
 import { ReusableDataTable } from "~/_components/data-table";
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 import { CreateSubgrade } from "./CreateSubgrade";
 import { DeleteSubgrade } from "./DeleteSubgrade";
 import { RenameSubgrade } from "./RenameSubgrade";
@@ -132,9 +133,12 @@ export function DataTable({
 }: {
   currentGrade: { id: number; label: string };
 }) {
-  const subgradesQuery = api.grade.getSubgrades.useQuery({
-    gradeId: currentGrade.id,
-  });
+  const trpc = useTRPC();
+  const subgradesQuery = useQuery(
+    trpc.grade.getSubgrades.queryOptions({
+      gradeId: currentGrade.id,
+    }),
+  );
 
   return (
     <div className="w-full">

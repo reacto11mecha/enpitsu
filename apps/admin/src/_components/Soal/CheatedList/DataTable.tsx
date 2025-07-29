@@ -16,12 +16,13 @@ import {
   DropdownMenuTrigger,
 } from "@enpitsu/ui/dropdown-menu";
 import { Input } from "@enpitsu/ui/input";
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { MoreHorizontal, Trash2 } from "lucide-react";
 
 import { ReusableDataTable } from "~/_components/data-table";
-import { api } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 import {
   DeleteManyCheatedStudent,
   DeleteSingleCheatedStudent,
@@ -166,11 +167,12 @@ export function DataTable({
   title: string;
   currUserRole: "admin" | "user";
 }) {
-  const specificQuestionBlocklistQuery =
-    api.question.getStudentBlocklistByQuestion.useQuery({
+  const trpc = useTRPC();
+  const specificQuestionBlocklistQuery = useQuery(
+    trpc.question.getStudentBlocklistByQuestion.queryOptions({
       questionId,
-    });
-
+    }),
+  );
   return (
     <RoleContext.Provider value={currUserRole}>
       <div className="w-full">
