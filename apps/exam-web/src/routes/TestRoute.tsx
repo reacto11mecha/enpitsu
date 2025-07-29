@@ -1,26 +1,30 @@
 import { ActualTest } from "@/components/TestRouter/ActualTest";
 import enpitsuLogo from "@/icon.png";
 import { studentAnswerAtom } from "@/lib/atom";
-import { api } from "@/utils/api";
+import { useTRPC } from "@/utils/api";
 import { Button } from "@enpitsu/ui/button";
+import { useQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
 export default function TestRoute() {
+  const trpc = useTRPC();
   const initialAnswer = useAtomValue(studentAnswerAtom);
 
   const { slug } = useParams<{ slug: string }>();
 
-  const questionQuery = api.exam.queryQuestion.useQuery(
-    {
-      slug: slug ?? "",
-    },
-    {
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-      retry: false,
-    },
+  const questionQuery = useQuery(
+    trpc.exam.queryQuestion.queryOptions(
+      {
+        slug: slug ?? "",
+      },
+      {
+        refetchOnReconnect: false,
+        refetchOnWindowFocus: false,
+        retry: false,
+      },
+    ),
   );
 
   if (questionQuery.isError)

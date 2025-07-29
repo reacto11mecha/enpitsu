@@ -4,7 +4,7 @@ import { useCountdown } from "@/hooks/useCountdown";
 import { useNetworkState } from "@/hooks/useNetworkState";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { studentAnswerAtom, studentTokenAtom } from "@/lib/atom";
-import { api } from "@/utils/api";
+import { useTRPC } from "@/utils/api";
 import { Button } from "@enpitsu/ui/button";
 import { Card, CardContent, CardHeader } from "@enpitsu/ui/card";
 import {
@@ -19,6 +19,7 @@ import { RadioGroup, RadioGroupItem } from "@enpitsu/ui/radio-group";
 import { Separator } from "@enpitsu/ui/separator";
 import { Textarea } from "@enpitsu/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { useAtomValue, useSetAtom } from "jotai";
 import { toast } from "sonner";
 
@@ -67,6 +68,8 @@ export const CountdownIsolation = memo(function Countdown({
 });
 
 const Test = ({ data, initialData }: Props) => {
+  const trpc = useTRPC();
+
   const [checkIn] = useState(
     initialData.find((d) => d.slug === data.slug)?.checkIn
       ? new Date(
@@ -80,32 +83,36 @@ const Test = ({ data, initialData }: Props) => {
   const studentToken = useAtomValue(studentTokenAtom);
   const setStudentAnswers = useSetAtom(studentAnswerAtom);
 
-  const blocklistMutation = api.exam.storeBlocklist.useMutation({
-    onSuccess() {
-      setStudentAnswers((prev) =>
-        prev.filter((answer) => answer.slug !== data.slug),
-      );
-    },
-    onError(error) {
-      toast.error("Operasi gagal", {
-        description: `Gagal menyimpan status kecurangan. Error: ${error.message}`,
-      });
-    },
-    retry: false,
-  });
-  const submitAnswerMutation = api.exam.submitAnswer.useMutation({
-    onSuccess() {
-      setStudentAnswers((prev) =>
-        prev.filter((answer) => answer.slug !== data.slug),
-      );
-    },
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Gagal menyimpan jawaban. Error: ${error.message}`,
-      });
-    },
-    retry: false,
-  });
+  const blocklistMutation = useMutation(
+    trpc.exam.storeBlocklist.mutationOptions({
+      onSuccess() {
+        setStudentAnswers((prev) =>
+          prev.filter((answer) => answer.slug !== data.slug),
+        );
+      },
+      onError(error) {
+        toast.error("Operasi gagal", {
+          description: `Gagal menyimpan status kecurangan. Error: ${error.message}`,
+        });
+      },
+      retry: false,
+    }),
+  );
+  const submitAnswerMutation = useMutation(
+    trpc.exam.submitAnswer.mutationOptions({
+      onSuccess() {
+        setStudentAnswers((prev) =>
+          prev.filter((answer) => answer.slug !== data.slug),
+        );
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Gagal menyimpan jawaban. Error: ${error.message}`,
+        });
+      },
+      retry: false,
+    }),
+  );
 
   const [dishonestyCount, setDishonestyCount] = useState(
     initialData.find((d) => d.slug === data.slug)?.dishonestCount ?? 0,

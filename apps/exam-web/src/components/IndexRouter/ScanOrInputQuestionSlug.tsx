@@ -1,6 +1,6 @@
 import type { z } from "zod";
 import { useCallback, useState } from "react";
-import { api } from "@/utils/api";
+import { useTRPC } from "@/utils/api";
 import { Button } from "@enpitsu/ui/button";
 import {
   Form,
@@ -12,6 +12,7 @@ import {
 } from "@enpitsu/ui/form";
 import { Input } from "@enpitsu/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
@@ -27,22 +28,25 @@ export const ScanOrInputQuestionSlug = ({
 }: {
   closeScanner: () => void;
 }) => {
+  const trpc = useTRPC();
   const [isPrecautionOpen, setOpen] = useState(false);
 
-  const getQuestionMutation = api.exam.getQuestion.useMutation({
-    onSuccess() {
-      setOpen(true);
-    },
-    onError(error) {
-      toast.error("Gagal mendapatkan data soal", {
-        duration: 9500,
-        description:
-          error.message === "Failed to fetch"
-            ? "Anda mungkin sedang offline"
-            : error.message,
-      });
-    },
-  });
+  const getQuestionMutation = useMutation(
+    trpc.exam.getQuestion.mutationOptions({
+      onSuccess() {
+        setOpen(true);
+      },
+      onError(error) {
+        toast.error("Gagal mendapatkan data soal", {
+          duration: 9500,
+          description:
+            error.message === "Failed to fetch"
+              ? "Anda mungkin sedang offline"
+              : error.message,
+        });
+      },
+    }),
+  );
 
   const closePrecaution = useCallback(() => setOpen(false), []);
 

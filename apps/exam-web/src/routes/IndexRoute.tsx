@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Logout } from "@/components/IndexRouter/Logout";
 import { ScanOrInputQuestionSlug } from "@/components/IndexRouter/ScanOrInputQuestionSlug";
 import { ModeToggle } from "@/components/mode-toggle";
-import { api } from "@/utils/api";
+import { useTRPC } from "@/utils/api";
 import { Button } from "@enpitsu/ui/button";
 import {
   Card,
@@ -14,16 +14,18 @@ import {
 } from "@enpitsu/ui/card";
 import { Separator } from "@enpitsu/ui/separator";
 import { Skeleton } from "@enpitsu/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
 import { Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function IndexRoute() {
+  const trpc = useTRPC();
   const [isCorrect, setCorrect] = useState(false);
 
   const closeQuestionScan = useCallback(() => setCorrect(false), []);
 
-  const studentQuery = api.exam.getStudent.useQuery();
+  const studentQuery = useQuery(trpc.exam.getStudent.queryOptions());
 
   useEffect(() => {
     if (studentQuery.error)

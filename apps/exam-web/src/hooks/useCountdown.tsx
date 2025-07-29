@@ -3,7 +3,7 @@ import { differenceInMilliseconds, intervalToDuration } from "date-fns";
 
 export const useCountdown = (targetDate: Date) => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const requestRef = useRef<number>();
+  const requestRef = useRef<number>(0);
 
   const animate = () => {
     setCurrentTime(new Date());
