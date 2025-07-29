@@ -15,6 +15,7 @@ import {
 } from "@enpitsu/ui/dialog";
 import { Input } from "@enpitsu/ui/input";
 import { Skeleton } from "@enpitsu/ui/skeleton";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronsRight, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -30,29 +31,32 @@ export const AngkatanViewer = () => {
     [confirmationText],
   );
 
+  const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const grades = api.grade.getGrades.useQuery(undefined);
+  const grades = useQuery(trpc.grade.getGrades.queryOptions());
 
-  const gradeDeleteMutation = api.grade.deleteGrade.useMutation({
-    async onSuccess() {
-      setOpen(false);
+  const gradeDeleteMutation = useMutation(
+    trpc.grade.deleteGrade.mutationOptions({
+      async onSuccess() {
+        setOpen(false);
 
-      setConfirmText("");
-      setCurrentDeleteID(null);
+        setConfirmText("");
+        setCurrentDeleteID(null);
 
-      await apiUtils.grade.invalidate();
+        await queryClient.invalidateQueries(trpc.grade.pathFilter());
 
-      toast.success("Penghapusan Berhasil!", {
-        description: "Berhasil menghapus seluruh data angkatan.",
-      });
-    },
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+        toast.success("Penghapusan Berhasil!", {
+          description: "Berhasil menghapus seluruh data angkatan.",
+        });
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">

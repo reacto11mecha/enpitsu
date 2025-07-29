@@ -24,6 +24,7 @@ import {
 } from "@enpitsu/ui/form";
 import { Input } from "@enpitsu/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -72,6 +73,7 @@ export const AddStudent = ({
 }) => {
   const [open, setOpen] = useState(false);
 
+  const trpc = useTRPC();
   const queryClient = useQueryClient();
 
   const form = useForm<FormValues>({
@@ -82,25 +84,29 @@ export const AddStudent = ({
     },
   });
 
-  const createStudentMutation = api.grade.createStudent.useMutation({
-    async onSuccess() {
-      form.reset();
+  const createStudentMutation = useMutation(
+    trpc.grade.createStudent.mutationOptions({
+      async onSuccess() {
+        form.reset();
 
-      await apiUtils.grade.getStudents.invalidate();
+        await queryClient.invalidateQueries(
+          trpc.grade.getStudents.pathFilter(),
+        );
 
-      setOpen(false);
+        setOpen(false);
 
-      toast.success("Penambahan Berhasil!", {
-        description: `Berhasil menambahkan murid baru di kelas ${grade.label} ${subgrade.label}.`,
-      });
-    },
+        toast.success("Penambahan Berhasil!", {
+          description: `Berhasil menambahkan murid baru di kelas ${grade.label} ${subgrade.label}.`,
+        });
+      },
 
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   function onSubmit(values: FormValues) {
     createStudentMutation.mutate({ ...values, subgradeId: subgrade.id });

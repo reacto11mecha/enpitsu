@@ -24,6 +24,7 @@ import {
 } from "@enpitsu/ui/form";
 import { Input } from "@enpitsu/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { parse as parseCSV } from "csv-parse";
 import { FileSpreadsheet, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -73,6 +74,7 @@ export const UploadCSV = ({
   const [open, setOpen] = useState(false);
   const [readLock, setReadLock] = useState(false);
 
+  const trpc = useTRPC();
   const queryClient = useQueryClient();
 
   const formSchema = z.object({
@@ -93,25 +95,29 @@ export const UploadCSV = ({
     resolver: zodResolver(formSchema),
   });
 
-  const createStudentManyMutation = api.grade.createStudentMany.useMutation({
-    async onSuccess() {
-      form.reset();
+  const createStudentManyMutation = useMutation(
+    trpc.grade.createStudentMany.mutationOptions({
+      async onSuccess() {
+        form.reset();
 
-      await apiUtils.grade.getStudents.invalidate();
+        await queryClient.invalidateQueries(
+          trpc.grade.getStudents.pathFilter(),
+        );
 
-      setOpen(false);
+        setOpen(false);
 
-      toast.success("Penambahan Berhasil!", {
-        description: `Berhasil menambahkan banyak murid baru di kelas ${grade.label} ${subgrade.label}.`,
-      });
-    },
+        toast.success("Penambahan Berhasil!", {
+          description: `Berhasil menambahkan banyak murid baru di kelas ${grade.label} ${subgrade.label}.`,
+        });
+      },
 
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setReadLock(true);

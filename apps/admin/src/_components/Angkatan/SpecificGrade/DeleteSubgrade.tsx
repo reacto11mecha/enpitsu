@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@enpitsu/ui/dialog";
 import { Input } from "@enpitsu/ui/input";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,6 +28,7 @@ export const DeleteSubgrade = ({
   label: string;
   id: number;
 }) => {
+  const trpc = useTRPC();
   const queryClient = useQueryClient();
 
   const [confirmationText, setConfirmText] = useState("");
@@ -36,24 +38,28 @@ export const DeleteSubgrade = ({
     [confirmationText],
   );
 
-  const subgradeDeleteMutation = api.grade.deleteSubgrade.useMutation({
-    async onSuccess() {
-      setOpenDelete(false);
+  const subgradeDeleteMutation = useMutation(
+    trpc.grade.deleteSubgrade.mutationOptions({
+      async onSuccess() {
+        setOpenDelete(false);
 
-      setConfirmText("");
+        setConfirmText("");
 
-      await apiUtils.grade.getSubgrades.invalidate();
+        await queryClient.invalidateQueries(
+          trpc.grade.getSubgrades.pathFilter(),
+        );
 
-      toast.success("Penghapusan Berhasil!", {
-        description: "Berhasil menghapus seluruh kelas spesifik.",
-      });
-    },
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+        toast.success("Penghapusan Berhasil!", {
+          description: "Berhasil menghapus seluruh kelas spesifik.",
+        });
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   return (
     <Dialog
