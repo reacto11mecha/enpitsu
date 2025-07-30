@@ -54,7 +54,6 @@ export const authConfig = {
       if (!("user" in opts))
         throw new Error("unreachable with session strategy");
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       if (env.SPECIAL_ADMIN_USERS.includes(opts.user.email)) {
         if (!opts.user.emailVerified) {
           const emailVerified = new Date();

@@ -39,7 +39,7 @@ export const ToggleCanLogin = () => {
 
   const canLoginMutation = useMutation(
     trpc.admin.updateCanLogin.mutationOptions({
-      async onMutate(newValue) {
+      async onMutate(_newValue) {
         await queryClient.cancelQueries(
           trpc.admin.getCanLoginStatus.pathFilter(),
         );

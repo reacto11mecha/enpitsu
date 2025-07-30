@@ -11,6 +11,7 @@ export function useDebounce<Func extends SomeFunction>(
 
   useEffect(() => {
     return () => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!timer.current) return;
       clearTimeout(timer.current);
     };

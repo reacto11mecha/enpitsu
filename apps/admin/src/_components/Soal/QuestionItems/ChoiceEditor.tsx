@@ -64,7 +64,7 @@ const formSchema = z.object({
 
 export const ChoiceEditor = memo(function ChoiceEditorConstructor({
   choiceIqid,
-  questionId,
+  questionId: _,
   questionNo,
   title,
 }: {
@@ -121,6 +121,8 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
         dataAlreadyInitialized.current = true;
       }
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     specificChoiceQuery.data,
     specificChoiceQuery.error,
@@ -148,7 +150,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
       //   // Return the previous data so we can revert if something goes wrong
       //   return { prevData };
       // },
-      onError(err, newPost, ctx) {
+      onError(err, _newPost, _ctx) {
         // // If the mutation fails, use the context-value from onMutate
         // utils.question.getSpecificChoiceQuestion.setData(
         //   { choiceIqid },
@@ -188,7 +190,7 @@ export const ChoiceEditor = memo(function ChoiceEditorConstructor({
       //   // Return the previous data so we can revert if something goes wrong
       //   return { prevData };
       // },
-      onError(err, newPost, ctx) {
+      onError(err, _newPost, _ctx) {
         // // If the mutation fails, use the context-value from onMutate
         // utils.question.getChoicesIdByQuestionId.setData(
         //   { questionId },

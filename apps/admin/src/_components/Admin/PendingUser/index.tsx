@@ -40,7 +40,9 @@ export const columns: ColumnDef<PendingUserList>[] = [
     id: "accept",
     enableHiding: false,
     cell: ({ row }) => {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       const trpc = useTRPC();
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       const queryClient = useQueryClient();
 
       // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -49,6 +51,7 @@ export const columns: ColumnDef<PendingUserList>[] = [
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const toggleOpen = useCallback(() => setOpen((prev) => !prev), []);
 
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       const acceptUserMutation = useMutation(
         trpc.admin.acceptPendingUser.mutationOptions({
           async onSuccess() {
@@ -82,6 +85,7 @@ export const columns: ColumnDef<PendingUserList>[] = [
         [acceptUserMutation, row.original.id],
       );
 
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       const rejectUserMutation = useMutation(
         trpc.admin.rejectPendingUser.mutationOptions({
           onSuccess() {

@@ -31,7 +31,7 @@ const formSchema = z.object({
 export const UpdateEssayScore = ({
   score,
   id,
-  respondId,
+  respondId: _,
 }: {
   score: string;
   id: number;

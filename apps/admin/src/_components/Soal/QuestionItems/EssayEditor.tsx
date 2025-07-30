@@ -53,7 +53,7 @@ const formSchema = z.object({
 
 export const EssayEditor = memo(function EssayEditorConstructor({
   essayIqid,
-  questionId,
+  questionId: _,
   questionNo,
   title,
 }: {
@@ -101,6 +101,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
         setInitialized(true);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [specificEssayQuery.data, specificEssayQuery.error, form]);
 
   const specificEssayMutation = useMutation(
@@ -123,7 +124,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
       //   // Return the previous data so we can revert if something goes wrong
       //   return { prevData };
       // },
-      onError(err, newPost, ctx) {
+      onError(err, _newPost, _ctx) {
         // // If the mutation fails, use the context-value from onMutate
         // utils.question.getSpecificEssayQuestion.setData(
         //   { essayIqid },
@@ -163,7 +164,7 @@ export const EssayEditor = memo(function EssayEditorConstructor({
       //   // Return the previous data so we can revert if something goes wrong
       //   return { prevData };
       // },
-      onError(err, newPost, ctx) {
+      onError(err, _newPost, _ctx) {
         // // If the mutation fails, use the context-value from onMutate
         // utils.question.getEssaysIdByQuestionId.setData(
         //   { questionId },
