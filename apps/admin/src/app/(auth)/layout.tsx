@@ -35,7 +35,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
 
   if (!session.user.emailVerified)
     return (
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <body
           className={cn(
             "font-sans min-h-screen bg-background antialiased",
@@ -79,7 +79,7 @@ export default async function Layout(props: { children: React.ReactNode }) {
     );
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
           "font-sans min-h-screen bg-background antialiased",

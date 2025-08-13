@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import scrollbarHide from "tailwind-scrollbar-hide";
 import animate from "tailwindcss-animate";
 
 import base from "./base";
@@ -41,5 +42,5 @@ export default {
       },
     },
   },
-  plugins: [animate],
+  plugins: [animate, scrollbarHide],
 } satisfies Config;

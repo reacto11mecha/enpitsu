@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@enpitsu/ui/button";
 import { Checkbox } from "@enpitsu/ui/checkbox";
@@ -303,7 +304,7 @@ export const NewParentQuestion = () => {
                   {!subgradeForAllowListQuery.isPending &&
                     !subgradeForAllowListQuery.isError &&
                     subgradeForAllowListQuery.data.map((grade) => (
-                      <>
+                      <Fragment key={grade.id}>
                         {grade.subgrades.length > 0 && (
                           <div key={grade.id}>
                             <div className="flex flex-row items-center gap-2">
@@ -383,7 +384,7 @@ export const NewParentQuestion = () => {
                             </div>
                           </div>
                         )}
-                      </>
+                      </Fragment>
                     ))}
                 </div>
               </FormControl>

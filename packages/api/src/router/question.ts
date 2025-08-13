@@ -757,54 +757,6 @@ export const questionRouter = {
       await addQuestionToQueueForProcessing(questionId);
     }),
 
-  createNewChoice: protectedProcedure
-    .input(z.object({ questionId: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      await ctx.db.transaction(async (tx) => {
-        const parentQuestion = await tx.query.questions.findFirst({
-          where: eq(schema.questions.id, input.questionId),
-          columns: {
-            slug: true,
-            multipleChoiceOptions: true,
-          },
-        });
-
-        if (!parentQuestion)
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Mata pelajaran dari soal ini tidak ditemukan!",
-          });
-
-        try {
-          await cache.del(`trpc-get-question-slug-${parentQuestion.slug}`);
-
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (err: unknown) {
-          console.error({
-            code: "REDIS_ERR",
-            message:
-              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
-          });
-        }
-
-        await updateQuestionToProcessing(tx, input.questionId);
-
-        return await tx.insert(schema.multipleChoices).values({
-          ...input,
-          question: "",
-          correctAnswerOrder: 0,
-          options: Array.from({
-            length: parentQuestion.multipleChoiceOptions,
-          }).map((_, idx) => ({
-            order: idx + 1,
-            answer: "",
-          })),
-        });
-      });
-
-      await addQuestionToQueueForProcessing(input.questionId);
-    }),
-
   // Essay section
   getEssaysIdByQuestionId: protectedProcedure
     .input(z.object({ questionId: z.number() }))
@@ -817,50 +769,6 @@ export const questionRouter = {
         },
       }),
     ),
-
-  createNewEssay: protectedProcedure
-    .input(z.object({ questionId: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      await ctx.db.transaction(async (tx) => {
-        const currentParentQuestion = await tx
-          .select({
-            slug: schema.questions.slug,
-          })
-          .from(schema.questions)
-          .where(eq(schema.questions.id, input.questionId))
-          .for("update");
-
-        if (currentParentQuestion.length < 1 || !currentParentQuestion.at(0))
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Gagal membuat soal baru, mata pelajaran tidak ditemukan",
-          });
-
-        try {
-          await cache.del(
-            `trpc-get-question-slug-${currentParentQuestion.at(0)!.slug}`,
-          );
-
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (err: unknown) {
-          console.error({
-            code: "REDIS_ERR",
-            message:
-              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
-          });
-        }
-
-        await updateQuestionToProcessing(tx, input.questionId);
-
-        return await tx.insert(schema.essays).values({
-          question: "",
-          answer: "",
-          questionId: input.questionId,
-        });
-      });
-
-      await addQuestionToQueueForProcessing(input.questionId);
-    }),
 
   getSpecificEssayQuestion: protectedProcedure
     .input(z.object({ essayIqid: z.number() }))

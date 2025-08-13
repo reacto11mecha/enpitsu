@@ -1,0 +1,18 @@
+/* Keep this file exist, these content already coped to apps/admin/src/styles/globals.css anyway */
+@layer base {
+  :root {
+    --highlight: oklch(0.852 0.199 91.936);
+  }
+  .dark {
+    --highlight: oklch(0.852 0.199 91.936);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

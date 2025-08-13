@@ -89,6 +89,10 @@ export const validateQuestionFromQueue = async (loggerDirectory: string) => {
           detailedNotEligible: errors,
         })
         .where(eq(schema.questions.id, questionData.id));
+
+      logger.info(
+        `[WORKER] Done processing for questionId: ${questionData.id}`,
+      );
     },
     {
       connection,
@@ -105,7 +109,6 @@ export const validateQuestionFromQueue = async (loggerDirectory: string) => {
   );
 
   worker.on("ready", () => logger.info("[WORKER] Ready to process queue"));
-  worker.on("drained", () => logger.info("[WORKER] No more jobs left yippiee"));
   worker.on("error", (err) => logger.error(err));
 
   const gracefulShutdown = async (signal: string) => {
