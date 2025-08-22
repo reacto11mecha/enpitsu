@@ -21,6 +21,7 @@
     "@enpitsu/token-generator": "workspace:^0.1.0",
     "@enpitsu/ui": "workspace:^0.1.0",
     "@hocuspocus/provider": "^3.2.3",
+    "@platejs/yjs": "^49.0.0",
     "@slate-yjs/core": "^1.0.2",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-table": "^8.21.3",
@@ -50,6 +51,7 @@
     "superjson": "2.2.2",
     "tailwindcss-animate": "^1.0.7",
     "y-indexeddb": "^9.0.12",
+    "y-webrtc": "^10.3.0",
     "yjs": "^13.6.27",
     "zod": "catalog:"
   },
