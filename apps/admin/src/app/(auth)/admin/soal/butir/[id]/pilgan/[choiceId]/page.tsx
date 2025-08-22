@@ -4,17 +4,17 @@ import { and, asc, eq } from "@enpitsu/db";
 import * as schema from "@enpitsu/db/schema";
 
 import Link from "next/link"
-import { badgeVariants } from "@enpitsu/ui/badge"
+import { badgeVariants } from "~/components/ui/badge"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@enpitsu/ui/card";
-import { RadioGroup, RadioGroupItem } from "@enpitsu/ui/radio-group";
+} from "~/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import { ArrowLeft } from "lucide-react";
-import { Button } from "@enpitsu/ui/button";
+import { Button } from "~/components/ui/button";
 
 export default async function ChoiceEditor({ params }: {
   params: {

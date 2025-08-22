@@ -2,8 +2,8 @@
 
 import { Fragment } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@enpitsu/ui/button";
-import { Checkbox } from "@enpitsu/ui/checkbox";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -12,17 +12,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@enpitsu/ui/select";
-import { Separator } from "@enpitsu/ui/separator";
-import { Skeleton } from "@enpitsu/ui/skeleton";
+} from "~/components/ui/select";
+import { Separator } from "~/components/ui/separator";
+import { Skeleton } from "~/components/ui/skeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfDay } from "date-fns";
@@ -255,9 +255,9 @@ export const NewParentQuestion = () => {
                       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                       form.getValues("startedAt")
                         ? format(
-                            form.getValues("startedAt"),
-                            "yyyy-MM-dd'T'HH:mm",
-                          )
+                          form.getValues("startedAt"),
+                          "yyyy-MM-dd'T'HH:mm",
+                        )
                         : ""
                     }
                     value={
@@ -316,17 +316,17 @@ export const NewParentQuestion = () => {
                                 onCheckedChange={(checked) => {
                                   return checked
                                     ? field.onChange([
-                                        ...field.value,
-                                        ...grade.subgrades.map((s) => s.id),
-                                      ])
+                                      ...field.value,
+                                      ...grade.subgrades.map((s) => s.id),
+                                    ])
                                     : field.onChange(
-                                        field.value.filter(
-                                          (value) =>
-                                            !grade.subgrades
-                                              .map((s) => s.id)
-                                              .includes(value),
-                                        ),
-                                      );
+                                      field.value.filter(
+                                        (value) =>
+                                          !grade.subgrades
+                                            .map((s) => s.id)
+                                            .includes(value),
+                                      ),
+                                    );
                                 }}
                                 disabled={createQuestionMutation.isPending}
                               />
@@ -360,15 +360,15 @@ export const NewParentQuestion = () => {
                                             onCheckedChange={(checked) => {
                                               return checked
                                                 ? field.onChange([
-                                                    ...field.value,
-                                                    subgrade.id,
-                                                  ])
+                                                  ...field.value,
+                                                  subgrade.id,
+                                                ])
                                                 : field.onChange(
-                                                    field.value.filter(
-                                                      (value) =>
-                                                        value !== subgrade.id,
-                                                    ),
-                                                  );
+                                                  field.value.filter(
+                                                    (value) =>
+                                                      value !== subgrade.id,
+                                                  ),
+                                                );
                                             }}
                                             disabled={
                                               createQuestionMutation.isPending

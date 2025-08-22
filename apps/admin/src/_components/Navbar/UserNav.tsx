@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "@enpitsu/ui/avatar";
-import { Button } from "@enpitsu/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@enpitsu/ui/dropdown-menu";
+} from "~/components/ui/dropdown-menu";
 
 export function UserNav({
   name,

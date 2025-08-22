@@ -8,21 +8,21 @@ import type {
   VisibilityState,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@enpitsu/ui/dropdown-menu";
+} from "~/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@enpitsu/ui/select";
-import { Skeleton } from "@enpitsu/ui/skeleton";
+} from "~/components/ui/select";
+import { Skeleton } from "~/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -30,7 +30,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@enpitsu/ui/table";
+} from "~/components/ui/table";
 import {
   flexRender,
   getCoreRowModel,
@@ -144,9 +144,9 @@ export function ReusableDataTable<TData, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                     </TableHead>
                   );
                 })}

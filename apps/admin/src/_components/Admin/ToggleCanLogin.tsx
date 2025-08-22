@@ -8,8 +8,8 @@ import {
   FormField,
   FormItem,
   FormLabel,
-} from "@enpitsu/ui/form";
-import { Switch } from "@enpitsu/ui/switch";
+} from "~/components/ui/form";
+import { Switch } from "~/components/ui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";

@@ -5,17 +5,17 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useCallback, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
-import { badgeVariants } from "@enpitsu/ui/badge";
-import { Button } from "@enpitsu/ui/button";
-import { Checkbox } from "@enpitsu/ui/checkbox";
+import { badgeVariants } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@enpitsu/ui/dropdown-menu";
-import { Input } from "@enpitsu/ui/input";
+} from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";

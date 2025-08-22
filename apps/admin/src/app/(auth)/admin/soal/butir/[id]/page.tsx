@@ -10,9 +10,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@enpitsu/ui/card";
-import { Label } from "@enpitsu/ui/label";
-import { RadioGroup, RadioGroupItem } from "@enpitsu/ui/radio-group";
+} from "~/components/ui/card";
+import { Label } from "~/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import { PencilLine } from "lucide-react";
 
 import { EligibleStatus } from "~/_components/Soal/QuestionItems/EligibleStatus";

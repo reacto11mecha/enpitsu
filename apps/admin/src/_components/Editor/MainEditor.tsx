@@ -1,17 +1,17 @@
 "use client";
 
 import * as React from "react";
-import { BlockquoteElement } from "@enpitsu/ui/editor/blockquote-node";
-import { Editor, EditorContainer } from "@enpitsu/ui/editor/editor";
-import { FixedToolbar } from "@enpitsu/ui/editor/fixed-toolbar";
+import { BlockquoteElement } from "~/components/ui/editor/blockquote-node";
+import { Editor, EditorContainer } from "~/components/ui/editor/editor";
+import { FixedToolbar } from "~/components/ui/editor/fixed-toolbar";
 import {
   H1Element,
   H2Element,
   H3Element,
-} from "@enpitsu/ui/editor/heading-node";
-import { MarkToolbarButton } from "@enpitsu/ui/editor/mark-toolbar-button";
-import { ToolbarButton } from "@enpitsu/ui/editor/toolbar";
-import { TooltipProvider } from "@enpitsu/ui/tooltip";
+} from "~/components/ui/editor/heading-node";
+import { MarkToolbarButton } from "~/components/ui/editor/mark-toolbar-button";
+import { ToolbarButton } from "~/components/ui/editor/toolbar";
+import { TooltipProvider } from "~/components/ui/tooltip";
 import {
   BlockquotePlugin,
   BoldPlugin,
@@ -24,7 +24,7 @@ import {
 import { Plate, usePlateEditor } from "platejs/react";
 
 import { YjsPlugin } from '@platejs/yjs/react';
-import { RemoteCursorOverlay } from '@enpitsu/ui/editor/remote-cursor-overlay';
+import { RemoteCursorOverlay } from '~/components/ui/editor/remote-cursor-overlay';
 import { useMounted } from "./use-mounted";
 
 const INITIAL_VALUE = [

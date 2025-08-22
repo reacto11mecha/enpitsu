@@ -11,8 +11,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@enpitsu/ui/alert-dialog";
-import { Button } from "@enpitsu/ui/button";
+} from "~/components/ui/alert-dialog";
+import { Button } from "~/components/ui/button";
 import JSzip from "jszip";
 import { QrCode } from "lucide-react";
 import QRCode from "qrcode";

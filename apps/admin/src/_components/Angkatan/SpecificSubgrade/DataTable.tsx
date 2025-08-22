@@ -3,15 +3,15 @@
 import type { RouterOutputs } from "@enpitsu/api";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@enpitsu/ui/dropdown-menu";
-import { Input } from "@enpitsu/ui/input";
+} from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUpDown, MoreHorizontal, PencilLine, Trash2 } from "lucide-react";
 

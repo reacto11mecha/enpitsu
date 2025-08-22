@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@enpitsu/ui/button";
+import { Button } from "~/components/ui/button";
 import { Loader2, PlusCircle } from "lucide-react";
 import { useFormStatus } from "react-dom";
 

@@ -1,8 +1,8 @@
 "use client";
 
 import { memo, useEffect, useMemo, useState } from "react";
-import { cn } from "@enpitsu/ui";
-import { Button } from "@enpitsu/ui/button";
+import { cn } from "~/lib/utils";
+import { Button } from "~/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -10,7 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@enpitsu/ui/sheet";
+} from "~/components/ui/sheet";
 import { useQuery } from "@tanstack/react-query";
 import {
   LaptopMinimalCheck,
@@ -116,7 +116,7 @@ export const EligibleStatus = memo(function EligibleStatus({
                 className={cn(
                   "!h-7 !w-7",
                   !eligibleQuestionStatus.isError &&
-                    "text-red-500 dark:text-red-700",
+                  "text-red-500 dark:text-red-700",
                 )}
               />
             ) : eligibleQuestionStatus.data?.eligible === "PROCESSING" ? (
@@ -149,7 +149,7 @@ export const EligibleStatus = memo(function EligibleStatus({
             ) : null}
 
             {currentStatus.showReason &&
-            eligibleQuestionStatus.data?.detailedNotEligible ? (
+              eligibleQuestionStatus.data?.detailedNotEligible ? (
               <div className="mt-12 flex max-h-[55vh] flex-col gap-5 overflow-y-auto pb-14">
                 {eligibleQuestionStatus.data.detailedNotEligible.some(
                   (detail) => detail.type === "choice",

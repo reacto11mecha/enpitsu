@@ -11,8 +11,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@enpitsu/ui/alert-dialog";
-import { Button } from "@enpitsu/ui/button";
+} from "~/components/ui/alert-dialog";
+import { Button } from "~/components/ui/button";
 import {
   Form,
   FormControl,
@@ -21,8 +21,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import ExcelJS from "exceljs";
@@ -140,9 +140,8 @@ export const ExcelStudentsByGradeDownload = ({
         const anchor = document.createElement("a");
 
         anchor.href = url;
-        anchor.download = `Data Seluruh Peserta-${+Date.now()}-Seluruh kelas ${
-          result.label
-        }-.xlsx`;
+        anchor.download = `Data Seluruh Peserta-${+Date.now()}-Seluruh kelas ${result.label
+          }-.xlsx`;
 
         anchor.click();
         anchor.remove();
@@ -218,9 +217,8 @@ export const ExcelStudentsBySubgradeDownload = ({
         const anchor = document.createElement("a");
 
         anchor.href = url;
-        anchor.download = `Data Peserta-${+Date.now()}-Spesifik kelas ${
-          result.grade.label
-        } ${result.label}.xlsx`;
+        anchor.download = `Data Peserta-${+Date.now()}-Spesifik kelas ${result.grade.label
+          } ${result.label}.xlsx`;
 
         anchor.click();
         anchor.remove();

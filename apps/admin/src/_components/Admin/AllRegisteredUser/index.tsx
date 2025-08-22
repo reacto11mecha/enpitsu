@@ -4,15 +4,15 @@ import type { RouterOutputs } from "@enpitsu/api";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useCallback, useState } from "react";
 import { Space_Mono } from "next/font/google";
-import { Avatar, AvatarFallback, AvatarImage } from "@enpitsu/ui/avatar";
-import { Button } from "@enpitsu/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@enpitsu/ui/dropdown-menu";
+} from "~/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";

@@ -5,7 +5,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Button } from "@enpitsu/ui/button";
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@enpitsu/ui/dropdown-menu";
+} from "~/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import {
   ClipboardCopy,

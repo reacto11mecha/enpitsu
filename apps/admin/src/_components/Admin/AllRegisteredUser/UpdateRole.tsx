@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@enpitsu/ui/button";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,7 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@enpitsu/ui/dialog";
+} from "~/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,14 +17,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
+} from "~/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@enpitsu/ui/select";
+} from "~/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";

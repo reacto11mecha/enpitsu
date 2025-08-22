@@ -5,10 +5,10 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { createContext, useContext, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "@enpitsu/ui/avatar";
-import { Badge, badgeVariants } from "@enpitsu/ui/badge";
-import { Button } from "@enpitsu/ui/button";
-import { Checkbox } from "@enpitsu/ui/checkbox";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge, badgeVariants } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,14 +16,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@enpitsu/ui/dropdown-menu";
-import { Input } from "@enpitsu/ui/input";
+} from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@enpitsu/ui/tooltip";
+} from "~/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";

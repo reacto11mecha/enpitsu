@@ -1,7 +1,7 @@
 import type { RouterOutputs } from "@enpitsu/api";
 import type { Dispatch, SetStateAction } from "react";
 import { useMemo } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -10,7 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@enpitsu/ui/dialog";
+} from "~/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -18,8 +18,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";

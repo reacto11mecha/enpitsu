@@ -8,11 +8,11 @@ import {
   CardFooter,
   CardHeader,
   // CardTitle,
-} from "@enpitsu/ui/card";
-import { Label } from "@enpitsu/ui/label";
-import { RadioGroup, RadioGroupItem } from "@enpitsu/ui/radio-group";
-import { Skeleton } from "@enpitsu/ui/skeleton";
-import { Textarea } from "@enpitsu/ui/textarea";
+} from "~/components/ui/card";
+import { Label } from "~/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+import { Skeleton } from "~/components/ui/skeleton";
+import { Textarea } from "~/components/ui/textarea";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 
@@ -20,7 +20,7 @@ import { useTRPC } from "~/trpc/react";
 
 import "katex/dist/katex.min.css";
 
-import { Separator } from "@enpitsu/ui/separator";
+import { Separator } from "~/components/ui/separator";
 import { useQuery } from "@tanstack/react-query";
 
 import { UpdateEssayScore } from "./UpdateEssayScore";
@@ -170,12 +170,11 @@ export const Correction = ({
               <Card key={choice.iqid}>
                 <CardHeader>
                   <h3
-                    className={`correction scroll-m-20 text-base tracking-tight ${
-                      choice.correctAnswerOrder ===
-                      choices.find((c) => c.choiceId === choice.iqid)!.answer
+                    className={`correction scroll-m-20 text-base tracking-tight ${choice.correctAnswerOrder ===
+                        choices.find((c) => c.choiceId === choice.iqid)!.answer
                         ? "text-green-600"
                         : "text-rose-600"
-                    }`}
+                      }`}
                     dangerouslySetInnerHTML={{ __html: choice.question }}
                   />
                 </CardHeader>
@@ -187,14 +186,13 @@ export const Correction = ({
                   >
                     {choice.options.map((option, idx) => (
                       <div
-                        className={`flex min-h-10 items-center space-x-3 rounded px-2 py-3 ${
-                          option.order === choice.correctAnswerOrder
+                        className={`flex min-h-10 items-center space-x-3 rounded px-2 py-3 ${option.order === choice.correctAnswerOrder
                             ? "bg-green-500/40 dark:bg-green-700/30"
                             : choices.find((c) => c.choiceId === choice.iqid)!
-                                  .answer === option.order
+                              .answer === option.order
                               ? "bg-rose-500/40 dark:bg-rose-700/30"
                               : ""
-                        }`}
+                          }`}
                         key={`preview.${choice.iqid}.opt.${idx}`}
                       >
                         <RadioGroupItem

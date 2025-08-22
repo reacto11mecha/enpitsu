@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@enpitsu/ui/dialog";
+} from "~/components/ui/dialog";
 import { useMutation } from "@tanstack/react-query";
 import { ListRestart } from "lucide-react";
 import { toast } from "sonner";

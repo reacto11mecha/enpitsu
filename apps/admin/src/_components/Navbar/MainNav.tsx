@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { cn } from "@enpitsu/ui";
+import { cn } from "~/lib/utils";
 
 const links = [
   {

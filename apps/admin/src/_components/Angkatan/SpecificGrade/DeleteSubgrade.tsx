@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useMemo, useState } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,8 +9,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@enpitsu/ui/dialog";
-import { Input } from "@enpitsu/ui/input";
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";

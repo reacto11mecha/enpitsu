@@ -1,14 +1,14 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@enpitsu/ui/dialog";
+} from "~/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,8 +17,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, startOfDay } from "date-fns";
@@ -203,9 +203,9 @@ export function EditBannedStudent({
                             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             form.getValues("startedAt")
                               ? format(
-                                  form.getValues("startedAt"),
-                                  "yyyy-MM-dd'T'HH:mm",
-                                )
+                                form.getValues("startedAt"),
+                                "yyyy-MM-dd'T'HH:mm",
+                              )
                               : ""
                           }
                           value={

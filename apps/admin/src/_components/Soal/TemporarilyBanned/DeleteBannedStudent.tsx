@@ -3,7 +3,7 @@
 import type { RouterOutputs } from "@enpitsu/api";
 import type { Dispatch, SetStateAction } from "react";
 import { useMemo, useState } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@enpitsu/ui/dialog";
+} from "~/components/ui/dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";

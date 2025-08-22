@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import { Manrope as FontSans } from "next/font/google";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@enpitsu/auth";
-import { Button } from "@enpitsu/ui/button";
+import { Button } from "~/components/ui/button";
 
 import "~/styles/globals.css";
 
 import localFont from "next/font/local";
-import { cn } from "@enpitsu/ui";
-import { Toaster } from "@enpitsu/ui/sonner";
+import { cn } from "~/lib/utils";
+import { Toaster } from "~/components/ui/sonner";
 
 import { Navbar } from "~/_components/Navbar";
 import { ThemeProvider } from "~/_components/theme-provider";

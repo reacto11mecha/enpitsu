@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@enpitsu/ui/dialog";
+} from "~/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -18,8 +18,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -28,7 +28,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@enpitsu/ui/select";
+} from "~/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfDay } from "date-fns";
@@ -216,7 +216,7 @@ export function AddBannedStudent() {
                               </SelectLabel>
 
                               {!studentLists.isPending &&
-                              !studentLists.isError ? (
+                                !studentLists.isError ? (
                                 <>
                                   {studentLists.data.length < 1 ? (
                                     <SelectLabel className="font-normal text-red-500">
@@ -307,9 +307,9 @@ export function AddBannedStudent() {
                             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             form.getValues("startedAt")
                               ? format(
-                                  form.getValues("startedAt"),
-                                  "yyyy-MM-dd'T'HH:mm",
-                                )
+                                form.getValues("startedAt"),
+                                "yyyy-MM-dd'T'HH:mm",
+                              )
                               : ""
                           }
                           value={
