@@ -1,142 +1,174 @@
-"use client";
+/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access */
 
-import * as React from "react";
-import { BlockquoteElement } from "~/components/ui/editor/blockquote-node";
-import { Editor, EditorContainer } from "~/components/ui/editor/editor";
-import { FixedToolbar } from "~/components/ui/editor/fixed-toolbar";
-import {
-  H1Element,
-  H2Element,
-  H3Element,
-} from "~/components/ui/editor/heading-node";
-import { MarkToolbarButton } from "~/components/ui/editor/mark-toolbar-button";
-import { ToolbarButton } from "~/components/ui/editor/toolbar";
-import { TooltipProvider } from "~/components/ui/tooltip";
-import {
-  BlockquotePlugin,
-  BoldPlugin,
-  H1Plugin,
-  H2Plugin,
-  H3Plugin,
-  ItalicPlugin,
-  UnderlinePlugin,
-} from "@platejs/basic-nodes/react";
-import { Plate, usePlateEditor } from "platejs/react";
+'use client';
+
+import { useMemo, useEffect } from 'react';
 
 import { YjsPlugin } from '@platejs/yjs/react';
-import { RemoteCursorOverlay } from '~/components/ui/editor/remote-cursor-overlay';
-import { useMounted } from "./use-mounted";
+import {
+    Plate,
+    useEditorRef,
+    usePlateEditor,
+    usePluginOption,
+} from 'platejs/react';
+
+import { Button } from '~/components/ui/button';
+import { BasicNodesKit } from '~/components/editor/plugins/basic-nodes-kit';
+import { useMounted } from '~/hooks/use-mounted';
+import { Editor, EditorContainer } from '~/components/ui/editor';
+import { RemoteCursorOverlay } from '~/components/ui/remote-cursor-overlay';
+import { FixedToolbar } from '~/components/ui/fixed-toolbar';
+import { MarkToolbarButton } from '~/components/ui/mark-toolbar-button';
+import { ToolbarButton } from '~/components/ui/toolbar';
+
 
 const INITIAL_VALUE = [
-  {
-    children: [{ text: 'Masukkan soal disini' }],
-    type: 'p',
-  },
+    {
+        children: [{ text: '' }],
+        type: 'p',
+    },
 ];
 
-export default function MainEditor({ yjsDocumentName }: { yjsDocumentName: string; needMusic?: boolean; }) {
-  const mounted = useMounted();
+export function MainEditor({ username, roomName }: { username: string; roomName: string; }) {
+    const mounted = useMounted();
+    const cursorColor = useMemo(() => getRandomColor(), []);
 
-  const editor = usePlateEditor({
-    plugins: [
-      BoldPlugin,
-      ItalicPlugin,
-      UnderlinePlugin,
-      H1Plugin.withComponent(H1Element),
-      H2Plugin.withComponent(H2Element),
-      H3Plugin.withComponent(H3Element),
-      BlockquotePlugin.withComponent(BlockquoteElement),
-
-      YjsPlugin.configure({
-        render: {
-          afterEditable: RemoteCursorOverlay,
+    const editor = usePlateEditor(
+        {
+            plugins: [
+                ...BasicNodesKit,
+                YjsPlugin.configure({
+                    options: {
+                        cursors: {
+                            data: { color: cursorColor, name: username },
+                        },
+                        providers: [
+                            {
+                                options: {
+                                    name: roomName,
+                                    url: 'ws://localhost:1234',
+                                },
+                                type: 'hocuspocus',
+                            },
+                            {
+                                options: {
+                                    roomName: roomName,
+                                },
+                                type: 'webrtc',
+                            },
+                        ],
+                    },
+                    render: {
+                        afterEditable: RemoteCursorOverlay,
+                    },
+                }),
+            ],
+            skipInitialization: true,
         },
-        options: {
-          // Configure local user cursor appearance
-          cursors: {
-            data: {
-              name: 'User Name', // Replace with dynamic user name
-              color: '#aabbcc', // Replace with dynamic user color
-            },
-          },
-          // Configure providers. All providers share the same Y.Doc and Awareness instance.
-          providers: [
-            // Example: Hocuspocus provider
-            {
-              type: 'hocuspocus',
-              options: {
-                name: yjsDocumentName, // Unique identifier for the document
-                url: 'ws://localhost:1234', // Your Hocuspocus server URL
-              },
-            },
-            // Example: WebRTC provider (can be used alongside Hocuspocus)
-            // {
-            //   type: 'webrtc',
-            //   options: {
-            //     roomName: yjsDocumentName, // Must match the document identifier
-            //   },
-            // },
-          ],
-        },
-      }),
-    ],
+        [roomName]
+    );
 
-    skipInitialization: true,
-  }, [yjsDocumentName]);
+    useEffect(() => {
+        if (!mounted) return;
 
-  React.useEffect(() => {
-    if (!mounted) return;
+        void editor.getApi(YjsPlugin).yjs.init({
+            id: roomName,
+            autoSelect: 'end',
+            value: INITIAL_VALUE,
+        });
 
-    void editor.getApi(YjsPlugin).yjs.init({
-      id: yjsDocumentName,
-      autoSelect: 'end',
-      value: INITIAL_VALUE,
-    });
+        return () => {
+            editor.getApi(YjsPlugin).yjs.destroy();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editor, mounted]);
 
-    return () => {
-      editor.getApi(YjsPlugin).yjs.destroy();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor, mounted]);
-
-  return (
-    <div className="w-full px-5 pb-3 pt-1.5 border rounded-md">
-      {mounted ?
-        <TooltipProvider>
-          <Plate
-            editor={editor}
-          >
-            <FixedToolbar className="flex justify-start gap-3 rounded-t-lg">
-              <ToolbarButton className="text-base" onClick={() => editor.tf.h1?.toggle()}>
-                H1
-              </ToolbarButton>
-              <ToolbarButton className="text-base" onClick={() => editor.tf.h2?.toggle()}>
-                H2
-              </ToolbarButton>
-              <ToolbarButton className="text-base" onClick={() => editor.tf.h3?.toggle()}>
-                H3
-              </ToolbarButton>
-              <ToolbarButton className="text-base" onClick={() => editor.tf.blockquote.toggle()}>
-                Quote
-              </ToolbarButton>
-              <MarkToolbarButton className="text-base" nodeType="bold" tooltip="Bold (Ctrl+B)">
-                B
-              </MarkToolbarButton>
-              <MarkToolbarButton className="text-base" nodeType="italic" tooltip="Italic (Ctrl+I)">
-                I
-              </MarkToolbarButton>
-              <MarkToolbarButton className="text-base" nodeType="underline" tooltip="Underline (Ctrl+U)">
-                U
-              </MarkToolbarButton>
-            </FixedToolbar>
-            <EditorContainer>
-              <Editor
-                placeholder="Masukkan soal disini"
-                className="[&>*]:whitespace-pre-wrap min-h-16"
-              />
-            </EditorContainer>
-          </Plate>
-        </TooltipProvider> : null}
-    </div>
-  );
+    return (
+        <Plate editor={editor}>
+            <CollaborativeEditor cursorColor={cursorColor} username={username} />
+        </Plate>
+    )
 }
+
+function CollaborativeEditor({
+    cursorColor,
+    username,
+}: {
+    cursorColor: string;
+    username: string;
+}) {
+    const editor = useEditorRef();
+    const isConnected = usePluginOption(YjsPlugin, '_isConnected');
+    const isSynced = usePluginOption(YjsPlugin, "_isSynced");
+
+    const toggleConnection = () => {
+        if (editor.getOptions(YjsPlugin)._isConnected) {
+            return editor.getApi(YjsPlugin).yjs.disconnect();
+        }
+
+        editor.getApi(YjsPlugin).yjs.connect();
+    };
+
+    return (
+        <>
+            <div className="bg-muted px-4 py-2 space-y-2 font-medium">
+                <p>
+                    Nama anda akan tampil sebagai <span style={{ color: cursorColor }}>{username}</span>
+                </p>
+
+                <div className="flex flex-row gap-2 items-center">
+                    <Button
+                        disabled={isConnected}
+                        size="sm"
+                        variant="outline"
+                        onClick={toggleConnection}
+                        className="disabled:bg-green-100 disabled:text-green-800 disabled:opacity-100 disabled:dark:text-green-500"
+                    >
+                        {isConnected ? 'Terhubung' : 'Hubungkan Kembali'}
+                    </Button>
+
+                    <span
+                        className={`rounded px-2 py-0.5 ${isSynced
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                            }`}>Data sinkron: {isSynced ? "Ya" : "Tidak"}</span>
+                </div>
+            </div>
+
+            <FixedToolbar className="flex justify-start gap-1 rounded-t-lg mt-4">
+                {/* @ts-expect-error harusnya ada, tapi ga kena inherit */}
+                <ToolbarButton onClick={() => editor.tf.h1.toggle()}>H1</ToolbarButton>
+                {/* @ts-expect-error harusnya ada, tapi ga kena inherit */}
+                <ToolbarButton onClick={() => editor.tf.h2.toggle()}>H2</ToolbarButton>
+                {/* @ts-expect-error harusnya ada, tapi ga kena inherit */}
+                <ToolbarButton onClick={() => editor.tf.h3.toggle()}>H3</ToolbarButton>
+                {/* @ts-expect-error harusnya ada, tapi ga kena inherit */}
+                <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>
+                    Quote
+                </ToolbarButton>
+                <MarkToolbarButton nodeType="bold" tooltip="Huruf tebal (Ctrl+B)">
+                    B
+                </MarkToolbarButton>
+                <MarkToolbarButton nodeType="italic" tooltip="Cetak miring (Ctrl+I)">
+                    I
+                </MarkToolbarButton>
+                <MarkToolbarButton nodeType="underline" tooltip="Garis bawah (Ctrl+U)">
+                    U
+                </MarkToolbarButton>
+            </FixedToolbar>
+
+            <EditorContainer variant="default" className="bg-muted">
+                <Editor className='pb-7' placeholder='Klik disini untuk mengetikkan pertanyaan' />
+            </EditorContainer>
+        </>
+    );
+}
+
+const getRandomColor = (): string => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+};

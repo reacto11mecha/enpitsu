@@ -15,6 +15,8 @@ import {
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { MainEditor } from "~/_components/Editor/MainEditor";
+import { auth } from "@enpitsu/auth";
 
 export default async function ChoiceEditor({ params }: {
   params: {
@@ -22,6 +24,10 @@ export default async function ChoiceEditor({ params }: {
     id: string;
   }
 }) {
+  const identity = await auth();
+
+  if (!identity) redirect("/login");
+
   // eslint-disable-next-line @typescript-eslint/await-thenable
   const { id: _id, choiceId: _choiceId } = await params;
 
@@ -65,16 +71,14 @@ export default async function ChoiceEditor({ params }: {
   const isPrevNumberExist = !!multipleChoiceIds[currentIdx - 1];
   const prevNumberIdentity = isPrevNumberExist ? multipleChoiceIds[currentIdx - 1] : null;
 
-  console.log({ isNextNumberExist, isPrevNumberExist });
-
   return (
     <div className="p-5 space-y-4">
-      <div className="flex flex-row justify-between">
+      <div className="flex flex-col gap-3 md:gap-0 md:flex-row justify-between">
         <Link href={`/admin/soal/butir/${id}`} className={badgeVariants({ variant: "secondary" })}>
           <ArrowLeft className="mr-2" />Kembali ke halaman butir soal
         </Link>
 
-        <div className="flex flex-row gap-3">
+        <div className="flex flex-row justify-between md:justify-normal md:gap-3">
           {isPrevNumberExist ? <Button asChild variant="outline"><Link href={`/admin/soal/butir/${id}/pilgan/${prevNumberIdentity?.iqid}`}>Ke nomor sebelumnya</Link></Button> : null}
 
           {isNextNumberExist ? <Button asChild variant="outline"><Link href={`/admin/soal/butir/${id}/pilgan/${nextNumberIdentity?.iqid}`}>Ke nomor selanjutnya</Link></Button> : <Button>Tambah Nomor Baru</Button>}
@@ -92,8 +96,9 @@ export default async function ChoiceEditor({ params }: {
         </CardHeader>
 
         <CardContent className="flex flex-col gap-5">
-          <p>Pretend that this is an rich text editor</p>
-          {/* <MainEditor yjsDocumentName={`q-${id}-main-choice-${choiceId}`} /> */}
+          <div>
+            <MainEditor roomName={`q-${id}-choice-parent-${choiceId}`} username={identity.user.name!} />
+          </div>
 
           <p className="scroll-m-10">Opsi Jawaban :</p>
 
@@ -108,8 +113,9 @@ export default async function ChoiceEditor({ params }: {
                   value={String(idx)}
                   id={`choice-${idx}`}
                 />
-
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Esse culpa iste architecto sit at possimus illum perspiciatis ullam natus, id quod rem tenetur quos alias modi. Voluptates fuga sequi eius?</p>
+                <div className="w-full">
+                  <MainEditor roomName={`q-${id}-choice-${choiceId}-opt-${idx}`} username={identity.user.name!} />
+                </div>
               </div>
             ))}
           </RadioGroup>
