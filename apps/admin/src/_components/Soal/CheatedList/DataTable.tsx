@@ -5,23 +5,23 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { createContext, useCallback, useContext, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
-import { Badge, badgeVariants } from "@enpitsu/ui/badge";
-import { Button } from "@enpitsu/ui/button";
-import { Checkbox } from "@enpitsu/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@enpitsu/ui/dropdown-menu";
-import { Input } from "@enpitsu/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { MoreHorizontal, Trash2 } from "lucide-react";
 
 import { ReusableDataTable } from "~/_components/data-table";
+import { Badge, badgeVariants } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
 import { useTRPC } from "~/trpc/react";
 import {
   DeleteManyCheatedStudent,

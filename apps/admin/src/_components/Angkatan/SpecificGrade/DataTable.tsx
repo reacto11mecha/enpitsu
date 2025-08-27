@@ -5,15 +5,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Button } from "@enpitsu/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@enpitsu/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import {
   ClipboardCopy,
@@ -25,6 +16,15 @@ import {
 import { toast } from "sonner";
 
 import { ReusableDataTable } from "~/_components/data-table";
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { useTRPC } from "~/trpc/react";
 import { CreateSubgrade } from "./CreateSubgrade";
 import { DeleteSubgrade } from "./DeleteSubgrade";

@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+import { format, formatDuration, intervalToDuration } from "date-fns";
+import { id } from "date-fns/locale";
+
 import {
   Card,
   CardContent,
@@ -8,21 +11,18 @@ import {
   CardFooter,
   CardHeader,
   // CardTitle,
-} from "@enpitsu/ui/card";
-import { Label } from "@enpitsu/ui/label";
-import { RadioGroup, RadioGroupItem } from "@enpitsu/ui/radio-group";
-import { Skeleton } from "@enpitsu/ui/skeleton";
-import { Textarea } from "@enpitsu/ui/textarea";
-import { format, formatDuration, intervalToDuration } from "date-fns";
-import { id } from "date-fns/locale";
-
+} from "~/components/ui/card";
+import { Label } from "~/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+import { Skeleton } from "~/components/ui/skeleton";
+import { Textarea } from "~/components/ui/textarea";
 import { useTRPC } from "~/trpc/react";
 
 import "katex/dist/katex.min.css";
 
-import { Separator } from "@enpitsu/ui/separator";
 import { useQuery } from "@tanstack/react-query";
 
+import { Separator } from "~/components/ui/separator";
 import { UpdateEssayScore } from "./UpdateEssayScore";
 
 export const Correction = ({
@@ -138,7 +138,7 @@ export const Correction = ({
             </h3>
 
             {multipleChoicesQuery.isPending ? (
-              <Skeleton className="w-15 h-6" />
+              <Skeleton className="h-6 w-15" />
             ) : !multipleChoicesQuery.isError ? (
               <span>
                 Jumlah Benar:{" "}
@@ -223,7 +223,7 @@ export const Correction = ({
             </h3>
 
             {essaysQuery.isPending || essayScoresQuery.isPending ? (
-              <Skeleton className="w-15 h-6" />
+              <Skeleton className="h-6 w-15" />
             ) : !essaysQuery.isError && !essayScoresQuery.isError ? (
               <span>
                 Jumlah Benar:{" "}

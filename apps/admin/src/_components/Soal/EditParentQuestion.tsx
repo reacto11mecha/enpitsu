@@ -2,27 +2,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@enpitsu/ui/button";
-import { Checkbox } from "@enpitsu/ui/checkbox";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@enpitsu/ui/select";
-import { Separator } from "@enpitsu/ui/separator";
-import { Skeleton } from "@enpitsu/ui/skeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfDay } from "date-fns";
@@ -32,6 +11,27 @@ import slugify from "slugify";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Separator } from "~/components/ui/separator";
+import { Skeleton } from "~/components/ui/skeleton";
 import { useTRPC } from "~/trpc/react";
 
 const formSchema = z
@@ -371,7 +371,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                                     return (
                                       <FormItem
                                         key={subgrade.id}
-                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                        className="flex flex-row items-start space-y-0 space-x-3"
                                       >
                                         <FormControl>
                                           <Checkbox

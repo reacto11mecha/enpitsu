@@ -15,7 +15,7 @@ const fontSans = FontSans({
 
 export default function Layout(props: { children: React.ReactNode }) {
   return (
-    <html lang="ID-id">
+    <html lang="ID-id" suppressHydrationWarning>
       <body className={fontSans.className}>{props.children}</body>
     </html>
   );

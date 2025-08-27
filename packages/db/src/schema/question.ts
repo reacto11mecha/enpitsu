@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  customType,
   index,
   integer,
   json,
@@ -10,11 +11,21 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  varchar,
 } from "drizzle-orm/pg-core";
 
 import { myPgTable } from "./_table";
 import { users } from "./auth";
 import { students, subGrades } from "./grade";
+
+export const binary = customType<{
+  data: Buffer;
+  default: false;
+}>({
+  dataType() {
+    return "bytea";
+  },
+});
 
 export const eligibleStatus = pgEnum("eligible", [
   "ELIGIBLE",
@@ -60,6 +71,15 @@ export const questionRelations = relations(questions, ({ one, many }) => ({
   blocklists: many(studentBlocklists),
   responds: many(studentResponds),
 }));
+
+export const yjsDocuments = myPgTable(
+  "yjsDocument",
+  {
+    name: varchar("name", { length: 255 }).notNull(),
+    data: binary("data").notNull(),
+  },
+  (table) => [uniqueIndex("nameIdx").on(table.name)],
+);
 
 export const allowLists = myPgTable("allowList", {
   id: serial("id").primaryKey(),

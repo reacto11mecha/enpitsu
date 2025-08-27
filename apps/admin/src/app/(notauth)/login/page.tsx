@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@enpitsu/auth";
-import { Button } from "@enpitsu/ui/button";
 import { FcGoogle } from "react-icons/fc";
 
 import { LoginGuard } from "~/_components/LoginGuard";
+import { Button } from "~/components/ui/button";
 
 export default async function LoginPage() {
   const session = await auth();

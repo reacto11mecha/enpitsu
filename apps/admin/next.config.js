@@ -12,7 +12,6 @@ const config = {
     "@enpitsu/api",
     "@enpitsu/auth",
     "@enpitsu/db",
-    "@enpitsu/ui",
     "@enpitsu/redis",
   ],
 

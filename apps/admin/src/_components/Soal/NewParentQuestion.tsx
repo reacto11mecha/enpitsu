@@ -1,27 +1,7 @@
 "use client";
 
+import { Fragment } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@enpitsu/ui/button";
-import { Checkbox } from "@enpitsu/ui/checkbox";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@enpitsu/ui/select";
-import { Separator } from "@enpitsu/ui/separator";
-import { Skeleton } from "@enpitsu/ui/skeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfDay } from "date-fns";
@@ -31,6 +11,27 @@ import slugify from "slugify";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Separator } from "~/components/ui/separator";
+import { Skeleton } from "~/components/ui/skeleton";
 import { useTRPC } from "~/trpc/react";
 
 const formSchema = z
@@ -272,8 +273,6 @@ export const NewParentQuestion = () => {
                     }
                     disabled={
                       subgradeForAllowListQuery.isPending ||
-                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                      !form.getValues("startedAt") ||
                       createQuestionMutation.isPending
                     }
                   />
@@ -303,7 +302,7 @@ export const NewParentQuestion = () => {
                   {!subgradeForAllowListQuery.isPending &&
                     !subgradeForAllowListQuery.isError &&
                     subgradeForAllowListQuery.data.map((grade) => (
-                      <>
+                      <Fragment key={grade.id}>
                         {grade.subgrades.length > 0 && (
                           <div key={grade.id}>
                             <div className="flex flex-row items-center gap-2">
@@ -331,7 +330,7 @@ export const NewParentQuestion = () => {
                               />
                               <label
                                 htmlFor={`parent-grade-${grade.id}`}
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                               >
                                 Kelas {grade.label}
                               </label>
@@ -349,7 +348,7 @@ export const NewParentQuestion = () => {
                                     return (
                                       <FormItem
                                         key={subgrade.id}
-                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                        className="flex flex-row items-start space-y-0 space-x-3"
                                       >
                                         <FormControl>
                                           <Checkbox
@@ -383,7 +382,7 @@ export const NewParentQuestion = () => {
                             </div>
                           </div>
                         )}
-                      </>
+                      </Fragment>
                     ))}
                 </div>
               </FormControl>

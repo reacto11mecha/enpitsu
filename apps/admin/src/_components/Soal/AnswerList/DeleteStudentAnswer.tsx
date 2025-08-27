@@ -1,6 +1,10 @@
 import type { RouterOutputs } from "@enpitsu/api";
 import { useMemo, useState } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -10,12 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@enpitsu/ui/dialog";
-import { Input } from "@enpitsu/ui/input";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
 import { useTRPC } from "~/trpc/react";
 
 type AnsweredListByQuestion =

@@ -2,16 +2,17 @@ import type { Metadata } from "next";
 import { Manrope as FontSans } from "next/font/google";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@enpitsu/auth";
-import { Button } from "@enpitsu/ui/button";
+
+import { Button } from "~/components/ui/button";
 
 import "~/styles/globals.css";
 
 import localFont from "next/font/local";
-import { cn } from "@enpitsu/ui";
-import { Toaster } from "@enpitsu/ui/sonner";
 
 import { Navbar } from "~/_components/Navbar";
 import { ThemeProvider } from "~/_components/theme-provider";
+import { Toaster } from "~/components/ui/sonner";
+import { cn } from "~/lib/utils";
 import { TRPCReactProvider } from "~/trpc/react";
 
 const QuranFont = localFont({
@@ -35,10 +36,10 @@ export default async function Layout(props: { children: React.ReactNode }) {
 
   if (!session.user.emailVerified)
     return (
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <body
           className={cn(
-            "font-sans min-h-screen bg-background antialiased",
+            "bg-background min-h-screen font-sans antialiased",
             fontSans.variable,
           )}
         >
@@ -79,10 +80,10 @@ export default async function Layout(props: { children: React.ReactNode }) {
     );
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          "font-sans min-h-screen bg-background antialiased",
+          "bg-background min-h-screen font-sans antialiased",
           fontSans.variable,
           QuranFont.variable,
         )}

@@ -2,8 +2,17 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Button } from "@enpitsu/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@enpitsu/ui/card";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChevronsRight, Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "~/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -12,13 +21,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@enpitsu/ui/dialog";
-import { Input } from "@enpitsu/ui/input";
-import { Skeleton } from "@enpitsu/ui/skeleton";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronsRight, Loader2, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { Skeleton } from "~/components/ui/skeleton";
 import { useTRPC } from "~/trpc/react";
 
 export const AngkatanViewer = () => {
