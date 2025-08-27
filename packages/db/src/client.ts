@@ -85,19 +85,24 @@ export const preparedQuestionSelect = db.query.questions
   })
   .prepare("unversalQuestionSelect");
 
+export const preparedYjsDocumentSelect = db.query.yjsDocuments
+  .findFirst({
+    where: eq(schema.yjsDocuments.name, sql.placeholder("documentName")),
+  })
+  .prepare("preparedYjsDocumentSelect");
+
 export const preparedQuestionForCheck = db.query.questions
   .findFirst({
     where: eq(schema.questions.id, sql.placeholder("questionId")),
     columns: {
       id: true,
+      multipleChoiceOptions: true,
     },
     with: {
       multipleChoices: {
         orderBy: (choice, { asc }) => [asc(choice.iqid)],
         columns: {
           iqid: true,
-          question: true,
-          options: true,
           correctAnswerOrder: true,
         },
       },

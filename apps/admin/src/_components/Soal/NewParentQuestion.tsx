@@ -2,6 +2,15 @@
 
 import { Fragment } from "react";
 import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format, startOfDay } from "date-fns";
+import { Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import slugify from "slugify";
+import { toast } from "sonner";
+import { z } from "zod";
+
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import {
@@ -23,15 +32,6 @@ import {
 } from "~/components/ui/select";
 import { Separator } from "~/components/ui/separator";
 import { Skeleton } from "~/components/ui/skeleton";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { format, startOfDay } from "date-fns";
-import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import slugify from "slugify";
-import { toast } from "sonner";
-import { z } from "zod";
-
 import { useTRPC } from "~/trpc/react";
 
 const formSchema = z
@@ -255,9 +255,9 @@ export const NewParentQuestion = () => {
                       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                       form.getValues("startedAt")
                         ? format(
-                          form.getValues("startedAt"),
-                          "yyyy-MM-dd'T'HH:mm",
-                        )
+                            form.getValues("startedAt"),
+                            "yyyy-MM-dd'T'HH:mm",
+                          )
                         : ""
                     }
                     value={
@@ -273,8 +273,6 @@ export const NewParentQuestion = () => {
                     }
                     disabled={
                       subgradeForAllowListQuery.isPending ||
-                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                      !form.getValues("startedAt") ||
                       createQuestionMutation.isPending
                     }
                   />
@@ -316,23 +314,23 @@ export const NewParentQuestion = () => {
                                 onCheckedChange={(checked) => {
                                   return checked
                                     ? field.onChange([
-                                      ...field.value,
-                                      ...grade.subgrades.map((s) => s.id),
-                                    ])
+                                        ...field.value,
+                                        ...grade.subgrades.map((s) => s.id),
+                                      ])
                                     : field.onChange(
-                                      field.value.filter(
-                                        (value) =>
-                                          !grade.subgrades
-                                            .map((s) => s.id)
-                                            .includes(value),
-                                      ),
-                                    );
+                                        field.value.filter(
+                                          (value) =>
+                                            !grade.subgrades
+                                              .map((s) => s.id)
+                                              .includes(value),
+                                        ),
+                                      );
                                 }}
                                 disabled={createQuestionMutation.isPending}
                               />
                               <label
                                 htmlFor={`parent-grade-${grade.id}`}
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                               >
                                 Kelas {grade.label}
                               </label>
@@ -350,7 +348,7 @@ export const NewParentQuestion = () => {
                                     return (
                                       <FormItem
                                         key={subgrade.id}
-                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                        className="flex flex-row items-start space-y-0 space-x-3"
                                       >
                                         <FormControl>
                                           <Checkbox
@@ -360,15 +358,15 @@ export const NewParentQuestion = () => {
                                             onCheckedChange={(checked) => {
                                               return checked
                                                 ? field.onChange([
-                                                  ...field.value,
-                                                  subgrade.id,
-                                                ])
+                                                    ...field.value,
+                                                    subgrade.id,
+                                                  ])
                                                 : field.onChange(
-                                                  field.value.filter(
-                                                    (value) =>
-                                                      value !== subgrade.id,
-                                                  ),
-                                                );
+                                                    field.value.filter(
+                                                      (value) =>
+                                                        value !== subgrade.id,
+                                                    ),
+                                                  );
                                             }}
                                             disabled={
                                               createQuestionMutation.isPending

@@ -1,18 +1,52 @@
 // import type { onLoadDocumentPayload } from "@hocuspocus/server";
-import { eq } from "@enpitsu/db";
-import { db } from "@enpitsu/db/client";
+import { and, eq } from "@enpitsu/db";
+import { db, preparedYjsDocumentSelect } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
+import { cache, correctionQueue } from "@enpitsu/redis";
 import { Database } from "@hocuspocus/extension-database";
 import { Logger } from "@hocuspocus/extension-logger";
 import { Server } from "@hocuspocus/server";
+import {
+  BaseBlockquotePlugin,
+  BaseBoldPlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseItalicPlugin,
+  BaseUnderlinePlugin,
+} from "@platejs/basic-nodes";
+import { yTextToSlateElement } from "@slate-yjs/core";
+import { createSlateEditor, serializeHtml } from "platejs";
+import * as Y from "yjs";
 
-// import { slateNodesToInsertDelta } from "@slate-yjs/core";
-// import * as Y from "yjs";
+import { createDebounceById } from "./debouncer";
 
-// import { env } from "./env";
-// import { initLogger } from "./logger";
+const debouncedMessageQueue = createDebounceById((id: string) => {
+  const questionId = parseInt(id);
 
-// export const yjsServer = async (loggerDirectory: string) => {
+  try {
+    void correctionQueue.add(
+      "check_question",
+      { questionId },
+      {
+        removeOnComplete: true,
+        removeOnFail: true,
+        deduplication: {
+          id: `question-${questionId}`,
+        },
+        attempts: 3,
+      },
+    );
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (e: unknown) {
+    console.error({
+      code: "BULLMQ_ERR",
+      message:
+        "Gagal menambahkan queue ke bullmq, mohon periksa konektivitas redis",
+    });
+  }
+}, 250);
+
 export const yjsServer = async () => {
   const server = new Server({
     port: 1234,
@@ -22,24 +56,166 @@ export const yjsServer = async () => {
       new Logger(),
       new Database({
         fetch: async ({ documentName }) => {
-          const result = await db.query.yjsDocuments.findFirst({
-            where: eq(schema.yjsDocuments.name, documentName),
+          const result = await preparedYjsDocumentSelect.execute({
+            documentName,
           });
 
           if (!result) return null;
 
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return result.data;
         },
 
         store: async ({ documentName, state }) => {
-          await db
-            .insert(schema.yjsDocuments)
-            .values({ name: documentName, data: state })
-            .onConflictDoUpdate({
-              target: schema.yjsDocuments.name,
-              set: { data: state },
+          let questionId = 0;
+
+          await db.transaction(async (tx) => {
+            await tx
+              .insert(schema.yjsDocuments)
+              .values({ name: documentName, data: state })
+              .onConflictDoUpdate({
+                target: schema.yjsDocuments.name,
+                set: { data: state },
+              });
+
+            const tempDoc = new Y.Doc();
+            Y.applyUpdate(tempDoc, state);
+
+            const { children: content } = yTextToSlateElement(
+              tempDoc.get("content", Y.XmlText),
+            );
+
+            const editor = createSlateEditor({
+              plugins: [
+                BaseBoldPlugin,
+                BaseItalicPlugin,
+                BaseUnderlinePlugin,
+                BaseH1Plugin,
+                BaseH2Plugin,
+                BaseH3Plugin,
+                BaseBlockquotePlugin,
+              ],
+              // @ts-expect-error masuk kok ini dia
+              value: content,
             });
+
+            const html = await serializeHtml(editor);
+
+            const type = documentName.split("_");
+
+            switch (type[0]) {
+              case "q-choice-parent": {
+                const [_questionId, _choiceId] = type[1]!.split("-");
+
+                questionId = parseInt(_questionId!);
+                const choiceId = parseInt(_choiceId!);
+
+                const currentChoiceData = await tx
+                  .select({
+                    id: schema.multipleChoices.iqid,
+                  })
+                  .from(schema.multipleChoices)
+                  .where(eq(schema.multipleChoices.iqid, choiceId))
+                  .for("update");
+
+                if (currentChoiceData.length > 0) {
+                  await tx
+                    .update(schema.multipleChoices)
+                    .set({
+                      question: html,
+                    })
+                    .where(
+                      and(
+                        eq(schema.multipleChoices.questionId, questionId),
+                        eq(schema.multipleChoices.iqid, choiceId),
+                      ),
+                    );
+                }
+
+                break;
+              }
+
+              case "q-choice-opt": {
+                const [_questionId, _choiceId, _optIdx] = type[1]!.split("-");
+
+                questionId = parseInt(_questionId!);
+                const choiceId = parseInt(_choiceId!);
+                const optIdx = parseInt(_optIdx!);
+
+                /**
+                 * WAJIB PAKAI ROW LOCK UNTUK
+                 * MENCEGAH PERUBAHAN YANG MASUK
+                 * SECARA BERSAMAAN
+                 *
+                 * contoh:
+                 * User paste 5 baris yang otomatis trigger 5 field,
+                 * secara bersamaan menyimpan data ke hocuspocus. Supaya operasi
+                 * write berjalan dengan benar, lock row satu persatu supaya
+                 * semua perubahan tersimpan dengan benar.
+                 */
+                const currentChoiceData = await tx
+                  .select({
+                    options: schema.multipleChoices.options,
+                  })
+                  .from(schema.multipleChoices)
+                  .where(eq(schema.multipleChoices.iqid, choiceId))
+                  .for("update");
+
+                if (currentChoiceData[0]) {
+                  const { options } = currentChoiceData[0];
+
+                  const newOptions = options.map((d, idx) => {
+                    if (idx === optIdx)
+                      return {
+                        ...d,
+                        answer: html,
+                      };
+
+                    return d;
+                  });
+
+                  await tx
+                    .update(schema.multipleChoices)
+                    .set({
+                      options: newOptions,
+                    })
+                    .where(
+                      and(
+                        eq(schema.multipleChoices.questionId, questionId),
+                        eq(schema.multipleChoices.iqid, choiceId),
+                      ),
+                    );
+                }
+
+                break;
+              }
+            }
+
+            tx.update(schema.questions)
+              .set({
+                eligible: "PROCESSING",
+              })
+              .where(eq(schema.questions.id, questionId));
+          });
+
+          try {
+            const parentQuestion = await db.query.questions.findFirst({
+              where: eq(schema.questions.id, questionId),
+              columns: {
+                slug: true,
+              },
+            });
+
+            await cache.del(`trpc-get-question-slug-${parentQuestion?.slug}`);
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch (err: unknown) {
+            console.error({
+              code: "CACHE_DEL_ERR",
+              message: `Terjadi masalah saat reset cache untuk questionId: ${questionId}`,
+            });
+          }
+
+          debouncedMessageQueue(String(questionId));
         },
       }),
     ],

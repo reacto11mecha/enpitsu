@@ -1,18 +1,14 @@
-'use client';
+"use client";
 
 // Lifted from slate-yjs https://github.com/BitPhinix/slate-yjs/blob/main/examples/frontend/src/pages/RemoteCursorOverlay/Overlay.tsx
-
-import * as React from 'react';
-
-import { YjsPlugin } from '@platejs/yjs/react';
-import {
-  type CursorOverlayData,
-  useRemoteCursorOverlayPositions,
-} from '@slate-yjs/react';
-import { useEditorContainerRef, usePluginOption } from 'platejs/react';
+import type { CursorOverlayData } from "@slate-yjs/react";
+import * as React from "react";
+import { YjsPlugin } from "@platejs/yjs/react";
+import { useRemoteCursorOverlayPositions } from "@slate-yjs/react";
+import { useEditorContainerRef, usePluginOption } from "platejs/react";
 
 export function RemoteCursorOverlay() {
-  const isSynced = usePluginOption(YjsPlugin, '_isSynced');
+  const isSynced = usePluginOption(YjsPlugin, "_isSynced");
 
   if (!isSynced) {
     return null;
@@ -75,7 +71,7 @@ const hoverOpacity = 1;
 function Caret({
   caretPosition,
   data,
-}: Pick<CursorOverlayData<CursorData>, 'caretPosition' | 'data'>) {
+}: Pick<CursorOverlayData<CursorData>, "caretPosition" | "data">) {
   const [isHover, setIsHover] = React.useState(false);
 
   const handleMouseEnter = () => {
@@ -88,15 +84,15 @@ function Caret({
     ...caretPosition,
     background: data?.color,
     opacity: cursorOpacity,
-    transition: 'opacity 0.2s',
+    transition: "opacity 0.2s",
   };
   const caretStyleHover = { ...caretStyle, opacity: hoverOpacity };
 
   const labelStyle: React.CSSProperties = {
     background: data?.color,
     opacity: cursorOpacity,
-    transform: 'translateY(-100%)',
-    transition: 'opacity 0.2s',
+    transform: "translateY(-100%)",
+    transition: "opacity 0.2s",
   };
   const labelStyleHover = { ...labelStyle, opacity: hoverOpacity };
 

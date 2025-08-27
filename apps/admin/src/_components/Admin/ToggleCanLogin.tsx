@@ -1,6 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
 import {
   Form,
   FormControl,
@@ -10,12 +16,6 @@ import {
   FormLabel,
 } from "~/components/ui/form";
 import { Switch } from "~/components/ui/switch";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-
 import { useTRPC } from "~/trpc/react";
 
 const FormSchema = z.object({

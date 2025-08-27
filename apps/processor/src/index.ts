@@ -61,7 +61,7 @@ export const validateQuestionFromQueue = async (loggerDirectory: string) => {
       }
 
       if (questionData.multipleChoices.length > 0) {
-        const allMCErr = checkMultipleChoices(questionData.multipleChoices);
+        const allMCErr = await checkMultipleChoices(questionData);
         errorInMC = allMCErr.length > 0;
         errors = [...errors, ...allMCErr];
       }

@@ -1,8 +1,6 @@
-import * as React from 'react';
-
-import type { SlateLeafProps } from 'platejs';
-
-import { SlateLeaf } from 'platejs';
+import type { SlateLeafProps } from "platejs";
+import * as React from "react";
+import { SlateLeaf } from "platejs";
 
 export function HighlightLeafStatic(props: SlateLeafProps) {
   return (

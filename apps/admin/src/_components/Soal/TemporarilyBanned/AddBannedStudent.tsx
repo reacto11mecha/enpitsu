@@ -1,6 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format, startOfDay } from "date-fns";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -29,13 +36,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { format, startOfDay } from "date-fns";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-
 import { useTRPC } from "~/trpc/react";
 
 const formSchema = z
@@ -216,7 +216,7 @@ export function AddBannedStudent() {
                               </SelectLabel>
 
                               {!studentLists.isPending &&
-                                !studentLists.isError ? (
+                              !studentLists.isError ? (
                                 <>
                                   {studentLists.data.length < 1 ? (
                                     <SelectLabel className="font-normal text-red-500">
@@ -307,9 +307,9 @@ export function AddBannedStudent() {
                             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             form.getValues("startedAt")
                               ? format(
-                                form.getValues("startedAt"),
-                                "yyyy-MM-dd'T'HH:mm",
-                              )
+                                  form.getValues("startedAt"),
+                                  "yyyy-MM-dd'T'HH:mm",
+                                )
                               : ""
                           }
                           value={

@@ -2,6 +2,14 @@
 
 import { useCallback, useState } from "react";
 import { validateId } from "@enpitsu/token-generator";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import ExcelJS from "exceljs";
+import { HardDriveUpload, Sheet } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -23,14 +31,6 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import ExcelJS from "exceljs";
-import { HardDriveUpload, Sheet } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-
 import { useTRPC } from "~/trpc/react";
 
 const FileValueSchema = z.array(
@@ -140,8 +140,9 @@ export const ExcelStudentsByGradeDownload = ({
         const anchor = document.createElement("a");
 
         anchor.href = url;
-        anchor.download = `Data Seluruh Peserta-${+Date.now()}-Seluruh kelas ${result.label
-          }-.xlsx`;
+        anchor.download = `Data Seluruh Peserta-${+Date.now()}-Seluruh kelas ${
+          result.label
+        }-.xlsx`;
 
         anchor.click();
         anchor.remove();
@@ -217,8 +218,9 @@ export const ExcelStudentsBySubgradeDownload = ({
         const anchor = document.createElement("a");
 
         anchor.href = url;
-        anchor.download = `Data Peserta-${+Date.now()}-Spesifik kelas ${result.grade.label
-          } ${result.label}.xlsx`;
+        anchor.download = `Data Peserta-${+Date.now()}-Spesifik kelas ${
+          result.grade.label
+        } ${result.label}.xlsx`;
 
         anchor.click();
         anchor.remove();

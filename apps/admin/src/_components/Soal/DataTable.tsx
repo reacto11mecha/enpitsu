@@ -5,6 +5,22 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { createContext, useContext, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { format, formatDuration, intervalToDuration } from "date-fns";
+import { id } from "date-fns/locale";
+import {
+  ArrowUpDown,
+  ClipboardCheck,
+  LayoutList,
+  ListX,
+  MoreHorizontal,
+  PencilLine,
+  PlusSquare,
+  Trash2,
+  UserRoundX,
+} from "lucide-react";
+
+import { ReusableDataTable } from "~/_components/data-table";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge, badgeVariants } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -24,22 +40,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { useQuery } from "@tanstack/react-query";
-import { format, formatDuration, intervalToDuration } from "date-fns";
-import { id } from "date-fns/locale";
-import {
-  ArrowUpDown,
-  ClipboardCheck,
-  LayoutList,
-  ListX,
-  MoreHorizontal,
-  PencilLine,
-  PlusSquare,
-  Trash2,
-  UserRoundX,
-} from "lucide-react";
-
-import { ReusableDataTable } from "~/_components/data-table";
 import { useTRPC } from "~/trpc/react";
 import { CreateQRCodes } from "./CreateQRCodes";
 import { DeleteParentQuestion } from "./DeleteParentQuestion";
@@ -211,7 +211,7 @@ export const columns: ColumnDef<QuestionList>[] = [
       const currentUserRole = useContext(RoleContext);
 
       return (
-        <div className="space-x-0.5 space-y-0.5">
+        <div className="space-y-0.5 space-x-0.5">
           {row.original.allowLists.map((allow) =>
             currentUserRole === "admin" ? (
               <Link

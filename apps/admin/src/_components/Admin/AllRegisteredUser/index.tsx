@@ -4,6 +4,12 @@ import type { RouterOutputs } from "@enpitsu/api";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useCallback, useState } from "react";
 import { Space_Mono } from "next/font/google";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
+import { MoreHorizontal, PencilLine } from "lucide-react";
+
+import { ReusableDataTable } from "~/_components/data-table";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
@@ -13,12 +19,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
-import { MoreHorizontal, PencilLine } from "lucide-react";
-
-import { ReusableDataTable } from "~/_components/data-table";
 import { useTRPC } from "~/trpc/react";
 import { UpdateRole } from "./UpdateRole";
 

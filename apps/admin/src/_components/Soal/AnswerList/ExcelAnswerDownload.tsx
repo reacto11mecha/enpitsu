@@ -1,6 +1,11 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import ExcelJS from "exceljs";
+import { Sheet } from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -12,11 +17,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { useMutation } from "@tanstack/react-query";
-import ExcelJS from "exceljs";
-import { Sheet } from "lucide-react";
-import { toast } from "sonner";
-
 import { useTRPC } from "~/trpc/react";
 import { excelNormalizeTime } from "~/utils/time";
 
@@ -139,27 +139,27 @@ export const SpecificExcelAnswerDownload = ({
 
           const rowValue = essayIsAThing
             ? [
-              res.name,
-              res.className,
-              res.room,
-              adjustedCheckIn,
-              adjustedSubmittedAt,
-              "",
-              res.choiceRightAnswered,
-              result.choiceLength,
-              res.essayScore,
-              result.essayLength,
-            ]
+                res.name,
+                res.className,
+                res.room,
+                adjustedCheckIn,
+                adjustedSubmittedAt,
+                "",
+                res.choiceRightAnswered,
+                result.choiceLength,
+                res.essayScore,
+                result.essayLength,
+              ]
             : [
-              res.name,
-              res.className,
-              res.room,
-              adjustedCheckIn,
-              adjustedSubmittedAt,
-              "",
-              res.choiceRightAnswered,
-              result.choiceLength,
-            ];
+                res.name,
+                res.className,
+                res.room,
+                adjustedCheckIn,
+                adjustedSubmittedAt,
+                "",
+                res.choiceRightAnswered,
+                result.choiceLength,
+              ];
 
           worksheet.addRow(rowValue);
 
@@ -172,9 +172,10 @@ export const SpecificExcelAnswerDownload = ({
           ).value = {
             formula: essayIsAThing
               ? // Komposisi pilihan ganda 70% dan esai 30%
-              // - Pak ade
-              `((G${idx + 2}/H${idx + 2}*0.7)+(I${idx + 2}/J${idx + 2
-              })*0.3)*100`
+                // - Pak ade
+                `((G${idx + 2}/H${idx + 2}*0.7)+(I${idx + 2}/J${
+                  idx + 2
+                })*0.3)*100`
               : `G${idx + 2}/H${idx + 2}*100`,
           };
 
@@ -309,27 +310,27 @@ export const AggregateExcelAnswerDownload = () => {
 
             const rowValue = essayIsAThing
               ? [
-                res.name,
-                res.className,
-                res.room,
-                adjustedCheckIn,
-                adjustedSubmittedAt,
-                "",
-                res.choiceRightAnswered,
-                result.choiceLength,
-                res.essayScore,
-                result.essayLength,
-              ]
+                  res.name,
+                  res.className,
+                  res.room,
+                  adjustedCheckIn,
+                  adjustedSubmittedAt,
+                  "",
+                  res.choiceRightAnswered,
+                  result.choiceLength,
+                  res.essayScore,
+                  result.essayLength,
+                ]
               : [
-                res.name,
-                res.className,
-                res.room,
-                adjustedCheckIn,
-                adjustedSubmittedAt,
-                "",
-                res.choiceRightAnswered,
-                result.choiceLength,
-              ];
+                  res.name,
+                  res.className,
+                  res.room,
+                  adjustedCheckIn,
+                  adjustedSubmittedAt,
+                  "",
+                  res.choiceRightAnswered,
+                  result.choiceLength,
+                ];
 
             worksheet.addRow(rowValue);
 
@@ -342,9 +343,10 @@ export const AggregateExcelAnswerDownload = () => {
             ).value = {
               formula: essayIsAThing
                 ? // Komposisi pilihan ganda 70% dan esai 30%
-                // - Pak ade
-                `((G${idx + 2}/H${idx + 2}*0.7)+(I${idx + 2}/J${idx + 2
-                })*0.3)*100`
+                  // - Pak ade
+                  `((G${idx + 2}/H${idx + 2}*0.7)+(I${idx + 2}/J${
+                    idx + 2
+                  })*0.3)*100`
                 : `G${idx + 2}/H${idx + 2}*100`,
             };
 

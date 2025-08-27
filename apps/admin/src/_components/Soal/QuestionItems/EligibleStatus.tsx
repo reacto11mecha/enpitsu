@@ -1,7 +1,14 @@
 "use client";
 
 import { memo, useEffect, useMemo, useState } from "react";
-import { cn } from "~/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import {
+  LaptopMinimalCheck,
+  Loader2,
+  LoaderPinwheel,
+  OctagonX,
+} from "lucide-react";
+
 import { Button } from "~/components/ui/button";
 import {
   Sheet,
@@ -11,14 +18,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "~/components/ui/sheet";
-import { useQuery } from "@tanstack/react-query";
-import {
-  LaptopMinimalCheck,
-  Loader2,
-  LoaderPinwheel,
-  OctagonX,
-} from "lucide-react";
-
+import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
 
 interface Props {
@@ -96,7 +96,7 @@ export const EligibleStatus = memo(function EligibleStatus({
   }, [eligibleQuestionStatus]);
 
   return (
-    <div className="w-full md:fixed md:bottom-2 md:right-2 md:w-fit">
+    <div className="w-full md:fixed md:right-2 md:bottom-2 md:w-fit">
       <Sheet
         open={sheetOpened}
         onOpenChange={() => {
@@ -116,7 +116,7 @@ export const EligibleStatus = memo(function EligibleStatus({
                 className={cn(
                   "!h-7 !w-7",
                   !eligibleQuestionStatus.isError &&
-                  "text-red-500 dark:text-red-700",
+                    "text-red-500 dark:text-red-700",
                 )}
               />
             ) : eligibleQuestionStatus.data?.eligible === "PROCESSING" ? (
@@ -137,25 +137,25 @@ export const EligibleStatus = memo(function EligibleStatus({
               perbaiki.
             </SheetDescription>
 
-            <p className="mt-2 text-wrap text-sm">
+            <p className="mt-2 text-sm text-wrap">
               Status saat ini: {currentStatus.readable}
             </p>
 
             {currentStatus.showReason ? (
-              <p className="text-pretty text-sm">
+              <p className="text-sm text-pretty">
                 Alasan:{" "}
                 {eligibleQuestionStatus.data?.notEligibleReason ?? "N/A"}
               </p>
             ) : null}
 
             {currentStatus.showReason &&
-              eligibleQuestionStatus.data?.detailedNotEligible ? (
+            eligibleQuestionStatus.data?.detailedNotEligible ? (
               <div className="mt-12 flex max-h-[55vh] flex-col gap-5 overflow-y-auto pb-14">
                 {eligibleQuestionStatus.data.detailedNotEligible.some(
                   (detail) => detail.type === "choice",
                 ) ? (
                   <div className="space-y-2">
-                    <p className="text-wrap text-base">
+                    <p className="text-base text-wrap">
                       Kesalahan Pada Pilihan Ganda
                     </p>
 
@@ -163,7 +163,7 @@ export const EligibleStatus = memo(function EligibleStatus({
                       {eligibleQuestionStatus.data.detailedNotEligible
                         .filter((d) => d.type === "choice")
                         .map((d) => (
-                          <li className="text-pretty text-sm" key={d.iqid}>
+                          <li className="text-sm text-pretty" key={d.iqid}>
                             <button
                               className="underline"
                               onClick={() => {
@@ -195,13 +195,13 @@ export const EligibleStatus = memo(function EligibleStatus({
                   (detail) => detail.type === "essay",
                 ) ? (
                   <div className="space-y-2">
-                    <p className="text-wrap text-base">Kesalahan Pada Esai</p>
+                    <p className="text-base text-wrap">Kesalahan Pada Esai</p>
 
                     <ul className="list-disc space-y-1.5 pl-5">
                       {eligibleQuestionStatus.data.detailedNotEligible
                         .filter((d) => d.type === "essay")
                         .map((d) => (
-                          <li className="text-pretty text-sm" key={d.iqid}>
+                          <li className="text-sm text-pretty" key={d.iqid}>
                             <button
                               className="underline"
                               onClick={() => {

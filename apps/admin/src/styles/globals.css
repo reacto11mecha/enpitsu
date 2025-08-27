@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@plugin "tailwind-scrollbar-hide";
+
 @imort "tailwind-scrollbar-hide/v4";
 
 @custom-variant dark (&:is(.dark *));

@@ -1,5 +1,10 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -26,10 +31,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 const FormSchema = z.object({
   role: z.enum(["user", "admin"], {

@@ -20,10 +20,10 @@
     "@hocuspocus/extension-database": "^3.2.3",
     "@hocuspocus/extension-logger": "^3.2.3",
     "@hocuspocus/server": "^3.2.3",
+    "@platejs/basic-nodes": "^49.0.0",
     "@slate-yjs/core": "^1.0.2",
     "@t3-oss/env-core": "^0.13.8",
-    "pino": "^9.7.0",
-    "pino-pretty": "^13.0.0",
+    "platejs": "^49.2.9",
     "yjs": "^13.6.27",
     "zod": "catalog:"
   },

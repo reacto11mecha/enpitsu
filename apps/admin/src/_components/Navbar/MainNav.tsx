@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import { cn } from "~/lib/utils";
 
 const links = [
@@ -37,7 +38,7 @@ export function MainNav({
           <Link
             key={link.href}
             href={link.href}
-            className="text-base font-medium transition-colors hover:text-primary"
+            className="hover:text-primary text-base font-medium transition-colors"
           >
             {link.label}
           </Link>

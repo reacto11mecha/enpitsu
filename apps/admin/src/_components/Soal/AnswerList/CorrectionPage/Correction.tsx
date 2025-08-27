@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+import { format, formatDuration, intervalToDuration } from "date-fns";
+import { id } from "date-fns/locale";
+
 import {
   Card,
   CardContent,
@@ -13,16 +16,13 @@ import { Label } from "~/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import { Skeleton } from "~/components/ui/skeleton";
 import { Textarea } from "~/components/ui/textarea";
-import { format, formatDuration, intervalToDuration } from "date-fns";
-import { id } from "date-fns/locale";
-
 import { useTRPC } from "~/trpc/react";
 
 import "katex/dist/katex.min.css";
 
-import { Separator } from "~/components/ui/separator";
 import { useQuery } from "@tanstack/react-query";
 
+import { Separator } from "~/components/ui/separator";
 import { UpdateEssayScore } from "./UpdateEssayScore";
 
 export const Correction = ({
@@ -138,7 +138,7 @@ export const Correction = ({
             </h3>
 
             {multipleChoicesQuery.isPending ? (
-              <Skeleton className="w-15 h-6" />
+              <Skeleton className="h-6 w-15" />
             ) : !multipleChoicesQuery.isError ? (
               <span>
                 Jumlah Benar:{" "}
@@ -170,11 +170,12 @@ export const Correction = ({
               <Card key={choice.iqid}>
                 <CardHeader>
                   <h3
-                    className={`correction scroll-m-20 text-base tracking-tight ${choice.correctAnswerOrder ===
-                        choices.find((c) => c.choiceId === choice.iqid)!.answer
+                    className={`correction scroll-m-20 text-base tracking-tight ${
+                      choice.correctAnswerOrder ===
+                      choices.find((c) => c.choiceId === choice.iqid)!.answer
                         ? "text-green-600"
                         : "text-rose-600"
-                      }`}
+                    }`}
                     dangerouslySetInnerHTML={{ __html: choice.question }}
                   />
                 </CardHeader>
@@ -186,13 +187,14 @@ export const Correction = ({
                   >
                     {choice.options.map((option, idx) => (
                       <div
-                        className={`flex min-h-10 items-center space-x-3 rounded px-2 py-3 ${option.order === choice.correctAnswerOrder
+                        className={`flex min-h-10 items-center space-x-3 rounded px-2 py-3 ${
+                          option.order === choice.correctAnswerOrder
                             ? "bg-green-500/40 dark:bg-green-700/30"
                             : choices.find((c) => c.choiceId === choice.iqid)!
-                              .answer === option.order
+                                  .answer === option.order
                               ? "bg-rose-500/40 dark:bg-rose-700/30"
                               : ""
-                          }`}
+                        }`}
                         key={`preview.${choice.iqid}.opt.${idx}`}
                       >
                         <RadioGroupItem
@@ -221,7 +223,7 @@ export const Correction = ({
             </h3>
 
             {essaysQuery.isPending || essayScoresQuery.isPending ? (
-              <Skeleton className="w-15 h-6" />
+              <Skeleton className="h-6 w-15" />
             ) : !essaysQuery.isError && !essayScoresQuery.isError ? (
               <span>
                 Jumlah Benar:{" "}

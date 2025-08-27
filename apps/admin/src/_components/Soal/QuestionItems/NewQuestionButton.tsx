@@ -1,8 +1,9 @@
 "use client";
 
-import { Button } from "~/components/ui/button";
 import { Loader2, PlusCircle } from "lucide-react";
 import { useFormStatus } from "react-dom";
+
+import { Button } from "~/components/ui/button";
 
 export default function NewQuestionButton() {
   const status = useFormStatus();

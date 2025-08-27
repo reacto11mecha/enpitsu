@@ -1,4 +1,4 @@
-import { PlateEditor } from '~/components/editor/plate-editor';
+import { PlateEditor } from "~/components/editor/plate-editor";
 
 export default function Page() {
   return (

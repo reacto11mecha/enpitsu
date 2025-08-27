@@ -4,6 +4,16 @@ import { redirect } from "next/navigation";
 import { asc, eq } from "@enpitsu/db";
 import { db } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
+import { PencilLine } from "lucide-react";
+
+import { EligibleStatus } from "~/_components/Soal/QuestionItems/EligibleStatus";
+import NewQuestionButton from "~/_components/Soal/QuestionItems/NewQuestionButton";
+import {
+  createNewChoice,
+  createNewEssay,
+} from "~/_components/Soal/QuestionItems/server-actions";
+// import * as Y from "yjs";
+// import { yTextToSlateElement } from "@slate-yjs/core";
 import {
   Card,
   CardContent,
@@ -13,14 +23,9 @@ import {
 } from "~/components/ui/card";
 import { Label } from "~/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
-import { PencilLine } from "lucide-react";
 
-import { EligibleStatus } from "~/_components/Soal/QuestionItems/EligibleStatus";
-import NewQuestionButton from "~/_components/Soal/QuestionItems/NewQuestionButton";
-import {
-  createNewChoice,
-  createNewEssay,
-} from "~/_components/Soal/QuestionItems/server-actions";
+// import { createSlateEditor, PlateStatic } from 'platejs';
+// import { BaseEditorKit } from '~/components/editor/editor-base-kit';
 
 export default async function QuestionItemsPage({
   params,
@@ -64,7 +69,7 @@ export default async function QuestionItemsPage({
       <div className="w-full md:w-[80%]">
         <div className="mb-5 space-y-0.5">
           <h2 className="text-2xl font-bold tracking-tight">Butir Soal</h2>
-          <p className="w-full text-muted-foreground md:w-[80%] lg:w-[70%]">
+          <p className="text-muted-foreground w-full md:w-[80%] lg:w-[70%]">
             Tambah, ubah, edit, dan hapus soal pilihan ganda dan esai pada
             halaman ini. Jangan lupa tentukan jawaban benar pada setiap soal.
           </p>
@@ -94,24 +99,35 @@ export default async function QuestionItemsPage({
                   </CardHeader>
 
                   <CardContent className="flex flex-col gap-5">
+                    {/* <PlateStatic editor={createSlateEditor({
+                      plugins: [...BaseEditorKit, YjsPlugin],
+                      value: [
+                        { type: 'h1', children: [{ text: 'Server-Rendered Title' }] },
+                      ],
+                    })} /> */}
+
                     {choice.question === "" ? (
                       <h3 className="correction scroll-m-20 text-base tracking-tight">
-                        <span className="select-none italic opacity-60">
+                        <span className="italic opacity-60 select-none">
                           Pertanyaan ini belum ada isinya. Mohon tambahkan
                           konten pertanyaan dengan menekan simbol pensil di atas
                           kanan nomor ini.
                         </span>
                       </h3>
                     ) : (
-                      <h3
-                        className="correction scroll-m-20 text-base tracking-tight"
-                        dangerouslySetInnerHTML={{ __html: choice.question }}
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: choice.question,
+                        }}
                       />
+                      // <PlateStatic editor={choice.parentQuestionEditor} />
                     )}
 
                     <p className="scroll-m-10">Opsi Jawaban :</p>
 
-                    <RadioGroup defaultValue="">
+                    <RadioGroup
+                      defaultValue={String(choice.correctAnswerOrder)}
+                    >
                       {choice.options.map((option, cidx) => (
                         <div
                           className="flex items-center space-x-3 rounded px-2 py-3"
@@ -119,6 +135,7 @@ export default async function QuestionItemsPage({
                         >
                           <RadioGroupItem
                             disabled
+                            className="disabled:opacity-100"
                             value={String(option.order)}
                             id={`preview.${choice.iqid}.opt.${cidx}`}
                           />
@@ -127,16 +144,14 @@ export default async function QuestionItemsPage({
                               htmlFor={`preview.${choice.iqid}.opt.${cidx}`}
                               className="text-base"
                             >
-                              <span className="select-none italic opacity-60">
+                              <span className="italic opacity-60 select-none">
                                 Opsi jawaban {cidx + 1} belum ada isinya. Mohon
                                 tambahkan konten pertanyaan dengan menekan
                                 simbol pensil di atas kanan nomor ini.
                               </span>
                             </Label>
                           ) : (
-                            <Label
-                              htmlFor={`preview.${choice.iqid}.opt.${cidx}`}
-                              className="text-base"
+                            <div
                               dangerouslySetInnerHTML={{
                                 __html: option.answer,
                               }}
@@ -179,7 +194,7 @@ export default async function QuestionItemsPage({
                     <CardContent className="space-y-4">
                       {essay.question === "" ? (
                         <h3 className="correction scroll-m-20 text-base tracking-tight">
-                          <span className="select-none italic opacity-60">
+                          <span className="italic opacity-60 select-none">
                             Pertanyaan ini belum ada isinya. Mohon tambahkan
                             konten pertanyaan dengan menekan simbol pensil di
                             atas kanan nomor ini.
@@ -197,7 +212,7 @@ export default async function QuestionItemsPage({
 
                         {essay.answer === "" ? (
                           <p>
-                            <span className="select-none italic opacity-60">
+                            <span className="italic opacity-60 select-none">
                               Esai ini belum ada jawaban benarnya. Mohon
                               tambahkan dengan menekan simbol pensil di atas
                               kanan nomor ini.
