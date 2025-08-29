@@ -10,7 +10,6 @@ import {
 } from "@platejs/basic-nodes";
 import { yTextToSlateElement } from "@slate-yjs/core";
 import { createSlateEditor } from "platejs";
-// import { applyUpdate, Doc, XmlText } from "yjs";
 import * as Y from "yjs";
 
 import type { DetailedError, TQuestionForCheck } from "./index";
@@ -84,8 +83,6 @@ export async function checkMultipleChoices(
                 value: yTextToSlateElement(answerDoc.get("content", Y.XmlText))
                   .children,
               });
-
-              console.log(editor.api.isEmpty());
 
               return editor.api.isEmpty();
             }

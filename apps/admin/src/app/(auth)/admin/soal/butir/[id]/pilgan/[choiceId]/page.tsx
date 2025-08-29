@@ -18,6 +18,15 @@ import {
 } from "~/components/ui/card";
 import { AnswerOptions } from "./answers";
 
+const getRandomColor = (): string => {
+  const letters = "0123456789ABCDEF";
+  let color = "#";
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
+
 export default async function ChoiceEditor({
   params,
 }: {
@@ -81,6 +90,8 @@ export default async function ChoiceEditor({
     ? multipleChoiceIds[currentIdx - 1]
     : null;
 
+  const cursorColor = getRandomColor();
+
   return (
     <div className="space-y-4 p-5">
       <div className="flex flex-col justify-between gap-3 md:flex-row md:gap-0">
@@ -130,14 +141,17 @@ export default async function ChoiceEditor({
         <CardContent className="flex flex-col gap-5">
           <div>
             <MainEditor
+              cursorColor={cursorColor}
               roomName={`q-choice-parent_${id}-${choiceId}`}
               username={identity.user.name!}
+              showName
             />
           </div>
 
           <p className="scroll-m-10">Opsi Jawaban :</p>
 
           <AnswerOptions
+            cursorColor={cursorColor}
             length={parentQuestion.multipleChoiceOptions}
             id={id}
             choiceId={choiceId}

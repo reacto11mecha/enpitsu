@@ -4,14 +4,15 @@ import { useCallback, useRef } from "react";
 
 import type { EditorRefApi } from "~/_components/Editor/MainEditor";
 import { MainEditor } from "~/_components/Editor/MainEditor";
-import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 
 export function AnswerOptions({
+  cursorColor,
   length,
   id,
   choiceId,
   username,
 }: {
+  cursorColor: string;
   length: number;
   id: number;
   choiceId: number;
@@ -29,8 +30,7 @@ export function AnswerOptions({
   }, []);
 
   return (
-    <RadioGroup
-      defaultValue=""
+    <div
       onPaste={(e) => {
         if (
           Array.from(editorRefs.current.values()).every((editor) =>
@@ -58,21 +58,17 @@ export function AnswerOptions({
       }}
     >
       {Array.from({ length }).map((_, idx) => (
-        <div
+        <MainEditor
           key={idx}
-          className="flex items-center space-x-3 rounded px-2 py-3"
+          cursorColor={cursorColor}
+          // @ts-expect-error udah lah begini aja
+          ref={(el: EditorRefApi) => setRef(idx, el)}
+          roomName={`q-choice-opt_${id}-${choiceId}-${idx}`}
+          username={username}
         >
-          <RadioGroupItem disabled value={String(idx)} id={`choice-${idx}`} />
-          <div className="w-full">
-            <MainEditor
-              // @ts-expect-error udah lah begini aja
-              ref={(el: EditorRefApi) => setRef(idx, el)}
-              roomName={`q-choice-opt_${id}-${choiceId}-${idx}`}
-              username={username}
-            />
-          </div>
-        </div>
+          <p>Opsi jawaban ke {idx + 1}.</p>
+        </MainEditor>
       ))}
-    </RadioGroup>
+    </div>
   );
 }

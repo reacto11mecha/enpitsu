@@ -1,0 +1,118 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import type { Value } from "platejs";
+import * as React from "react";
+import { cva } from "class-variance-authority";
+import { createStaticEditor, normalizeNodeId, serializeHtml } from "platejs";
+
+import { alignValue } from "~/components/align-value";
+import { basicBlocksValue } from "~/components/basic-blocks-value";
+import { basicMarksValue } from "~/components/basic-marks-value";
+import { columnValue } from "~/components/column-value";
+import { dateValue } from "~/components/date-value";
+import { discussionValue } from "~/components/discussion-value";
+import { BaseEditorKit } from "~/components/editor/editor-base-kit";
+import {
+  EditorClient,
+  EditorViewClient,
+  ExportHtmlButton,
+  HtmlIframe,
+} from "~/components/editor/slate-to-html";
+import { equationValue } from "~/components/equation-value";
+import { fontValue } from "~/components/font-value";
+import { indentValue } from "~/components/indent-value";
+import { lineHeightValue } from "~/components/line-height-value";
+import { linkValue } from "~/components/link-value";
+import { listValue } from "~/components/list-value";
+import { mediaValue } from "~/components/media-value";
+import { mentionValue } from "~/components/mention-value";
+import { tableValue } from "~/components/table-value";
+import { tocPlaygroundValue } from "~/components/toc-value";
+import { EditorStatic } from "~/components/ui/editor-static";
+import { createHtmlDocument } from "~/lib/create-html-document";
+
+const getCachedTailwindCss = React.cache(async () => {
+  const cssPath = path.join(process.cwd(), "public", "tailwind.css");
+
+  return await fs.readFile(cssPath, "utf8");
+});
+
+export default async function SlateToHtmlBlock() {
+  const createValue = (): Value =>
+    normalizeNodeId([
+      ...basicBlocksValue,
+      ...basicMarksValue,
+      ...tocPlaygroundValue,
+      ...linkValue,
+      ...tableValue,
+      ...equationValue,
+      ...columnValue,
+      ...mentionValue,
+      ...dateValue,
+      ...fontValue,
+      ...discussionValue,
+      ...alignValue,
+      ...lineHeightValue,
+      ...indentValue,
+      ...listValue,
+      ...mediaValue,
+    ]);
+
+  const editor = createStaticEditor({
+    plugins: BaseEditorKit,
+    value: createValue(),
+  });
+
+  const tailwindCss = await getCachedTailwindCss();
+  const katexCDN = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.css" integrity="sha384-9PvLvaiSKCPkFKB1ZsEoTjgnJn+O3KvEwtsz37/XrkYft3DTk2gHdYvd9oWgW3tV" crossorigin="anonymous">`;
+
+  // const cookieStore = await cookies();
+  // const theme = cookieStore.get('theme')?.value;
+  const theme = "light";
+
+  // Get the editor content HTML using EditorStatic
+  const editorHtml = await serializeHtml(editor, {
+    editorComponent: EditorStatic,
+    props: { style: { padding: "0 calc(50% - 350px)", paddingBottom: "" } },
+  });
+
+  // Create the full HTML document
+  const html = createHtmlDocument({
+    editorHtml,
+    katexCDN,
+    tailwindCss,
+    theme,
+  });
+
+  return (
+    <div className="grid grid-cols-3 px-4">
+      <div className="p-2">
+        <h3 className={headingVariants()}>Editor</h3>
+        <EditorClient value={createValue()} />
+      </div>
+
+      <div className="p-2">
+        <h3 className={headingVariants()}>EditorView</h3>
+        <EditorViewClient value={createValue()} />
+      </div>
+
+      <div className="relative p-2">
+        <h3 className={headingVariants()}>HTML Iframe</h3>
+        <ExportHtmlButton
+          className="absolute top-10 right-0"
+          html={html}
+          serverTheme={theme}
+        />
+        <HtmlIframe
+          className="h-[7500px] w-full"
+          html={html}
+          serverTheme={theme}
+        />
+      </div>
+    </div>
+  );
+}
+
+const headingVariants = cva(
+  "group font-heading mt-8 scroll-m-20 text-xl font-semibold tracking-tight",
+);

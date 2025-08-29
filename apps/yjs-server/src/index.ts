@@ -1,4 +1,4 @@
-// import type { onLoadDocumentPayload } from "@hocuspocus/server";
+import { BaseEditorKit } from "@/components/editor/editor-base-kit";
 import { and, eq } from "@enpitsu/db";
 import { db, preparedYjsDocumentSelect } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
@@ -6,15 +6,6 @@ import { cache, correctionQueue } from "@enpitsu/redis";
 import { Database } from "@hocuspocus/extension-database";
 import { Logger } from "@hocuspocus/extension-logger";
 import { Server } from "@hocuspocus/server";
-import {
-  BaseBlockquotePlugin,
-  BaseBoldPlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
-  BaseItalicPlugin,
-  BaseUnderlinePlugin,
-} from "@platejs/basic-nodes";
 import { yTextToSlateElement } from "@slate-yjs/core";
 import { createSlateEditor, serializeHtml } from "platejs";
 import * as Y from "yjs";
@@ -85,15 +76,8 @@ export const yjsServer = async () => {
             );
 
             const editor = createSlateEditor({
-              plugins: [
-                BaseBoldPlugin,
-                BaseItalicPlugin,
-                BaseUnderlinePlugin,
-                BaseH1Plugin,
-                BaseH2Plugin,
-                BaseH3Plugin,
-                BaseBlockquotePlugin,
-              ],
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              plugins: BaseEditorKit,
               // @ts-expect-error masuk kok ini dia
               value: content,
             });

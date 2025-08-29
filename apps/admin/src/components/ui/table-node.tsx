@@ -178,14 +178,14 @@ function TableFloatingToolbar({
           contentEditable={false}
         >
           <ToolbarGroup>
-            <ColorDropdownMenu tooltip="Background color">
+            <ColorDropdownMenu tooltip="Warna latar belakang">
               <PaintBucketIcon />
             </ColorDropdownMenu>
             {canMerge && (
               <ToolbarButton
                 onClick={() => tf.table.merge()}
                 onMouseDown={(e) => e.preventDefault()}
-                tooltip="Merge cells"
+                tooltip="Gabung sel"
               >
                 <CombineIcon />
               </ToolbarButton>
@@ -194,7 +194,7 @@ function TableFloatingToolbar({
               <ToolbarButton
                 onClick={() => tf.table.split()}
                 onMouseDown={(e) => e.preventDefault()}
-                tooltip="Split cell"
+                tooltip="Pisahkan sel"
               >
                 <SquareSplitHorizontalIcon />
               </ToolbarButton>
@@ -202,7 +202,7 @@ function TableFloatingToolbar({
 
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
-                <ToolbarButton tooltip="Cell borders">
+                <ToolbarButton tooltip="Garis batas">
                   <Grid2X2Icon />
                 </ToolbarButton>
               </DropdownMenuTrigger>
@@ -214,7 +214,7 @@ function TableFloatingToolbar({
 
             {collapsedInside && (
               <ToolbarGroup>
-                <ToolbarButton tooltip="Delete table" {...buttonProps}>
+                <ToolbarButton tooltip="Hapus tabel" {...buttonProps}>
                   <Trash2Icon />
                 </ToolbarButton>
               </ToolbarGroup>
@@ -228,7 +228,7 @@ function TableFloatingToolbar({
                   tf.insert.tableRow({ before: true });
                 }}
                 onMouseDown={(e) => e.preventDefault()}
-                tooltip="Insert row before"
+                tooltip="Tambahkan baris sebelum"
               >
                 <ArrowUp />
               </ToolbarButton>
@@ -237,7 +237,7 @@ function TableFloatingToolbar({
                   tf.insert.tableRow();
                 }}
                 onMouseDown={(e) => e.preventDefault()}
-                tooltip="Insert row after"
+                tooltip="Tambahkan baris sesudah"
               >
                 <ArrowDown />
               </ToolbarButton>
@@ -246,7 +246,7 @@ function TableFloatingToolbar({
                   tf.remove.tableRow();
                 }}
                 onMouseDown={(e) => e.preventDefault()}
-                tooltip="Delete row"
+                tooltip="Hapus baris"
               >
                 <XIcon />
               </ToolbarButton>
@@ -260,7 +260,7 @@ function TableFloatingToolbar({
                   tf.insert.tableColumn({ before: true });
                 }}
                 onMouseDown={(e) => e.preventDefault()}
-                tooltip="Insert column before"
+                tooltip="Tambahkan kolom sebelum"
               >
                 <ArrowLeft />
               </ToolbarButton>
@@ -269,7 +269,7 @@ function TableFloatingToolbar({
                   tf.insert.tableColumn();
                 }}
                 onMouseDown={(e) => e.preventDefault()}
-                tooltip="Insert column after"
+                tooltip="Tambahkan baris sesudah"
               >
                 <ArrowRight />
               </ToolbarButton>
@@ -278,7 +278,7 @@ function TableFloatingToolbar({
                   tf.remove.tableColumn();
                 }}
                 onMouseDown={(e) => e.preventDefault()}
-                tooltip="Delete column"
+                tooltip="Hapus kolom"
               >
                 <XIcon />
               </ToolbarButton>
@@ -322,28 +322,28 @@ function TableBordersDropdownMenuContent(
           onCheckedChange={getOnSelectTableBorder("top")}
         >
           <BorderTopIcon />
-          <div>Top Border</div>
+          <div>Garis batas atas</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={hasRightBorder}
           onCheckedChange={getOnSelectTableBorder("right")}
         >
           <BorderRightIcon />
-          <div>Right Border</div>
+          <div>Garis batas atas kanan</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={hasBottomBorder}
           onCheckedChange={getOnSelectTableBorder("bottom")}
         >
           <BorderBottomIcon />
-          <div>Bottom Border</div>
+          <div>Garis batas bawah</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={hasLeftBorder}
           onCheckedChange={getOnSelectTableBorder("left")}
         >
           <BorderLeftIcon />
-          <div>Left Border</div>
+          <div>Garis batas kiri</div>
         </DropdownMenuCheckboxItem>
       </DropdownMenuGroup>
 
@@ -353,14 +353,14 @@ function TableBordersDropdownMenuContent(
           onCheckedChange={getOnSelectTableBorder("none")}
         >
           <BorderNoneIcon />
-          <div>No Border</div>
+          <div>Tidak ada garis batas</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={hasOuterBorders}
           onCheckedChange={getOnSelectTableBorder("outer")}
         >
           <BorderAllIcon />
-          <div>Outside Borders</div>
+          <div>Garis batas membungkus</div>
         </DropdownMenuCheckboxItem>
       </DropdownMenuGroup>
     </DropdownMenuContent>

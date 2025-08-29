@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 "use client";
 
 import type { TPlaceholderElement } from "platejs";
@@ -13,7 +17,6 @@ import { KEYS } from "platejs";
 import { PlateElement, useEditorPlugin, withHOC } from "platejs/react";
 import { useFilePicker } from "use-file-picker";
 
-import { useUploadFile } from "~/hooks/use-upload-file";
 import { cn } from "~/lib/utils";
 
 const CONTENT: Record<
@@ -53,25 +56,24 @@ export const PlaceholderElement = withHOC(
 
     const { api } = useEditorPlugin(PlaceholderPlugin);
 
-    const { isUploading, progress, uploadedFile, uploadFile, uploadingFile } =
-      useUploadFile();
-
-    const loading = isUploading && uploadingFile;
+    const [base64Url, setBase64Url] = React.useState<string | null>(null);
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [loadingFile, setLoadingFile] = React.useState<File | null>(null);
 
     const currentContent = CONTENT[element.mediaType];
-
     const isImage = element.mediaType === KEYS.img;
-
     const imageRef = React.useRef<HTMLImageElement>(null);
 
     const { openFilePicker } = useFilePicker({
-      accept: currentContent.accept,
+      accept: currentContent?.accept,
       multiple: true,
       onFilesSelected: ({ plainFiles: updatedFiles }) => {
         const firstFile = updatedFiles[0];
         const restFiles = updatedFiles.slice(1);
 
-        replaceCurrentPlaceholder(firstFile);
+        if (firstFile) {
+          replaceCurrentPlaceholder(firstFile);
+        }
 
         if (restFiles.length > 0) {
           editor.getTransforms(PlaceholderPlugin).insert.media(restFiles);
@@ -81,14 +83,22 @@ export const PlaceholderElement = withHOC(
 
     const replaceCurrentPlaceholder = React.useCallback(
       (file: File) => {
-        void uploadFile(file);
+        setIsLoading(true);
+        setLoadingFile(file);
         api.placeholder.addUploadingFile(element.id as string, file);
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setBase64Url(event.target?.result as string);
+          setIsLoading(false);
+        };
+        reader.readAsDataURL(file);
       },
-      [api.placeholder, element.id, uploadFile],
+      [api.placeholder, element.id],
     );
 
     React.useEffect(() => {
-      if (!uploadedFile) return;
+      if (!base64Url || !loadingFile) return;
 
       const path = editor.api.findPath(element);
 
@@ -100,10 +110,10 @@ export const PlaceholderElement = withHOC(
           initialHeight: imageRef.current?.height,
           initialWidth: imageRef.current?.width,
           isUpload: true,
-          name: element.mediaType === KEYS.file ? uploadedFile.name : "",
+          name: element.mediaType === KEYS.file ? loadingFile.name : "",
           placeholderId: element.id as string,
-          type: element.mediaType!,
-          url: uploadedFile.url,
+          type: element.mediaType,
+          url: base64Url,
         };
 
         editor.tf.insertNodes(node, { at: path });
@@ -113,7 +123,7 @@ export const PlaceholderElement = withHOC(
 
       api.placeholder.removeUploadingFile(element.id as string);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [uploadedFile, element.id]);
+    }, [base64Url, loadingFile, element.id]);
 
     // React dev mode will call React.useEffect twice
     const isReplaced = React.useRef(false);
@@ -136,29 +146,29 @@ export const PlaceholderElement = withHOC(
 
     return (
       <PlateElement className="my-1" {...props}>
-        {(!loading || !isImage) && (
+        {(!isLoading || !isImage) && (
           <div
             className={cn(
               "bg-muted hover:bg-primary/10 flex cursor-pointer items-center rounded-sm p-3 pr-9 select-none",
             )}
-            onClick={() => !loading && openFilePicker()}
+            onClick={() => !isLoading && openFilePicker()}
             contentEditable={false}
           >
             <div className="text-muted-foreground/80 relative mr-3 flex [&_svg]:size-6">
-              {currentContent.icon}
+              {currentContent?.icon}
             </div>
             <div className="text-muted-foreground text-sm whitespace-nowrap">
               <div>
-                {loading ? uploadingFile?.name : currentContent.content}
+                {isLoading ? loadingFile?.name : currentContent?.content}
               </div>
 
-              {loading && !isImage && (
+              {isLoading && !isImage && (
                 <div className="mt-1 flex items-center gap-1.5">
-                  <div>{formatBytes(uploadingFile?.size ?? 0)}</div>
+                  <div>{formatBytes(loadingFile?.size ?? 0)}</div>
                   <div>–</div>
                   <div className="flex items-center">
                     <Loader2Icon className="text-muted-foreground mr-1 size-3.5 animate-spin" />
-                    {progress ?? 0}%
+                    Loading...
                   </div>
                 </div>
               )}
@@ -166,12 +176,8 @@ export const PlaceholderElement = withHOC(
           </div>
         )}
 
-        {isImage && loading && (
-          <ImageProgress
-            file={uploadingFile}
-            imageRef={imageRef}
-            progress={progress}
-          />
+        {isImage && isLoading && loadingFile && (
+          <ImageProgress file={loadingFile} imageRef={imageRef} />
         )}
 
         {props.children}
@@ -184,12 +190,10 @@ export function ImageProgress({
   className,
   file,
   imageRef,
-  progress = 0,
 }: {
   file: File;
   className?: string;
   imageRef?: React.RefObject<HTMLImageElement | null>;
-  progress?: number;
 }) {
   const [objectUrl, setObjectUrl] = React.useState<string | null>(null);
 
@@ -208,20 +212,17 @@ export function ImageProgress({
 
   return (
     <div className={cn("relative", className)} contentEditable={false}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={imageRef}
-        className="h-auto w-full rounded-sm object-cover"
+        className="h-auto w-full rounded-sm object-cover opacity-50"
         alt={file.name}
         src={objectUrl}
       />
-      {progress < 100 && (
-        <div className="absolute right-1 bottom-1 flex items-center space-x-2 rounded-full bg-black/50 px-1 py-0.5">
-          <Loader2Icon className="text-muted-foreground size-3.5 animate-spin" />
-          <span className="text-xs font-medium text-white">
-            {Math.round(progress)}%
-          </span>
-        </div>
-      )}
+      <div className="absolute right-1 bottom-1 flex items-center space-x-2 rounded-full bg-black/50 px-1 py-0.5">
+        <Loader2Icon className="text-muted-foreground size-3.5 animate-spin" />
+        <span className="text-xs font-medium text-white">Processing...</span>
+      </div>
     </div>
   );
 }

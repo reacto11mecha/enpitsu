@@ -34,6 +34,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import {
+  ToolbarButton,
   ToolbarSplitButton,
   ToolbarSplitButtonPrimary,
   ToolbarSplitButtonSecondary,
@@ -85,59 +86,66 @@ export function MediaToolbarButton({
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
   const { openFilePicker } = useFilePicker({
-    accept: currentConfig.accept,
+    accept: currentConfig?.accept,
     multiple: true,
     onFilesSelected: ({ plainFiles: updatedFiles }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       editor.getTransforms(PlaceholderPlugin).insert.media(updatedFiles);
     },
   });
 
   return (
     <>
-      <ToolbarSplitButton
-        onClick={() => {
-          openFilePicker();
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "ArrowDown") {
-            e.preventDefault();
-            setOpen(true);
-          }
-        }}
-        pressed={open}
-      >
-        <ToolbarSplitButtonPrimary>
-          {currentConfig.icon}
-        </ToolbarSplitButtonPrimary>
-
-        <DropdownMenu
-          open={open}
-          onOpenChange={setOpen}
-          modal={false}
-          {...props}
+      {nodeType === "img" ? (
+        <ToolbarSplitButton
+          onClick={() => {
+            openFilePicker();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowDown") {
+              e.preventDefault();
+              setOpen(true);
+            }
+          }}
+          pressed={open}
         >
-          <DropdownMenuTrigger asChild>
-            <ToolbarSplitButtonSecondary />
-          </DropdownMenuTrigger>
+          <ToolbarSplitButtonPrimary>
+            {currentConfig?.icon}
+          </ToolbarSplitButtonPrimary>
 
-          <DropdownMenuContent
-            onClick={(e) => e.stopPropagation()}
-            align="start"
-            alignOffset={-32}
+          <DropdownMenu
+            open={open}
+            onOpenChange={setOpen}
+            modal={false}
+            {...props}
           >
-            <DropdownMenuGroup>
-              <DropdownMenuItem onSelect={() => openFilePicker()}>
-                {currentConfig.icon}
-                Upload from computer
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setDialogOpen(true)}>
-                <LinkIcon />
-                Insert via URL
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </ToolbarSplitButton>
+            <DropdownMenuTrigger asChild>
+              <ToolbarSplitButtonSecondary />
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent
+              onClick={(e) => e.stopPropagation()}
+              align="start"
+              alignOffset={-32}
+            >
+              <DropdownMenuGroup>
+                <DropdownMenuItem onSelect={() => openFilePicker()}>
+                  {currentConfig?.icon}
+                  Unggah gambar
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setDialogOpen(true)}>
+                  <LinkIcon />
+                  Tambahkan URL
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </ToolbarSplitButton>
+      ) : (
+        <ToolbarButton onClick={() => setDialogOpen(true)}>
+          {currentConfig?.icon}
+        </ToolbarButton>
+      )}
 
       <AlertDialog
         open={dialogOpen}
@@ -147,6 +155,7 @@ export function MediaToolbarButton({
       >
         <AlertDialogContent className="gap-6">
           <MediaUrlDialogContent
+            // @ts-expect-error leave it as it is
             currentConfig={currentConfig}
             nodeType={nodeType}
             setOpen={setDialogOpen}

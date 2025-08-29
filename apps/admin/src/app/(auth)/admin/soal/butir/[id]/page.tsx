@@ -12,8 +12,6 @@ import {
   createNewChoice,
   createNewEssay,
 } from "~/_components/Soal/QuestionItems/server-actions";
-// import * as Y from "yjs";
-// import { yTextToSlateElement } from "@slate-yjs/core";
 import {
   Card,
   CardContent,
@@ -23,9 +21,6 @@ import {
 } from "~/components/ui/card";
 import { Label } from "~/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
-
-// import { createSlateEditor, PlateStatic } from 'platejs';
-// import { BaseEditorKit } from '~/components/editor/editor-base-kit';
 
 export default async function QuestionItemsPage({
   params,
@@ -99,13 +94,6 @@ export default async function QuestionItemsPage({
                   </CardHeader>
 
                   <CardContent className="flex flex-col gap-5">
-                    {/* <PlateStatic editor={createSlateEditor({
-                      plugins: [...BaseEditorKit, YjsPlugin],
-                      value: [
-                        { type: 'h1', children: [{ text: 'Server-Rendered Title' }] },
-                      ],
-                    })} /> */}
-
                     {choice.question === "" ? (
                       <h3 className="correction scroll-m-20 text-base tracking-tight">
                         <span className="italic opacity-60 select-none">
@@ -120,7 +108,6 @@ export default async function QuestionItemsPage({
                           __html: choice.question,
                         }}
                       />
-                      // <PlateStatic editor={choice.parentQuestionEditor} />
                     )}
 
                     <p className="scroll-m-10">Opsi Jawaban :</p>
