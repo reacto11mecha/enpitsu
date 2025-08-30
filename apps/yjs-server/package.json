@@ -8,7 +8,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown",
+    "build": "tsup",
     "clean": "rm -rf .turbo node_modules",
     "dev": "pnpm with-env tsx watch ./index.ts",
     "lint": "eslint",
@@ -61,6 +61,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "ioredis": "^5.6.1",
     "lodash": "^4.17.21",
     "lowlight": "^3.3.0",
     "lucide-react": "^0.532.0",
@@ -73,6 +74,7 @@
     "remark-math": "^6.0.0",
     "tailwind-merge": "^3.3.1",
     "tailwind-scrollbar-hide": "^4.0.0",
+    "tsup": "^8.5.0",
     "yjs": "^13.6.27",
     "zod": "catalog:"
   },
@@ -85,7 +87,6 @@
     "dotenv-cli": "^9.0.0",
     "eslint": "catalog:",
     "prettier": "catalog:",
-    "tsdown": "^0.14.2",
     "tsx": "^4.20.3",
     "typescript": "catalog:"
   },
