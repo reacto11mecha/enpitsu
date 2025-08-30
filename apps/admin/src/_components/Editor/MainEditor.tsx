@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useImperativeHandle } from "react";
+import type { UnifiedProvider, YjsProviderConfig } from "@platejs/yjs";
+import { useEffect, useImperativeHandle, useMemo } from "react";
 import { YjsPlugin } from "@platejs/yjs/react";
 import {
   Plate,
@@ -8,15 +9,20 @@ import {
   usePlateEditor,
   usePluginOption,
 } from "platejs/react";
+import { IndexeddbPersistence } from "y-indexeddb";
+import { Awareness } from "y-protocols/awareness";
+import * as Y from "yjs";
 
 import { AlignKit } from "~/components/editor/plugins/align-kit";
 import { BasicNodesKit } from "~/components/editor/plugins/basic-nodes-kit";
-import { FixedToolbarKit } from "~/components/editor/plugins/fixed-toolbar-kit";
 import { ListKit } from "~/components/editor/plugins/list-kit";
+import { MathKit } from "~/components/editor/plugins/math-kit";
 import { MediaKit } from "~/components/editor/plugins/media-kit";
 import { TableKit } from "~/components/editor/plugins/table-kit";
 import { Button } from "~/components/ui/button";
 import { Editor, EditorContainer } from "~/components/ui/editor";
+import { FixedToolbar } from "~/components/ui/fixed-toolbar";
+import { FixedToolbarButtons } from "~/components/ui/fixed-toolbar-buttons";
 import { RemoteCursorOverlay } from "~/components/ui/remote-cursor-overlay";
 import { useMounted } from "~/hooks/use-mounted";
 
@@ -49,29 +55,61 @@ export function MainEditor({
 }) {
   const mounted = useMounted();
 
+  const { ydoc, providers } = useMemo(() => {
+    const doc = new Y.Doc();
+    const awareness = new Awareness(doc);
+
+    const hocuspocusProvider: YjsProviderConfig = {
+      type: "hocuspocus",
+      options: {
+        name: roomName,
+        url: "ws://localhost:1234",
+      },
+    };
+
+    const indexedDBInstance = new IndexeddbPersistence(roomName, doc);
+    const indexedDBProvider: UnifiedProvider = {
+      type: "indexeddb",
+      document: doc,
+      awareness: awareness,
+      isConnected: true,
+      isSynced: false,
+      connect: function () {
+        this.isConnected = true;
+        this.isSynced = true;
+      },
+      disconnect: function () {
+        this.isConnected = false;
+        this.isSynced = false;
+      },
+      destroy: function () {
+        void indexedDBInstance.destroy();
+        this.disconnect();
+      },
+    };
+
+    return {
+      ydoc: doc,
+      providers: [hocuspocusProvider, indexedDBProvider],
+    };
+  }, [roomName]);
+
   const editor = usePlateEditor(
     {
       plugins: [
-        ...FixedToolbarKit,
         ...BasicNodesKit,
         ...AlignKit,
+        ...MathKit,
         ...TableKit,
         ...ListKit,
         ...MediaKit,
         YjsPlugin.configure({
           options: {
+            ydoc,
             cursors: {
               data: { color: cursorColor, name: username },
             },
-            providers: [
-              {
-                options: {
-                  name: roomName,
-                  url: "ws://localhost:1234",
-                },
-                type: "hocuspocus",
-              },
-            ],
+            providers,
           },
           render: {
             afterEditable: RemoteCursorOverlay,
@@ -144,44 +182,50 @@ function CollaborativeEditor({
   };
 
   return (
-    <>
-      <div
-        className={`bg-muted space-y-2 px-4 font-medium ${showName ? "rounded-xl py-2" : "rounded-sm py-3.5"}`}
-      >
-        {showName ? (
-          <p>
-            Nama anda akan tampil sebagai{" "}
-            <span style={{ color: cursorColor }} suppressHydrationWarning>
-              {username}
-            </span>
-          </p>
-        ) : null}
+    <div>
+      <div className="scrollbar-hidden supports-backdrop-blur:bg-background/60 sticky top-2 left-0 z-50 backdrop-blur-sm">
+        <div
+          className={`bg-muted space-y-2 px-4 font-medium ${showName ? "rounded-xl py-2" : "rounded-sm py-3.5"}`}
+        >
+          {showName ? (
+            <p>
+              Nama anda akan tampil sebagai{" "}
+              <span style={{ color: cursorColor }} suppressHydrationWarning>
+                {username}
+              </span>
+            </p>
+          ) : null}
 
-        <div className="flex flex-row items-center justify-between">
-          <div className="flex flex-row items-center gap-2">
-            <Button
-              disabled={isConnected}
-              size="sm"
-              variant="outline"
-              onClick={toggleConnection}
-              className="disabled:bg-green-100 disabled:text-green-800 disabled:opacity-100 disabled:dark:text-green-500"
-            >
-              {isConnected ? "Terhubung" : "Hubungkan Kembali"}
-            </Button>
+          <div className="flex flex-col items-center justify-between gap-2 sm:flex-row md:gap-0">
+            <div className="flex flex-row items-center gap-2">
+              <Button
+                disabled={isConnected}
+                size="sm"
+                variant="outline"
+                onClick={toggleConnection}
+                className="disabled:bg-green-100 disabled:text-green-800 disabled:opacity-100 disabled:dark:text-green-500"
+              >
+                {isConnected ? "Terhubung" : "Hubungkan Kembali"}
+              </Button>
 
-            <span
-              className={`rounded px-2 py-0.5 ${
-                isSynced
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-              }`}
-            >
-              Data sinkron: {isSynced ? "Ya" : "Tidak"}
-            </span>
+              <span
+                className={`rounded px-2 py-0.5 ${
+                  isSynced
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                Data sinkron: {isSynced ? "Ya" : "Tidak"}
+              </span>
+            </div>
+
+            <>{children}</>
           </div>
-
-          <>{children}</>
         </div>
+
+        <FixedToolbar className="relative top-auto left-auto z-auto mt-4 flex justify-start gap-1 rounded-t-lg">
+          <FixedToolbarButtons />
+        </FixedToolbar>
       </div>
 
       <EditorContainer variant="default">
@@ -190,6 +234,6 @@ function CollaborativeEditor({
           placeholder="Klik disini untuk mengetikkan pertanyaan"
         />
       </EditorContainer>
-    </>
+    </div>
   );
 }

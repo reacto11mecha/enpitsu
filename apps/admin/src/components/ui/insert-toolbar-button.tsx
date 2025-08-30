@@ -20,7 +20,7 @@ import {
   PilcrowIcon,
   PlusIcon,
   QuoteIcon,
-  // RadicalIcon,
+  RadicalIcon,
   // SquareIcon,
   TableIcon,
   // TableOfContentsIcon,
@@ -30,7 +30,7 @@ import { useEditorRef } from "platejs/react";
 
 import {
   insertBlock,
-  // insertInlineElement,
+  insertInlineElement,
 } from "~/components/editor/transforms";
 import {
   DropdownMenu,
@@ -154,59 +154,59 @@ const groups: Group[] = [
   //     },
   //   })),
   // },
-  // {
-  //   group: 'Advanced blocks',
-  //   items: [
-  //     {
-  //       icon: <TableOfContentsIcon />,
-  //       label: 'Table of contents',
-  //       value: KEYS.toc,
-  //     },
-  //     {
-  //       icon: <Columns3Icon />,
-  //       label: '3 columns',
-  //       value: 'action_three_columns',
-  //     },
-  //     {
-  //       focusEditor: false,
-  //       icon: <RadicalIcon />,
-  //       label: 'Equation',
-  //       value: KEYS.equation,
-  //     },
-  //   ].map((item) => ({
-  //     ...item,
-  //     onSelect: (editor, value) => {
-  //       insertBlock(editor, value);
-  //     },
-  //   })),
-  // },
-  // {
-  //   group: 'Inline',
-  //   items: [
-  //     {
-  //       icon: <Link2Icon />,
-  //       label: 'Link',
-  //       value: KEYS.link,
-  //     },
-  //     {
-  //       focusEditor: true,
-  //       icon: <CalendarIcon />,
-  //       label: 'Date',
-  //       value: KEYS.date,
-  //     },
-  //     {
-  //       focusEditor: false,
-  //       icon: <RadicalIcon />,
-  //       label: 'Inline Equation',
-  //       value: KEYS.inlineEquation,
-  //     },
-  //   ].map((item) => ({
-  //     ...item,
-  //     onSelect: (editor, value) => {
-  //       insertInlineElement(editor, value);
-  //     },
-  //   })),
-  // },
+  {
+    group: "Blok lanjutan",
+    items: [
+      // {
+      //   icon: <TableOfContentsIcon />,
+      //   label: 'Table of contents',
+      //   value: KEYS.toc,
+      // },
+      // {
+      //   icon: <Columns3Icon />,
+      //   label: '3 columns',
+      //   value: 'action_three_columns',
+      // },
+      {
+        focusEditor: false,
+        icon: <RadicalIcon />,
+        label: "Persamaan Matematika",
+        value: KEYS.equation,
+      },
+    ].map((item) => ({
+      ...item,
+      onSelect: (editor, value) => {
+        insertBlock(editor, value);
+      },
+    })),
+  },
+  {
+    group: "Sebaris",
+    items: [
+      // {
+      //   icon: <Link2Icon />,
+      //   label: 'Link',
+      //   value: KEYS.link,
+      // },
+      // {
+      //   focusEditor: true,
+      //   icon: <CalendarIcon />,
+      //   label: 'Date',
+      //   value: KEYS.date,
+      // },
+      {
+        focusEditor: false,
+        icon: <RadicalIcon />,
+        label: "Persamaan sebaris",
+        value: KEYS.inlineEquation,
+      },
+    ].map((item) => ({
+      ...item,
+      onSelect: (editor, value) => {
+        insertInlineElement(editor, value);
+      },
+    })),
+  },
 ];
 
 export function InsertToolbarButton(props: DropdownMenuProps) {

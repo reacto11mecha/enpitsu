@@ -145,17 +145,21 @@ export default async function ChoiceEditor({
               roomName={`q-choice-parent_${id}-${choiceId}`}
               username={identity.user.name!}
               showName
-            />
+            >
+              <p>Pokok soal.</p>
+            </MainEditor>
           </div>
-
-          <p className="scroll-m-10">Opsi Jawaban :</p>
 
           <AnswerOptions
             cursorColor={cursorColor}
-            length={parentQuestion.multipleChoiceOptions}
-            id={id}
             choiceId={choiceId}
             username={identity.user.name!}
+            options={Array.from({
+              length: parentQuestion.multipleChoiceOptions,
+            }).map((_, idx) => ({
+              idx,
+              roomName: `q-choice-opt_${id}-${choiceId}-${idx}`,
+            }))}
           />
         </CardContent>
       </Card>

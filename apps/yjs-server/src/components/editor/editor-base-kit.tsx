@@ -11,7 +11,7 @@ import { BaseCodeBlockKit } from "./plugins/code-block-base-kit";
 // import { BaseLinkKit } from './plugins/link-base-kit';
 import { BaseListKit } from "./plugins/list-base-kit";
 // import { MarkdownKit } from './plugins/markdown-kit';
-// import { BaseMathKit } from './plugins/math-base-kit';
+import { BaseMathKit } from "./plugins/math-base-kit";
 import { BaseMediaKit } from "./plugins/media-base-kit";
 // import { BaseMentionKit } from './plugins/mention-base-kit';
 // import { BaseSuggestionKit } from './plugins/suggestion-base-kit';
@@ -29,7 +29,7 @@ export const BaseEditorKit = [
   ...BaseMediaKit,
   // ...BaseCalloutKit,
   // ...BaseColumnKit,
-  // ...BaseMathKit,
+  ...BaseMathKit,
   // ...BaseDateKit,
   // ...BaseLinkKit,
   // ...BaseMentionKit,

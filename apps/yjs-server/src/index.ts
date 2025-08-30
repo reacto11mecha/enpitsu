@@ -76,7 +76,6 @@ export const yjsServer = async () => {
             );
 
             const editor = createSlateEditor({
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               plugins: BaseEditorKit,
               // @ts-expect-error masuk kok ini dia
               value: content,
