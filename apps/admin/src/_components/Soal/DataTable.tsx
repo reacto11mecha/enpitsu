@@ -1,6 +1,5 @@
 "use client";
 
-import type { RouterOutputs } from "@enpitsu/api";
 import type { ColumnDef } from "@tanstack/react-table";
 import { createContext, useContext, useState } from "react";
 import { Space_Mono } from "next/font/google";
@@ -19,6 +18,8 @@ import {
   Trash2,
   UserRoundX,
 } from "lucide-react";
+
+import type { RouterOutputs } from "@enpitsu/api";
 
 import { ReusableDataTable } from "~/_components/data-table";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";

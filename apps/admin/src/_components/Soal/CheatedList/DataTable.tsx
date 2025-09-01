@@ -1,6 +1,5 @@
 "use client";
 
-import type { RouterOutputs } from "@enpitsu/api";
 import type { ColumnDef } from "@tanstack/react-table";
 import { createContext, useCallback, useContext, useState } from "react";
 import { Space_Mono } from "next/font/google";
@@ -9,6 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { MoreHorizontal, Trash2 } from "lucide-react";
+
+import type { RouterOutputs } from "@enpitsu/api";
 
 import { ReusableDataTable } from "~/_components/data-table";
 import { Badge, badgeVariants } from "~/components/ui/badge";

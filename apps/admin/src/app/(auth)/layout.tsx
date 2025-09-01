@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope as FontSans } from "next/font/google";
 import { redirect } from "next/navigation";
+
 import { auth, signOut } from "@enpitsu/auth";
 
 import { Button } from "~/components/ui/button";

@@ -1,4 +1,3 @@
-import { preparedYjsDocumentSelect } from "@enpitsu/db/client";
 import {
   BaseBlockquotePlugin,
   BaseBoldPlugin,
@@ -11,6 +10,8 @@ import {
 import { yTextToSlateElement } from "@slate-yjs/core";
 import { createSlateEditor } from "platejs";
 import * as Y from "yjs";
+
+import { preparedYjsDocumentSelect } from "@enpitsu/db/client";
 
 import type { DetailedError, TQuestionForCheck } from "./index";
 

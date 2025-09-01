@@ -1,6 +1,5 @@
 "use client";
 
-import type { RouterOutputs } from "@enpitsu/api";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import Link from "next/link";
@@ -14,6 +13,8 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
+
+import type { RouterOutputs } from "@enpitsu/api";
 
 import { ReusableDataTable } from "~/_components/data-table";
 import { Button } from "~/components/ui/button";

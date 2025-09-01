@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import { auth, signIn } from "@enpitsu/auth";
 import { FcGoogle } from "react-icons/fc";
+
+import { auth, signIn } from "@enpitsu/auth";
 
 import { LoginGuard } from "~/_components/LoginGuard";
 import { Button } from "~/components/ui/button";

@@ -1,16 +1,17 @@
 import "./env";
 
 import { BaseEditorKit } from "@/components/editor/editor-base-kit";
-import { and, eq } from "@enpitsu/db";
-import { db, preparedYjsDocumentSelect } from "@enpitsu/db/client";
-import * as schema from "@enpitsu/db/schema";
-import { cache, correctionQueue } from "@enpitsu/redis";
 import { Database } from "@hocuspocus/extension-database";
 import { Logger } from "@hocuspocus/extension-logger";
 import { Server } from "@hocuspocus/server";
 import { yTextToSlateElement } from "@slate-yjs/core";
 import { createSlateEditor, serializeHtml } from "platejs";
 import * as Y from "yjs";
+
+import { and, eq } from "@enpitsu/db";
+import { db, preparedYjsDocumentSelect } from "@enpitsu/db/client";
+import * as schema from "@enpitsu/db/schema";
+import { cache, correctionQueue } from "@enpitsu/redis";
 
 import { createDebounceById } from "./debouncer";
 

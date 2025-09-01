@@ -1,4 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+
 import { eq } from "@enpitsu/db";
 import {
   preparedQuestionSelect,
@@ -8,8 +11,6 @@ import {
 } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
 import { cache } from "@enpitsu/redis";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 
 import type { TStudent } from "../trpc";
 import { studentProcedure } from "../trpc";

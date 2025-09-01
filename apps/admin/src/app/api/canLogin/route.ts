@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { cache } from "@enpitsu/redis";
 
 async function handler() {

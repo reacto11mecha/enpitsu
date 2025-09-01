@@ -6,14 +6,15 @@
  * tl;dr - this is where all the tRPC server stuff is created and plugged in.
  * The pieces you will need to use are documented accordingly near the end
  */
+import { initTRPC, TRPCError } from "@trpc/server";
+import superjson from "superjson";
+import { ZodError } from "zod";
+
 import type { Session } from "@enpitsu/auth";
 import { auth, validateToken } from "@enpitsu/auth";
 import { db, preparedGetStudent } from "@enpitsu/db/client";
 import { cache } from "@enpitsu/redis";
 import { validateId } from "@enpitsu/token-generator";
-import { initTRPC, TRPCError } from "@trpc/server";
-import superjson from "superjson";
-import { ZodError } from "zod";
 
 export type TStudent = NonNullable<Awaited<ReturnType<typeof getStudent>>>;
 

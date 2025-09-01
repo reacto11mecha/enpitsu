@@ -125,7 +125,6 @@
   "devDependencies": {
     "@enpitsu/eslint-config": "workspace:^0.2.0",
     "@enpitsu/prettier-config": "workspace:^0.1.0",
-    "@enpitsu/tailwind-config": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
     "@types/katex": "^0.16.7",
     "@types/node": "^24.1.0",

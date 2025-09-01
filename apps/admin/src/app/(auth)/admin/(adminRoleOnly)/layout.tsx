@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+
 import { auth } from "@enpitsu/auth";
 
 export default async function Layout(props: { children: React.ReactNode }) {

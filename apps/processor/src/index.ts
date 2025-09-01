@@ -1,10 +1,11 @@
+import { Worker } from "bullmq";
+import IORedis from "ioredis";
+
 import type { QueueValue } from "@enpitsu/redis";
 import { eq } from "@enpitsu/db";
 import { db, preparedQuestionForCheck } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
 import { QUEUE_KEY } from "@enpitsu/redis";
-import { Worker } from "bullmq";
-import IORedis from "ioredis";
 
 import { checkEssays, checkMultipleChoices } from "./checker";
 import { env } from "./env";

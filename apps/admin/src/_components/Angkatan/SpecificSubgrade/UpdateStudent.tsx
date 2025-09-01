@@ -1,4 +1,3 @@
-import type { RouterOutputs } from "@enpitsu/api";
 import type { Dispatch, SetStateAction } from "react";
 import { useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,6 +6,8 @@ import { Loader2 } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+
+import type { RouterOutputs } from "@enpitsu/api";
 
 import { Button } from "~/components/ui/button";
 import {

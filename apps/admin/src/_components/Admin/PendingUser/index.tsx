@@ -1,11 +1,12 @@
 "use client";
 
-import type { RouterOutputs } from "@enpitsu/api";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useCallback, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+
+import type { RouterOutputs } from "@enpitsu/api";
 
 import { ReusableDataTable } from "~/_components/data-table";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";

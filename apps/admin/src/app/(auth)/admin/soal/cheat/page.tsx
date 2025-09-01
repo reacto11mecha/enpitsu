@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+
 import { auth } from "@enpitsu/auth";
 
 import { DataTable } from "~/_components/Soal/AggregateCheatedStudents";

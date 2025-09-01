@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+
 import { auth } from "@enpitsu/auth";
 import { and, asc, eq } from "@enpitsu/db";
 import { db } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
-import { ArrowLeft } from "lucide-react";
 
 import { MainEditor } from "~/_components/Editor/MainEditor";
 import { badgeVariants } from "~/components/ui/badge";
