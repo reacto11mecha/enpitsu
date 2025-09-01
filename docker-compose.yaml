@@ -65,6 +65,17 @@ services:
       DATABASE_URL: postgresql://enpitsu:enpitsu@db:5432/enpitsu
       REDIS_URL: redis://:enpitsu@cache:6379/
 
+  yjs:
+    container_name: enpitsu_yjs_server
+    image: rmecha/enpitsu-yjs-server:main
+    restart: always
+    depends_on:
+      web:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://enpitsu:enpitsu@db:5432/enpitsu
+      REDIS_URL: redis://:enpitsu@cache:6379/
+
   # The following are the needed services for Chibisafe file server:
   #   - sfs: Static File Server
   #   - chibisafe: Chibisafe Web Interface

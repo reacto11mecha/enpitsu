@@ -8,7 +8,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown",
+    "build": "tsup",
     "clean": "rm -rf .turbo node_modules",
     "dev": "pnpm with-env tsx watch ./index.ts",
     "lint": "eslint",
@@ -37,7 +37,7 @@
     "dotenv-cli": "^9.0.0",
     "eslint": "catalog:",
     "prettier": "catalog:",
-    "tsdown": "^0.14.2",
+    "tsup": "^8.5.0",
     "tsx": "^4.20.3",
     "typescript": "catalog:"
   },

@@ -3,10 +3,12 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "main": "./index.ts",
-  "types": "./index.ts",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
   "license": "MIT",
   "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
     "clean": "rm -rf .turbo node_modules",
     "lint": "eslint",
     "format": "prettier --check . --ignore-path ../../.gitignore",
@@ -19,6 +21,7 @@
     "eslint": "catalog:",
     "minimatch": "catalog:",
     "prettier": "catalog:",
+    "tsup": "^8.5.0",
     "typescript": "catalog:"
   },
   "prettier": "@enpitsu/prettier-config",

@@ -230,6 +230,7 @@ function CollaborativeEditor({
 
       <EditorContainer variant="default">
         <Editor
+          autoFocusOnEditable={false}
           className="pb-7"
           placeholder="Klik disini untuk mengetikkan pertanyaan"
         />

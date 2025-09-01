@@ -4,7 +4,7 @@ FROM node:20 AS base
 RUN <<EOF 
   apt-get update -y
   apt-get install libc6 libc++1 bash -y
-  npm install -g pnpm@9.10.0
+  npm install -g pnpm@10.14.0
 EOF
 
 FROM base AS with-turbo
@@ -14,7 +14,7 @@ FROM with-turbo AS pruned-repo
 WORKDIR /app
 
 COPY . .
-RUN turbo prune @enpitsu/processor --docker
+RUN turbo prune @enpitsu/yjs-server --docker
 
 FROM with-turbo as builder
 WORKDIR /app
@@ -31,15 +31,15 @@ COPY turbo.json turbo.json
 
 ## This would be useful for browser environment variables that are actually baked at build time and you aren't passing them in otherwise.
 # COPY .env.production .env.production  
-RUN CI=true SKIP_ENV_VALIDATION=true turbo run build --filter=@enpitsu/processor...
+RUN CI=true SKIP_ENV_VALIDATION=true turbo run build --filter=@enpitsu/yjs-server...
 
-WORKDIR /app/apps/processor
+WORKDIR /app/apps/yjs-server
 RUN <<EOF
-  mkdir -p /question-processor
-  pnpm pack --pack-destination /question-processor/packed
-  cd /question-processor
-  echo '{ "name": "question-processor", "type": "module" }' > package.json
-  pnpm add ./packed/enpitsu-processor-0.1.0.tgz
+  mkdir -p /yjs-server
+  pnpm pack --pack-destination /yjs-server/packed
+  cd /yjs-server
+  echo '{ "name": "yjs-server", "type": "module" }' > package.json
+  pnpm add ./packed/enpitsu-yjs-server-0.1.0.tgz
 EOF
 
 # Debugging purpose
@@ -57,27 +57,13 @@ EOF
 
 USER processor
 
-COPY --from=builder --chown=processor:nodejs /question-processor /question-processor
+COPY --from=builder --chown=processor:nodejs /yjs-server /yjs-server
 
-WORKDIR /question-processor
+WORKDIR /yjs-server
 
-COPY <<EOF /question-processor/index.js
+COPY <<EOF /yjs-server/index.js
 "use strict";
-
-import path from "path";
-import { fileURLToPath } from "url";
-
-import { validateQuestionFromQueue } from "@enpitsu/processor";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const logsDirectory = path.join(__dirname, "logs");
-
-void validateQuestionFromQueue(logsDirectory);
+import "@enpitsu/yjs-server";
 EOF
-
-RUN mkdir -p /question-processor/logs
-RUN chown -R ${USER}:${USER} /question-processor/logs
 
 CMD ["node", "index.js"]

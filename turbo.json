@@ -42,6 +42,10 @@
       "persistent": true,
       "cache": false
     },
+    "dev:run-watch": {
+      "persistent": true,
+      "cache": false
+    },
     "format": {
       "outputs": [".cache/.prettiercache"],
       "outputLogs": "new-only"

@@ -1,3 +1,5 @@
+import "./env";
+
 import { BaseEditorKit } from "@/components/editor/editor-base-kit";
 import { and, eq } from "@enpitsu/db";
 import { db, preparedYjsDocumentSelect } from "@enpitsu/db/client";
