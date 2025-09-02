@@ -32,7 +32,7 @@ export default async function ChoiceEditor({
   params,
 }: {
   params: {
-    choiceId: string;
+    subId: string;
     id: string;
   };
 }) {
@@ -41,7 +41,7 @@ export default async function ChoiceEditor({
   if (!identity) redirect("/login");
 
   // eslint-disable-next-line @typescript-eslint/await-thenable
-  const { id: _id, choiceId: _choiceId } = await params;
+  const { id: _id, subId: _choiceId } = await params;
 
   const id = parseInt(_id);
   const choiceId = parseInt(_choiceId);
@@ -147,7 +147,7 @@ export default async function ChoiceEditor({
               username={identity.user.name!}
               showName
             >
-              <p>Pokok soal.</p>
+              <p>Pokok pertanyaan.</p>
             </MainEditor>
           </div>
 

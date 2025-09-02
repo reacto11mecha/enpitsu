@@ -74,6 +74,46 @@ export const yjsServer = async () => {
             const tempDoc = new Y.Doc();
             Y.applyUpdate(tempDoc, state);
 
+            const type = documentName.split("_");
+
+            if (documentName.startsWith("q-essay-answer")) {
+              const answer = tempDoc.getText("essay-answer").toJSON();
+
+              const [_questionId, _essayId] = type[1]!.split("-");
+
+              questionId = parseInt(_questionId!);
+              const essayId = parseInt(_essayId!);
+
+              const currentEssayData = await tx
+                .select({
+                  id: schema.essays.iqid,
+                })
+                .from(schema.essays)
+                .where(eq(schema.essays.iqid, essayId))
+                .for("update");
+
+              if (currentEssayData.length > 0) {
+                await tx
+                  .update(schema.essays)
+                  .set({
+                    answer,
+                  })
+                  .where(
+                    and(
+                      eq(schema.essays.questionId, questionId),
+                      eq(schema.essays.iqid, essayId),
+                    ),
+                  );
+              }
+
+              return tx
+                .update(schema.questions)
+                .set({
+                  eligible: "PROCESSING",
+                })
+                .where(eq(schema.questions.id, questionId));
+            }
+
             const { children: content } = yTextToSlateElement(
               tempDoc.get("content", Y.XmlText),
             );
@@ -85,8 +125,6 @@ export const yjsServer = async () => {
             });
 
             const html = await serializeHtml(editor);
-
-            const type = documentName.split("_");
 
             switch (type[0]) {
               case "q-choice-parent": {
@@ -168,6 +206,37 @@ export const yjsServer = async () => {
                       and(
                         eq(schema.multipleChoices.questionId, questionId),
                         eq(schema.multipleChoices.iqid, choiceId),
+                      ),
+                    );
+                }
+
+                break;
+              }
+
+              case "q-essay-question": {
+                const [_questionId, _essayId] = type[1]!.split("-");
+
+                questionId = parseInt(_questionId!);
+                const essayId = parseInt(_essayId!);
+
+                const currentEssayData = await tx
+                  .select({
+                    id: schema.essays.iqid,
+                  })
+                  .from(schema.essays)
+                  .where(eq(schema.essays.iqid, essayId))
+                  .for("update");
+
+                if (currentEssayData.length > 0) {
+                  await tx
+                    .update(schema.essays)
+                    .set({
+                      question: html,
+                    })
+                    .where(
+                      and(
+                        eq(schema.essays.questionId, questionId),
+                        eq(schema.essays.iqid, essayId),
                       ),
                     );
                 }
