@@ -84,6 +84,7 @@
     "@enpitsu/prettier-config": "workspace:^0.1.0",
     "@enpitsu/redis": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
+    "@types/lodash": "^4.17.20",
     "dotenv-cli": "^9.0.0",
     "eslint": "catalog:",
     "prettier": "catalog:",
