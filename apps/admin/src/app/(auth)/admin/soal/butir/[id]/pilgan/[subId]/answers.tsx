@@ -132,7 +132,9 @@ export function AnswerOptions({
                     })
                   }
                 >
-                  {correctAnswerOptionMutation.isPending ||
+                  {(correctAnswerOptionMutation.isPending &&
+                    correctAnswerOptionMutation.variables.correctAnswer ===
+                      option.idx + 1) ||
                   !correctAnswerOptionQuery.isSuccess ? (
                     <Loader2Icon className="animate-spin" />
                   ) : null}

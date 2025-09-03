@@ -15,6 +15,7 @@ import * as Y from "yjs";
 
 import { AlignKit } from "~/components/editor/plugins/align-kit";
 import { BasicNodesKit } from "~/components/editor/plugins/basic-nodes-kit";
+import { CodeBlockKit } from "~/components/editor/plugins/code-block-kit";
 import { ListKit } from "~/components/editor/plugins/list-kit";
 import { MathKit } from "~/components/editor/plugins/math-kit";
 import { MediaKit } from "~/components/editor/plugins/media-kit";
@@ -103,6 +104,7 @@ export function MainEditor({
         ...TableKit,
         ...ListKit,
         ...MediaKit,
+        ...CodeBlockKit,
         YjsPlugin.configure({
           options: {
             ydoc,
