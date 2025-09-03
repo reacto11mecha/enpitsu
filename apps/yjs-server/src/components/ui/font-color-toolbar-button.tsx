@@ -113,6 +113,7 @@ export function FontColorToolbarButton({
 
       <DropdownMenuContent align="start">
         <ColorPicker
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
           color={selectedColor || color}
           clearColor={clearColor}
           colors={DEFAULT_COLORS}
@@ -198,6 +199,8 @@ function ColorCustom({
   color?: string;
 } & React.ComponentPropsWithoutRef<"div">) {
   const [customColor, setCustomColor] = React.useState<string>();
+
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   const [value, setValue] = React.useState<string>(color || "#000000");
 
   React.useEffect(() => {
@@ -227,9 +230,10 @@ function ColorCustom({
     [customColor, customColors],
   );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const updateCustomColorDebounced = React.useCallback(
     debounce(updateCustomColor, 100),
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [updateCustomColor],
   );
 
@@ -244,6 +248,7 @@ function ColorCustom({
           value={value}
           onChange={(e) => {
             setValue(e.target.value);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             updateCustomColorDebounced(e.target.value);
           }}
         >
@@ -301,11 +306,11 @@ function ColorInput({
   );
 }
 
-type TColor = {
+interface TColor {
   isBrightColor: boolean;
   name: string;
   value: string;
-};
+}
 
 function ColorDropdownMenuItem({
   className,
@@ -376,6 +381,7 @@ export function ColorDropdownMenuItems({
         {colors.map(({ isBrightColor, name, value }) => (
           <ColorDropdownMenuItem
             name={name}
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             key={name ?? value}
             value={value}
             isBrightColor={isBrightColor}

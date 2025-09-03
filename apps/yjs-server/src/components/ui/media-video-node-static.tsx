@@ -24,6 +24,7 @@ export function VideoElementStatic(
             src={url}
             controls
           />
+          {/* @ts-expect-error takpa lah */}
           {caption && <figcaption>{NodeApi.string(caption[0])}</figcaption>}
         </figure>
       </div>
