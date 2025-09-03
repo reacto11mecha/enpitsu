@@ -81,6 +81,7 @@ export async function createNewChoice(_formData: FormData, question: Question) {
       }).map((_, idx) => ({
         order: idx + 1,
         answer: "",
+        isEmpty: true,
       })),
     });
   });
@@ -118,4 +119,11 @@ export async function createNewEssay(_formData: FormData, question: Question) {
   await addQuestionToQueueForProcessing(question.id);
 
   revalidatePath(`/admin/soal/butir/${question.id}`);
+}
+
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function refreshQuestionPage(questionId: number) {
+  "use server";
+
+  revalidatePath(`/admin/soal/butir/${questionId}`);
 }

@@ -1,3 +1,4 @@
+import Form from "next/form";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -9,6 +10,8 @@ import * as schema from "@enpitsu/db/schema";
 
 import { MainEditor } from "~/_components/Editor/MainEditor";
 import { TextareaEditor } from "~/_components/Editor/TextareaEditor";
+import { NewQuestionButtonInsideEditing } from "~/_components/Soal/QuestionItems/QuestionButton";
+import { createNewEssay } from "~/_components/Soal/QuestionItems/server-actions";
 import { badgeVariants } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -18,6 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { SetStrictEqual } from "./set-strict-equal";
 
 const getRandomColor = (): string => {
   const letters = "0123456789ABCDEF";
@@ -67,6 +71,9 @@ export default async function EssayEditor({
   });
 
   if (!currentEssayQuestion) redirect(`/admin/soal/butir/${id}`);
+
+  // @ts-expect-error expect aj lah
+  const newEssayAction = createNewEssay.bind(null, null, parentQuestion);
 
   const essayIds = await db.query.essays.findMany({
     where: eq(schema.essays.questionId, id),
@@ -122,7 +129,9 @@ export default async function EssayEditor({
               </Link>
             </Button>
           ) : (
-            <Button>Tambah Nomor Baru</Button>
+            <Form action={newEssayAction}>
+              <NewQuestionButtonInsideEditing />
+            </Form>
           )}
         </div>
       </div>
@@ -154,7 +163,9 @@ export default async function EssayEditor({
               cursorColor={cursorColor}
               roomName={`q-essay-answer_${id}-${essayId}`}
               username={identity.user.name!}
-            />
+            >
+              <SetStrictEqual essayId={essayId} />
+            </TextareaEditor>
           </div>
         </CardContent>
       </Card>

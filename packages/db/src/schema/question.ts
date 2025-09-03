@@ -108,8 +108,9 @@ export const multipleChoices = myPgTable("multipleChoice", {
     .notNull()
     .references(() => questions.id),
   question: text("question").notNull(),
+  isQuestionEmpty: boolean("isQuestionEmpty").default(true).notNull(),
   options: json("options")
-    .$type<{ order: number; answer: string }[]>()
+    .$type<{ order: number; answer: string; isEmpty: boolean }[]>()
     .notNull(),
   correctAnswerOrder: integer("correct_answer").notNull(),
 });
@@ -131,6 +132,7 @@ export const essays = myPgTable("essay", {
     .notNull()
     .references(() => questions.id),
   question: text("question").notNull(),
+  isQuestionEmpty: boolean("isQuestionEmpty").default(true).notNull(),
   answer: text("correct_answer").notNull(),
   isStrictEqual: boolean("is_strict_equal").default(false).notNull(),
 });

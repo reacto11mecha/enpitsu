@@ -62,13 +62,13 @@ export const validateQuestionFromQueue = async (loggerDirectory: string) => {
       }
 
       if (questionData.multipleChoices.length > 0) {
-        const allMCErr = await checkMultipleChoices(questionData);
+        const allMCErr = checkMultipleChoices(questionData);
         errorInMC = allMCErr.length > 0;
         errors = [...errors, ...allMCErr];
       }
 
       if (questionData.essays.length > 0) {
-        const allEssaysErr = checkEssays(questionData.essays);
+        const allEssaysErr = checkEssays(questionData);
         errorInEssays = allEssaysErr.length > 0;
         errors = [...errors, ...allEssaysErr];
       }
@@ -78,6 +78,10 @@ export const validateQuestionFromQueue = async (loggerDirectory: string) => {
           .update(schema.questions)
           .set({ eligible: "ELIGIBLE" })
           .where(eq(schema.questions.id, questionData.id));
+
+        logger.info(
+          `[WORKER] Done processing for questionId: ${questionData.id}`,
+        );
 
         return;
       }

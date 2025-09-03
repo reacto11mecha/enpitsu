@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-base-to-string */
 "use client";
 
+import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import { IndexeddbPersistence } from "y-indexeddb";
@@ -10,12 +11,14 @@ interface CollaborativeTextareaProps {
   username: string;
   roomName: string;
   cursorColor: string;
+  children: ReactNode;
 }
 
 export function TextareaEditor({
   username,
   roomName,
   cursorColor,
+  children,
 }: CollaborativeTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -182,6 +185,8 @@ export function TextareaEditor({
         className="w-full resize-y rounded-md p-4 font-mono transition-all focus:ring-2 focus:ring-green-500 focus:outline-none"
         placeholder="Tambahakan jawaban essay disini..."
       />
+
+      {children}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import Form from "next/form";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -8,6 +9,8 @@ import { db } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
 
 import { MainEditor } from "~/_components/Editor/MainEditor";
+import { NewQuestionButtonInsideEditing } from "~/_components/Soal/QuestionItems/QuestionButton";
+import { createNewChoice } from "~/_components/Soal/QuestionItems/server-actions";
 import { badgeVariants } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -68,6 +71,9 @@ export default async function ChoiceEditor({
 
   if (!currentChoiceQuestion) redirect(`/admin/soal/butir/${id}`);
 
+  // @ts-expect-error aku ekspek ini error akan terjadi, tapi biarlah, aku nak question bisa di pass ke actionnya
+  const newChoiceAction = createNewChoice.bind(null, null, parentQuestion);
+
   const multipleChoiceIds = await db.query.multipleChoices.findMany({
     where: eq(schema.multipleChoices.questionId, id),
     orderBy: [asc(schema.multipleChoices.iqid)],
@@ -124,7 +130,9 @@ export default async function ChoiceEditor({
               </Link>
             </Button>
           ) : (
-            <Button>Tambah Nomor Baru</Button>
+            <Form action={newChoiceAction}>
+              <NewQuestionButtonInsideEditing />
+            </Form>
           )}
         </div>
       </div>

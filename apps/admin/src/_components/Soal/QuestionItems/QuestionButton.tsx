@@ -5,7 +5,7 @@ import { useFormStatus } from "react-dom";
 
 import { Button } from "~/components/ui/button";
 
-export default function NewQuestionButton() {
+export function NewQuestionButton() {
   const status = useFormStatus();
 
   return (
@@ -20,6 +20,17 @@ export default function NewQuestionButton() {
       ) : (
         <PlusCircle className="h-6 w-6" />
       )}
+    </Button>
+  );
+}
+
+export function NewQuestionButtonInsideEditing() {
+  const status = useFormStatus();
+
+  return (
+    <Button type="submit" disabled={status.pending}>
+      {status.pending ? <Loader2 className="h-6 w-6 animate-spin" /> : null}
+      Tambah Nomor Baru
     </Button>
   );
 }

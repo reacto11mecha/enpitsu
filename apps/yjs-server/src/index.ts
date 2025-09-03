@@ -60,17 +60,17 @@ export const yjsServer = async () => {
         },
 
         store: async ({ documentName, state }) => {
+          await db
+            .insert(schema.yjsDocuments)
+            .values({ name: documentName, data: state })
+            .onConflictDoUpdate({
+              target: schema.yjsDocuments.name,
+              set: { data: state },
+            });
+
           let questionId = 0;
 
           await db.transaction(async (tx) => {
-            await tx
-              .insert(schema.yjsDocuments)
-              .values({ name: documentName, data: state })
-              .onConflictDoUpdate({
-                target: schema.yjsDocuments.name,
-                set: { data: state },
-              });
-
             const tempDoc = new Y.Doc();
             Y.applyUpdate(tempDoc, state);
 
@@ -146,6 +146,7 @@ export const yjsServer = async () => {
                     .update(schema.multipleChoices)
                     .set({
                       question: html,
+                      isQuestionEmpty: editor.api.isEmpty(),
                     })
                     .where(
                       and(
@@ -192,6 +193,7 @@ export const yjsServer = async () => {
                       return {
                         ...d,
                         answer: html,
+                        isEmpty: editor.api.isEmpty(),
                       };
 
                     return d;
@@ -232,6 +234,7 @@ export const yjsServer = async () => {
                     .update(schema.essays)
                     .set({
                       question: html,
+                      isQuestionEmpty: editor.api.isEmpty(),
                     })
                     .where(
                       and(

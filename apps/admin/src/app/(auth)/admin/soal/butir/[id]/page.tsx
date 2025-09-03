@@ -8,7 +8,11 @@ import { db } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
 
 import { EligibleStatus } from "~/_components/Soal/QuestionItems/EligibleStatus";
-import NewQuestionButton from "~/_components/Soal/QuestionItems/NewQuestionButton";
+import { NewQuestionButton } from "~/_components/Soal/QuestionItems/QuestionButton";
+import {
+  RemoveChoiceQuestion,
+  RemoveEssayQuestion,
+} from "~/_components/Soal/QuestionItems/RemoveItem";
 import {
   createNewChoice,
   createNewEssay,
@@ -22,6 +26,10 @@ import {
 } from "~/components/ui/card";
 import { Label } from "~/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+
+import "katex/dist/katex.min.css";
+
+import { Button } from "~/components/ui/button";
 
 export default async function QuestionItemsPage({
   params,
@@ -87,15 +95,26 @@ export default async function QuestionItemsPage({
                         Judul Soal: {question.title}
                       </CardDescription>
                     </div>
-                    <Link
-                      href={`/admin/soal/butir/${choice.questionId}/pilgan/${choice.iqid}`}
-                    >
-                      <PencilLine />
-                    </Link>
+
+                    <div className="flex flex-row items-center gap-3">
+                      <RemoveChoiceQuestion
+                        questionId={choice.questionId}
+                        choiceId={choice.iqid}
+                        questionNo={idx + 1}
+                      />
+
+                      <Button asChild variant="ghost">
+                        <Link
+                          href={`/admin/soal/butir/${choice.questionId}/pilgan/${choice.iqid}`}
+                        >
+                          <PencilLine />
+                        </Link>
+                      </Button>
+                    </div>
                   </CardHeader>
 
                   <CardContent className="flex flex-col gap-5">
-                    {choice.question === "" ? (
+                    {choice.isQuestionEmpty ? (
                       <h3 className="correction scroll-m-20 text-base tracking-tight">
                         <span className="italic opacity-60 select-none">
                           Pertanyaan ini belum ada isinya. Mohon tambahkan
@@ -127,7 +146,7 @@ export default async function QuestionItemsPage({
                             value={String(option.order)}
                             id={`preview.${choice.iqid}.opt.${cidx}`}
                           />
-                          {option.answer === "" ? (
+                          {option.isEmpty ? (
                             <Label
                               htmlFor={`preview.${choice.iqid}.opt.${cidx}`}
                               className="text-base"
@@ -172,15 +191,26 @@ export default async function QuestionItemsPage({
                           Judul Soal: {question.title}
                         </CardDescription>
                       </div>
-                      <Link
-                        href={`/admin/soal/butir/${essay.questionId}/essay/${essay.iqid}`}
-                      >
-                        <PencilLine />
-                      </Link>
+
+                      <div className="flex flex-row items-center gap-3">
+                        <RemoveEssayQuestion
+                          questionId={essay.questionId}
+                          essayId={essay.iqid}
+                          questionNo={idx + 1}
+                        />
+
+                        <Button asChild variant="ghost">
+                          <Link
+                            href={`/admin/soal/butir/${essay.questionId}/essay/${essay.iqid}`}
+                          >
+                            <PencilLine />
+                          </Link>
+                        </Button>
+                      </div>
                     </CardHeader>
 
                     <CardContent className="space-y-4">
-                      {essay.question === "" ? (
+                      {essay.isQuestionEmpty ? (
                         <h3 className="correction scroll-m-20 text-base tracking-tight">
                           <span className="italic opacity-60 select-none">
                             Pertanyaan ini belum ada isinya. Mohon tambahkan
@@ -207,9 +237,7 @@ export default async function QuestionItemsPage({
                             </span>
                           </p>
                         ) : (
-                          <p
-                            dangerouslySetInnerHTML={{ __html: essay.answer }}
-                          />
+                          <p>{essay.answer}</p>
                         )}
 
                         <p className="mt-2 text-sm">

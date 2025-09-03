@@ -103,6 +103,8 @@ export const preparedQuestionForCheck = db.query.questions
         orderBy: (choice, { asc }) => [asc(choice.iqid)],
         columns: {
           iqid: true,
+          isQuestionEmpty: true,
+          options: true,
           correctAnswerOrder: true,
         },
       },
@@ -111,6 +113,7 @@ export const preparedQuestionForCheck = db.query.questions
         columns: {
           iqid: true,
           question: true,
+          isQuestionEmpty: true,
           answer: true,
         },
       },

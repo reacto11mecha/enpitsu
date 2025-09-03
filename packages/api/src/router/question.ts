@@ -712,8 +712,59 @@ export const questionRouter = {
       await addQuestionToQueueForProcessing(questionId);
     }),
 
+  getStrictEqualEssay: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(({ ctx, input }) =>
+      ctx.db.query.essays.findFirst({
+        where: eq(schema.essays.iqid, input.id),
+        columns: {
+          isStrictEqual: true,
+        },
+      }),
+    ),
+
+  setStrictEqualEssay: protectedProcedure
+    .input(z.object({ id: z.number(), strictEqual: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(schema.essays)
+        .set({
+          isStrictEqual: input.strictEqual,
+        })
+        .where(eq(schema.essays.iqid, input.id));
+
+      const parentQuestion = await ctx.db.query.essays.findFirst({
+        where: eq(schema.essays.iqid, input.id),
+        with: {
+          question: {
+            columns: {
+              slug: true,
+            },
+          },
+        },
+      });
+
+      if (parentQuestion) {
+        try {
+          await cache.del(
+            `trpc-get-question-slug-${parentQuestion.question.slug}`,
+          );
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err: unknown) {
+          console.error({
+            code: "REDIS_ERR",
+            message:
+              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
+          });
+        }
+
+        await addQuestionToQueueForProcessing(parentQuestion.questionId);
+      }
+    }),
+
   deleteSpecificEssay: protectedProcedure
-    .input(z.object({ essayIqid: z.number() }))
+    .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       let questionId = 0;
 
@@ -723,7 +774,7 @@ export const questionRouter = {
             questionId: schema.essays.questionId,
           })
           .from(schema.essays)
-          .where(eq(schema.essays.iqid, input.essayIqid))
+          .where(eq(schema.essays.iqid, input.id))
           .for("update");
 
         if (currentEssayData.length < 1 || !currentEssayData.at(0))
@@ -757,7 +808,7 @@ export const questionRouter = {
 
         return await tx
           .delete(schema.essays)
-          .where(eq(schema.essays.iqid, input.essayIqid));
+          .where(eq(schema.essays.iqid, input.id));
       });
 
       await addQuestionToQueueForProcessing(questionId);
