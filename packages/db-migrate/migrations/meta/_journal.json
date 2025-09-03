@@ -8,6 +8,13 @@
       "when": 1739149109099,
       "tag": "0000_marvelous_tyger_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1756910665188,
+      "tag": "0001_fantastic_micromax",
+      "breakpoints": true
     }
   ]
 }
