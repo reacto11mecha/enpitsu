@@ -87,6 +87,7 @@
     "@types/lodash": "^4.17.20",
     "dotenv-cli": "^9.0.0",
     "eslint": "catalog:",
+    "minimatch": "catalog:",
     "prettier": "catalog:",
     "tsup": "^8.5.0",
     "typescript": "catalog:"
