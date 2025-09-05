@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format, startOfDay } from "date-fns";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@enpitsu/ui/dialog";
+} from "~/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -18,8 +25,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -28,14 +35,8 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@enpitsu/ui/select";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { format, startOfDay } from "date-fns";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-
-import { api } from "~/trpc/react";
+} from "~/components/ui/select";
+import { useTRPC } from "~/trpc/react";
 
 const formSchema = z
   .object({
@@ -59,32 +60,41 @@ export function AddBannedStudent() {
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [selectedSubgradeId, setSubgradeId] = useState<number | null>(null);
 
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const addNewBannedStudent = api.grade.addTemporaryBan.useMutation({
-    async onSuccess() {
-      setSubgradeId(null);
-      form.reset();
+  const addNewBannedStudent = useMutation(
+    trpc.grade.addTemporaryBan.mutationOptions({
+      async onSuccess() {
+        setSubgradeId(null);
+        form.reset();
 
-      await apiUtils.question.getStudentTempobans.invalidate();
+        await queryClient.invalidateQueries(
+          trpc.question.getStudentTempobans.pathFilter(),
+        );
 
-      toast.success("Penambahan Larangan Berhasil!", {
-        description: `Berhasil menambahkan peserta!`,
-      });
+        toast.success("Penambahan Larangan Berhasil!", {
+          description: `Berhasil menambahkan peserta!`,
+        });
 
-      setDialogOpen(false);
-    },
+        setDialogOpen(false);
+      },
 
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
-  const subgradesWithGrade = api.grade.getSubgradesWithGrade.useQuery();
-  const studentLists = api.grade.getStudents.useQuery({
-    subgradeId: selectedSubgradeId,
-  });
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
+  const subgradesWithGrade = useQuery(
+    trpc.grade.getSubgradesWithGrade.queryOptions(),
+  );
+  const studentLists = useQuery(
+    trpc.grade.getStudents.queryOptions({
+      subgradeId: selectedSubgradeId,
+    }),
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

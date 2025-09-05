@@ -1,19 +1,10 @@
 "use client";
 
-import type { RouterOutputs } from "@enpitsu/api";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Button } from "@enpitsu/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@enpitsu/ui/dropdown-menu";
+import { useQuery } from "@tanstack/react-query";
 import {
   ClipboardCopy,
   MoreHorizontal,
@@ -23,8 +14,19 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import type { RouterOutputs } from "@enpitsu/api";
+
 import { ReusableDataTable } from "~/_components/data-table";
-import { api } from "~/trpc/react";
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { useTRPC } from "~/trpc/react";
 import { CreateSubgrade } from "./CreateSubgrade";
 import { DeleteSubgrade } from "./DeleteSubgrade";
 import { RenameSubgrade } from "./RenameSubgrade";
@@ -132,9 +134,12 @@ export function DataTable({
 }: {
   currentGrade: { id: number; label: string };
 }) {
-  const subgradesQuery = api.grade.getSubgrades.useQuery({
-    gradeId: currentGrade.id,
-  });
+  const trpc = useTRPC();
+  const subgradesQuery = useQuery(
+    trpc.grade.getSubgrades.queryOptions({
+      gradeId: currentGrade.id,
+    }),
+  );
 
   return (
     <div className="w-full">

@@ -23,6 +23,7 @@
     "@enpitsu/prettier-config": "workspace:^0.1.0",
     "@enpitsu/tsconfig": "workspace:^0.1.0",
     "eslint": "catalog:",
+    "minimatch": "catalog:",
     "typescript": "catalog:"
   },
   "eslintConfig": {
@@ -32,7 +33,7 @@
   },
   "prettier": "@enpitsu/prettier-config",
   "dependencies": {
-    "nanoid": "5.0.9"
+    "nanoid": "5.1.5"
   },
   "type": "module"
 }

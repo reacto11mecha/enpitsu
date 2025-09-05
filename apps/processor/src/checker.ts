@@ -1,83 +1,72 @@
 import type { DetailedError, TQuestionForCheck } from "./index";
 
-const isEmpty = (str: string) => str === "" || str === "<p><br></p>";
-
-type DetailOverride = Omit<DetailedError, "type"> & {
-  type: string;
-};
-
 export function checkMultipleChoices(
-  choices: TQuestionForCheck["multipleChoices"],
+  params: TQuestionForCheck,
 ): DetailedError[] {
-  const allDetectedError = choices
-    .map((choice, idx) => {
-      const errorMessages = [];
+  const allDetectedError = params.multipleChoices.map((choice, idx) => {
+    const errorMessages = [];
 
-      const noQuestion = isEmpty(choice.question.trim());
-      const someOfAnswerOptionsAreEmpty = choice.options.some((opt) =>
-        isEmpty(opt.answer),
-      );
-      const noAnswerOrder = choice.correctAnswerOrder === 0;
+    const noQuestion = choice.isQuestionEmpty;
+    const someOfAnswerOptionsAreEmpty = choice.options.some(
+      (opt) => opt.isEmpty,
+    );
 
-      if (!noQuestion && !someOfAnswerOptionsAreEmpty && !noAnswerOrder)
-        return null;
+    const noAnswerOrder = choice.correctAnswerOrder === 0;
 
-      errorMessages.push(`SOAL NOMOR: ${idx + 1};`);
+    if (!noQuestion && !someOfAnswerOptionsAreEmpty && !noAnswerOrder)
+      return null;
 
-      if (noQuestion) {
-        errorMessages.push("Pertanyaan masih kosong.");
-      }
+    errorMessages.push(`SOAL NOMOR: ${idx + 1};`);
 
-      if (someOfAnswerOptionsAreEmpty) {
-        errorMessages.push("Semua atau beberapa opsi jawaban masih kosong.");
-      }
+    if (noQuestion) {
+      errorMessages.push("Pertanyaan masih kosong.");
+    }
 
-      if (noAnswerOrder) {
-        errorMessages.push("Belum memilih jawaban benar pada kunci jawaban.");
-      }
+    if (someOfAnswerOptionsAreEmpty) {
+      errorMessages.push("Semua atau beberapa opsi jawaban masih kosong.");
+    }
 
-      return {
-        type: "choice",
-        iqid: choice.iqid,
-        errorMessage: errorMessages.join(" "),
-      };
-    })
-    .filter((d) => !!d) satisfies DetailOverride[];
+    if (noAnswerOrder) {
+      errorMessages.push("Belum memilih jawaban benar pada kunci jawaban.");
+    }
 
-  return allDetectedError as unknown as DetailedError[];
+    return {
+      type: "choice" as DetailedError["type"],
+      iqid: choice.iqid,
+      errorMessage: errorMessages.join(" "),
+    };
+  });
+
+  return allDetectedError.filter((d) => d !== null);
 }
 
-export function checkEssays(
-  essays: TQuestionForCheck["essays"],
-): DetailedError[] {
-  const allDetectedError = essays
-    .map((essay, idx) => {
-      const errorMessages = [];
+export function checkEssays(params: TQuestionForCheck): DetailedError[] {
+  const allDetectedError = params.essays.map((essay, idx) => {
+    const errorMessages = [];
 
-      const noQuestion = isEmpty(essay.question.trim());
-      const noAnswer = essay.answer.length === 0 || essay.answer === "";
+    const noQuestion = essay.isQuestionEmpty;
+    const noAnswer = essay.answer.length === 0 || essay.answer === "";
 
-      if (!noQuestion && !noAnswer) return null;
+    if (!noQuestion && !noAnswer) return null;
 
-      errorMessages.push(`SOAL NOMOR: ${idx + 1};`);
+    errorMessages.push(`SOAL NOMOR: ${idx + 1};`);
 
-      if (noQuestion) {
-        errorMessages.push("Pertanyaan masih kosong.");
-      }
+    if (noQuestion) {
+      errorMessages.push("Pertanyaan masih kosong.");
+    }
 
-      if (noAnswer) {
-        errorMessages.push(
-          "Belum menambahkan kunci jawaban pada kolom input jawaban.",
-        );
-      }
+    if (noAnswer) {
+      errorMessages.push(
+        "Belum menambahkan kunci jawaban pada kolom input jawaban.",
+      );
+    }
 
-      return {
-        type: "essay",
-        iqid: essay.iqid,
-        errorMessage: errorMessages.join(" "),
-      };
-    })
-    .filter((d) => !!d) satisfies DetailOverride[];
+    return {
+      type: "essay" as DetailedError["type"],
+      iqid: essay.iqid,
+      errorMessage: errorMessages.join(" "),
+    };
+  });
 
-  return allDetectedError as unknown as DetailedError[];
+  return allDetectedError.filter((d) => d !== null);
 }

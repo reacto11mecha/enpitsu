@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  customType,
   index,
   integer,
   json,
@@ -10,11 +11,21 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  varchar,
 } from "drizzle-orm/pg-core";
 
 import { myPgTable } from "./_table";
 import { users } from "./auth";
 import { students, subGrades } from "./grade";
+
+export const binary = customType<{
+  data: Buffer;
+  default: false;
+}>({
+  dataType() {
+    return "bytea";
+  },
+});
 
 export const eligibleStatus = pgEnum("eligible", [
   "ELIGIBLE",
@@ -32,6 +43,7 @@ export const questions = myPgTable(
     startedAt: t.timestamp("started_at", { mode: "date" }).notNull(),
     endedAt: t.timestamp("ended_at", { mode: "date" }).notNull(),
     eligible: eligibleStatus("eligible").notNull().default("NOT_ELIGIBLE"),
+    shuffleQuestion: t.boolean("shuffle_question").notNull().default(true),
     detailedNotEligible: t
       .json("detailed_not_eligible")
       .$type<
@@ -61,6 +73,15 @@ export const questionRelations = relations(questions, ({ one, many }) => ({
   responds: many(studentResponds),
 }));
 
+export const yjsDocuments = myPgTable(
+  "yjsDocument",
+  {
+    name: varchar("name", { length: 255 }).notNull(),
+    data: binary("data").notNull(),
+  },
+  (table) => [uniqueIndex("nameIdx").on(table.name)],
+);
+
 export const allowLists = myPgTable("allowList", {
   id: serial("id").primaryKey(),
   questionId: integer("question_id")
@@ -88,8 +109,9 @@ export const multipleChoices = myPgTable("multipleChoice", {
     .notNull()
     .references(() => questions.id),
   question: text("question").notNull(),
+  isQuestionEmpty: boolean("isQuestionEmpty").default(true).notNull(),
   options: json("options")
-    .$type<{ order: number; answer: string }[]>()
+    .$type<{ order: number; answer: string; isEmpty: boolean }[]>()
     .notNull(),
   correctAnswerOrder: integer("correct_answer").notNull(),
 });
@@ -111,6 +133,7 @@ export const essays = myPgTable("essay", {
     .notNull()
     .references(() => questions.id),
   question: text("question").notNull(),
+  isQuestionEmpty: boolean("isQuestionEmpty").default(true).notNull(),
   answer: text("correct_answer").notNull(),
   isStrictEqual: boolean("is_strict_equal").default(false).notNull(),
 });

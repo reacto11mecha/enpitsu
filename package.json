@@ -4,7 +4,7 @@
   "engines": {
     "node": ">=18.18.2"
   },
-  "packageManager": "pnpm@9.10.0",
+  "packageManager": "pnpm@10.14.0",
   "scripts": {
     "build": "turbo build",
     "build:admin": "turbo build --filter @enpitsu/admin",
@@ -15,7 +15,7 @@
     "db:push": "pnpm -F db push",
     "db:generate": "pnpm -F db generate",
     "db:studio": "pnpm -F db studio",
-    "dev": "turbo dev --parallel",
+    "dev": "turbo dev --parallel dev:run-watch",
     "dev:admin": "turbo dev --filter @enpitsu/admin",
     "dev:exam": "turbo dev --filter @enpitsu/exam-web",
     "dev:web": "turbo dev --filter @enpitsu/admin --filter enpitsu/exam-web",
@@ -30,15 +30,10 @@
   },
   "devDependencies": {
     "@enpitsu/prettier-config": "workspace:^0.1.0",
-    "@turbo/gen": "2.4.0",
+    "@turbo/gen": "2.5.5",
     "prettier": "catalog:",
-    "turbo": "2.4.0",
+    "turbo": "2.5.5",
     "typescript": "catalog:"
-  },
-  "pnpm": {
-    "overrides": {
-      "@auth/core": "0.18.0"
-    }
   },
   "prettier": "@enpitsu/prettier-config"
 }

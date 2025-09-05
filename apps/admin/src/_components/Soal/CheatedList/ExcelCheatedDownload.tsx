@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { useMutation } from "@tanstack/react-query";
+import ExcelJS from "exceljs";
+import { Sheet } from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -11,12 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@enpitsu/ui/dialog";
-import ExcelJS from "exceljs";
-import { Sheet } from "lucide-react";
-import { toast } from "sonner";
-
-import { api } from "~/trpc/react";
+} from "~/components/ui/dialog";
+import { useTRPC } from "~/trpc/react";
 import { excelNormalizeTime } from "~/utils/time";
 
 const ReusableDialog = ({
@@ -77,8 +78,10 @@ export const SpecificExcelBlockedDownload = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  const excelMutationApi =
-    api.question.downloadStudentBlocklistsExcelById.useMutation({
+  const trpc = useTRPC();
+
+  const excelMutationApi = useMutation(
+    trpc.question.downloadStudentBlocklistsExcelById.mutationOptions({
       async onSuccess(result) {
         const workbook = new ExcelJS.Workbook();
 
@@ -158,7 +161,8 @@ export const SpecificExcelBlockedDownload = ({
           description: `Terjadi kesalahan, Error: ${error.message}`,
         });
       },
-    });
+    }),
+  );
 
   const onOpenChange = useCallback(() => {
     if (!excelMutationApi.isPending) setOpen((prev) => !prev);
@@ -185,8 +189,10 @@ export const SpecificExcelBlockedDownload = ({
 export const AggregateExcelCheatDownload = () => {
   const [open, setOpen] = useState(false);
 
-  const excelMutationApi =
-    api.question.downloadStudentBlocklistsExcelAggregate.useMutation({
+  const trpc = useTRPC();
+
+  const excelMutationApi = useMutation(
+    trpc.question.downloadStudentBlocklistsExcelAggregate.mutationOptions({
       async onSuccess(results) {
         const workbook = new ExcelJS.Workbook();
 
@@ -268,7 +274,8 @@ export const AggregateExcelCheatDownload = () => {
           description: `Terjadi kesalahan, Error: ${error.message}`,
         });
       },
-    });
+    }),
+  );
 
   const onOpenChange = useCallback(() => {
     if (!excelMutationApi.isPending) setOpen((prev) => !prev);

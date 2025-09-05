@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import JSzip from "jszip";
+import { QrCode } from "lucide-react";
+import QRCode from "qrcode";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,11 +15,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@enpitsu/ui/alert-dialog";
-import { Button } from "@enpitsu/ui/button";
-import JSzip from "jszip";
-import { QrCode } from "lucide-react";
-import QRCode from "qrcode";
+} from "~/components/ui/alert-dialog";
+import { Button } from "~/components/ui/button";
 
 const ImageQR = ({ slug }: { slug: string }) => {
   const [imgUrl, setURL] = useState("");

@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import { auth } from "@enpitsu/auth";
 import { count } from "@enpitsu/db";
 import { db } from "@enpitsu/db/client";

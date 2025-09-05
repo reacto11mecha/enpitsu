@@ -1,0 +1,1 @@
+ALTER TABLE "enpitsu_question" ADD COLUMN "shuffle_question" boolean DEFAULT true NOT NULL;

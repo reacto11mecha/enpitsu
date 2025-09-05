@@ -1,6 +1,13 @@
 "use client";
 
-import { Button } from "@enpitsu/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
+import { Button } from "~/components/ui/button";
 import {
   Form,
   FormControl,
@@ -8,15 +15,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-
-import { api } from "~/trpc/react";
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { useTRPC } from "~/trpc/react";
 
 const formSchema = z.object({
   label: z.string().min(1, {
@@ -25,7 +26,8 @@ const formSchema = z.object({
 });
 
 export const NewAngkatan = () => {
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -34,23 +36,25 @@ export const NewAngkatan = () => {
     },
   });
 
-  const gradeMutation = api.grade.createGrade.useMutation({
-    async onSuccess() {
-      form.reset();
+  const gradeMutation = useMutation(
+    trpc.grade.createGrade.mutationOptions({
+      async onSuccess() {
+        form.reset();
 
-      await apiUtils.grade.getGrades.invalidate();
+        await queryClient.invalidateQueries(trpc.grade.getGrades.pathFilter());
 
-      toast.success("Penambahan Berhasil!", {
-        description: "Berhasil menambahkan kelas baru.",
-      });
-    },
+        toast.success("Penambahan Berhasil!", {
+          description: "Berhasil menambahkan kelas baru.",
+        });
+      },
 
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     gradeMutation.mutate(values);

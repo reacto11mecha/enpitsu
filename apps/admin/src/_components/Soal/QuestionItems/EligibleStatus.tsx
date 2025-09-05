@@ -1,15 +1,7 @@
-import type { RouterOutputs } from "@enpitsu/api";
-import { memo, useMemo, useState } from "react";
-import { cn } from "@enpitsu/ui";
-import { Button } from "@enpitsu/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@enpitsu/ui/sheet";
+"use client";
+
+import { memo, useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   LaptopMinimalCheck,
   Loader2,
@@ -17,38 +9,76 @@ import {
   OctagonX,
 } from "lucide-react";
 
+import { Button } from "~/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "~/components/ui/sheet";
+import { cn } from "~/lib/utils";
+import { useTRPC } from "~/trpc/react";
+
 interface Props {
-  isPending: boolean;
-  isError: boolean;
-  data: RouterOutputs["question"]["getEligibleStatusFromQuestion"] | undefined;
+  questionId: number;
 }
 
+const DEFAULT_FETCH_TIME = 3000;
+
 export const EligibleStatus = memo(function EligibleStatus({
-  isPending,
-  isError,
-  data,
+  questionId,
 }: Props) {
+  const [eligibleRefetchInterval, setERI] = useState(DEFAULT_FETCH_TIME);
   const [sheetOpened, setOpened] = useState(false);
 
+  const trpc = useTRPC();
+
+  const eligibleQuestionStatus = useQuery(
+    trpc.question.getEligibleStatusFromQuestion.queryOptions(
+      { questionId },
+      {
+        refetchOnWindowFocus: false,
+        refetchInterval: eligibleRefetchInterval,
+      },
+    ),
+  );
+
+  useEffect(() => {
+    if (eligibleQuestionStatus.data) {
+      if (
+        eligibleRefetchInterval === 0 &&
+        eligibleQuestionStatus.data.eligible === "PROCESSING"
+      )
+        setERI(5000);
+      else if (
+        eligibleRefetchInterval === 5000 &&
+        eligibleQuestionStatus.data.eligible === "ELIGIBLE"
+      )
+        setERI(DEFAULT_FETCH_TIME);
+    }
+  }, [eligibleQuestionStatus.data, eligibleRefetchInterval]);
+
   const currentStatus = useMemo(() => {
-    if (isPending)
+    if (eligibleQuestionStatus.isPending)
       return {
         readable: "Sedang mengambil data status ke server...",
         showReason: false,
       };
-    if (isError)
+    if (eligibleQuestionStatus.isError)
       return {
         readable: "Gagal mengambil data status ke server.",
         showReason: false,
       };
 
-    if (!data)
+    if (!eligibleQuestionStatus.data)
       return {
         readable: "Status data kosong, mohon menunggu...",
         showReason: false,
       };
 
-    switch (data.eligible) {
+    switch (eligibleQuestionStatus.data.eligible) {
       case "ELIGIBLE":
         return {
           readable: "Status aman, peserta dapat mengerjakan soal ini.",
@@ -63,10 +93,10 @@ export const EligibleStatus = memo(function EligibleStatus({
       default:
         return { readable: "Soal tidak layak dikerjakan.", showReason: true };
     }
-  }, [isPending, isError, data]);
+  }, [eligibleQuestionStatus]);
 
   return (
-    <div className="w-full md:fixed md:bottom-2 md:right-2 md:w-fit">
+    <div className="w-full md:fixed md:right-2 md:bottom-2 md:w-fit">
       <Sheet
         open={sheetOpened}
         onOpenChange={() => {
@@ -75,19 +105,21 @@ export const EligibleStatus = memo(function EligibleStatus({
       >
         <SheetTrigger asChild>
           <Button
-            variant={isError ? "destructive" : "default"}
+            variant={eligibleQuestionStatus.isError ? "destructive" : "default"}
             className="h-10 w-full md:w-fit"
           >
-            {isPending ? (
+            {eligibleQuestionStatus.isPending ? (
               <Loader2 className="!h-7 !w-7 animate-spin" />
-            ) : data?.eligible === "NOT_ELIGIBLE" || isError ? (
+            ) : eligibleQuestionStatus.data?.eligible === "NOT_ELIGIBLE" ||
+              eligibleQuestionStatus.isError ? (
               <OctagonX
                 className={cn(
                   "!h-7 !w-7",
-                  !isError && "text-red-500 dark:text-red-700",
+                  !eligibleQuestionStatus.isError &&
+                    "text-red-500 dark:text-red-700",
                 )}
               />
-            ) : data?.eligible === "PROCESSING" ? (
+            ) : eligibleQuestionStatus.data?.eligible === "PROCESSING" ? (
               <LoaderPinwheel className="!h-7 !w-7 animate-spin" />
             ) : (
               <LaptopMinimalCheck className="!h-7 !w-7 text-green-500 dark:text-green-700" />
@@ -105,31 +137,33 @@ export const EligibleStatus = memo(function EligibleStatus({
               perbaiki.
             </SheetDescription>
 
-            <p className="mt-2 text-wrap text-sm">
+            <p className="mt-2 text-sm text-wrap">
               Status saat ini: {currentStatus.readable}
             </p>
 
             {currentStatus.showReason ? (
-              <p className="text-pretty text-sm">
-                Alasan: {data?.notEligibleReason ?? "N/A"}
+              <p className="text-sm text-pretty">
+                Alasan:{" "}
+                {eligibleQuestionStatus.data?.notEligibleReason ?? "N/A"}
               </p>
             ) : null}
 
-            {currentStatus.showReason && data?.detailedNotEligible ? (
+            {currentStatus.showReason &&
+            eligibleQuestionStatus.data?.detailedNotEligible ? (
               <div className="mt-12 flex max-h-[55vh] flex-col gap-5 overflow-y-auto pb-14">
-                {data.detailedNotEligible.some(
+                {eligibleQuestionStatus.data.detailedNotEligible.some(
                   (detail) => detail.type === "choice",
                 ) ? (
                   <div className="space-y-2">
-                    <p className="text-wrap text-base">
+                    <p className="text-base text-wrap">
                       Kesalahan Pada Pilihan Ganda
                     </p>
 
                     <ul className="list-disc space-y-1.5 pl-5">
-                      {data.detailedNotEligible
+                      {eligibleQuestionStatus.data.detailedNotEligible
                         .filter((d) => d.type === "choice")
                         .map((d) => (
-                          <li className="text-pretty text-sm" key={d.iqid}>
+                          <li className="text-sm text-pretty" key={d.iqid}>
                             <button
                               className="underline"
                               onClick={() => {
@@ -157,17 +191,17 @@ export const EligibleStatus = memo(function EligibleStatus({
                   </div>
                 ) : null}
 
-                {data.detailedNotEligible.some(
+                {eligibleQuestionStatus.data.detailedNotEligible.some(
                   (detail) => detail.type === "essay",
                 ) ? (
                   <div className="space-y-2">
-                    <p className="text-wrap text-base">Kesalahan Pada Esai</p>
+                    <p className="text-base text-wrap">Kesalahan Pada Esai</p>
 
                     <ul className="list-disc space-y-1.5 pl-5">
-                      {data.detailedNotEligible
+                      {eligibleQuestionStatus.data.detailedNotEligible
                         .filter((d) => d.type === "essay")
                         .map((d) => (
-                          <li className="text-pretty text-sm" key={d.iqid}>
+                          <li className="text-sm text-pretty" key={d.iqid}>
                             <button
                               className="underline"
                               onClick={() => {

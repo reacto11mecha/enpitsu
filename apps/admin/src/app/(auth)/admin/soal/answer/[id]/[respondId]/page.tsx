@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+
 import { eq } from "@enpitsu/db";
 import { db } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
@@ -76,7 +77,7 @@ export default async function CorrectionPage({
       <div className="w-full md:w-[80%]">
         <div className="mb-5 space-y-0.5">
           <h2 className="text-2xl font-bold tracking-tight">Koreksi Jawaban</h2>
-          <p className="w-full text-muted-foreground md:w-[80%] lg:w-[70%]">
+          <p className="text-muted-foreground w-full md:w-[80%] lg:w-[70%]">
             Koreksi jawaban peserta pada halaman ini.
           </p>
         </div>

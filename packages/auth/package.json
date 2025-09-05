@@ -17,14 +17,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@auth/core": "0.37.4",
-    "@auth/drizzle-adapter": "^1.7.4",
+    "@auth/core": "catalog:",
+    "@auth/drizzle-adapter": "catalog:",
     "@enpitsu/db": "workspace:^0.1.0",
-    "@t3-oss/env-nextjs": "^0.12.0",
-    "next": "14.2.23",
-    "next-auth": "5.0.0-beta.4",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "@t3-oss/env-nextjs": "^0.13.8",
+    "next": "^15.4.4",
+    "next-auth": "catalog:",
+    "react": "catalog:react19",
+    "react-dom": "catalog:react19",
     "zod": "catalog:"
   },
   "devDependencies": {

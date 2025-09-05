@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+
 import { count, eq } from "@enpitsu/db";
 import { db } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
@@ -34,7 +35,7 @@ export default async function NewQuestion({
           <h2 className="text-2xl font-bold tracking-tight">
             Edit Identitas Soal
           </h2>
-          <p className="w-full text-muted-foreground md:w-[85%] lg:w-[75%]">
+          <p className="text-muted-foreground w-full md:w-[85%] lg:w-[75%]">
             Perbaiki identitas soal yang salah pada halaman ini, jangan lupa
             untuk disimpan perubahannya. Jika sudah, akan di arahkan ke halaman
             daftar soal.

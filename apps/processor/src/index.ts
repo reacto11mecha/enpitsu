@@ -1,10 +1,11 @@
+import { Worker } from "bullmq";
+import IORedis from "ioredis";
+
 import type { QueueValue } from "@enpitsu/redis";
 import { eq } from "@enpitsu/db";
 import { db, preparedQuestionForCheck } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
 import { QUEUE_KEY } from "@enpitsu/redis";
-import { Worker } from "bullmq";
-import IORedis from "ioredis";
 
 import { checkEssays, checkMultipleChoices } from "./checker";
 import { env } from "./env";
@@ -61,13 +62,13 @@ export const validateQuestionFromQueue = async (loggerDirectory: string) => {
       }
 
       if (questionData.multipleChoices.length > 0) {
-        const allMCErr = checkMultipleChoices(questionData.multipleChoices);
+        const allMCErr = checkMultipleChoices(questionData);
         errorInMC = allMCErr.length > 0;
         errors = [...errors, ...allMCErr];
       }
 
       if (questionData.essays.length > 0) {
-        const allEssaysErr = checkEssays(questionData.essays);
+        const allEssaysErr = checkEssays(questionData);
         errorInEssays = allEssaysErr.length > 0;
         errors = [...errors, ...allEssaysErr];
       }
@@ -77,6 +78,10 @@ export const validateQuestionFromQueue = async (loggerDirectory: string) => {
           .update(schema.questions)
           .set({ eligible: "ELIGIBLE" })
           .where(eq(schema.questions.id, questionData.id));
+
+        logger.info(
+          `[WORKER] Done processing for questionId: ${questionData.id}`,
+        );
 
         return;
       }
@@ -89,6 +94,10 @@ export const validateQuestionFromQueue = async (loggerDirectory: string) => {
           detailedNotEligible: errors,
         })
         .where(eq(schema.questions.id, questionData.id));
+
+      logger.info(
+        `[WORKER] Done processing for questionId: ${questionData.id}`,
+      );
     },
     {
       connection,
@@ -105,7 +114,6 @@ export const validateQuestionFromQueue = async (loggerDirectory: string) => {
   );
 
   worker.on("ready", () => logger.info("[WORKER] Ready to process queue"));
-  worker.on("drained", () => logger.info("[WORKER] No more jobs left yippiee"));
   worker.on("error", (err) => logger.error(err));
 
   const gracefulShutdown = async (signal: string) => {

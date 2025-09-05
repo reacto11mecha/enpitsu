@@ -2,8 +2,17 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@enpitsu/ui/button";
-import { Checkbox } from "@enpitsu/ui/checkbox";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format, startOfDay } from "date-fns";
+import { Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import slugify from "slugify";
+import { toast } from "sonner";
+import { z } from "zod";
+
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -12,26 +21,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@enpitsu/ui/select";
-import { Separator } from "@enpitsu/ui/separator";
-import { Skeleton } from "@enpitsu/ui/skeleton";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { format, startOfDay } from "date-fns";
-import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import slugify from "slugify";
-import { toast } from "sonner";
-import { z } from "zod";
-
-import { api } from "~/trpc/react";
+} from "~/components/ui/select";
+import { Separator } from "~/components/ui/separator";
+import { Skeleton } from "~/components/ui/skeleton";
+import { Switch } from "~/components/ui/switch";
+import { useTRPC } from "~/trpc/react";
 
 const formSchema = z
   .object({
@@ -46,6 +48,7 @@ const formSchema = z
     allowLists: z.array(z.number()).min(1, {
       message: "Minimal terdapat satu kelas yang bisa mengerjakan soal!",
     }),
+    shuffleQuestion: z.boolean(),
   })
   .refine((data) => data.startedAt < data.endedAt, {
     path: ["endedAt"],
@@ -55,7 +58,8 @@ const formSchema = z
 export const EditParentQuestion = ({ id }: { id: number }) => {
   const router = useRouter();
 
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -65,15 +69,18 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
       slug: "",
       startedAt: undefined,
       endedAt: undefined,
+      shuffleQuestion: undefined,
     },
   });
 
-  const currentQuestionQuery = api.question.getQuestionForEdit.useQuery(
-    { id },
-    {
-      retry: false,
-      refetchOnWindowFocus: false,
-    },
+  const currentQuestionQuery = useQuery(
+    trpc.question.getQuestionForEdit.queryOptions(
+      { id },
+      {
+        retry: false,
+        refetchOnWindowFocus: false,
+      },
+    ),
   );
 
   useEffect(() => {
@@ -86,6 +93,10 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
       form.setValue("slug", currentQuestionQuery.data.slug);
       form.setValue("startedAt", currentQuestionQuery.data.startedAt);
       form.setValue("endedAt", currentQuestionQuery.data.endedAt);
+      form.setValue(
+        "shuffleQuestion",
+        currentQuestionQuery.data.shuffleQuestion,
+      );
     } else if (currentQuestionQuery.error) {
       toast.error("Gagal mengambil data pertanyaan ke server", {
         description: `Terjadi kesalahan, Error: ${currentQuestionQuery.error.message}`,
@@ -93,26 +104,31 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
     }
   }, [currentQuestionQuery.data, currentQuestionQuery.error, form]);
 
-  const subgradeForAllowListQuery =
-    api.question.getSubgradeForAllowList.useQuery();
+  const subgradeForAllowListQuery = useQuery(
+    trpc.question.getSubgradeForAllowList.queryOptions(),
+  );
 
-  const editQuestionMutation = api.question.editParentQuestion.useMutation({
-    async onSuccess() {
-      await apiUtils.grade.getStudents.invalidate();
+  const editQuestionMutation = useMutation(
+    trpc.question.editParentQuestion.mutationOptions({
+      async onSuccess() {
+        await queryClient.invalidateQueries(
+          trpc.grade.getStudents.pathFilter(),
+        );
 
-      toast.success("Perbaikan Berhasil!", {
-        description: `Berhasil memperbaiki soal ${form.getValues("title")}!`,
-      });
+        toast.success("Perbaikan Berhasil!", {
+          description: `Berhasil memperbaiki soal ${form.getValues("title")}!`,
+        });
 
-      router.replace("/admin/soal");
-    },
+        router.replace("/admin/soal");
+      },
 
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     editQuestionMutation.mutate({ id, ...values });
@@ -319,9 +335,9 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                   {!subgradeForAllowListQuery.isPending &&
                     !subgradeForAllowListQuery.isError &&
                     subgradeForAllowListQuery.data.map((grade) => (
-                      <>
-                        {grade.subgrades.length > 0 && (
-                          <div key={grade.id}>
+                      <div key={grade.id}>
+                        {grade.subgrades.length > 0 ? (
+                          <>
                             <div className="flex flex-row items-center gap-2">
                               <Checkbox
                                 checked={grade.subgrades.every((subgrade) =>
@@ -362,7 +378,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                                     return (
                                       <FormItem
                                         key={subgrade.id}
-                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                        className="flex flex-row items-start space-y-0 space-x-3"
                                       >
                                         <FormControl>
                                           <Checkbox
@@ -395,9 +411,9 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                                 />
                               ))}
                             </div>
-                          </div>
-                        )}
-                      </>
+                          </>
+                        ) : null}
+                      </div>
                     ))}
                 </div>
               </FormControl>
@@ -405,6 +421,35 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
                 Tentukan kelas mana saja yang bisa mengerjakan soal ini.
               </FormDescription>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="shuffleQuestion"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+              {currentQuestionQuery.isPending ||
+              subgradeForAllowListQuery.isPending ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <>
+                  <div className="space-y-0.5">
+                    <FormLabel>Acak soal</FormLabel>
+                    <FormDescription>
+                      Setiap peserta akan dihadapkan dengan soal dan opsi yang
+                      diacak.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </>
+              )}
             </FormItem>
           )}
         />

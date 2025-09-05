@@ -2,8 +2,17 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Button } from "@enpitsu/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@enpitsu/ui/card";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChevronsRight, Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "~/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -12,13 +21,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@enpitsu/ui/dialog";
-import { Input } from "@enpitsu/ui/input";
-import { Skeleton } from "@enpitsu/ui/skeleton";
-import { ChevronsRight, Loader2, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-
-import { api } from "~/trpc/react";
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { Skeleton } from "~/components/ui/skeleton";
+import { useTRPC } from "~/trpc/react";
 
 export const AngkatanViewer = () => {
   const [open, setOpen] = useState(false);
@@ -30,29 +36,32 @@ export const AngkatanViewer = () => {
     [confirmationText],
   );
 
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const grades = api.grade.getGrades.useQuery(undefined);
+  const grades = useQuery(trpc.grade.getGrades.queryOptions());
 
-  const gradeDeleteMutation = api.grade.deleteGrade.useMutation({
-    async onSuccess() {
-      setOpen(false);
+  const gradeDeleteMutation = useMutation(
+    trpc.grade.deleteGrade.mutationOptions({
+      async onSuccess() {
+        setOpen(false);
 
-      setConfirmText("");
-      setCurrentDeleteID(null);
+        setConfirmText("");
+        setCurrentDeleteID(null);
 
-      await apiUtils.grade.invalidate();
+        await queryClient.invalidateQueries(trpc.grade.pathFilter());
 
-      toast.success("Penghapusan Berhasil!", {
-        description: "Berhasil menghapus seluruh data angkatan.",
-      });
-    },
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+        toast.success("Penghapusan Berhasil!", {
+          description: "Berhasil menghapus seluruh data angkatan.",
+        });
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">

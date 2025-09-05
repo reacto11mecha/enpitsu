@@ -1,21 +1,23 @@
 "use client";
 
-import type { RouterOutputs } from "@enpitsu/api";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowUpDown, MoreHorizontal, PencilLine, Trash2 } from "lucide-react";
+
+import type { RouterOutputs } from "@enpitsu/api";
+
+import { ReusableDataTable } from "~/_components/data-table";
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@enpitsu/ui/dropdown-menu";
-import { Input } from "@enpitsu/ui/input";
-import { ArrowUpDown, MoreHorizontal, PencilLine, Trash2 } from "lucide-react";
-
-import { ReusableDataTable } from "~/_components/data-table";
-import { api } from "~/trpc/react";
+} from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
+import { useTRPC } from "~/trpc/react";
 import { ExcelStudentsBySubgradeDownload } from "../ExcelStudentsActivity";
 import { AddStudent } from "./AddStudent";
 import { DeleteStudent } from "./DeleteStudent";
@@ -129,13 +131,16 @@ export function DataTable({
   };
   initialData: RouterOutputs["grade"]["getStudents"];
 }) {
-  const studentsQuery = api.grade.getStudents.useQuery(
-    {
-      subgradeId: subgrade.id,
-    },
-    {
-      initialData,
-    },
+  const trpc = useTRPC();
+  const studentsQuery = useQuery(
+    trpc.grade.getStudents.queryOptions(
+      {
+        subgradeId: subgrade.id,
+      },
+      {
+        initialData,
+      },
+    ),
   );
 
   return (

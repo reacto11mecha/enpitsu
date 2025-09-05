@@ -1,6 +1,11 @@
-import type { RouterOutputs } from "@enpitsu/api";
 import { useMemo, useState } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+import type { RouterOutputs } from "@enpitsu/api";
+
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -10,12 +15,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@enpitsu/ui/dialog";
-import { Input } from "@enpitsu/ui/input";
-import { Loader2, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-
-import { api } from "~/trpc/react";
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { useTRPC } from "~/trpc/react";
 
 type BlocklistByQuestion =
   RouterOutputs["question"]["getStudentBlocklistByQuestion"];
@@ -33,7 +35,8 @@ export const DeleteSingleCheatedStudent = ({
   name: string;
   id: number;
 }) => {
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   const [confirmationText, setConfirmText] = useState("");
 
@@ -42,17 +45,21 @@ export const DeleteSingleCheatedStudent = ({
     [confirmationText],
   );
 
-  const deleteCheatedStatusMutation =
-    api.question.deleteSpecificBlocklist.useMutation({
+  const deleteCheatedStatusMutation = useMutation(
+    trpc.question.deleteSpecificBlocklist.mutationOptions({
       async onSuccess() {
         closeDialog();
 
         setConfirmText("");
 
         if (questionTitle) {
-          await apiUtils.question.getStudentBlocklists.invalidate();
+          await queryClient.invalidateQueries(
+            trpc.question.getStudentBlocklists.pathFilter(),
+          );
         } else {
-          await apiUtils.question.getStudentBlocklistByQuestion.invalidate();
+          await queryClient.invalidateQueries(
+            trpc.question.getStudentBlocklistByQuestion.pathFilter(),
+          );
         }
 
         toast.success("Penghapusan Berhasil!", {
@@ -64,7 +71,8 @@ export const DeleteSingleCheatedStudent = ({
           description: `Terjadi kesalahan, Error: ${error.message}`,
         });
       },
-    });
+    }),
+  );
 
   return (
     <Dialog
@@ -154,16 +162,19 @@ export const DeleteManyCheatedStudent = ({
 
   const allIds = useMemo(() => data.map((d) => d.id), [data]);
 
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const deleteManyCheatedStudent = api.question.deleteManyBlocklist.useMutation(
-    {
+  const deleteManyCheatedStudent = useMutation(
+    trpc.question.deleteManyBlocklist.mutationOptions({
       async onSuccess() {
         setDialogOpen(false);
 
         setConfirmText("");
 
-        await apiUtils.question.getStudentBlocklistByQuestion.invalidate();
+        await queryClient.invalidateQueries(
+          trpc.question.getStudentBlocklistByQuestion.pathFilter(),
+        );
 
         resetSelection();
 
@@ -176,9 +187,8 @@ export const DeleteManyCheatedStudent = ({
           description: `Terjadi kesalahan, Error: ${error.message}`,
         });
       },
-    },
+    }),
   );
-
   return (
     <Dialog
       open={dialogOpen}
@@ -262,7 +272,8 @@ export const DeleteManyCheatedStudent = ({
 };
 
 export const AggregateDeleteCheatedStudent = () => {
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmationText, setConfirmText] = useState("");
@@ -274,14 +285,16 @@ export const AggregateDeleteCheatedStudent = () => {
     [confirmationText],
   );
 
-  const wipeCheatedStudentRecord = api.question.wipeBlocklistRecord.useMutation(
-    {
+  const wipeCheatedStudentRecord = useMutation(
+    trpc.question.wipeBlocklistRecord.mutationOptions({
       async onSuccess() {
         setDialogOpen(false);
 
         setConfirmText("");
 
-        await apiUtils.question.getStudentBlocklists.invalidate();
+        await queryClient.invalidateQueries(
+          trpc.question.getStudentBlocklists.pathFilter(),
+        );
 
         toast.success("Penghapusan Berhasil!", {
           description: "Berhasil mengosongkan catatan kecurangan peserta.",
@@ -292,9 +305,8 @@ export const AggregateDeleteCheatedStudent = () => {
           description: `Terjadi kesalahan, Error: ${error.message}`,
         });
       },
-    },
+    }),
   );
-
   return (
     <Dialog
       open={dialogOpen}

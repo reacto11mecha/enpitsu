@@ -1,6 +1,13 @@
 "use client";
 
-import { Button } from "@enpitsu/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,7 +16,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@enpitsu/ui/dialog";
+} from "~/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,21 +24,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
+} from "~/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@enpitsu/ui/select";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-
-import { api } from "~/trpc/react";
+} from "~/components/ui/select";
+import { useTRPC } from "~/trpc/react";
 
 const FormSchema = z.object({
   role: z.enum(["user", "admin"], {
@@ -50,23 +51,29 @@ export const UpdateRole = ({
   userId: string;
   toggleOpen: () => void;
 }) => {
-  const utils = api.useUtils();
-  const updateRoleMutation = api.admin.updateUserRole.useMutation({
-    onSuccess() {
-      toast.success("Berhasil memperbarui pengguna!", {
-        description: "Status pengguna berhasil diperbarui.",
-      });
-      toggleOpen();
-    },
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-    async onSettled() {
-      await utils.admin.getAllRegisteredUser.invalidate();
-    },
-  });
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  const updateRoleMutation = useMutation(
+    trpc.admin.updateUserRole.mutationOptions({
+      onSuccess() {
+        toast.success("Berhasil memperbarui pengguna!", {
+          description: "Status pengguna berhasil diperbarui.",
+        });
+        toggleOpen();
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+      async onSettled() {
+        await queryClient.invalidateQueries(
+          trpc.admin.getAllRegisteredUser.pathFilter(),
+        );
+      },
+    }),
+  );
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),

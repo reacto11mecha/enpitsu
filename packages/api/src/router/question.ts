@@ -2,6 +2,9 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import type { ExtractTablesWithRelations } from "drizzle-orm";
 import type { PgTransaction } from "drizzle-orm/pg-core";
 import type { PostgresJsQueryResultHKT } from "drizzle-orm/postgres-js";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+
 import { and, asc, count, desc, eq, inArray } from "@enpitsu/db";
 import {
   specificQuestionData,
@@ -11,8 +14,6 @@ import {
 } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
 import { cache, correctionQueue } from "@enpitsu/redis";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 
 import { adminProcedure, protectedProcedure } from "../trpc";
 import { compareTwoStringLikability } from "../utils";
@@ -384,6 +385,7 @@ export const questionRouter = {
         startedAt: z.date(),
         endedAt: z.date(),
         allowLists: z.array(z.number()).min(1),
+        shuffleQuestion: z.boolean(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -594,103 +596,57 @@ export const questionRouter = {
         }),
     ),
 
-  // Semi realtime stuff begin from this line
-  getChoicesIdByQuestionId: protectedProcedure
-    .input(z.object({ questionId: z.number() }))
-    .query(async ({ ctx, input }) =>
-      ctx.db.query.multipleChoices.findMany({
-        where: eq(schema.multipleChoices.questionId, input.questionId),
-        orderBy: [asc(schema.multipleChoices.iqid)],
-        columns: {
-          iqid: true,
-        },
-      }),
-    ),
-
-  getSpecificChoiceQuestion: protectedProcedure
-    .input(z.object({ choiceIqid: z.number() }))
+  // Question editing related started from this line
+  getCorrectAnswerSpecificChoice: protectedProcedure
+    .input(z.object({ id: z.number() }))
     .query(({ ctx, input }) =>
       ctx.db.query.multipleChoices.findFirst({
-        where: eq(schema.multipleChoices.iqid, input.choiceIqid),
+        where: eq(schema.multipleChoices.iqid, input.id),
         columns: {
-          iqid: true,
           correctAnswerOrder: true,
-          options: true,
-          question: true,
         },
       }),
     ),
 
-  updateSpecificChoice: protectedProcedure
-    .input(
-      z.object({
-        iqid: z.number(),
-        question: z.string(),
-        options: z
-          .array(
-            z.object({
-              order: z.number().min(1).max(5),
-              answer: z.string(),
-            }),
-          )
-          .min(4)
-          .max(5),
-
-        correctAnswerOrder: z.number(),
-      }),
-    )
+  setCorrectAnswerSpecificChoice: protectedProcedure
+    .input(z.object({ id: z.number(), correctAnswer: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      let questionId = 0;
+      await ctx.db
+        .update(schema.multipleChoices)
+        .set({
+          correctAnswerOrder: input.correctAnswer,
+        })
+        .where(eq(schema.multipleChoices.iqid, input.id));
 
-      await ctx.db.transaction(async (tx) => {
-        const currentChoiceData = await tx
-          .select({
-            questionId: schema.multipleChoices.questionId,
-          })
-          .from(schema.multipleChoices)
-          .where(eq(schema.multipleChoices.iqid, input.iqid))
-          .for("update");
-
-        if (currentChoiceData.length < 1 || !currentChoiceData.at(0))
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Soal tidak ditemukan!",
-          });
-
-        const parentQuestion = await tx.query.questions.findFirst({
-          where: eq(schema.questions.id, currentChoiceData.at(0)!.questionId),
-          columns: {
-            slug: true,
+      const parentQuestion = await ctx.db.query.multipleChoices.findFirst({
+        // where: eq(schema.questions.id, currentChoiceData.at(0)!.questionId),
+        where: eq(schema.multipleChoices.iqid, input.id),
+        with: {
+          question: {
+            columns: {
+              slug: true,
+            },
           },
-        });
+        },
+      });
 
+      if (parentQuestion) {
         try {
-          await cache.del(`trpc-get-question-slug-${parentQuestion!.slug}`);
+          await cache.del(
+            `trpc-get-question-slug-${parentQuestion.question.slug}`,
+          );
 
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (err: unknown) {
           console.error({
             code: "REDIS_ERR",
             message:
-              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek",
+              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
           });
         }
 
-        questionId = currentChoiceData.at(0)!.questionId;
-
-        await updateQuestionToProcessing(tx, questionId);
-
-        return await tx
-          .update(schema.multipleChoices)
-          .set({
-            question: input.question,
-            options: input.options,
-            correctAnswerOrder: input.correctAnswerOrder,
-          })
-          .where(eq(schema.multipleChoices.iqid, input.iqid));
-      });
-
-      await addQuestionToQueueForProcessing(questionId);
+        await addQuestionToQueueForProcessing(parentQuestion.questionId);
+      }
     }),
 
   deleteSpecificChoice: protectedProcedure
@@ -757,88 +713,42 @@ export const questionRouter = {
       await addQuestionToQueueForProcessing(questionId);
     }),
 
-  createNewChoice: protectedProcedure
-    .input(z.object({ questionId: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      await ctx.db.transaction(async (tx) => {
-        const parentQuestion = await tx.query.questions.findFirst({
-          where: eq(schema.questions.id, input.questionId),
-          columns: {
-            slug: true,
-            multipleChoiceOptions: true,
-          },
-        });
-
-        if (!parentQuestion)
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Mata pelajaran dari soal ini tidak ditemukan!",
-          });
-
-        try {
-          await cache.del(`trpc-get-question-slug-${parentQuestion.slug}`);
-
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (err: unknown) {
-          console.error({
-            code: "REDIS_ERR",
-            message:
-              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
-          });
-        }
-
-        await updateQuestionToProcessing(tx, input.questionId);
-
-        return await tx.insert(schema.multipleChoices).values({
-          ...input,
-          question: "",
-          correctAnswerOrder: 0,
-          options: Array.from({
-            length: parentQuestion.multipleChoiceOptions,
-          }).map((_, idx) => ({
-            order: idx + 1,
-            answer: "",
-          })),
-        });
-      });
-
-      await addQuestionToQueueForProcessing(input.questionId);
-    }),
-
-  // Essay section
-  getEssaysIdByQuestionId: protectedProcedure
-    .input(z.object({ questionId: z.number() }))
-    .query(async ({ ctx, input }) =>
-      ctx.db.query.essays.findMany({
-        where: eq(schema.essays.questionId, input.questionId),
-        orderBy: [asc(schema.essays.iqid)],
+  getStrictEqualEssay: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(({ ctx, input }) =>
+      ctx.db.query.essays.findFirst({
+        where: eq(schema.essays.iqid, input.id),
         columns: {
-          iqid: true,
+          isStrictEqual: true,
         },
       }),
     ),
 
-  createNewEssay: protectedProcedure
-    .input(z.object({ questionId: z.number() }))
+  setStrictEqualEssay: protectedProcedure
+    .input(z.object({ id: z.number(), strictEqual: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.transaction(async (tx) => {
-        const currentParentQuestion = await tx
-          .select({
-            slug: schema.questions.slug,
-          })
-          .from(schema.questions)
-          .where(eq(schema.questions.id, input.questionId))
-          .for("update");
+      await ctx.db
+        .update(schema.essays)
+        .set({
+          isStrictEqual: input.strictEqual,
+        })
+        .where(eq(schema.essays.iqid, input.id));
 
-        if (currentParentQuestion.length < 1 || !currentParentQuestion.at(0))
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Gagal membuat soal baru, mata pelajaran tidak ditemukan",
-          });
+      const parentQuestion = await ctx.db.query.essays.findFirst({
+        where: eq(schema.essays.iqid, input.id),
+        with: {
+          question: {
+            columns: {
+              slug: true,
+            },
+          },
+        },
+      });
 
+      if (parentQuestion) {
         try {
           await cache.del(
-            `trpc-get-question-slug-${currentParentQuestion.at(0)!.slug}`,
+            `trpc-get-question-slug-${parentQuestion.question.slug}`,
           );
 
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -850,96 +760,12 @@ export const questionRouter = {
           });
         }
 
-        await updateQuestionToProcessing(tx, input.questionId);
-
-        return await tx.insert(schema.essays).values({
-          question: "",
-          answer: "",
-          questionId: input.questionId,
-        });
-      });
-
-      await addQuestionToQueueForProcessing(input.questionId);
-    }),
-
-  getSpecificEssayQuestion: protectedProcedure
-    .input(z.object({ essayIqid: z.number() }))
-    .query(({ ctx, input }) =>
-      ctx.db.query.essays.findFirst({
-        where: eq(schema.essays.iqid, input.essayIqid),
-        columns: {
-          answer: true,
-          question: true,
-          isStrictEqual: true,
-        },
-      }),
-    ),
-
-  updateSpecificEssay: protectedProcedure
-    .input(
-      z.object({
-        iqid: z.number(),
-        question: z.string(),
-        answer: z.string(),
-        isStrictEqual: z.boolean(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      let questionId = 0;
-
-      await ctx.db.transaction(async (tx) => {
-        const currentEssayData = await tx
-          .select({
-            questionId: schema.essays.questionId,
-          })
-          .from(schema.essays)
-          .where(eq(schema.essays.iqid, input.iqid))
-          .for("update");
-
-        if (currentEssayData.length < 1 || !currentEssayData.at(0))
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Soal tidak ditemukan!",
-          });
-
-        const parentQuestion = await tx.query.questions.findFirst({
-          where: eq(schema.questions.id, currentEssayData.at(0)!.questionId),
-          columns: {
-            slug: true,
-          },
-        });
-
-        try {
-          await cache.del(`trpc-get-question-slug-${parentQuestion!.slug}`);
-
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (err: unknown) {
-          console.error({
-            code: "REDIS_ERR",
-            message:
-              "Terjadi masalah terhadap konektivitas dengan redis, mohon di cek 🙏💀",
-          });
-        }
-
-        questionId = currentEssayData.at(0)!.questionId;
-
-        await updateQuestionToProcessing(tx, questionId);
-
-        return await tx
-          .update(schema.essays)
-          .set({
-            question: input.question,
-            answer: input.answer,
-            isStrictEqual: input.isStrictEqual,
-          })
-          .where(eq(schema.essays.iqid, input.iqid));
-      });
-
-      await addQuestionToQueueForProcessing(questionId);
+        await addQuestionToQueueForProcessing(parentQuestion.questionId);
+      }
     }),
 
   deleteSpecificEssay: protectedProcedure
-    .input(z.object({ essayIqid: z.number() }))
+    .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       let questionId = 0;
 
@@ -949,7 +775,7 @@ export const questionRouter = {
             questionId: schema.essays.questionId,
           })
           .from(schema.essays)
-          .where(eq(schema.essays.iqid, input.essayIqid))
+          .where(eq(schema.essays.iqid, input.id))
           .for("update");
 
         if (currentEssayData.length < 1 || !currentEssayData.at(0))
@@ -983,7 +809,7 @@ export const questionRouter = {
 
         return await tx
           .delete(schema.essays)
-          .where(eq(schema.essays.iqid, input.essayIqid));
+          .where(eq(schema.essays.iqid, input.id));
       });
 
       await addQuestionToQueueForProcessing(questionId);
@@ -992,7 +818,7 @@ export const questionRouter = {
   getEligibleStatusFromQuestion: protectedProcedure
     .input(z.object({ questionId: z.number() }))
     .query(({ input }) => specificQuestionEligibleStatus.execute(input)),
-  // ended at this line
+  // Question editing related ended at this line
 
   // Correction purpose endpoint started from this line below
   getMultipleChoices: protectedProcedure

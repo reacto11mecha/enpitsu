@@ -1,6 +1,7 @@
+import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+
 import { appRouter, createTRPCContext } from "@enpitsu/api";
 import { auth } from "@enpitsu/auth";
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 
 import { env } from "~/env";
 
