@@ -43,6 +43,7 @@ export const questions = myPgTable(
     startedAt: t.timestamp("started_at", { mode: "date" }).notNull(),
     endedAt: t.timestamp("ended_at", { mode: "date" }).notNull(),
     eligible: eligibleStatus("eligible").notNull().default("NOT_ELIGIBLE"),
+    shuffleQuestion: t.boolean("shuffle_question").notNull().default(true),
     detailedNotEligible: t
       .json("detailed_not_eligible")
       .$type<

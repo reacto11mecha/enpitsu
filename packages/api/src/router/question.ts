@@ -385,6 +385,7 @@ export const questionRouter = {
         startedAt: z.date(),
         endedAt: z.date(),
         allowLists: z.array(z.number()).min(1),
+        shuffleQuestion: z.boolean(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

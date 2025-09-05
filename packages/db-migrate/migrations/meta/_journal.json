@@ -15,6 +15,13 @@
       "when": 1756910665188,
       "tag": "0001_fantastic_micromax",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1757095258480,
+      "tag": "0002_messy_sprite",
+      "breakpoints": true
     }
   ]
 }

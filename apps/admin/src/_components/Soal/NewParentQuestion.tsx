@@ -32,6 +32,7 @@ import {
 } from "~/components/ui/select";
 import { Separator } from "~/components/ui/separator";
 import { Skeleton } from "~/components/ui/skeleton";
+import { Switch } from "~/components/ui/switch";
 import { useTRPC } from "~/trpc/react";
 
 const formSchema = z
@@ -54,6 +55,7 @@ const formSchema = z
     allowLists: z.array(z.number()).min(1, {
       message: "Minimal terdapat satu kelas yang bisa mengerjakan soal!",
     }),
+    shuffleQuestion: z.boolean(),
   })
   .refine((data) => data.startedAt < data.endedAt, {
     path: ["endedAt"],
@@ -73,6 +75,7 @@ export const NewParentQuestion = () => {
       allowLists: [],
       title: "",
       slug: "",
+      shuffleQuestion: true,
     },
   });
 
@@ -390,6 +393,28 @@ export const NewParentQuestion = () => {
                 Tentukan kelas mana saja yang bisa mengerjakan soal ini.
               </FormDescription>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="shuffleQuestion"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+              <div className="space-y-0.5">
+                <FormLabel>Acak soal</FormLabel>
+                <FormDescription>
+                  Setiap peserta akan dihadapkan dengan soal dan opsi yang
+                  diacak.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
             </FormItem>
           )}
         />
