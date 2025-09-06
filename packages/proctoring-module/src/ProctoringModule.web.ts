@@ -1,22 +1,38 @@
-// import { registerWebModule, NativeModule } from 'expo';
+// Web implementation stub - native functionality not available on web
+import { EventSubscription } from "expo-modules-core";
 
-// import { ProctoringModuleEvents } from './ProctoringModule.types';
+import {
+  OverlayDetectedEvent,
+  SplitScreenChangeEvent,
+} from "./ProctoringModule.types";
 
-// class ProctoringModule extends NativeModule<ProctoringModuleEvents> {
-//   PI = Math.PI;
-//   async setValueAsync(value: string): Promise<void> {
-//     this.emit('onChange', { value });
-//   }
-//   hello() {
-//     return 'Hello world! 👋';
-//   }
-// }
+// Mock implementation for web
+export function isSplitScreenActive(): boolean {
+  console.warn("Proctoring module is not supported on web");
+  return false;
+}
 
-// export default registerWebModule(ProctoringModule, 'ProctoringModule');
+export function addOverlayListener(
+  listener: (event: OverlayDetectedEvent) => void,
+): EventSubscription {
+  console.warn("Overlay detection is not supported on web");
+  return { remove: () => {} } as EventSubscription;
+}
 
-export default {
-  // We can't access the multi-window mode on the web, so we'll just return a default value
-  async isInMultiWindowMode(): Promise<boolean> {
-    return false;
-  },
+export function addSplitScreenListener(
+  listener: (event: SplitScreenChangeEvent) => void,
+): EventSubscription {
+  console.warn("Split screen detection is not supported on web");
+  return { remove: () => {} } as EventSubscription;
+}
+
+export function removeAllListeners(): void {
+  // No-op for web
+}
+
+export const NativeProctoringModule = {
+  isSplitScreenActive: () => false,
+  addListener: () => ({ remove: () => {} }) as EventSubscription,
+  removeAllListeners: () => {},
+  removeListeners: () => {},
 };

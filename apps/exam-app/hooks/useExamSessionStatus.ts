@@ -1,22 +1,26 @@
 import { useAppVisibility } from "./useAppVisibility";
-// import { useProctoring } from "./useProctoring";
+import { useProctoring } from "./useProctoring";
 
 type SessionStatus = {
   isSecure: boolean;
-  reason: "SECURE" | "BACKGROUND" | "MULTI_WINDOW";
+  reason: "SECURE" | "BACKGROUND" | "OVERLAY" | "SPLIT_SCREEN";
 };
 
 export function useExamSessionStatus(): SessionStatus {
   const { isVisible } = useAppVisibility();
-  // const { isInMultiWindow } = useProctoring();
+  const { isSplitScreen, hasOverlay } = useProctoring();
 
   if (!isVisible) {
     return { isSecure: false, reason: "BACKGROUND" };
   }
 
-  // if (isInMultiWindow) {
-  //   return { isSecure: false, reason: "MULTI_WINDOW" };
-  // }
+  if (hasOverlay) {
+    return { isSecure: false, reason: "OVERLAY" };
+  }
+
+  if (isSplitScreen) {
+    return { isSecure: false, reason: "SPLIT_SCREEN" };
+  }
 
   return { isSecure: true, reason: "SECURE" };
 }

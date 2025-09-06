@@ -1,4 +1,4 @@
 // NO-OP
 export function useProctoring() {
-  return { isInMultiWindow: false };
+  return { isSplitScreen: false, hasOverlay: false };
 }

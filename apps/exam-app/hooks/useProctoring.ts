@@ -1,24 +1,29 @@
-// src/hooks/useProctoring.ts
 import { useEffect, useState } from "react";
 import {
-  addMultiWindowModeListener,
-  isInMultiWindowMode,
+  addOverlayListener,
+  addSplitScreenListener,
+  isSplitScreenActive,
 } from "proctoring-module";
 
 export function useProctoring() {
-  const [isInMultiWindow, setIsInMultiWindow] = useState(false);
+  const [isSplitScreen, setSplitScreen] = useState(isSplitScreenActive());
+  const [hasOverlay, setHasOverlay] = useState(false);
 
   useEffect(() => {
-    isInMultiWindowMode().then(setIsInMultiWindow);
+    const splitScreenSubscription = addSplitScreenListener((event) => {
+      setSplitScreen(event.isActive);
+    });
 
-    const subscription = addMultiWindowModeListener((event) => {
-      setIsInMultiWindow(event.isInMultiWindowMode);
+    const overlaySubscription = addOverlayListener((event) => {
+      console.log(event);
+      setHasOverlay(event.isActive);
     });
 
     return () => {
-      subscription.remove();
+      splitScreenSubscription.remove();
+      overlaySubscription.remove();
     };
   }, []);
 
-  return { isInMultiWindow };
+  return { isSplitScreen, hasOverlay };
 }
