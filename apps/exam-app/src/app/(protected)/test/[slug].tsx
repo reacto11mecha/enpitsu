@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { useKeepAwake } from "expo-keep-awake";
 import { Link } from "expo-router";
-import { usePreventScreenCapture } from "expo-screen-capture";
 import {
   SessionStatus,
   useExamSessionStatus,
 } from "@/hooks/useExamSessionStatus";
 import { useFullScreen } from "@/hooks/useFullscreen";
 import { useHardwareBackPressBlocker } from "@/hooks/useHardwareBackPressBlocker";
+import { usePreventScreenCapture } from "@/lib/screen-capture";
+import * as ExpoLockTask from "@akbaraditamasp/expo-lock-task";
 
 export default function TestScreen() {
   useHardwareBackPressBlocker();
@@ -23,6 +24,14 @@ export default function TestScreen() {
   const [userReady] = useState(true);
   const [currentReason, setCurrentReason] =
     useState<SessionStatus["reason"]>("SECURE");
+
+  useEffect(() => {
+    ExpoLockTask.startLockTask();
+
+    return () => {
+      ExpoLockTask.stopLockTask();
+    };
+  }, []);
 
   useEffect(() => {
     if (!limitReached || !userReady) {

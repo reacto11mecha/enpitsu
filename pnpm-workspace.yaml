@@ -6,10 +6,10 @@ packages:
 catalog:
   '@auth/core': 0.40.0
   '@auth/drizzle-adapter': ~1.10.0
-  '@tanstack/react-query': ^5.80.7
-  '@trpc/client': ^11.4.0
-  '@trpc/server': ^11.4.0
-  '@trpc/tanstack-react-query': ^11.4.0
+  '@tanstack/react-query': 5.83.0
+  '@trpc/client': 11.4.3
+  '@trpc/server': 11.4.3
+  '@trpc/tanstack-react-query': 11.4.3
   eslint: ^9.28.0
   minimatch: 10.0.3
   next-auth: 5.0.0-beta.29
@@ -28,5 +28,10 @@ catalogs:
 nodeLinker: hoisted
 
 onlyBuiltDependencies:
+  - '@swc/core'
+  - '@tailwindcss/oxide'
+  - core-js-pure
   - esbuild
+  - msgpackr-extract
+  - sharp
   - unrs-resolver
