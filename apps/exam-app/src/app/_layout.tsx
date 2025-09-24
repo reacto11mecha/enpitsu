@@ -6,6 +6,8 @@ import { useAuthStore } from "@/hooks/useStorage";
 
 import "react-native-reanimated";
 
+import { Toaster } from "@/lib/sonner";
+
 export default function RootLayout() {
   const { isLoggedIn } = useAuthStore();
 
@@ -21,6 +23,7 @@ export default function RootLayout() {
             <Stack.Screen name="login" />
           </Stack.Protected>
         </Stack>
+        <Toaster />
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

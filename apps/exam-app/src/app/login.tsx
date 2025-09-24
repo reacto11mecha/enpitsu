@@ -1,6 +1,7 @@
-import { Alert, Button, Text, TextInput, View } from "react-native";
+import { Button, Text, TextInput, View } from "react-native";
 import { fetch } from "expo/fetch";
 import { useAuthStore } from "@/hooks/useStorage";
+import { toast } from "@/lib/sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -64,9 +65,9 @@ export default function LoginScreen() {
         token: values.token,
       });
     } else {
-      Alert.alert(
-        "Instansi tidak dapat ditemukan, mohon periksa kembali nomor yang anda masukkan.",
-      );
+      toast.error("Instansi tidak dapat ditemukan", {
+        description: "Mohon periksa kembali nomor yang anda masukkan.",
+      });
     }
   }
 
