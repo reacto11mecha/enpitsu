@@ -25,7 +25,7 @@ const enforceChromeOnAndroidOnly =
   (userOS.name === "Android" && browser.name !== "Chrome");
 const enforceLatestVersion =
   userOS.name === "Android" &&
-  (browser.major ? parseInt(browser.major) < 90 : true);
+  (browser.major ? parseInt(browser.major) < 140 : true);
 
 export default function Provider() {
   const [studentAtom] = useAtom(studentTokenAtom);
