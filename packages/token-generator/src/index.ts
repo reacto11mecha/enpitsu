@@ -14,6 +14,7 @@ export const nanoid = customAlphabet(customToken, 8);
 //     .every((item) => item);
 
 //const regex = /^[A-Z]{2}-[0-9]{3}$/;
-const regex = /12-(10|11|12)-(STS|PSAJ)-\d{3}/;
+// const regex = /12-(10|11|12)-(STS|PSAJ)-\d{3}/;
+const regex = /^2526-SAS-1-(\d{3,4})$/;
 
 export const validateId = (id: string) => regex.test(id);

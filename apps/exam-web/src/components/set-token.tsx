@@ -26,8 +26,8 @@ const formSchema = z.object({
     .min(1, {
       message: "Nomor peserta wajib di isi!",
     })
-    .min(13, { message: "Panjang nomor peserta wajib 13 karakter!" })
-    .max(14, { message: "Panjang nomor peserta tidak boleh dari 14 karakter!" })
+    .min(14, { message: "Panjang nomor peserta minimal wajib 14 karakter!" })
+    .max(15, { message: "Panjang nomor peserta tidak boleh dari 15 karakter!" })
     .refine(validateId, { message: "Format token tidak sesuai!" }),
 });
 
