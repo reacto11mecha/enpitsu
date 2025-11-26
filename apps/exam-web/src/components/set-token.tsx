@@ -85,7 +85,7 @@ const NonInitVer = () => {
                           className="font-space"
                           //placeholder="AZ-XXX"
                           onChange={(el) =>
-                            el.target.value.trim().length <= 14 &&
+                            el.target.value.trim().length <= 15 &&
                             field.onChange(el.target.value.toUpperCase().trim())
                           }
                           value={field.value}
@@ -169,7 +169,7 @@ const InitVersion = () => {
                           className="font-space"
                           //placeholder="AZ-XXX"
                           onChange={(el) =>
-                            el.target.value.trim().length <= 14 &&
+                            el.target.value.trim().length <= 15 &&
                             field.onChange(el.target.value.toUpperCase().trim())
                           }
                           value={field.value}
