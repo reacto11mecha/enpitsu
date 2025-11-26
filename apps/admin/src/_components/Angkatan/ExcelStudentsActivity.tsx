@@ -51,8 +51,8 @@ const FileValueSchema = z.array(
           .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
         Token: z
           .string()
-          .min(13, { message: "Panjang token minimal 13 karakter!" })
-          .max(14, { message: "Panjang token tidak boleh dari 14 karakter!" })
+          .min(14, { message: "Panjang token minimal 13 karakter!" })
+          .max(15, { message: "Panjang token tidak boleh dari 14 karakter!" })
           .refine(validateId, { message: "Format token tidak sesuai!" }),
       }),
     ),
@@ -136,9 +136,8 @@ export const ExcelStudentsByGradeDownload = ({
       const anchor = document.createElement("a");
 
       anchor.href = url;
-      anchor.download = `Data Seluruh Peserta-${+Date.now()}-Seluruh kelas ${
-        result.label
-      }-.xlsx`;
+      anchor.download = `Data Seluruh Peserta-${+Date.now()}-Seluruh kelas ${result.label
+        }-.xlsx`;
 
       anchor.click();
       anchor.remove();
@@ -210,9 +209,8 @@ export const ExcelStudentsBySubgradeDownload = ({
       const anchor = document.createElement("a");
 
       anchor.href = url;
-      anchor.download = `Data Peserta-${+Date.now()}-Spesifik kelas ${
-        result.grade.label
-      } ${result.label}.xlsx`;
+      anchor.download = `Data Peserta-${+Date.now()}-Spesifik kelas ${result.grade.label
+        } ${result.label}.xlsx`;
 
       anchor.click();
       anchor.remove();
