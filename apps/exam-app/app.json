@@ -36,9 +36,12 @@
           "backgroundColor": "#7cdc9c"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
+      "reactCanary": true,
       "typedRoutes": true
     }
   }

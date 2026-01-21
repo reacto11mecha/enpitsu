@@ -137,8 +137,8 @@ export function AddBannedStudent() {
               )}
               className="space-y-3"
             >
-              <div className="flex flex-col gap-5 md:grid md:grid-cols-4">
-                <div className="flex flex-col md:w-[150px]">
+              <div className="flex flex-col gap-4 sm:flex-row sm:gap-3">
+                <div className="flex flex-col">
                   <FormLabel className="mb-2">Kelas</FormLabel>
                   <FormControl>
                     <Select
@@ -148,10 +148,10 @@ export function AddBannedStudent() {
                         setSubgradeId((prevId) => {
                           if (prevId === subgradeId) return prevId;
 
-                          form.resetField("studentId");
-
                           return subgradeId;
                         });
+
+                        form.resetField("studentId");
                       }}
                       disabled={
                         subgradesWithGrade.isPending ||
@@ -159,7 +159,7 @@ export function AddBannedStudent() {
                         addNewBannedStudent.isPending
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Pilih kelas peserta" />
                       </SelectTrigger>
                       <SelectContent>
@@ -189,7 +189,7 @@ export function AddBannedStudent() {
                   control={form.control}
                   name="studentId"
                   render={({ field }) => (
-                    <FormItem className="md:col-span-3">
+                    <FormItem>
                       <FormLabel>Nama Peserta</FormLabel>
                       <FormControl>
                         <Select
@@ -206,7 +206,7 @@ export function AddBannedStudent() {
                             addNewBannedStudent.isPending
                           }
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Pilih kelas peserta" />
                           </SelectTrigger>
                           <SelectContent>
@@ -243,7 +243,7 @@ export function AddBannedStudent() {
                         </Select>
                       </FormControl>
                       <FormDescription>
-                        Pilih peserta spesifik dari list yang ada.
+                        Pilih peserta dari list yang ada.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -327,8 +327,6 @@ export function AddBannedStudent() {
                             !selectedSubgradeId ||
                             studentLists.isPending ||
                             studentLists.isError ||
-                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                            !form.getValues("startedAt") ||
                             addNewBannedStudent.isPending
                           }
                         />

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Text, TextInput, View } from "react-native";
+import { Button, Modal, Pressable, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { toast } from "@/lib/sonner";
 import { useTRPC } from "@/lib/trpc";
@@ -22,13 +22,8 @@ export function ScanOrInputQuestionSlug() {
   const trpc = useTRPC();
   const getQuestionMutation = useMutation(
     trpc.exam.getQuestion.mutationOptions({
-      onSuccess(data) {
+      onSuccess() {
         setOpen(true);
-
-        router.replace({
-          pathname: "/(protected)/test/[slug]",
-          params: { slug: data.slug },
-        });
       },
       onError(error) {
         toast.error("Gagal mengambil data soal", {
@@ -91,6 +86,32 @@ export function ScanOrInputQuestionSlug() {
         onPress={handleSubmit(onSubmit)}
         disabled={getQuestionMutation.isPending}
       />
+
+      <Modal
+        animationType="fade"
+        visible={isPrecautionOpen}
+        onRequestClose={() => setOpen(false)}>
+        <View>
+          <View>
+            <Text>Hello World!</Text>
+            <Pressable
+              onPress={() => setOpen(prev => !prev)}>
+              <Text>Ga jadi ngerjain</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                if (getQuestionMutation.data) {
+                  router.replace({
+                    pathname: "/(protected)/test/[slug]",
+                    params: { slug: getQuestionMutation.data.slug },
+                  });
+                }
+              }}>
+              <Text>Gas ngerjain</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

@@ -89,7 +89,7 @@
     "lowlight": "^3.3.0",
     "lucide-react": "^0.532.0",
     "nanoid": "5.1.5",
-    "next": "^15.4.4",
+    "next": "^16.1.1",
     "next-themes": "^0.4.6",
     "pdf-lib": "^1.17.1",
     "platejs": "^49.2.9",

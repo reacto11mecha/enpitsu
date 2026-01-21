@@ -9,7 +9,8 @@ import {
 import { useFullScreen } from "@/hooks/useFullscreen";
 import { useHardwareBackPressBlocker } from "@/hooks/useHardwareBackPressBlocker";
 import { usePreventScreenCapture } from "@/lib/screen-capture";
-import * as ExpoLockTask from "@akbaraditamasp/expo-lock-task";
+
+// import * as ExpoLockTask from "@akbaraditamasp/expo-lock-task";
 
 export default function TestScreen() {
   useHardwareBackPressBlocker();
@@ -25,15 +26,17 @@ export default function TestScreen() {
   const [currentReason, setCurrentReason] =
     useState<SessionStatus["reason"]>("SECURE");
 
-  useEffect(() => {
-    ExpoLockTask.startLockTask();
+  // useEffect(() => {
+  //   ExpoLockTask.startLockTask();
 
-    return () => {
-      ExpoLockTask.stopLockTask();
-    };
-  }, []);
+  //   return () => {
+  //     ExpoLockTask.stopLockTask();
+  //   };
+  // }, []);
 
   useEffect(() => {
+    // console.log(ExpoLockTask.isLocked());
+
     if (!limitReached || !userReady) {
       switch (reason) {
         case "SECURE": {

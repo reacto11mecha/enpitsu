@@ -10,6 +10,8 @@ export function Identity({ title }: { title: string }) {
 
   const studentQuery = useQuery(trpc.exam.getStudent.queryOptions());
 
+  console.log(studentQuery);
+
   useEffect(() => {
     if (studentQuery.error) {
       Alert.alert(

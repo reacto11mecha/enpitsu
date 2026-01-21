@@ -11,7 +11,11 @@ export default async function NewQuestion({
 }: {
   params: { id: string };
 }) {
-  const id = parseInt(params.id);
+  const _params = await params;
+
+  const id = parseInt(_params.id);
+
+  console.log(id);
 
   if (isNaN(id)) return redirect("/admin/soal");
 

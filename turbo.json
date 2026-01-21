@@ -43,6 +43,10 @@
       "persistent": true,
       "cache": false
     },
+    "dev-native": {
+      "persistent": true,
+      "cache": false
+    },
     "dev:run-watch": {
       "persistent": true,
       "cache": false

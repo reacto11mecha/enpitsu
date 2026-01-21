@@ -130,7 +130,7 @@ export default async function QuestionItemsPage({
                       />
                     )}
 
-                    <p className="scroll-m-10">Opsi Jawaban :</p>
+                    <p className="scroll-m-10 opacity-75">Opsi Jawaban :</p>
 
                     <RadioGroup
                       defaultValue={String(choice.correctAnswerOrder)}
