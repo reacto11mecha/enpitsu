@@ -90,12 +90,12 @@ export function ScanOrInputQuestionSlug() {
       <Modal
         animationType="fade"
         visible={isPrecautionOpen}
-        onRequestClose={() => setOpen(false)}>
+        onRequestClose={() => setOpen(false)}
+      >
         <View>
           <View>
             <Text>Hello World!</Text>
-            <Pressable
-              onPress={() => setOpen(prev => !prev)}>
+            <Pressable onPress={() => setOpen((prev) => !prev)}>
               <Text>Ga jadi ngerjain</Text>
             </Pressable>
             <Pressable
@@ -106,7 +106,8 @@ export function ScanOrInputQuestionSlug() {
                     params: { slug: getQuestionMutation.data.slug },
                   });
                 }
-              }}>
+              }}
+            >
               <Text>Gas ngerjain</Text>
             </Pressable>
           </View>
