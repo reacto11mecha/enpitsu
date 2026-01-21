@@ -890,8 +890,8 @@ importers:
         specifier: ^49.2.9
         version: 49.2.9(@types/react@19.1.17)(immer@10.1.1)(react-dom@19.1.2(react@19.1.2))(react-native@0.81.5(@babel/core@7.28.3)(@types/react@19.1.17)(react@19.1.2))(react@19.1.2)(scheduler@0.26.0)(slate-dom@0.116.0(slate@0.118.0))(slate@0.118.0)(use-sync-external-store@1.5.0(react@19.1.2))
       react-day-picker:
-        specifier: 9.9.0
-        version: 9.9.0(react@19.1.2)
+        specifier: 9.13.0
+        version: 9.13.0(react@19.1.2)
       react-lite-youtube-embed:
         specifier: ^2.5.6
         version: 2.5.6(react-dom@19.1.2(react@19.1.2))(react@19.1.2)
@@ -1224,6 +1224,27 @@ importers:
       minimatch:
         specifier: 'catalog:'
         version: 10.0.3
+      typescript:
+        specifier: 'catalog:'
+        version: 5.8.3
+
+  packages/validator:
+    devDependencies:
+      '@enpitsu/eslint-config':
+        specifier: workspace:^0.2.0
+        version: link:../../tooling/eslint
+      '@enpitsu/prettier-config':
+        specifier: workspace:^0.1.0
+        version: link:../../tooling/prettier
+      '@enpitsu/tsconfig':
+        specifier: workspace:^0.1.0
+        version: link:../../tooling/typescript
+      eslint:
+        specifier: 'catalog:'
+        version: 9.32.0(jiti@2.5.1)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
       typescript:
         specifier: 'catalog:'
         version: 5.8.3
@@ -9280,12 +9301,6 @@ packages:
 
   react-day-picker@9.13.0:
     resolution: {integrity: sha512-euzj5Hlq+lOHqI53NiuNhCP8HWgsPf/bBAVijR50hNaY1XwjKjShAnIe8jm8RD2W9IJUvihDIZ+KrmqfFzNhFQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      react: 19.1.2
-
-  react-day-picker@9.9.0:
-    resolution: {integrity: sha512-NtkJbuX6cl/VaGNb3sVVhmMA6LSMnL5G3xNL+61IyoZj0mUZFWTg4hmj7PHjIQ8MXN9dHWhUHFoJWG6y60DKSg==}
     engines: {node: '>=18'}
     peerDependencies:
       react: 19.1.2
@@ -21019,13 +21034,6 @@ snapshots:
       strip-json-comments: 2.0.1
 
   react-day-picker@9.13.0(react@19.1.2):
-    dependencies:
-      '@date-fns/tz': 1.4.1
-      date-fns: 4.1.0
-      date-fns-jalali: 4.1.0-0
-      react: 19.1.2
-
-  react-day-picker@9.9.0(react@19.1.2):
     dependencies:
       '@date-fns/tz': 1.4.1
       date-fns: 4.1.0
