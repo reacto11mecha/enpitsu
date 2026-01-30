@@ -1,0 +1,37 @@
+{
+  "name": "@enpitsu/validator",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./admin": "./src/admin.ts",
+    "./exam": "./src/exam.ts",
+    "./grade": "./src/grade.ts",
+    "./question": "./src/question.ts"
+  },
+  "license": "MIT",
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "lint": "eslint",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@enpitsu/eslint-config": "workspace:^0.2.0",
+    "@enpitsu/prettier-config": "workspace:^0.1.0",
+    "@enpitsu/tsconfig": "workspace:^0.1.0",
+    "eslint": "catalog:",
+    "minimatch": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@enpitsu/eslint-config/base"
+    ]
+  },
+  "prettier": "@enpitsu/prettier-config"
+}

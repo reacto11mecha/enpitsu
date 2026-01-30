@@ -5,7 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+
+import type { TToggleCanLoginSchema } from "@enpitsu/validator/admin";
+import { ToggleCanLoginSchema } from "@enpitsu/validator/admin";
 
 import {
   Form,
@@ -18,16 +20,12 @@ import {
 import { Switch } from "~/components/ui/switch";
 import { useTRPC } from "~/trpc/react";
 
-const FormSchema = z.object({
-  canLogin: z.boolean(),
-});
-
 export const ToggleCanLogin = () => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<TToggleCanLoginSchema>({
+    resolver: zodResolver(ToggleCanLoginSchema),
   });
 
   const canLoginQuery = useQuery(trpc.admin.getCanLoginStatus.queryOptions());
@@ -64,7 +62,7 @@ export const ToggleCanLogin = () => {
     }),
   );
 
-  const onSubmit = (data: z.infer<typeof FormSchema>) =>
+  const onSubmit = (data: TToggleCanLoginSchema) =>
     canLoginMutation.mutate(data);
 
   return (

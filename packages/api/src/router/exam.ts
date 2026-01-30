@@ -1,6 +1,5 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 
 import { eq } from "@enpitsu/db";
 import {
@@ -11,6 +10,11 @@ import {
 } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
 import { cache } from "@enpitsu/redis";
+import {
+  questionBySlugSchema,
+  studentBlocklistSchema,
+  submitAnswerSchema,
+} from "@enpitsu/validator/exam";
 
 import type { TStudent } from "../trpc";
 import { studentProcedure } from "../trpc";
@@ -95,7 +99,7 @@ export const examRouter = {
   getStudent: studentProcedure.query(({ ctx }) => ({ student: ctx.student })),
 
   getQuestion: studentProcedure
-    .input(z.object({ slug: z.string().min(2) }))
+    .input(questionBySlugSchema)
     .mutation(async ({ ctx, input }) => {
       try {
         const cachedQuestion = await cache.get(
@@ -155,7 +159,7 @@ export const examRouter = {
     }),
 
   queryQuestion: studentProcedure
-    .input(z.object({ slug: z.string().min(2) }))
+    .input(questionBySlugSchema)
     .query(async ({ ctx, input }) => {
       try {
         const cachedQuestion = await cache.get(
@@ -218,26 +222,7 @@ export const examRouter = {
     }),
 
   submitAnswer: studentProcedure
-    .input(
-      z.object({
-        questionId: z.number(),
-        checkIn: z.date(),
-        submittedAt: z.date(),
-        multipleChoices: z.array(
-          z.object({
-            iqid: z.number(),
-            choosedAnswer: z.number().min(1),
-          }),
-        ),
-
-        essays: z.array(
-          z.object({
-            iqid: z.number(),
-            answer: z.string().min(1),
-          }),
-        ),
-      }),
-    )
+    .input(submitAnswerSchema)
     .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
         const question = await tx.query.questions.findFirst({
@@ -351,7 +336,7 @@ export const examRouter = {
     ),
 
   storeBlocklist: studentProcedure
-    .input(z.object({ questionId: z.number(), time: z.date() }))
+    .input(studentBlocklistSchema)
     .mutation(async ({ ctx, input }) => {
       const isCheated = await preparedStudentIsCheated.execute({
         questionId: input.questionId,
