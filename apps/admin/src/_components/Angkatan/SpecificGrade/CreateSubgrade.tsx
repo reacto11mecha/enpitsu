@@ -5,7 +5,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+
+import type { TNewGradeOrSubgradeSchema } from "@enpitsu/validator/grade";
+import { NewGradeOrSubgradeSchema } from "@enpitsu/validator/grade";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -19,18 +21,12 @@ import {
 import { Input } from "~/components/ui/input";
 import { useTRPC } from "~/trpc/react";
 
-const formSchema = z.object({
-  label: z.string().min(1, {
-    message: "Nama kelas baru wajib di isi!",
-  }),
-});
-
 export const CreateSubgrade = ({ gradeId }: { gradeId: number }) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<TNewGradeOrSubgradeSchema>({
+    resolver: zodResolver(NewGradeOrSubgradeSchema),
     defaultValues: {
       label: "",
     },

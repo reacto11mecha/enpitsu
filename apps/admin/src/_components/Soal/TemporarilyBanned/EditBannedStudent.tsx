@@ -6,7 +6,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, startOfDay } from "date-fns";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+
+import type { TEditBannedStudentSchema } from "@enpitsu/validator/exam";
+import { EditBannedStudentSchema } from "@enpitsu/validator/exam";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -28,26 +30,8 @@ import {
 import { Input } from "~/components/ui/input";
 import { useTRPC } from "~/trpc/react";
 
-const formSchema = z
-  .object({
-    studentName: z.string(),
-    startedAt: z.date({
-      required_error: "Diperlukan kapan waktu ujian dimulai!",
-    }),
-    endedAt: z.date({
-      required_error: "Diperlukan kapan waktu ujian selesai!",
-    }),
-    reason: z
-      .string()
-      .min(3, { message: "Minimal alasan memiliki 3 karakter!" }),
-  })
-  .refine((data) => data.startedAt < data.endedAt, {
-    path: ["endedAt"],
-    message: "Waktu selesai tidak boleh kurang dari waktu mulai!",
-  });
-
 export function EditBannedStudent({
-  id,
+  studentId,
   reason,
   studentName,
   studentClassName,
@@ -56,7 +40,7 @@ export function EditBannedStudent({
   isDialogOpen,
   setDialogOpen,
 }: {
-  id: number;
+  studentId: number;
   reason: string;
   studentName: string;
   studentClassName: string;
@@ -90,8 +74,8 @@ export function EditBannedStudent({
     }),
   );
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<TEditBannedStudentSchema>({
+    resolver: zodResolver(EditBannedStudentSchema),
     defaultValues: {
       studentName,
       reason,
@@ -122,7 +106,7 @@ export function EditBannedStudent({
             <form
               onSubmit={form.handleSubmit((val) =>
                 editBannedStudent.mutate({
-                  id,
+                  studentId,
                   startedAt: val.startedAt,
                   endedAt: val.endedAt,
                   reason: val.reason,

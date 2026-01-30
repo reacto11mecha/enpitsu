@@ -4,7 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, X as NuhUh, Check as YuhUh } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+
+import type { TUpdateEssayScoreSchema } from "@enpitsu/validator/exam";
+import { UpdateEssayScoreSchema } from "@enpitsu/validator/exam";
 
 import {
   Form,
@@ -18,16 +20,6 @@ import {
 import { Input } from "~/components/ui/input";
 import { useTRPC } from "~/trpc/react";
 
-const formSchema = z.object({
-  score: z.coerce
-    .number({
-      invalid_type_error: "Hanya bisa di isikan nilai angka!",
-      required_error: "Skor dibutuhkan!",
-    })
-    .min(0, { message: "Skor minimum di angka 0!" })
-    .max(1, { message: "Skor maximum di angka 1!" }),
-});
-
 export const UpdateEssayScore = ({
   score,
   id,
@@ -37,8 +29,8 @@ export const UpdateEssayScore = ({
   id: number;
   respondId: number;
 }) => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<TUpdateEssayScoreSchema>({
+    resolver: zodResolver(UpdateEssayScoreSchema),
     defaultValues: {
       score: parseFloat(score),
     },
@@ -82,7 +74,7 @@ export const UpdateEssayScore = ({
       },
     }),
   );
-  const onSubmit = ({ score }: z.infer<typeof formSchema>) => {
+  const onSubmit = ({ score }: TUpdateEssayScoreSchema) => {
     updateScoreMutation.mutate({ score, id });
   };
 

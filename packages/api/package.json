@@ -22,6 +22,7 @@
     "@enpitsu/db": "workspace:^0.1.0",
     "@enpitsu/redis": "workspace:^0.1.0",
     "@enpitsu/token-generator": "workspace:^0.1.0",
+    "@enpitsu/validator": "workspace:^0.1.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "string-similarity": "^4.0.4",

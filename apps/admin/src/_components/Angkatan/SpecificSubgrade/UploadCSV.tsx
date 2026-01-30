@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { validateId } from "@enpitsu/token-generator";
+import { UploadCSVConstructor } from "@enpitsu/validator/grade";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -34,29 +35,29 @@ import {
 import { Input } from "~/components/ui/input";
 import { useTRPC } from "~/trpc/react";
 
-const FileValueSchema = z.array(
-  z.object({
-    Nama: z
-      .string()
-      .min(2, { message: "Nama wajib di isi!" })
-      .max(255, { message: "Nama terlalu panjang!" }),
-    "Nomor Peserta": z
-      .string()
-      .min(5, { message: "Nomor peserta wajib di isi!" })
-      .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-    Ruang: z
-      .string()
-      .min(1, { message: "Ruangan peserta wajib di isi!" })
-      .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-    Token: z
-      .string()
-      .min(13, { message: "Panjang nomor peserta wajib 13 karakter!" })
-      .max(14, {
-        message: "Panjang nomor peserta tidak boleh dari 14 karakter!",
-      })
-      .refine(validateId, { message: "Format token tidak sesuai!" }),
-  }),
-);
+export const UploadCSVBySubgradeFormSchema = z.object({
+  csv: z
+    .instanceof(FileList, { message: "Dibutuhkan file csv!" })
+    .refine((files) => files.length > 0, `Dibutuhkan file csv!`)
+    .refine(
+      (files) => files.length <= 1,
+      `Hanya diperbolehkan upload 1 file saja!`,
+    )
+    .refine(
+      (files) => Array.from(files).every((file) => file.type === "text/csv"),
+      "Hanya bisa file csv saja!",
+    ),
+});
+
+export type TUploadCSVBySubgradeFormSchema = z.infer<
+  typeof UploadCSVBySubgradeFormSchema
+>;
+
+const UploadCSVSchema = UploadCSVConstructor({
+  validator: validateId,
+  minimalTokenLength: 13,
+  maximalTokenLength: 14,
+});
 
 export const UploadCSV = ({
   grade,
@@ -78,22 +79,8 @@ export const UploadCSV = ({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const formSchema = z.object({
-    csv: z
-      .instanceof(FileList, { message: "Dibutuhkan file csv!" })
-      .refine((files) => files.length > 0, `Dibutuhkan file csv!`)
-      .refine(
-        (files) => files.length <= 1,
-        `Hanya diperbolehkan upload 1 file saja!`,
-      )
-      .refine(
-        (files) => Array.from(files).every((file) => file.type === "text/csv"),
-        "Hanya bisa file csv saja!",
-      ),
-  });
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<TUploadCSVBySubgradeFormSchema>({
+    resolver: zodResolver(UploadCSVBySubgradeFormSchema),
   });
 
   const createStudentManyMutation = useMutation(
@@ -120,7 +107,7 @@ export const UploadCSV = ({
     }),
   );
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: TUploadCSVBySubgradeFormSchema) {
     setReadLock(true);
 
     const file = values.csv.item(0)!;
@@ -135,7 +122,7 @@ export const UploadCSV = ({
         return;
       }
 
-      const result = FileValueSchema.safeParse(records);
+      const result = UploadCSVSchema.safeParse(records);
 
       if (!result.success) {
         toast.error("Format file tidak sesuai!", {

@@ -9,7 +9,9 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
 import { toast } from "sonner";
-import { z } from "zod";
+
+import type { TEditParentQuestionSchema } from "@enpitsu/validator/question";
+import { EditParentQuestionSchema } from "@enpitsu/validator/question";
 
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -35,34 +37,14 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { Switch } from "~/components/ui/switch";
 import { useTRPC } from "~/trpc/react";
 
-const formSchema = z
-  .object({
-    title: z.string().min(5, { message: "Minimal memiliki 5 karakter!" }),
-    slug: z.string().min(4, { message: "Minimal memiliki 4 karakter!" }),
-    startedAt: z.date({
-      required_error: "Diperlukan kapan waktu ujian dimulai!",
-    }),
-    endedAt: z.date({
-      required_error: "Diperlukan kapan waktu ujian selesai!",
-    }),
-    allowLists: z.array(z.number()).min(1, {
-      message: "Minimal terdapat satu kelas yang bisa mengerjakan soal!",
-    }),
-    shuffleQuestion: z.boolean(),
-  })
-  .refine((data) => data.startedAt < data.endedAt, {
-    path: ["endedAt"],
-    message: "Waktu selesai tidak boleh kurang dari waktu mulai!",
-  });
-
 export const EditParentQuestion = ({ id }: { id: number }) => {
   const router = useRouter();
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<TEditParentQuestionSchema>({
+    resolver: zodResolver(EditParentQuestionSchema),
     defaultValues: {
       allowLists: [],
       title: "",
@@ -130,7 +112,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
     }),
   );
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: TEditParentQuestionSchema) {
     editQuestionMutation.mutate({ id, ...values });
   }
 

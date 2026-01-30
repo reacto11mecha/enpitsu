@@ -153,7 +153,7 @@ export const columns: ColumnDef<StudentTempoban>[] = [
           </DropdownMenu>
 
           <EditBannedStudent
-            id={tempBan.id}
+            studentId={tempBan.id}
             reason={tempBan.reason}
             studentName={tempBan.student.name}
             studentClassName={`${tempBan.student.subgrade.grade.label} ${tempBan.student.subgrade.label}`}

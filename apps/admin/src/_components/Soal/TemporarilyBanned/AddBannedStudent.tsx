@@ -6,7 +6,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfDay } from "date-fns";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+
+import type { TAddBannedStudentSchema } from "@enpitsu/validator/exam";
+import { AddBannedStudentSchema } from "@enpitsu/validator/exam";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -37,24 +39,6 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useTRPC } from "~/trpc/react";
-
-const formSchema = z
-  .object({
-    studentId: z.number().min(1, { message: "Pilih nama salah satu peserta!" }),
-    startedAt: z.date({
-      required_error: "Diperlukan kapan waktu ujian dimulai!",
-    }),
-    endedAt: z.date({
-      required_error: "Diperlukan kapan waktu ujian selesai!",
-    }),
-    reason: z
-      .string()
-      .min(3, { message: "Minimal alasan memiliki 3 karakter!" }),
-  })
-  .refine((data) => data.startedAt < data.endedAt, {
-    path: ["endedAt"],
-    message: "Waktu selesai tidak boleh kurang dari waktu mulai!",
-  });
 
 export function AddBannedStudent() {
   const [isDialogOpen, setDialogOpen] = useState(false);
@@ -96,8 +80,8 @@ export function AddBannedStudent() {
     }),
   );
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<TAddBannedStudentSchema>({
+    resolver: zodResolver(AddBannedStudentSchema),
     defaultValues: {
       studentId: 0,
       reason: "",

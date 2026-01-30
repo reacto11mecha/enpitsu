@@ -5,7 +5,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+
+import type { TNewGradeOrSubgradeSchema } from "@enpitsu/validator/grade";
+import { NewGradeOrSubgradeSchema } from "@enpitsu/validator/grade";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -28,10 +30,6 @@ import {
 import { Input } from "~/components/ui/input";
 import { useTRPC } from "~/trpc/react";
 
-const schema = z.object({
-  label: z.string().min(1, { message: "Harus ada isinya!" }),
-});
-
 export const RenameSubgrade = ({
   openEdit,
   setOpenEdit,
@@ -48,8 +46,8 @@ export const RenameSubgrade = ({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
+  const form = useForm<TNewGradeOrSubgradeSchema>({
+    resolver: zodResolver(NewGradeOrSubgradeSchema),
     defaultValues: {
       label: param,
     },

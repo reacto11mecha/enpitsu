@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { validateId } from "@enpitsu/token-generator";
+import { UploadStudentXLSXSchemaConstructor } from "@enpitsu/validator/grade";
 
 import {
   AlertDialog,
@@ -34,32 +35,34 @@ import {
 import { Input } from "~/components/ui/input";
 import { useTRPC } from "~/trpc/react";
 
-const FileValueSchema = z.array(
-  z.object({
-    subgradeName: z.string(),
-    data: z.array(
-      z.object({
-        Nama: z
-          .string()
-          .min(2, { message: "Nama wajib di isi!" })
-          .max(255, { message: "Nama terlalu panjang!" }),
-        "Nomor Peserta": z
-          .string()
-          .min(5, { message: "Nomor peserta wajib di isi!" })
-          .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-        Ruang: z
-          .string()
-          .min(1, { message: "Ruangan peserta wajib di isi!" })
-          .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-        Token: z
-          .string()
-          .min(13, { message: "Panjang token minimal 13 karakter!" })
-          .max(14, { message: "Panjang token tidak boleh dari 14 karakter!" })
-          .refine(validateId, { message: "Format token tidak sesuai!" }),
-      }),
+const ExcelUploadStudentByGrade = z.object({
+  xlsx: z
+    .instanceof(FileList, { message: "Dibutuhkan file xlsx!" })
+    .refine((files) => files.length > 0, `Dibutuhkan file xlsx!`)
+    .refine(
+      (files) => files.length <= 1,
+      `Hanya diperbolehkan upload 1 file saja!`,
+    )
+    .refine(
+      (files) =>
+        Array.from(files).every(
+          (file) =>
+            file.type ===
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ),
+      "Hanya bisa file xlsx saja!",
     ),
-  }),
-);
+});
+
+export type TExcelUploadStudentByGrade = z.infer<
+  typeof ExcelUploadStudentByGrade
+>;
+
+const FileValueSchema = UploadStudentXLSXSchemaConstructor({
+  validator: validateId,
+  minimalTokenLength: 13,
+  maximalTokenLength: 14,
+});
 
 const ReusableAlertDialog = ({
   open,
@@ -291,30 +294,11 @@ export const ExcelUploadStudentsByGrade = ({
     if (!excelMutationApi.isPending) setOpen((prev) => !prev);
   }, [excelMutationApi.isPending]);
 
-  const formSchema = z.object({
-    xlsx: z
-      .instanceof(FileList, { message: "Dibutuhkan file xlsx!" })
-      .refine((files) => files.length > 0, `Dibutuhkan file xlsx!`)
-      .refine(
-        (files) => files.length <= 1,
-        `Hanya diperbolehkan upload 1 file saja!`,
-      )
-      .refine(
-        (files) =>
-          Array.from(files).every(
-            (file) =>
-              file.type ===
-              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          ),
-        "Hanya bisa file xlsx saja!",
-      ),
+  const form = useForm<TExcelUploadStudentByGrade>({
+    resolver: zodResolver(ExcelUploadStudentByGrade),
   });
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-  });
-
-  async function onXLSXSubmit(values: z.infer<typeof formSchema>) {
+  async function onXLSXSubmit(values: TExcelUploadStudentByGrade) {
     const file = values.xlsx.item(0)!;
     const buffer = await file.arrayBuffer();
 
