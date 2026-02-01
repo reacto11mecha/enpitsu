@@ -35,16 +35,15 @@ const getRandomColor = (): string => {
 export default async function EssayEditor({
   params,
 }: {
-  params: {
+  params: Promise<{
     subId: string;
     id: string;
-  };
+  }>;
 }) {
   const identity = await auth();
 
   if (!identity) redirect("/login");
 
-  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { id: _id, subId: _essayId } = await params;
 
   const id = parseInt(_id);

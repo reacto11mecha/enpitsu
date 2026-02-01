@@ -7,10 +7,12 @@ import * as schema from "@enpitsu/db/schema";
 import { DataTable } from "~/_components/Angkatan/SpecificSubgrade/DataTable";
 
 export default async function ManageSpecificSubgrade(props: {
-  params: { id: string; subgradeId: string };
+  params: Promise<{ id: string; subgradeId: string }>;
 }) {
-  const gradeId = parseInt(props.params.id);
-  const subgradeId = parseInt(props.params.subgradeId);
+  const params = await props.params;
+
+  const gradeId = parseInt(params.id);
+  const subgradeId = parseInt(params.subgradeId);
 
   if (isNaN(gradeId) || isNaN(subgradeId)) return redirect("/admin/angkatan");
 

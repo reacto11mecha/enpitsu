@@ -13,9 +13,11 @@ import { DataTable } from "~/_components/Angkatan/SpecificGrade/DataTable";
 export default async function DynamicAngkatan({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const gradeId = parseInt(params.id);
+  const _params = await params;
+
+  const gradeId = parseInt(_params.id);
 
   const specificGrade = await db.query.grades.findFirst({
     where: eq(schema.grades.id, gradeId),

@@ -10,9 +10,11 @@ import { DataTable } from "~/_components/Soal/AnswerList/DataTable";
 export default async function AnswerListPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const id = parseInt(params.id);
+  const _params = await params;
+
+  const id = parseInt(_params.id);
 
   if (isNaN(id)) return redirect("/admin/soal");
 

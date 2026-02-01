@@ -6,9 +6,10 @@ import * as schema from "@enpitsu/db/schema";
 
 export default async function Layout(props: {
   children: React.ReactNode;
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const pageId = parseInt(props.params.id);
+  const _params = await props.params;
+  const pageId = parseInt(_params.id);
 
   if (isNaN(pageId)) return redirect("/admin/angkatan");
 
