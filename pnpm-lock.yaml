@@ -100,9 +100,6 @@ importers:
       '@enpitsu/settings':
         specifier: workspace:^0.1.0
         version: link:../../packages/settings
-      '@enpitsu/token-generator':
-        specifier: workspace:^0.1.0
-        version: link:../../packages/token-generator
       '@enpitsu/validator':
         specifier: workspace:^0.1.0
         version: link:../../packages/validator

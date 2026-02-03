@@ -21,6 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { env } from "~/env";
 import { SetStrictEqual } from "./set-strict-equal";
 
 const getRandomColor = (): string => {
@@ -149,7 +150,7 @@ export default async function EssayEditor({
           <div>
             <MainEditor
               cursorColor={cursorColor}
-              roomName={`q-essay-question_${id}-${essayId}`}
+              roomName={`${env.NEXT_PUBLIC_RUNNING_EDITION}|q-essay-question_${id}-${essayId}`}
               username={identity.user.name!}
               showName
             >
@@ -160,7 +161,7 @@ export default async function EssayEditor({
           <div>
             <TextareaEditor
               cursorColor={cursorColor}
-              roomName={`q-essay-answer_${id}-${essayId}`}
+              roomName={`${env.NEXT_PUBLIC_RUNNING_EDITION}|q-essay-answer_${id}-${essayId}`}
               username={identity.user.name!}
             >
               <SetStrictEqual essayId={essayId} />

@@ -36,26 +36,27 @@ const studentRoom = z
   .min(1, { message: "Ruangan peserta wajib di isi!" })
   .max(50, { message: "Panjang maksimal hanya 50 karakter!" });
 const studentToken = (params: TokenValidationParams) => {
-  if (params.isServer)
+  if (params.isServer) {
     return z.string().min(1, {
       message: "Token wajib di isi!",
     });
-
-  return z
-    .string()
-    .min(1, {
-      message: "Token wajib di isi!",
-    })
-    .min(params.minimalTokenLength, {
-      message: `Panjang token minimal ${params.minimalTokenLength} karakter!`,
-    })
-    .max(params.maximalTokenLength, {
-      message: `Panjang token tidak boleh dari ${params.maximalTokenLength} karakter!`,
-    })
-    .refine(params.validator, { message: "Format token tidak sesuai!" });
+  } else {
+    return z
+      .string()
+      .min(1, {
+        message: "Token wajib di isi!",
+      })
+      .min(params.minimalTokenLength, {
+        message: `Panjang token minimal ${params.minimalTokenLength} karakter!`,
+      })
+      .max(params.maximalTokenLength, {
+        message: `Panjang token tidak boleh dari ${params.maximalTokenLength} karakter!`,
+      })
+      .refine(params.validator, { message: "Format token tidak sesuai!" });
+  }
 };
 
-const CommonDataSchema = (params: TokenConstructorInterface) =>
+const CommonDataSchema = (params: TokenValidationParams) =>
   z.array(
     z.object({
       Nama: studentName,
@@ -68,7 +69,7 @@ const CommonDataSchema = (params: TokenConstructorInterface) =>
 export type TCommonDataSchema = z.infer<ReturnType<typeof CommonDataSchema>>;
 
 export const UploadStudentXLSXSchemaConstructor = (
-  params: TokenConstructorInterface,
+  params: TokenValidationParams,
 ) =>
   z.array(
     z.object({
@@ -134,13 +135,10 @@ export const StudentRelatedConstructor = () => ({
   }),
 });
 
-export const UploadSpecificGradeExcelConstrutor = (
-  params: TokenConstructorInterface,
-) =>
-  z.object({
-    gradeId: universalId,
-    data: UploadStudentXLSXSchemaConstructor(params),
-  });
+export const UploadSpecificGradeExcel = z.object({
+  gradeId: universalId,
+  data: UploadStudentXLSXSchemaConstructor({ isServer: true }),
+});
 
 // butuh di ubah supaya bisa array of studentId tapi ketiga atributnya tetap sama
 export const TemporaryBanSchema = z.object({

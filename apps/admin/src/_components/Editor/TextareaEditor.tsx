@@ -36,6 +36,7 @@ export function TextareaEditor({
     const doc = new Y.Doc();
 
     const provider = new HocuspocusProvider({
+      // Ubah url provider sebelum naik production
       url: "ws://localhost:1234",
       name: roomName,
       document: doc,

@@ -3,8 +3,12 @@ import { redirect } from "next/navigation";
 import { asc, eq } from "@enpitsu/db";
 import { db } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
+import { settings } from "@enpitsu/settings";
 
 import { DataTable } from "~/_components/Angkatan/SpecificSubgrade/DataTable";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function ManageSpecificSubgrade(props: {
   params: Promise<{ id: string; subgradeId: string }>;
@@ -36,6 +40,8 @@ export default async function ManageSpecificSubgrade(props: {
     orderBy: [asc(schema.students.name)],
   });
 
+  const appSettings = settings.getSettings();
+
   return (
     <div className="mt-5 flex flex-col gap-7 px-5">
       <div className="space-y-1">
@@ -59,6 +65,7 @@ export default async function ManageSpecificSubgrade(props: {
           subgrade={specificSubgrade}
           grade={specificGrade}
           initialData={students}
+          appSettings={appSettings}
         />
       </div>
     </div>

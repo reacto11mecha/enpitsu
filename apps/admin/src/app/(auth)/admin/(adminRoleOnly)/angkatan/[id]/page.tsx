@@ -11,6 +11,9 @@ import {
 } from "~/_components/Angkatan/ExcelStudentsActivity";
 import { DataTable } from "~/_components/Angkatan/SpecificGrade/DataTable";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function DynamicAngkatan({
   params,
 }: {

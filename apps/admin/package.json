@@ -21,7 +21,6 @@
     "@enpitsu/db": "workspace:^0.1.0",
     "@enpitsu/redis": "workspace:^0.1.0",
     "@enpitsu/settings": "workspace:^0.1.0",
-    "@enpitsu/token-generator": "workspace:^0.1.0",
     "@enpitsu/validator": "workspace:^0.1.0",
     "@hocuspocus/provider": "^3.2.3",
     "@hookform/resolvers": "^5.2.1",

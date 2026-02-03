@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowUpDown, MoreHorizontal, PencilLine, Trash2 } from "lucide-react";
 
 import type { RouterOutputs } from "@enpitsu/api";
+import type { AppSettings } from "@enpitsu/settings";
 
 import { ReusableDataTable } from "~/_components/data-table";
 import { Button } from "~/components/ui/button";
@@ -119,6 +120,7 @@ export function DataTable({
   grade,
   subgrade,
   initialData,
+  appSettings,
 }: {
   grade: {
     id: number;
@@ -130,6 +132,7 @@ export function DataTable({
     gradeId: number;
   };
   initialData: RouterOutputs["grade"]["getStudents"];
+  appSettings: AppSettings;
 }) {
   const trpc = useTRPC();
   const studentsQuery = useQuery(
@@ -146,8 +149,16 @@ export function DataTable({
   return (
     <div className="w-full">
       <div className="flex flex-col gap-3 md:flex-row">
-        <AddStudent subgrade={subgrade} grade={grade} />
-        <UploadCSV subgrade={subgrade} grade={grade} />
+        <AddStudent
+          subgrade={subgrade}
+          grade={grade}
+          appSettings={appSettings}
+        />
+        <UploadCSV
+          subgrade={subgrade}
+          grade={grade}
+          appSettings={appSettings}
+        />
         <ExcelStudentsBySubgradeDownload subgradeId={subgrade.id} />
       </div>
       <ReusableDataTable

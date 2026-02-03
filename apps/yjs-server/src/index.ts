@@ -59,10 +59,10 @@ export const yjsServer = async () => {
           return result.data;
         },
 
-        store: async ({ documentName, state }) => {
+        store: async ({ documentName: realDocumentName, state }) => {
           await db
             .insert(schema.yjsDocuments)
-            .values({ name: documentName, data: state })
+            .values({ name: realDocumentName, data: state })
             .onConflictDoUpdate({
               target: schema.yjsDocuments.name,
               set: { data: state },
@@ -74,6 +74,7 @@ export const yjsServer = async () => {
             const tempDoc = new Y.Doc();
             Y.applyUpdate(tempDoc, state);
 
+            const documentName = realDocumentName.split("|")[1]!;
             const type = documentName.split("_");
 
             if (documentName.startsWith("q-essay-answer")) {

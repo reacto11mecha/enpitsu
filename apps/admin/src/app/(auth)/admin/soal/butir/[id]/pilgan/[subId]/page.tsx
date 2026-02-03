@@ -20,6 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { env } from "~/env";
 import { AnswerOptions } from "./answers";
 
 const getRandomColor = (): string => {
@@ -150,7 +151,7 @@ export default async function ChoiceEditor({
           <div>
             <MainEditor
               cursorColor={cursorColor}
-              roomName={`q-choice-parent_${id}-${choiceId}`}
+              roomName={`${env.NEXT_PUBLIC_RUNNING_EDITION}|q-choice-parent_${id}-${choiceId}`}
               username={identity.user.name!}
               showName
             >
@@ -166,7 +167,7 @@ export default async function ChoiceEditor({
               length: parentQuestion.multipleChoiceOptions,
             }).map((_, idx) => ({
               idx,
-              roomName: `q-choice-opt_${id}-${choiceId}-${idx}`,
+              roomName: `${env.NEXT_PUBLIC_RUNNING_EDITION}|q-choice-opt_${id}-${choiceId}-${idx}`,
             }))}
           />
         </CardContent>
