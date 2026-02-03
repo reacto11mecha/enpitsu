@@ -22,11 +22,7 @@ import {
 import { adminProcedure } from "../trpc";
 
 const { CreateStudentMany, CreateStudentSchema, UpdateStudentServerSchema } =
-  StudentRelatedConstructor({
-    validator: validateId,
-    minimalTokenLength: 13,
-    maximalTokenLength: 14,
-  });
+  StudentRelatedConstructor();
 
 const UploadSpecificGradeExcel = UploadSpecificGradeExcelConstrutor({
   validator: validateId,

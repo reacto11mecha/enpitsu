@@ -10,11 +10,18 @@ export type TNewGradeOrSubgradeSchema = z.infer<
   typeof NewGradeOrSubgradeSchema
 >;
 
-interface TokenConstructorInterface {
+export interface TokenConstructorInterface {
   validator: (id: string) => boolean;
   minimalTokenLength: number;
   maximalTokenLength: number;
 }
+
+// This is the new magic type
+export type TokenValidationParams =
+  // Scenario 1: Client side (isServer is false or undefined) -> Everything required
+  | (TokenConstructorInterface & { isServer?: false })
+  // Scenario 2: Server side (isServer is true) -> Interface is Partial (optional)
+  | (Partial<TokenConstructorInterface> & { isServer: true });
 
 const studentName = z
   .string()
@@ -28,8 +35,13 @@ const studentRoom = z
   .string()
   .min(1, { message: "Ruangan peserta wajib di isi!" })
   .max(50, { message: "Panjang maksimal hanya 50 karakter!" });
-const studentToken = (params: TokenConstructorInterface) =>
-  z
+const studentToken = (params: TokenValidationParams) => {
+  if (params.isServer)
+    return z.string().min(1, {
+      message: "Token wajib di isi!",
+    });
+
+  return z
     .string()
     .min(1, {
       message: "Token wajib di isi!",
@@ -41,6 +53,7 @@ const studentToken = (params: TokenConstructorInterface) =>
       message: `Panjang token tidak boleh dari ${params.maximalTokenLength} karakter!`,
     })
     .refine(params.validator, { message: "Format token tidak sesuai!" });
+};
 
 const CommonDataSchema = (params: TokenConstructorInterface) =>
   z.array(
@@ -74,7 +87,7 @@ export const UpdateStudentSchema = z.object({
 
 export type TUpdateStudentSchema = z.infer<typeof UpdateStudentSchema>;
 
-export const AddStudentConstructor = (params: TokenConstructorInterface) =>
+export const AddStudentConstructor = (params: TokenValidationParams) =>
   UpdateStudentSchema.extend({
     token: studentToken(params),
   });
@@ -107,14 +120,12 @@ export const CreateSubgradeSchema = NewGradeOrSubgradeSchema.extend({
 
 export const JustNumberSchema = z.number();
 
-export const StudentRelatedConstructor = (
-  params: TokenConstructorInterface,
-) => ({
-  CreateStudentSchema: AddStudentConstructor(params).extend({
+export const StudentRelatedConstructor = () => ({
+  CreateStudentSchema: AddStudentConstructor({ isServer: true }).extend({
     subgradeId: universalId,
   }),
   CreateStudentMany: z.array(
-    AddStudentConstructor(params).extend({
+    AddStudentConstructor({ isServer: true }).extend({
       subgradeId: universalId,
     }),
   ),

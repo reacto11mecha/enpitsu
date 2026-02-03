@@ -1,10 +1,11 @@
 import { AllRegisteredUser } from "~/_components/Admin/AllRegisteredUser/index";
 import { PendingUser } from "~/_components/Admin/PendingUser/index";
 import { ToggleCanLogin } from "~/_components/Admin/ToggleCanLogin";
+import { TokenSetting } from "~/_components/Admin/TokenSetting";
 
 export default function AdminPage() {
   return (
-    <div className="mt-5 flex flex-col gap-7 px-5">
+    <div className="mt-5 mb-5 flex flex-col gap-7 px-5">
       <div className="space-y-1">
         <h2 className="text-2xl font-bold tracking-tight">Beranda Admin</h2>
         <p className="text-muted-foreground">
@@ -29,6 +30,8 @@ export default function AdminPage() {
 
         <PendingUser />
       </div>
+
+      <TokenSetting />
     </div>
   );
 }

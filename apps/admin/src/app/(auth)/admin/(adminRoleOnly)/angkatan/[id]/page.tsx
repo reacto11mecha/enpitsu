@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { eq } from "@enpitsu/db";
 import { db } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
+import { settings } from "@enpitsu/settings";
 
 import {
   ExcelStudentsByGradeDownload,
@@ -18,6 +19,8 @@ export default async function DynamicAngkatan({
   const _params = await params;
 
   const gradeId = parseInt(_params.id);
+
+  const appSettings = settings.getSettings();
 
   const specificGrade = await db.query.grades.findFirst({
     where: eq(schema.grades.id, gradeId),
@@ -44,7 +47,10 @@ export default async function DynamicAngkatan({
 
         <div className="flex flex-col gap-3 md:flex-row">
           <ExcelStudentsByGradeDownload gradeId={gradeId} />
-          <ExcelUploadStudentsByGrade gradeId={gradeId} />
+          <ExcelUploadStudentsByGrade
+            gradeId={gradeId}
+            appSettings={appSettings}
+          />
         </div>
 
         <DataTable currentGrade={specificGrade} />
