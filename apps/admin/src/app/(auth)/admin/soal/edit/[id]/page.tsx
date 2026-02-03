@@ -9,7 +9,7 @@ import { EditParentQuestion } from "~/_components/Soal/EditParentQuestion";
 export default async function NewQuestion({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const _params = await params;
 

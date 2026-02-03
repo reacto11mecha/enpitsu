@@ -64,6 +64,7 @@ export function MainEditor({
       type: "hocuspocus",
       options: {
         name: roomName,
+        // Ubah url provider sebelum naik production
         url: "ws://localhost:1234",
       },
     };

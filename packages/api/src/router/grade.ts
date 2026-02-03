@@ -5,7 +5,6 @@ import { z } from "zod";
 import { asc, eq } from "@enpitsu/db";
 import * as schema from "@enpitsu/db/schema";
 import { cache } from "@enpitsu/redis";
-import { validateId } from "@enpitsu/token-generator";
 import {
   CreateSubgradeSchema,
   GetStudentSchema,
@@ -16,23 +15,13 @@ import {
   UniversalGradeIdSchema,
   UniversalIdSchema,
   UniversalSubgradeIdSchema,
-  UploadSpecificGradeExcelConstrutor,
+  UploadSpecificGradeExcel,
 } from "@enpitsu/validator/grade";
 
 import { adminProcedure } from "../trpc";
 
 const { CreateStudentMany, CreateStudentSchema, UpdateStudentServerSchema } =
-  StudentRelatedConstructor({
-    validator: validateId,
-    minimalTokenLength: 13,
-    maximalTokenLength: 14,
-  });
-
-const UploadSpecificGradeExcel = UploadSpecificGradeExcelConstrutor({
-  validator: validateId,
-  minimalTokenLength: 13,
-  maximalTokenLength: 14,
-});
+  StudentRelatedConstructor();
 
 export const gradeRouter = {
   getGrades: adminProcedure.query(({ ctx }) => ctx.db.query.grades.findMany()),

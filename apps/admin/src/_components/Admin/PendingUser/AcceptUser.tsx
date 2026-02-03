@@ -71,7 +71,7 @@ export const AcceptUser = ({
             pilih tingkatan pengguna tersebut pada pilihan di bawah lalu{" "}
             <b>Izinkan</b>.
           </DialogDescription>
-          <DialogDescription className="text-start">
+          <div className="text-start">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -103,7 +103,7 @@ export const AcceptUser = ({
                 />
               </form>
             </Form>
-          </DialogDescription>
+          </div>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:justify-start">
           <DialogClose asChild>

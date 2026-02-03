@@ -1,17 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import type {
-  AddStudentSchema,
-  TAddStudentSchema,
-} from "@enpitsu/validator/grade";
-import { validateId } from "@enpitsu/token-generator";
+import type { AppSettings } from "@enpitsu/settings";
+import type { TAddStudentSchema } from "@enpitsu/validator/grade";
 import { AddStudentConstructor } from "@enpitsu/validator/grade";
 
 import { Button } from "~/components/ui/button";
@@ -37,15 +34,10 @@ import {
 import { Input } from "~/components/ui/input";
 import { useTRPC } from "~/trpc/react";
 
-const AddStudentSchema = AddStudentConstructor({
-  validator: validateId,
-  minimalTokenLength: 13,
-  maximalTokenLength: 14,
-});
-
 export const AddStudent = ({
   grade,
   subgrade,
+  appSettings,
 }: {
   grade: {
     id: number;
@@ -56,11 +48,26 @@ export const AddStudent = ({
     label: string;
     gradeId: number;
   };
+  appSettings: AppSettings;
 }) => {
   const [open, setOpen] = useState(false);
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+
+  const AddStudentSchema = useMemo(() => {
+    return AddStudentConstructor({
+      validator: (txt: string) => {
+        try {
+          return new RegExp(appSettings.tokenSource).test(txt);
+        } catch (e: unknown) {
+          return false;
+        }
+      },
+      minimalTokenLength: appSettings.minimalTokenLength,
+      maximalTokenLength: appSettings.maximalTokenLength,
+    });
+  }, [appSettings]);
 
   const form = useForm<TAddStudentSchema>({
     resolver: zodResolver(AddStudentSchema),

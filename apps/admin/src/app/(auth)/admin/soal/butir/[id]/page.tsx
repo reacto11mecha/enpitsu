@@ -34,9 +34,8 @@ import { Button } from "~/components/ui/button";
 export default async function QuestionItemsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { id: idParams } = await params;
   const id = parseInt(idParams);
 

@@ -9,13 +9,15 @@ import { Correction } from "~/_components/Soal/AnswerList/CorrectionPage/Correct
 export default async function CorrectionPage({
   params,
 }: {
-  params: { id: string; respondId: string };
+  params: Promise<{ id: string; respondId: string }>;
 }) {
-  const id = parseInt(params.id);
+  const _params = await params;
+
+  const id = parseInt(_params.id);
 
   if (isNaN(id)) return redirect("/admin/soal");
 
-  const respondId = parseInt(params.respondId);
+  const respondId = parseInt(_params.respondId);
 
   if (isNaN(respondId)) return redirect(`/admin/soal/${id}`);
 

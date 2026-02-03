@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import ExcelJS from "exceljs";
@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { validateId } from "@enpitsu/token-generator";
+import type { AppSettings } from "@enpitsu/settings";
 import { UploadStudentXLSXSchemaConstructor } from "@enpitsu/validator/grade";
 
 import {
@@ -57,12 +57,6 @@ const ExcelUploadStudentByGrade = z.object({
 export type TExcelUploadStudentByGrade = z.infer<
   typeof ExcelUploadStudentByGrade
 >;
-
-const FileValueSchema = UploadStudentXLSXSchemaConstructor({
-  validator: validateId,
-  minimalTokenLength: 13,
-  maximalTokenLength: 14,
-});
 
 const ReusableAlertDialog = ({
   open,
@@ -263,12 +257,28 @@ export const ExcelStudentsBySubgradeDownload = ({
 
 export const ExcelUploadStudentsByGrade = ({
   gradeId,
+  appSettings,
 }: {
   gradeId: number;
+  appSettings: AppSettings;
 }) => {
   const [open, setOpen] = useState(false);
 
   const trpc = useTRPC();
+
+  const FileValueSchema = useMemo(() => {
+    return UploadStudentXLSXSchemaConstructor({
+      validator: (txt: string) => {
+        try {
+          return new RegExp(appSettings.tokenSource).test(txt);
+        } catch (e: unknown) {
+          return false;
+        }
+      },
+      minimalTokenLength: appSettings.minimalTokenLength,
+      maximalTokenLength: appSettings.maximalTokenLength,
+    });
+  }, [appSettings]);
 
   const excelMutationApi = useMutation(
     trpc.grade.uploadSpecificGradeExcel.mutationOptions({

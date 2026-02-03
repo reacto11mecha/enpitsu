@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { parse as parseCSV } from "csv-parse";
@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { validateId } from "@enpitsu/token-generator";
+import type { AppSettings } from "@enpitsu/settings";
 import { UploadCSVConstructor } from "@enpitsu/validator/grade";
 
 import { Button } from "~/components/ui/button";
@@ -53,15 +53,10 @@ export type TUploadCSVBySubgradeFormSchema = z.infer<
   typeof UploadCSVBySubgradeFormSchema
 >;
 
-const UploadCSVSchema = UploadCSVConstructor({
-  validator: validateId,
-  minimalTokenLength: 13,
-  maximalTokenLength: 14,
-});
-
 export const UploadCSV = ({
   grade,
   subgrade,
+  appSettings,
 }: {
   grade: {
     id: number;
@@ -72,12 +67,29 @@ export const UploadCSV = ({
     label: string;
     gradeId: number;
   };
+  appSettings: AppSettings;
 }) => {
   const [open, setOpen] = useState(false);
   const [readLock, setReadLock] = useState(false);
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+
+  const UploadCSVSchema = useMemo(
+    () =>
+      UploadCSVConstructor({
+        validator: (txt: string) => {
+          try {
+            return new RegExp(appSettings.tokenSource).test(txt);
+          } catch (e: unknown) {
+            return false;
+          }
+        },
+        minimalTokenLength: appSettings.minimalTokenLength,
+        maximalTokenLength: appSettings.maximalTokenLength,
+      }),
+    [appSettings],
+  );
 
   const form = useForm<TUploadCSVBySubgradeFormSchema>({
     resolver: zodResolver(UploadCSVBySubgradeFormSchema),

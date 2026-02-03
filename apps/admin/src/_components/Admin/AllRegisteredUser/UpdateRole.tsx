@@ -78,6 +78,8 @@ export const UpdateRole = ({
     },
   });
 
+  const fieldRoleValue = form.watch("role");
+
   const onSubmit = (data: TUpdateAcceptRoleSchema) =>
     updateRoleMutation.mutate({ id: userId, ...data });
 
@@ -96,7 +98,7 @@ export const UpdateRole = ({
             dan cek apakah dia adalah orang yang benar dan pantas di ubah
             tingkatannya supaya tidak menimbulkan keributan.
           </DialogDescription>
-          <DialogDescription className="text-start">
+          <div className="text-start">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -128,7 +130,7 @@ export const UpdateRole = ({
                 />
               </form>
             </Form>
-          </DialogDescription>
+          </div>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:justify-start">
           <DialogClose asChild>
@@ -142,8 +144,7 @@ export const UpdateRole = ({
           </DialogClose>
           <Button
             disabled={
-              updateRoleMutation.isPending ||
-              currRole === form.getValues("role")
+              updateRoleMutation.isPending || currRole === fieldRoleValue
             }
             onClick={form.handleSubmit(onSubmit)}
           >
