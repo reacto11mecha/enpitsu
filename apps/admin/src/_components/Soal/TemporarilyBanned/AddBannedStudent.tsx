@@ -57,6 +57,9 @@ export function AddBannedStudent() {
         form.reset();
 
         await queryClient.invalidateQueries(
+          trpc.question.getStudentNotInTemporaryBan.pathFilter(),
+        );
+        await queryClient.invalidateQueries(
           trpc.question.getStudentTempobans.pathFilter(),
         );
 
@@ -125,8 +128,8 @@ export function AddBannedStudent() {
       <DialogTrigger asChild>
         <Button>Tambah peserta</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-4xl">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-4xl">
+        <DialogHeader className="px-1">
           <DialogTitle>Tambahkan Larangan Untuk peserta</DialogTitle>
           <DialogDescription>
             Pilih peserta dari daftar yang sudah dibuat. Pilih peserta dari
@@ -135,7 +138,7 @@ export function AddBannedStudent() {
           </DialogDescription>
         </DialogHeader>
 
-        <div>
+        <div className="scrollbar-hide flex-1 overflow-y-auto p-1">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit((val) =>
