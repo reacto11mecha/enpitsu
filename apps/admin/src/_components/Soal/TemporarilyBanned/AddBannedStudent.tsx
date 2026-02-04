@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { format, startOfDay } from "date-fns";
+import { Search, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import type { TAddBannedStudentSchema } from "@enpitsu/validator/exam";
 import { AddBannedStudentSchema } from "@enpitsu/validator/exam";
 
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -30,29 +33,32 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "~/components/ui/input-group";
+import { ScrollArea } from "~/components/ui/scroll-area";
+import { Separator } from "~/components/ui/separator";
+import { useDebounce } from "~/hooks/use-debounce";
 import { useTRPC } from "~/trpc/react";
 
 export function AddBannedStudent() {
   const [isDialogOpen, setDialogOpen] = useState(false);
-  const [selectedSubgradeId, setSubgradeId] = useState<number | null>(null);
+
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const debouncedSearchKeyword = useDebounce(searchKeyword, 500);
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
   const addNewBannedStudent = useMutation(
-    trpc.grade.addTemporaryBan.mutationOptions({
+    trpc.grade.addTemporaryBans.mutationOptions({
       async onSuccess() {
-        setSubgradeId(null);
         form.reset();
 
+        await queryClient.invalidateQueries(
+          trpc.question.getStudentNotInTemporaryBan.pathFilter(),
+        );
         await queryClient.invalidateQueries(
           trpc.question.getStudentTempobans.pathFilter(),
         );
@@ -71,22 +77,42 @@ export function AddBannedStudent() {
       },
     }),
   );
-  const subgradesWithGrade = useQuery(
-    trpc.grade.getSubgradesWithGrade.queryOptions(),
-  );
-  const studentLists = useQuery(
-    trpc.grade.getStudents.queryOptions({
-      subgradeId: selectedSubgradeId,
-    }),
+
+  const studentListsQuery = useQuery(
+    trpc.grade.getStudentNotInTemporaryBan.queryOptions(),
   );
 
   const form = useForm<TAddBannedStudentSchema>({
     resolver: zodResolver(AddBannedStudentSchema),
     defaultValues: {
-      studentId: 0,
+      studentIds: [],
       reason: "",
     },
   });
+
+  const studentIdsField = form.watch("studentIds");
+
+  const studentList = useMemo(() => {
+    if (studentListsQuery.data) {
+      const baseData = studentListsQuery.data.filter(
+        (d) => !studentIdsField.find((ids) => ids === d.id),
+      );
+
+      if (debouncedSearchKeyword !== "")
+        return baseData.filter((d) =>
+          d.name.toLowerCase().includes(debouncedSearchKeyword.toLowerCase()),
+        );
+      return baseData;
+    }
+
+    return [];
+  }, [studentListsQuery, studentIdsField, debouncedSearchKeyword]);
+
+  const searchCount = useMemo(() => studentList.length, [studentList]);
+
+  const getStudentName = (id: number) => {
+    return studentListsQuery.data?.find((s) => s.id === id)?.name ?? "Unknown";
+  };
 
   return (
     <Dialog
@@ -95,7 +121,6 @@ export function AddBannedStudent() {
         if (addNewBannedStudent.isPending) return;
 
         form.reset();
-        setSubgradeId(null);
 
         setDialogOpen((prev) => !prev);
       }}
@@ -103,8 +128,8 @@ export function AddBannedStudent() {
       <DialogTrigger asChild>
         <Button>Tambah peserta</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-4xl">
+        <DialogHeader className="px-1">
           <DialogTitle>Tambahkan Larangan Untuk peserta</DialogTitle>
           <DialogDescription>
             Pilih peserta dari daftar yang sudah dibuat. Pilih peserta dari
@@ -113,7 +138,7 @@ export function AddBannedStudent() {
           </DialogDescription>
         </DialogHeader>
 
-        <div>
+        <div className="scrollbar-hide flex-1 overflow-y-auto p-1">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit((val) =>
@@ -121,119 +146,79 @@ export function AddBannedStudent() {
               )}
               className="space-y-3"
             >
-              <div className="flex flex-col gap-4 sm:flex-row sm:gap-3">
-                <div className="flex flex-col">
-                  <FormLabel className="mb-2">Kelas</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={(value) => {
-                        const subgradeId = parseInt(value);
+              <FormField
+                control={form.control}
+                name="studentIds"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Peserta Terpilih</FormLabel>
 
-                        setSubgradeId((prevId) => {
-                          if (prevId === subgradeId) return prevId;
-
-                          return subgradeId;
-                        });
-
-                        form.resetField("studentId");
-                      }}
-                      disabled={
-                        subgradesWithGrade.isPending ||
-                        subgradesWithGrade.isError ||
-                        addNewBannedStudent.isPending
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Pilih kelas peserta" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel className="mt-14">
-                            Daftar kelas
-                          </SelectLabel>
-                          {subgradesWithGrade.data?.map((subgrade) => (
-                            <SelectItem
-                              key={subgrade.id}
-                              value={`${subgrade.id}`}
-                            >
-                              {subgrade.grade.label} {subgrade.label}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormDescription className="mt-1">
-                    Pilih kelas asal supaya bisa memilih peserta.
-                  </FormDescription>
-                  <FormMessage />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="studentId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nama Peserta</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={(value) =>
-                            value && field.onChange(parseInt(value))
-                          }
-                          value={field.value === 0 ? "" : String(field.value)}
-                          disabled={
-                            subgradesWithGrade.isPending ||
-                            subgradesWithGrade.isError ||
-                            !selectedSubgradeId ||
-                            studentLists.isPending ||
-                            studentLists.isError ||
-                            addNewBannedStudent.isPending
-                          }
+                    <div className="flex min-h-[30px] flex-wrap gap-2">
+                      {field.value.length === 0 && (
+                        <span className="text-muted-foreground text-sm italic">
+                          Belum ada peserta dipilih
+                        </span>
+                      )}
+                      {field.value.map((studentId) => (
+                        <Badge
+                          key={studentId}
+                          variant="secondary"
+                          className="flex items-center gap-1 pr-1"
                         >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Pilih kelas peserta" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectLabel className="mt-14">
-                                Daftar nama peserta
-                              </SelectLabel>
+                          <span
+                            className="max-w-[150px] truncate"
+                            title={getStudentName(studentId)}
+                          >
+                            {getStudentName(studentId)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newValue = field.value.filter(
+                                (id) => id !== studentId,
+                              );
+                              field.onChange(newValue);
+                            }}
+                            className="hover:bg-destructive hover:text-destructive-foreground rounded-full p-0.5 transition-colors"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
 
-                              {!studentLists.isPending &&
-                              !studentLists.isError ? (
-                                <>
-                                  {studentLists.data.length < 1 ? (
-                                    <SelectLabel className="font-normal text-red-500">
-                                      Tidak ada data peserta di kelas ini!
-                                    </SelectLabel>
-                                  ) : (
-                                    <>
-                                      {studentLists.data.map((student) => (
-                                        <SelectItem
-                                          key={student.id}
-                                          value={`${student.id}`}
-                                        >
-                                          {student.name}
-                                        </SelectItem>
-                                      ))}
-                                    </>
-                                  )}
-                                </>
-                              ) : (
-                                <></>
-                              )}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormDescription>
-                        Pilih peserta dari list yang ada.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                    <FormControl>
+                      <div className="space-y-2">
+                        <InputGroup className="w-full">
+                          <InputGroupInput
+                            value={searchKeyword}
+                            onChange={(e) => setSearchKeyword(e.target.value)}
+                            placeholder="Cari peserta..."
+                          />
+                          <InputGroupAddon>
+                            <Search />
+                          </InputGroupAddon>
+                          <InputGroupAddon align="inline-end">
+                            {searchCount} hasil
+                          </InputGroupAddon>
+                        </InputGroup>
+
+                        <StudentSearchList
+                          data={studentList}
+                          onSelect={(id) => {
+                            field.onChange([...field.value, id]);
+                          }}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      Cari dan klik nama peserta untuk menambahkannya ke daftar
+                      larangan.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="flex flex-col gap-4 sm:flex-row sm:gap-3">
                 <FormField
@@ -261,12 +246,7 @@ export function AddBannedStudent() {
                               ? field.onChange(undefined)
                               : field.onChange(new Date(e.target.value))
                           }
-                          disabled={
-                            !selectedSubgradeId ||
-                            studentLists.isPending ||
-                            studentLists.isError ||
-                            addNewBannedStudent.isPending
-                          }
+                          disabled={addNewBannedStudent.isPending}
                         />
                       </FormControl>
                       <FormDescription>
@@ -307,12 +287,7 @@ export function AddBannedStudent() {
                               ? field.onChange(undefined)
                               : field.onChange(new Date(e.target.value))
                           }
-                          disabled={
-                            !selectedSubgradeId ||
-                            studentLists.isPending ||
-                            studentLists.isError ||
-                            addNewBannedStudent.isPending
-                          }
+                          disabled={addNewBannedStudent.isPending}
                         />
                       </FormControl>
                       <FormDescription>
@@ -336,12 +311,7 @@ export function AddBannedStudent() {
                         {...field}
                         autoComplete="off"
                         placeholder="Masukan alasan logis"
-                        disabled={
-                          !selectedSubgradeId ||
-                          studentLists.isPending ||
-                          studentLists.isError ||
-                          addNewBannedStudent.isPending
-                        }
+                        disabled={addNewBannedStudent.isPending}
                       />
                     </FormControl>
                     <FormDescription>
@@ -351,15 +321,7 @@ export function AddBannedStudent() {
                   </FormItem>
                 )}
               />
-              <Button
-                type="submit"
-                disabled={
-                  !selectedSubgradeId ||
-                  studentLists.isPending ||
-                  studentLists.isError ||
-                  addNewBannedStudent.isPending
-                }
-              >
+              <Button type="submit" disabled={addNewBannedStudent.isPending}>
                 Tambah
               </Button>
             </form>
@@ -367,5 +329,56 @@ export function AddBannedStudent() {
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+interface StudentSearchListProps {
+  data: { id: number; name: string }[];
+  onSelect?: (studentId: number) => void;
+}
+
+function StudentSearchList({ data, onSelect }: StudentSearchListProps) {
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const rowVirtualizer = useVirtualizer({
+    count: data.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 45, // Text + Margin + Separator
+    overscan: 5,
+  });
+
+  return (
+    <ScrollArea className="h-32 rounded-md border" viewportRef={parentRef}>
+      <div
+        style={{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+          width: "100%",
+          position: "relative",
+        }}
+      >
+        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+          const student = data[virtualRow.index];
+          return (
+            <div
+              key={virtualRow.key}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: `${virtualRow.size}px`,
+                transform: `translateY(${virtualRow.start}px)`,
+              }}
+              className="px-3"
+              onClick={() => onSelect?.(student!.id)}
+            >
+              <div className="cursor-pointer py-2">
+                <div className="text-sm">{student!.name}</div>
+              </div>
+              <Separator />
+            </div>
+          );
+        })}
+      </div>
+    </ScrollArea>
   );
 }

@@ -2,13 +2,14 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { asc, eq } from "@enpitsu/db";
+import { asc, eq, isNull, sql } from "@enpitsu/db";
 import * as schema from "@enpitsu/db/schema";
 import { cache } from "@enpitsu/redis";
 import {
   CreateSubgradeSchema,
   GetStudentSchema,
   JustNumberSchema,
+  MultiTemporaryBan,
   NewGradeOrSubgradeSchema,
   StudentRelatedConstructor,
   TemporaryBanSchema,
@@ -351,11 +352,42 @@ export const gradeRouter = {
     }),
   ),
 
-  addTemporaryBan: adminProcedure
-    .input(TemporaryBanSchema)
+  getStudentNotInTemporaryBan: adminProcedure.query(({ ctx }) =>
+    ctx.db
+      .select({
+        id: schema.students.id,
+        name: sql<string>`${schema.grades.label} || '-' || ${schema.subGrades.label} || ' ' || ${schema.students.name} `,
+      })
+      .from(schema.students)
+      .leftJoin(
+        schema.studentTemporaryBans,
+        eq(schema.students.id, schema.studentTemporaryBans.studentId),
+      )
+      .innerJoin(
+        schema.subGrades,
+        eq(schema.subGrades.id, schema.students.subgradeId),
+      )
+      .innerJoin(schema.grades, eq(schema.grades.id, schema.subGrades.gradeId))
+      .where(isNull(schema.studentTemporaryBans.id))
+      .orderBy(
+        asc(schema.grades.label),
+        asc(schema.subGrades.label),
+        asc(schema.students.name),
+      ),
+  ),
+
+  addTemporaryBans: adminProcedure
+    .input(MultiTemporaryBan)
     .mutation(async ({ ctx, input }) => {
       try {
-        return await ctx.db.insert(schema.studentTemporaryBans).values(input);
+        return await ctx.db.insert(schema.studentTemporaryBans).values(
+          input.studentIds.map((id) => ({
+            studentId: id,
+            startedAt: input.startedAt,
+            endedAt: input.endedAt,
+            reason: input.reason,
+          })),
+        );
       } catch (e) {
         // @ts-expect-error unknown error value
         if (e.code === "23505" && e.constraint_name === "uniq_student_id")

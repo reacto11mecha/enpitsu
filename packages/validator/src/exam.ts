@@ -12,12 +12,11 @@ export const UpdateEssayScoreSchema = z.object({
 
 export type TUpdateEssayScoreSchema = z.infer<typeof UpdateEssayScoreSchema>;
 
-// TODO: Karena next feature bakalan ngerombak edit peserta,
-// perhatikan validatornya supaya ikut ke update juga.
-
 export const AddBannedStudentSchema = z
   .object({
-    studentId: z.number().min(1, { message: "Pilih nama salah satu peserta!" }),
+    studentIds: z
+      .array(z.number())
+      .min(1, { message: "Pilih nama salah satu peserta!" }),
     startedAt: z.date({
       required_error: "Diperlukan kapan waktu ujian dimulai!",
     }),
