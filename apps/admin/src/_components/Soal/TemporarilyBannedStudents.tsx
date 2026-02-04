@@ -47,7 +47,7 @@ export const columns: ColumnDef<StudentTempoban>[] = [
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && "indeterminate")
         }
-        disabled
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Pilih semua"
       />
     ),

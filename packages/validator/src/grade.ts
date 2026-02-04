@@ -140,10 +140,16 @@ export const UploadSpecificGradeExcel = z.object({
   data: UploadStudentXLSXSchemaConstructor({ isServer: true }),
 });
 
-// butuh di ubah supaya bisa array of studentId tapi ketiga atributnya tetap sama
-export const TemporaryBanSchema = z.object({
-  studentId: z.number().min(1),
+const baseTemporaryBan = z.object({
   startedAt: z.date(),
   endedAt: z.date(),
   reason: z.string().min(5),
+});
+
+export const TemporaryBanSchema = baseTemporaryBan.extend({
+  studentId: z.number().min(1),
+});
+
+export const MultiTemporaryBan = baseTemporaryBan.extend({
+  studentIds: z.array(z.number()).min(1),
 });

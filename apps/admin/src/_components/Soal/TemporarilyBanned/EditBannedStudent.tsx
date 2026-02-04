@@ -115,7 +115,7 @@ export function EditBannedStudent({
               className="space-y-3"
             >
               <div className="flex flex-col gap-5 md:grid md:grid-cols-4">
-                <div className="flex flex-col md:w-[150px]">
+                <div className="flex w-full flex-col">
                   <FormLabel className="mb-2">Kelas</FormLabel>
                   <FormControl>
                     <Input disabled value={studentClassName} />
