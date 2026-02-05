@@ -35,7 +35,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { useTRPC } from "~/trpc/react";
 
-export const UploadCSVBySubgradeFormSchema = z.object({
+export const UploadCSVFormSchema = z.object({
   csv: z
     .instanceof(FileList, { message: "Dibutuhkan file csv!" })
     .refine((files) => files.length > 0, `Dibutuhkan file csv!`)
@@ -49,9 +49,7 @@ export const UploadCSVBySubgradeFormSchema = z.object({
     ),
 });
 
-export type TUploadCSVBySubgradeFormSchema = z.infer<
-  typeof UploadCSVBySubgradeFormSchema
->;
+export type TUploadCSVFormSchema = z.infer<typeof UploadCSVFormSchema>;
 
 export const UploadCSV = ({
   grade,
@@ -91,8 +89,8 @@ export const UploadCSV = ({
     [appSettings],
   );
 
-  const form = useForm<TUploadCSVBySubgradeFormSchema>({
-    resolver: zodResolver(UploadCSVBySubgradeFormSchema),
+  const form = useForm<TUploadCSVFormSchema>({
+    resolver: zodResolver(UploadCSVFormSchema),
   });
 
   const createStudentManyMutation = useMutation(
@@ -119,7 +117,7 @@ export const UploadCSV = ({
     }),
   );
 
-  async function onSubmit(values: TUploadCSVBySubgradeFormSchema) {
+  async function onSubmit(values: TUploadCSVFormSchema) {
     setReadLock(true);
 
     const file = values.csv.item(0)!;
