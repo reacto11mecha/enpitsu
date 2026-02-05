@@ -2,10 +2,11 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { asc, eq, isNull, sql } from "@enpitsu/db";
+import { asc, count, eq, isNull, sql } from "@enpitsu/db";
 import * as schema from "@enpitsu/db/schema";
 import { cache } from "@enpitsu/redis";
 import {
+  CompleteCSVUploadSchema,
   CreateSubgradeSchema,
   GetStudentSchema,
   JustNumberSchema,
@@ -38,6 +39,56 @@ export const gradeRouter = {
         orderBy: [asc(schema.subGrades.label)],
       }),
     ),
+
+  completeCSVUpload: adminProcedure
+    .input(CompleteCSVUploadSchema)
+    .mutation(async ({ ctx, input }) => {
+      const [gradeRes, subgradeRes, studentRes] = await Promise.all([
+        ctx.db.select({ count: count() }).from(schema.grades),
+        ctx.db.select({ count: count() }).from(schema.subGrades),
+        ctx.db.select({ count: count() }).from(schema.students),
+      ]);
+
+      const gradeLen = gradeRes[0]!.count;
+      const subgradeLen = subgradeRes[0]!.count;
+      const studentLen = studentRes[0]!.count;
+
+      if (gradeLen > 0 || subgradeLen > 0 || studentLen > 0)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Terdapat data di database, tidak bisa melakukan operasi ini lagi. Kosongkan terlebih dahulu tabel kelas, sub-kelas, dan peserta.",
+        });
+
+      for (const grade of input) {
+        await ctx.db.transaction(async (tx) => {
+          const newGrade = await tx
+            .insert(schema.grades)
+            .values({ label: grade.grade })
+            .returning({ gradeId: schema.grades.id });
+
+          const gradeId = newGrade[0]!.gradeId;
+
+          for (const subgrade of grade.subgrade) {
+            const newSubgrade = await tx
+              .insert(schema.subGrades)
+              .values({ label: subgrade.label, gradeId })
+              .returning({ subgradeId: schema.subGrades.id });
+            const subgradeId = newSubgrade[0]!.subgradeId;
+
+            await tx.insert(schema.students).values(
+              subgrade.participants.map((p) => ({
+                name: p.Nama,
+                token: p.Token,
+                participantNumber: p["Nomor Peserta"],
+                room: p.Ruang,
+                subgradeId,
+              })),
+            );
+          }
+        });
+      }
+    }),
 
   getStudents: adminProcedure
     .input(GetStudentSchema)

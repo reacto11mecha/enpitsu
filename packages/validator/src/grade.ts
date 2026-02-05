@@ -97,6 +97,39 @@ export type TAddStudentSchema = z.infer<
   ReturnType<typeof AddStudentConstructor>
 >;
 
+export const FirstStepFullCSVConstructor = (
+  params: TokenConstructorInterface,
+) =>
+  z.array(
+    z.object({
+      Nama: studentName,
+      "Nomor Peserta": studentParticipantNumber,
+      Ruang: studentRoom,
+      Kelas: z.string(),
+      Token: studentToken(params),
+    }),
+  );
+
+export const CompleteCSVUploadSchema = z.array(
+  z.object({
+    grade: z.string().min(1),
+    subgrade: z.array(
+      z.object({
+        label: z.string().min(1),
+        participants: z.array(
+          z.object({
+            Nama: studentName,
+            "Nomor Peserta": studentParticipantNumber,
+            Ruang: studentRoom,
+            Token: studentToken({ isServer: true }),
+          }),
+        ),
+      }),
+    ),
+  }),
+);
+export type TCompleteCSVUploadSchema = z.infer<typeof CompleteCSVUploadSchema>;
+
 const universalId = z.number();
 
 export const UniversalIdSchema = z.object({
