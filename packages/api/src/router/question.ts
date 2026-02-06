@@ -17,6 +17,7 @@ import {
   BunchOfIdsSchema,
   CorrectAnswerChoiceSchema,
   CreateQuestionSchema,
+  DuplicateQuestionSchema,
   EditParentQuestionSchema,
   StrictEquanEssaySchema,
   UniversalIdSchema,
@@ -509,6 +510,12 @@ export const questionRouter = {
         }
       }),
     ),
+
+  duplicateQuestion: protectedProcedure
+    .input(DuplicateQuestionSchema)
+    .mutation(async ({ ctx, input }) => {
+      // do something
+    }),
 
   deleteQuestion: protectedProcedure.input(UniversalIdSchema).mutation(
     async ({ ctx, input }) =>

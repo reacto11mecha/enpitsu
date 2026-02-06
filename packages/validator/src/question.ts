@@ -1,8 +1,9 @@
 import { z } from "zod";
 
+const slug = z.string().min(4, { message: "Minimal memiliki 4 karakter!" });
 const parentQuestionBaseSchema = z.object({
   title: z.string().min(5, { message: "Minimal memiliki 5 karakter!" }),
-  slug: z.string().min(4, { message: "Minimal memiliki 4 karakter!" }),
+  slug,
   startedAt: z.date({
     required_error: "Diperlukan kapan waktu ujian dimulai!",
   }),
@@ -53,7 +54,7 @@ export const UniversalQuestionIdSchema = z.object({
 export const UniversalIdSchema = z.object({ id: z.number() });
 
 export const CreateQuestionSchema = z.object({
-  slug: z.string().min(4),
+  slug,
   title: z.string().min(5),
   multipleChoiceOptions: z.number().min(4).max(5),
   startedAt: z.date(),
@@ -61,6 +62,12 @@ export const CreateQuestionSchema = z.object({
   allowLists: z.array(z.number()).min(1),
   shuffleQuestion: z.boolean(),
 });
+
+export const DuplicateQuestionSchema = UniversalIdSchema.extend({
+  slug,
+});
+
+export type TDuplicateQuestionSchema = z.infer<typeof DuplicateQuestionSchema>;
 
 export const BunchOfIdsSchema = z.object({ ids: z.array(z.number()) });
 
