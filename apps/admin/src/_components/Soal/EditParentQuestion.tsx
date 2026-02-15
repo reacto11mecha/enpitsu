@@ -46,6 +46,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
   const form = useForm<TEditParentQuestionSchema>({
     resolver: zodResolver(EditParentQuestionSchema),
     defaultValues: {
+      id,
       allowLists: [],
       title: "",
       slug: "",
@@ -113,7 +114,7 @@ export const EditParentQuestion = ({ id }: { id: number }) => {
   );
 
   function onSubmit(values: TEditParentQuestionSchema) {
-    editQuestionMutation.mutate({ id, ...values });
+    editQuestionMutation.mutate(values);
   }
 
   return (

@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -46,10 +47,11 @@ export const DuplicateParentQuestion = ({
 }) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const duplicateQuestionMutation = useMutation(
     trpc.question.duplicateQuestion.mutationOptions({
-      async onSuccess() {
+      async onSuccess(returnValue) {
         setOpenDuplicate(false);
 
         await queryClient.invalidateQueries(
@@ -59,6 +61,8 @@ export const DuplicateParentQuestion = ({
         toast.success("Duplikasi Berhasil!", {
           description: `Berhasil menduplikasi soal "${title}"`,
         });
+
+        router.push(`/admin/soal/edit/${returnValue.newQuestionId}`);
       },
       onError(error) {
         toast.error("Operasi Gagal", {
