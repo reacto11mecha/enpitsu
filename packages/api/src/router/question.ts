@@ -17,6 +17,7 @@ import {
   BunchOfIdsSchema,
   CorrectAnswerChoiceSchema,
   CreateQuestionSchema,
+  DuplicateQuestionSchema,
   EditParentQuestionSchema,
   StrictEquanEssaySchema,
   UniversalIdSchema,
@@ -509,6 +510,151 @@ export const questionRouter = {
         }
       }),
     ),
+
+  duplicateQuestion: protectedProcedure
+    .input(DuplicateQuestionSchema)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return await ctx.db.transaction(async (tx) => {
+          const sourceQuestion = await tx.query.questions.findFirst({
+            where: eq(schema.questions.id, input.id),
+            with: {
+              allowLists: true,
+              multipleChoices: {
+                orderBy: (choices, { asc }) => [asc(choices.iqid)],
+              },
+              essays: {
+                orderBy: (essays, { asc }) => [asc(essays.iqid)],
+              },
+            },
+          });
+
+          if (!sourceQuestion) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Soal yang ingin diduplikasi tidak ditemukan!",
+            });
+          }
+
+          const [newQuestion] = await tx
+            .insert(schema.questions)
+            .values({
+              title: sourceQuestion.title,
+              slug: input.slug,
+              multipleChoiceOptions: sourceQuestion.multipleChoiceOptions,
+              startedAt: sourceQuestion.startedAt,
+              endedAt: sourceQuestion.endedAt,
+              shuffleQuestion: sourceQuestion.shuffleQuestion,
+              authorId: ctx.session.user.id,
+              eligible: sourceQuestion.eligible,
+              detailedNotEligible: sourceQuestion.detailedNotEligible,
+            })
+            .returning({ id: schema.questions.id });
+
+          const newQuestionId = newQuestion!.id;
+
+          if (sourceQuestion.allowLists.length > 0) {
+            await tx.insert(schema.allowLists).values(
+              sourceQuestion.allowLists.map((list) => ({
+                questionId: newQuestionId,
+                subgradeId: list.subgradeId,
+              })),
+            );
+          }
+
+          const duplicateYjs = async (oldSuffix: string, newSuffix: string) => {
+            const oldDoc = await tx.query.yjsDocuments.findFirst({
+              where: (table, { like }) => like(table.name, `%${oldSuffix}`),
+            });
+
+            if (!oldDoc) return null;
+
+            // Gunakan env variable saat ini untuk prefix nama baru agar kompatibel dengan frontend
+            const currentEdition =
+              process.env.NEXT_PUBLIC_RUNNING_EDITION ?? "v1";
+            const newName = `${currentEdition}${newSuffix}`;
+
+            await tx.insert(schema.yjsDocuments).values({
+              name: newName,
+              data: oldDoc.data,
+            });
+          };
+
+          if (sourceQuestion.multipleChoices.length > 0) {
+            for (const choice of sourceQuestion.multipleChoices) {
+              console.log(choice);
+
+              const [newChoice] = await tx
+                .insert(schema.multipleChoices)
+                .values({
+                  questionId: newQuestionId,
+                  question: choice.question,
+                  isQuestionEmpty: choice.isQuestionEmpty,
+                  options: choice.options,
+                  correctAnswerOrder: choice.correctAnswerOrder,
+                })
+                .returning({ iqid: schema.multipleChoices.iqid });
+
+              const newChoiceId = newChoice!.iqid;
+
+              const oldQParentSuffix = `|q-choice-parent_${sourceQuestion.id}-${choice.iqid}`;
+              const newQParentSuffix = `|q-choice-parent_${newQuestionId}-${newChoiceId}`;
+              await duplicateYjs(oldQParentSuffix, newQParentSuffix);
+
+              for (let i = 0; i < choice.options.length; i++) {
+                const oldOptSuffix = `|q-choice-opt_${sourceQuestion.id}-${choice.iqid}-${i}`;
+                const newOptSuffix = `|q-choice-opt_${newQuestionId}-${newChoiceId}-${i}`;
+                await duplicateYjs(oldOptSuffix, newOptSuffix);
+              }
+            }
+          }
+
+          if (sourceQuestion.essays.length > 0) {
+            for (const essay of sourceQuestion.essays) {
+              // a. Insert row baru
+              const [newEssay] = await tx
+                .insert(schema.essays)
+                .values({
+                  questionId: newQuestionId,
+                  question: essay.question,
+                  isQuestionEmpty: essay.isQuestionEmpty,
+                  answer: essay.answer,
+                  isStrictEqual: essay.isStrictEqual,
+                })
+                .returning({ iqid: schema.essays.iqid });
+
+              const newEssayId = newEssay!.iqid;
+
+              const oldEssayQSuffix = `|q-essay-question_${sourceQuestion.id}-${essay.iqid}`;
+              const newEssayQSuffix = `|q-essay-question_${newQuestionId}-${newEssayId}`;
+              await duplicateYjs(oldEssayQSuffix, newEssayQSuffix);
+
+              const oldEssayASuffix = `|q-essay-answer_${sourceQuestion.id}-${essay.iqid}`;
+              const newEssayASuffix = `|q-essay-answer_${newQuestionId}-${newEssayId}`;
+              await duplicateYjs(oldEssayASuffix, newEssayASuffix);
+            }
+          }
+
+          return { newQuestionId };
+        });
+      } catch (e) {
+        if (e instanceof TRPCError) throw e;
+
+        // @ts-expect-error unknown error value
+        if (e.code === "23505" && e.constraint_name === "slug_idx") {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Sudah ada kode soal dengan nama yang sama, mohon di ubah",
+          });
+        }
+
+        console.error(e);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Terjadi kesalahan internal saat menduplikasi soal",
+        });
+      }
+    }),
 
   deleteQuestion: protectedProcedure.input(UniversalIdSchema).mutation(
     async ({ ctx, input }) =>
