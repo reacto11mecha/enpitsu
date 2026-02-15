@@ -445,6 +445,7 @@ export const questionRouter = {
             .set({
               title: input.title,
               slug: input.slug,
+              shuffleQuestion: input.shuffleQuestion,
               startedAt: input.startedAt,
               endedAt: input.endedAt,
             })
