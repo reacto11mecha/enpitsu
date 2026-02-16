@@ -1,13 +1,17 @@
 import { useCallback, useState } from "react";
 import {
-  Button,
+  ActivityIndicator,
+  Keyboard,
   Modal,
   NativeScrollEvent,
   ScrollView,
   Text,
   TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { StyleSheet } from "react-native-unistyles";
 import { Link } from "expo-router";
 import { toast } from "@/lib/sonner";
 import { useTRPC } from "@/lib/trpc";
@@ -20,6 +24,8 @@ import slugify from "slugify";
 import { z } from "zod";
 
 import type { RouterOutputs } from "@enpitsu/api";
+
+type TData = RouterOutputs["exam"]["getQuestion"] | undefined;
 
 const formSchema = z.object({
   slug: z
@@ -51,53 +57,70 @@ export function ScanOrInputQuestionSlug() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      slug: "",
+    },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) =>
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    Keyboard.dismiss();
     getQuestionMutation.mutate(values);
+  };
 
   return (
-    <View>
-      <Text>Masukan kode soal</Text>
-
-      <Text>Kode Soal</Text>
-      <Controller
-        control={control}
-        name="slug"
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            editable={!getQuestionMutation.isPending}
-            style={{
-              height: 40,
-              borderColor: "gray",
-              borderWidth: 1,
-              marginBottom: 10,
-              paddingHorizontal: 10,
-            }}
-            onBlur={onBlur}
-            onChangeText={(val) =>
-              onChange(
-                slugify(val, {
-                  trim: false,
-                  strict: true,
-                  remove: /[*+~.()'"!:@]/g,
-                }).toUpperCase(),
-              )
-            }
-            value={value}
-            placeholder="Masukkan kode soal disini."
-          />
+    <View style={styles.container}>
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Kode Soal</Text>
+        <Controller
+          control={control}
+          name="slug"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              editable={!getQuestionMutation.isPending}
+              style={[
+                styles.input,
+                errors.slug ? styles.inputError : undefined,
+              ]}
+              onBlur={onBlur}
+              onChangeText={(val) =>
+                onChange(
+                  slugify(val, {
+                    trim: false,
+                    strict: true,
+                    remove: /[*+~.()'"!:@]/g,
+                  }).toUpperCase(),
+                )
+              }
+              value={value}
+              placeholder="Masukkan kode soal"
+              // Note: placeholderTextColor isn't style, so we can't use styles.placeholder directly here
+              // unless we extract the color string from the theme elsewhere.
+              // For simplicity, we assume a static muted color or use inline theme access if needed.
+              placeholderTextColor="#a1a1aa"
+              autoCapitalize="characters"
+              autoCorrect={false}
+            />
+          )}
+        />
+        {errors.slug && (
+          <Text style={styles.errorText}>{errors.slug.message}</Text>
         )}
-      />
-      {errors.slug && (
-        <Text style={{ color: "red" }}>{errors.slug.message}</Text>
-      )}
+      </View>
 
-      <Button
-        title="Kerjakan soal"
+      <TouchableOpacity
+        style={[
+          styles.primaryButton,
+          getQuestionMutation.isPending ? styles.buttonDisabled : undefined,
+        ]}
         onPress={handleSubmit(onSubmit)}
         disabled={getQuestionMutation.isPending}
-      />
+        activeOpacity={0.8}
+      >
+        {getQuestionMutation.isPending ? (
+          <ActivityIndicator color="#fff" style={{ marginRight: 8 }} />
+        ) : null}
+        <Text style={styles.primaryButtonText}>Kerjakan Soal</Text>
+      </TouchableOpacity>
 
       <Precaution
         data={getQuestionMutation.data}
@@ -110,8 +133,6 @@ export function ScanOrInputQuestionSlug() {
     </View>
   );
 }
-
-type TData = RouterOutputs["exam"]["getQuestion"] | undefined;
 
 const PrecautionChildren = ({
   data,
@@ -134,38 +155,41 @@ const PrecautionChildren = ({
 
   return (
     <ScrollView
-      style={{ maxHeight: 400 }}
+      style={styles.modalScroll}
       onScroll={({ nativeEvent }) => {
         if (isCloseToBottom(nativeEvent)) {
           setScrollBottom(true);
         }
       }}
       scrollEventThrottle={400}
+      showsVerticalScrollIndicator={true}
+      persistentScrollbar={true}
     >
-      <View>
-        <Text>Soal Ujian</Text>
-
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Soal Ujian</Text>
         {data ? (
-          <View>
-            <Text>• SOAL : {data.title}.</Text>
-            <Text>• JUMLAH PG : {data.multipleChoices.length}.</Text>
-            <Text>• JUMLAH ESAI : {data.essays.length}.</Text>
-            <Text>
-              • WAKTU SOAL DIBUKA :{" "}
-              {format(new Date(data.startedAt), "dd MMMM yyyy 'pukul' kk:mm", {
+          <View style={styles.listContainer}>
+            <Text style={styles.listItem}>• SOAL: {data.title}</Text>
+            <Text style={styles.listItem}>
+              • JUMLAH PG: {data.multipleChoices.length}
+            </Text>
+            <Text style={styles.listItem}>
+              • JUMLAH ESAI: {data.essays.length}
+            </Text>
+            <Text style={styles.listItem}>
+              • DIBUKA:{" "}
+              {format(new Date(data.startedAt), "dd MMM yyyy HH:mm", {
                 locale: id,
               })}
-              .
             </Text>
-            <Text>
-              • WAKTU SOAL DITUTUP :{" "}
-              {format(new Date(data.endedAt), "dd MMMM yyyy 'pukul' kk:mm", {
+            <Text style={styles.listItem}>
+              • DITUTUP:{" "}
+              {format(new Date(data.endedAt), "dd MMM yyyy HH:mm", {
                 locale: id,
               })}
-              .
             </Text>
-            <Text>
-              • LAMA PENGERJAAN :{" "}
+            <Text style={styles.listItem}>
+              • DURASI:{" "}
               {formatDuration(
                 intervalToDuration({
                   end: new Date(data.endedAt),
@@ -173,67 +197,62 @@ const PrecautionChildren = ({
                 }),
                 { locale: id },
               )}
-              .
             </Text>
           </View>
         ) : null}
       </View>
 
-      <View style={{ marginTop: 20 }}>
-        <Text>Perilaku Aplikasi</Text>
-        <View>
-          <Text>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Perilaku Aplikasi</Text>
+        <View style={styles.listContainer}>
+          <Text style={styles.listItem}>
             • Jika sudah menekan tombol "Kerjakan" maka aplikasi ini memantau
             aktivitas yang berpotensi mencurigakan.
           </Text>
-          <Text>
+          <Text style={styles.listItem}>
             • Akan diberikan tiga kali (3) kesempatan untuk berpindah aplikasi,
             lebih dari itu maka otomatis anda dinyatakan curang dan otomatis
             gugur.
           </Text>
-          <Text>
+          <Text style={styles.listItem}>
             • Harap hindari perangkat Anda dari layar yang mati (screen timed
-            out), karena hal tersebut dapat dianggap sebagai tindakan curang.
+            out).
           </Text>
-          <Text>
+          <Text style={styles.listItem}>
             • Jika waktu sudah menyentuh waktu selesai, maka anda tidak bisa
             mengumpulkan jawaban anda bagaimanapun caranya.
           </Text>
         </View>
       </View>
 
-      <View style={{ marginTop: 20, paddingBottom: 20 }}>
-        <Text>Tata Tertib</Text>
-        <View>
-          <Text>1. Peserta harus hadir tepat waktu di ruang ujian.</Text>
-          <Text>
+      <View style={[styles.section, { paddingBottom: 20 }]}>
+        <Text style={styles.sectionTitle}>Tata Tertib</Text>
+        <View style={styles.listContainer}>
+          <Text style={styles.listItem}>
+            1. Peserta harus hadir tepat waktu di ruang ujian.
+          </Text>
+          <Text style={styles.listItem}>
             2. Peserta harus sudah menyiapkan kuota internet sebelum ujian
             dimulai.
           </Text>
-          <Text>
-            3. Peserta tidak boleh membuka aplikasi lain selain aplikasi ujian
-            ketika ujian berlangsung.
+          <Text style={styles.listItem}>
+            3. Peserta tidak boleh membuka aplikasi lain selain aplikasi ujian.
           </Text>
-          <Text>
-            4. Peserta harus membawa kartu tanda peserta ulangan dan alat tulis
-            yang diperlukan.
+          <Text style={styles.listItem}>
+            4. Peserta harus membawa kartu tanda peserta ulangan.
           </Text>
-          <Text>
-            5. Peserta tidak boleh membawa alat komunikasi, buku catatan, atau
-            barang-barang lain yang tidak diperlukan.
+          <Text style={styles.listItem}>
+            5. Peserta tidak boleh membawa alat komunikasi atau buku catatan.
           </Text>
-          <Text>6. Peserta harus duduk di kursi yang telah ditentukan.</Text>
-          <Text>
-            7. Peserta tidak boleh berbicara, berbisik, atau mengganggu peserta
-            lain.
+          <Text style={styles.listItem}>
+            6. Peserta harus duduk di kursi yang telah ditentukan.
           </Text>
-          <Text>
-            8. Peserta tidak boleh mencontek atau membantu peserta lain
-            mencontek.
+          <Text style={styles.listItem}>
+            7. Peserta tidak boleh berbicara atau mengganggu peserta lain.
           </Text>
-          <Text>
-            9. Peserta yang melanggar tata tertib akan dikenakan sanksi sesuai
-            dengan peraturan yang berlaku.
+          <Text style={styles.listItem}>8. Peserta tidak boleh mencontek.</Text>
+          <Text style={styles.listItem}>
+            9. Peserta yang melanggar tata tertib akan dikenakan sanksi.
           </Text>
         </View>
       </View>
@@ -257,59 +276,224 @@ export const Precaution = ({
     [],
   );
 
+  const handleClose = () => {
+    close();
+    setScrollBottom(false);
+  };
+
   return (
-    <Modal visible={open} animationType="slide" transparent={false}>
-      <View style={{ flex: 1, padding: 20, justifyContent: "center" }}>
-        <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-          Sebelum Mengerjakan,
-        </Text>
-        <Text>
-          Baca keterangan dibawah ini dengan saksama! Scroll sampai bawah supaya
-          bisa menekan tombol "Kerjakan".
-        </Text>
+    <Modal
+      visible={open}
+      animationType="fade"
+      transparent={true}
+      onRequestClose={handleClose}
+    >
+      <View style={styles.modalOverlay}>
+        <TouchableWithoutFeedback onPress={handleClose}>
+          <View style={styles.modalOverlayBackground} />
+        </TouchableWithoutFeedback>
 
-        {/* Separator equivalent */}
-        <View
-          style={{ height: 1, backgroundColor: "#ccc", marginVertical: 10 }}
-        />
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Sebelum Mengerjakan</Text>
+            <Text style={styles.modalDescription}>
+              Baca keterangan dibawah ini dengan saksama! Scroll sampai bawah
+              supaya bisa menekan tombol "Kerjakan".
+            </Text>
+          </View>
 
-        <PrecautionChildren data={data} setScrollBottom={setScrollBottom} />
+          <View style={styles.separator} />
 
-        <View
-          style={{ height: 1, backgroundColor: "#ccc", marginVertical: 10 }}
-        />
+          <PrecautionChildren data={data} setScrollBottom={setScrollBottom} />
 
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginTop: 10,
-          }}
-        >
-          <Button
-            title="Batal"
-            onPress={() => {
-              close();
-              setScrollBottom(false);
-            }}
-            color="red"
-          />
+          <View style={styles.separator} />
 
-          {scrolledToBottom ? (
-            <Link href={`/test/${data?.slug}`} asChild>
-              <Button
-                title="Kerjakan"
-                onPress={() => {
-                  close();
-                  setScrollBottom(false);
-                }}
-              />
-            </Link>
-          ) : (
-            <Button title="Kerjakan" disabled={true} />
-          )}
+          <View style={styles.modalFooter}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={handleClose}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.cancelButtonText}>Batal</Text>
+            </TouchableOpacity>
+
+            {scrolledToBottom ? (
+              <Link href={`/test/${data?.slug}`} replace asChild>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={handleClose}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.actionButtonText}>Kerjakan</Text>
+                </TouchableOpacity>
+              </Link>
+            ) : (
+              <TouchableOpacity
+                style={[styles.actionButton, styles.buttonDisabled]}
+                disabled={true}
+                activeOpacity={1}
+              >
+                <Text style={styles.actionButtonText}>Kerjakan</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     </Modal>
   );
 };
+
+const styles = StyleSheet.create((theme) => ({
+  container: {
+    width: "100%",
+  },
+  formGroup: {
+    marginBottom: theme.margins.md,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: theme.margins.sm,
+    color: theme.colors.typography,
+  },
+  input: {
+    height: 48,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.sm,
+    paddingHorizontal: theme.margins.md,
+    fontSize: 16,
+    backgroundColor: theme.colors.inputBg,
+    color: theme.colors.typography,
+  },
+  inputError: {
+    borderColor: theme.colors.error,
+  },
+  errorText: {
+    marginTop: 4,
+    fontSize: 13,
+    color: theme.colors.error,
+  },
+  primaryButton: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.radius.sm,
+    height: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  primaryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    padding: theme.margins.lg,
+  },
+  modalOverlayBackground: {
+    // Standard StyleSheet.absoluteFillObject can be used,
+    // but if you want Unistyles specific you can define it manually
+    ...StyleSheet.absoluteFillObject,
+  },
+  modalContent: {
+    width: "100%",
+    maxWidth: 500,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.md,
+    maxHeight: "80%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    overflow: "hidden",
+  },
+  modalHeader: {
+    padding: theme.margins.lg,
+    paddingBottom: theme.margins.md,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: theme.colors.typography,
+    marginBottom: 4,
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: theme.colors.muted,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: theme.colors.border,
+    width: "100%",
+  },
+  modalScroll: {
+    paddingHorizontal: theme.margins.lg,
+  },
+  section: {
+    marginTop: theme.margins.md,
+    marginBottom: theme.margins.sm,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: theme.colors.typography,
+    marginBottom: theme.margins.sm,
+  },
+  listContainer: {
+    gap: 4,
+  },
+  listItem: {
+    fontSize: 14,
+    color: theme.colors.typography,
+    lineHeight: 20,
+  },
+  modalFooter: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    padding: theme.margins.md,
+    gap: 12,
+    backgroundColor: theme.colors.background,
+  },
+  cancelButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: theme.colors.typography,
+  },
+  actionButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 6,
+    backgroundColor: theme.colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#FFFFFF",
+  },
+}));

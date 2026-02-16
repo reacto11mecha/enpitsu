@@ -1,30 +1,104 @@
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native-unistyles";
 import { Identity } from "@/components/identity";
 import { ScanOrInputQuestionSlug } from "@/components/scan-or-input-question-slug";
 
 export default function HomeScreen() {
   const [isCorrect, setCorrect] = useState(false);
-  return (
-    <View>
-      <Identity title="Sebelum mengerjakan," />
 
-      {!isCorrect ? (
-        <View style={{ paddingRight: 15, paddingLeft: 15 }}>
-          <Pressable
-            onPress={() => setCorrect(true)}
-            style={{
-              backgroundColor: "aquamarine",
-              marginTop: 20,
-              borderRadius: 20,
-            }}
-          >
-            <Text style={{ textAlign: "center" }}>Ya, sudah benar</Text>
-          </Pressable>
-        </View>
-      ) : (
-        <ScanOrInputQuestionSlug />
-      )}
-    </View>
+  return (
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.contentContainer}>
+            <View style={styles.section}>
+              <Identity title="Sebelum mengerjakan," />
+            </View>
+
+            {!isCorrect ? (
+              <View style={styles.actionContainer}>
+                <TouchableOpacity
+                  onPress={() => setCorrect(true)}
+                  style={styles.primaryButton}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.primaryButtonText}>Ya, sudah benar</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.inputSection}>
+                <ScanOrInputQuestionSlug />
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    padding: theme.margins.lg,
+  },
+  contentContainer: {
+    width: "100%",
+    maxWidth: 480,
+    alignSelf: "center",
+  },
+  section: {
+    marginBottom: theme.margins.lg,
+  },
+  actionContainer: {
+    marginTop: theme.margins.sm,
+  },
+  inputSection: {
+    marginTop: theme.margins.sm,
+  },
+  primaryButton: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.radius.sm,
+    paddingVertical: 12,
+    paddingHorizontal: theme.margins.lg,
+    alignItems: "center",
+    justifyContent: "center",
+    height: 48,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  primaryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+}));
