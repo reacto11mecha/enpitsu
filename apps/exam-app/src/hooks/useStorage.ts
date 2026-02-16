@@ -3,6 +3,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import type { AppSettings } from "@enpitsu/settings";
+
+export type AdminResponse = Omit<AppSettings, "canLogin">;
+
 export interface AuthState {
   isLoggedIn: boolean;
   token: null | string;
@@ -10,13 +14,20 @@ export interface AuthState {
   serverUrl: null | string;
   instanceName: null | string;
 
+  tokenSource: null | string;
+  tokenFlags: null | string;
+  minimalTokenLength: null | number;
+  maximalTokenLength: null | number;
+
   logOut: () => void;
-  logIn: (params: {
-    token: string;
-    npsn: number;
-    serverUrl: string;
-    instanceName: string;
-  }) => void;
+  logIn: (
+    params: {
+      token: string;
+      npsn: number;
+      serverUrl: string;
+      instanceName: string;
+    } & AdminResponse,
+  ) => void;
   updateToken: (token: string) => void;
 }
 
@@ -47,6 +58,10 @@ export const useAuthStore = create(
       npsn: null,
       serverUrl: null,
       instanceName: null,
+      tokenSource: null,
+      tokenFlags: null,
+      minimalTokenLength: null,
+      maximalTokenLength: null,
 
       logOut() {
         set((state) => ({
@@ -56,6 +71,10 @@ export const useAuthStore = create(
           npsn: null,
           serverUrl: null,
           instanceName: null,
+          tokenSource: null,
+          tokenFlags: null,
+          minimalTokenLength: null,
+          maximalTokenLength: null,
         }));
       },
 
