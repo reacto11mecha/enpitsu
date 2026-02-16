@@ -39,7 +39,7 @@ const api = {
       const json = (await res.json()) as HonResponse;
       return json.data;
     } catch (err: any) {
-      toast.error("Gagal", { description: err.message });
+      toast.error("Operasi Gagal", { description: err.message });
       return null;
     }
   },
@@ -50,7 +50,9 @@ const api = {
       });
       return res.ok ? ((await res.json()) as AdminResponse) : null;
     } catch {
-      toast.error("Gagal", { description: "Gagal memuat pengaturan sekolah." });
+      toast.error("Operasi Gagal", {
+        description: "Gagal memuat pengaturan sekolah.",
+      });
       return null;
     }
   },
