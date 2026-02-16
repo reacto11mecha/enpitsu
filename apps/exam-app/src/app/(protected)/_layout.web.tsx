@@ -21,7 +21,7 @@ export default function ProtectedWebLayout() {
           headers() {
             const headers = new Map<string, string>();
 
-            headers.set("x-trpc-source", "exam-app");
+            headers.set("x-trpc-source", "exam-web");
             headers.set("authorization", `Student ${token}`);
 
             return Object.fromEntries(headers);

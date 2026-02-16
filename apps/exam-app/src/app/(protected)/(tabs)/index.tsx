@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
-// import { Link } from "expo-router";
 import { Identity } from "@/components/identity";
 import { ScanOrInputQuestionSlug } from "@/components/scan-or-input-question-slug";
 
@@ -8,8 +7,6 @@ export default function HomeScreen() {
   const [isCorrect, setCorrect] = useState(false);
   return (
     <View>
-      <Text>Home screen</Text>
-
       <Identity title="Sebelum mengerjakan," />
 
       {!isCorrect ? (
