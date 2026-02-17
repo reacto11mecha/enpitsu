@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { ActivityIndicator, Alert, Text, View } from "react-native";
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { useAuthStore } from "@/hooks/useStorage";
 import { useTRPC } from "@/lib/trpc";
 import { useQuery } from "@tanstack/react-query";
@@ -8,6 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 import "@/lib/unistyles";
 
 export function Identity({ title }: { title: string }) {
+  useUnistyles();
+
   const { instanceName } = useAuthStore();
   const trpc = useTRPC();
 

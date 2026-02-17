@@ -1,10 +1,30 @@
+import { useUnistyles } from "react-native-unistyles";
 import { Tabs } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 export default function TabsLayout() {
+  const { theme } = useUnistyles();
+
   return (
-    <Tabs initialRouteName="index">
+    <Tabs
+      initialRouteName="index"
+      screenOptions={{
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.muted,
+        tabBarStyle: {
+          backgroundColor: theme.colors.surface,
+          borderTopColor: theme.colors.border,
+        },
+        sceneStyle: {
+          backgroundColor: theme.colors.background,
+        },
+        headerStyle: {
+          backgroundColor: theme.colors.surface,
+        },
+        headerTintColor: theme.colors.typography,
+      }}
+    >
       <Tabs.Screen
         name="settings"
         options={{

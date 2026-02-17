@@ -2,17 +2,16 @@ import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
-  Modal,
   NativeScrollEvent,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { Link } from "expo-router";
+import { ModalUniversal } from "@/components/modal-universal";
 import { toast } from "@/lib/sonner";
 import { useTRPC } from "@/lib/trpc";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +34,7 @@ const formSchema = z.object({
 });
 
 export function ScanOrInputQuestionSlug() {
+  const { theme } = useUnistyles();
   const [isPrecautionOpen, setOpen] = useState(false);
 
   const trpc = useTRPC();
@@ -93,10 +93,7 @@ export function ScanOrInputQuestionSlug() {
               }
               value={value}
               placeholder="Masukkan kode soal"
-              // Note: placeholderTextColor isn't style, so we can't use styles.placeholder directly here
-              // unless we extract the color string from the theme elsewhere.
-              // For simplicity, we assume a static muted color or use inline theme access if needed.
-              placeholderTextColor="#a1a1aa"
+              placeholderTextColor={theme.colors.muted}
               autoCapitalize="characters"
               autoCorrect={false}
             />
@@ -269,6 +266,8 @@ export const Precaution = ({
   open: boolean;
   close: () => void;
 }) => {
+  useUnistyles();
+
   const [scrolledToBottom, setScroll] = useState(false);
 
   const setScrollBottom = useCallback(
@@ -282,64 +281,44 @@ export const Precaution = ({
   };
 
   return (
-    <Modal
+    <ModalUniversal
       visible={open}
-      animationType="fade"
-      transparent={true}
       onRequestClose={handleClose}
-    >
-      <View style={styles.modalOverlay}>
-        <TouchableWithoutFeedback onPress={handleClose}>
-          <View style={styles.modalOverlayBackground} />
-        </TouchableWithoutFeedback>
-
-        <View style={styles.modalContent}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Sebelum Mengerjakan</Text>
-            <Text style={styles.modalDescription}>
-              Baca keterangan dibawah ini dengan saksama! Scroll sampai bawah
-              supaya bisa menekan tombol "Kerjakan".
-            </Text>
-          </View>
-
-          <View style={styles.separator} />
-
-          <PrecautionChildren data={data} setScrollBottom={setScrollBottom} />
-
-          <View style={styles.separator} />
-
-          <View style={styles.modalFooter}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={handleClose}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.cancelButtonText}>Batal</Text>
-            </TouchableOpacity>
-
-            {scrolledToBottom ? (
-              <Link href={`/test/${data?.slug}`} replace asChild>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={handleClose}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.actionButtonText}>Kerjakan</Text>
-                </TouchableOpacity>
-              </Link>
-            ) : (
+      title="Sebelum Mengerjakan"
+      description="Baca keterangan dibawah ini dengan saksama! Scroll sampai bawah supaya bisa menekan tombol 'Kerjakan'."
+      footer={
+        <>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={handleClose}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.cancelButtonText}>Batal</Text>
+          </TouchableOpacity>
+          {scrolledToBottom ? (
+            <Link href={`/test/${data?.slug}`} replace asChild>
               <TouchableOpacity
-                style={[styles.actionButton, styles.buttonDisabled]}
-                disabled={true}
-                activeOpacity={1}
+                style={styles.actionButton}
+                onPress={handleClose}
+                activeOpacity={0.8}
               >
                 <Text style={styles.actionButtonText}>Kerjakan</Text>
               </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      </View>
-    </Modal>
+            </Link>
+          ) : (
+            <TouchableOpacity
+              style={[styles.actionButton, styles.buttonDisabled]}
+              disabled={true}
+              activeOpacity={1}
+            >
+              <Text style={styles.actionButtonText}>Kerjakan</Text>
+            </TouchableOpacity>
+          )}
+        </>
+      }
+    >
+      <PrecautionChildren data={data} setScrollBottom={setScrollBottom} />
+    </ModalUniversal>
   );
 };
 
@@ -396,52 +375,10 @@ const styles = StyleSheet.create((theme) => ({
     fontWeight: "600",
   },
   // Modal Styles
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    padding: theme.margins.lg,
-  },
-  modalOverlayBackground: {
-    // Standard StyleSheet.absoluteFillObject can be used,
-    // but if you want Unistyles specific you can define it manually
-    ...StyleSheet.absoluteFillObject,
-  },
-  modalContent: {
-    width: "100%",
-    maxWidth: 500,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
-    maxHeight: "80%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    overflow: "hidden",
-  },
-  modalHeader: {
-    padding: theme.margins.lg,
-    paddingBottom: theme.margins.md,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: theme.colors.typography,
-    marginBottom: 4,
-  },
-  modalDescription: {
-    fontSize: 14,
-    color: theme.colors.muted,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: theme.colors.border,
-    width: "100%",
-  },
   modalScroll: {
     paddingHorizontal: theme.margins.lg,
+    flexGrow: 0,
+    flexShrink: 1,
   },
   section: {
     marginTop: theme.margins.md,

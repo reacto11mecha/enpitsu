@@ -2,7 +2,7 @@ import "@/lib/unistyles";
 
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { UnistylesRuntime } from "react-native-unistyles";
+import { useUnistyles } from "react-native-unistyles";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useAuthStore } from "@/hooks/useStorage";
@@ -13,11 +13,11 @@ import { Toaster } from "@/lib/sonner";
 
 export default function RootLayout() {
   const { isLoggedIn } = useAuthStore();
-  const theme = UnistylesRuntime.getTheme();
+  const { theme } = useUnistyles();
 
   return (
-    <SafeAreaProvider>
-      <GestureHandlerRootView>
+    <SafeAreaProvider style={{ flex: 1 }}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
         <StatusBar style="auto" />
         <Stack
           screenOptions={{

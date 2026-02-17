@@ -1,24 +1,35 @@
 import { useState } from "react";
 import {
-  Alert,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { reloadAppAsync } from "expo";
+import { ModalUniversal } from "@/components/modal-universal";
 import { useAuthStore } from "@/hooks/useStorage";
 import { toast } from "@/lib/sonner";
 import { useTRPC } from "@/lib/trpc";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function SettingsScreen() {
+  useUnistyles();
+
   const { npsn, instanceName, token, updateToken, logOut } = useAuthStore();
   const [localToken, setLocalToken] = useState(token || "");
   const [isEditingToken, setIsEditingToken] = useState(false);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+
+  const handleLogout = () => {
+    setLogoutModalVisible(true);
+  };
+
+  const confirmLogout = () => {
+    logOut();
+    setLogoutModalVisible(false);
+  };
 
   const queryClient = useQueryClient();
   const trpc = useTRPC();
@@ -40,26 +51,10 @@ export default function SettingsScreen() {
     setTimeout(() => reloadAppAsync("Refresh karena pembaharuan token."), 4000);
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      "Keluar Sesi",
-      "Apakah anda yakin ingin keluar? Riwayat pengerjaan lokal akan hilang.",
-      [
-        { text: "Batal", style: "cancel" },
-        {
-          text: "Keluar",
-          style: "destructive",
-          onPress: () => {
-            logOut();
-          },
-        },
-      ],
-    );
-  };
-
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
@@ -157,7 +152,32 @@ export default function SettingsScreen() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+
+      <ModalUniversal
+        visible={logoutModalVisible}
+        onRequestClose={() => setLogoutModalVisible(false)}
+        title="Keluar Sesi"
+        description="Apakah anda yakin ingin keluar? Riwayat pengerjaan lokal akan hilang."
+        footer={
+          <>
+            <TouchableOpacity
+              style={styles.modalCancelButton}
+              onPress={() => setLogoutModalVisible(false)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.modalCancelButtonText}>Batal</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.modalLogoutButton}
+              onPress={confirmLogout}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.modalLogoutButtonText}>Keluar</Text>
+            </TouchableOpacity>
+          </>
+        }
+      />
+    </View>
   );
 }
 
@@ -167,6 +187,7 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.background,
   },
   scrollContent: {
+    flexGrow: 1,
     padding: theme.margins.lg,
     paddingBottom: 40,
   },
@@ -285,6 +306,35 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
   },
   logoutButtonText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  modalCancelButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalCancelButtonText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: theme.colors.typography,
+  },
+  modalLogoutButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    backgroundColor: "#ef4444",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalLogoutButtonText: {
     color: "#ffffff",
     fontSize: 14,
     fontWeight: "600",
