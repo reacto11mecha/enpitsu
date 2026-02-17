@@ -1,3 +1,4 @@
+import type { ThemeType } from "@/hooks/useStorage";
 import { useState } from "react";
 import {
   ScrollView,
@@ -9,13 +10,60 @@ import {
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { reloadAppAsync } from "expo";
 import { ModalUniversal } from "@/components/modal-universal";
-import { useAuthStore } from "@/hooks/useStorage";
+import { useAuthStore, useThemeStorage } from "@/hooks/useStorage";
 import { toast } from "@/lib/sonner";
 import { useTRPC } from "@/lib/trpc";
 import { useQueryClient } from "@tanstack/react-query";
 
+const ThemeOption = ({
+  label,
+  value,
+  description,
+  current,
+  onSelect,
+}: {
+  label: string;
+  value: ThemeType;
+  description?: string;
+  current: ThemeType;
+  onSelect: (val: ThemeType) => void;
+}) => {
+  useUnistyles();
+
+  const isSelected = current === value;
+
+  return (
+    <TouchableOpacity
+      style={styles.optionContainer}
+      onPress={() => onSelect(value)}
+      activeOpacity={0.7}
+    >
+      <View style={styles.textWrapper}>
+        <Text
+          style={[
+            styles.optionLabel,
+            isSelected ? styles.textSelected : undefined,
+          ]}
+        >
+          {label}
+        </Text>
+        {description && (
+          <Text style={styles.optionDescription}>{description}</Text>
+        )}
+      </View>
+
+      {/* Radio Button UI */}
+      <View style={styles.radioOuter}>
+        {isSelected && <View style={styles.radioInner} />}
+      </View>
+    </TouchableOpacity>
+  );
+};
+
 export default function SettingsScreen() {
   useUnistyles();
+
+  const { theme: currentTheme, setTheme } = useThemeStorage();
 
   const { npsn, instanceName, token, updateToken, logOut } = useAuthStore();
   const [localToken, setLocalToken] = useState(token || "");
@@ -62,6 +110,39 @@ export default function SettingsScreen() {
           <Text style={styles.title}>Pengaturan</Text>
           <Text style={styles.description}>
             Kelola konfigurasi aplikasi dan sesi anda.
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Tampilan Aplikasi</Text>
+
+          <View style={styles.card}>
+            <ThemeOption
+              label="Ikuti Sistem"
+              value="system"
+              description="Menyesuaikan dengan preferensi perangkat anda"
+              current={currentTheme}
+              onSelect={setTheme}
+            />
+            <View style={styles.separator} />
+            <ThemeOption
+              label="Mode Terang"
+              value="light"
+              current={currentTheme}
+              onSelect={setTheme}
+            />
+            <View style={styles.separator} />
+            <ThemeOption
+              label="Mode Gelap"
+              value="dark"
+              current={currentTheme}
+              onSelect={setTheme}
+            />
+          </View>
+
+          <Text style={styles.helperText}>
+            Pilih "Ikuti Sistem" jika Anda ingin aplikasi otomatis berubah warna
+            saat HP Anda berganti mode terang/gelap.
           </Text>
         </View>
 
@@ -337,5 +418,44 @@ const styles = StyleSheet.create((theme) => ({
     color: "#ffffff",
     fontSize: 14,
     fontWeight: "600",
+  },
+  optionContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+  },
+  textWrapper: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  optionLabel: {
+    fontSize: 14,
+    color: theme.colors.typography,
+    fontWeight: "500",
+  },
+  textSelected: {
+    fontWeight: "700",
+    color: theme.colors.primary,
+  },
+  optionDescription: {
+    fontSize: 12,
+    color: theme.colors.muted,
+    marginTop: 2,
+  },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: theme.colors.muted,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: theme.colors.primary,
   },
 }));

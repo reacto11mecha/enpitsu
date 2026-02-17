@@ -1,11 +1,12 @@
 import "@/lib/unistyles";
 
+import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { useUnistyles } from "react-native-unistyles";
+import { UnistylesRuntime, useUnistyles } from "react-native-unistyles";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useAuthStore } from "@/hooks/useStorage";
+import { useAuthStore, useThemeStorage } from "@/hooks/useStorage";
 
 import "react-native-reanimated";
 
@@ -14,6 +15,17 @@ import { Toaster } from "@/lib/sonner";
 export default function RootLayout() {
   const { isLoggedIn } = useAuthStore();
   const { theme } = useUnistyles();
+
+  const { theme: userTheme } = useThemeStorage();
+
+  useEffect(() => {
+    if (userTheme === "system") {
+      UnistylesRuntime.setAdaptiveThemes(true);
+    } else {
+      UnistylesRuntime.setAdaptiveThemes(false);
+      UnistylesRuntime.setTheme(userTheme);
+    }
+  }, [userTheme]);
 
   return (
     <SafeAreaProvider style={{ flex: 1 }}>

@@ -2,7 +2,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import type { Answers, AuthState, StudentAnswer } from "./useStorage";
+import type {
+  Answers,
+  AuthState,
+  StudentAnswer,
+  ThemeState,
+} from "./useStorage";
 
 export const useAuthStore = create(
   persist<AuthState>(
@@ -12,6 +17,10 @@ export const useAuthStore = create(
       npsn: null,
       serverUrl: null,
       instanceName: null,
+      tokenSource: null,
+      tokenFlags: null,
+      minimalTokenLength: null,
+      maximalTokenLength: null,
 
       logOut() {
         set((state) => ({
@@ -21,6 +30,10 @@ export const useAuthStore = create(
           npsn: null,
           serverUrl: null,
           instanceName: null,
+          tokenSource: null,
+          tokenFlags: null,
+          minimalTokenLength: null,
+          maximalTokenLength: null,
         }));
       },
 
@@ -38,6 +51,21 @@ export const useAuthStore = create(
     }),
     {
       name: "auth-persist",
+      storage: createJSONStorage(() => AsyncStorage),
+    },
+  ),
+);
+
+export const useThemeStorage = create(
+  persist<ThemeState>(
+    (set) => ({
+      theme: "system",
+      setTheme(mode) {
+        set(() => ({ theme: mode }));
+      },
+    }),
+    {
+      name: "user-theme-storage",
       storage: createJSONStorage(() => AsyncStorage),
     },
   ),

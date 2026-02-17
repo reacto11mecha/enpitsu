@@ -1,3 +1,4 @@
+import { Appearance } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 const lightTheme = {
@@ -60,6 +61,8 @@ declare module "react-native-unistyles" {
   export interface UnistylesBreakpoints extends AppBreakpoints {}
 }
 
+const systemTheme = Appearance.getColorScheme() === "dark" ? "dark" : "light";
+
 StyleSheet.configure({
   themes: {
     light: lightTheme,
@@ -67,6 +70,6 @@ StyleSheet.configure({
   },
   breakpoints,
   settings: {
-    adaptiveThemes: true,
+    initialTheme: systemTheme,
   },
 });

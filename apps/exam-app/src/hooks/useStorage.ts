@@ -1,3 +1,4 @@
+import { UnistylesRuntime } from "react-native-unistyles";
 import { deleteItemAsync, getItem, setItem } from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
@@ -50,6 +51,13 @@ export interface Answers {
   newAnswer: (slug: string) => void;
 }
 
+export type ThemeType = "light" | "dark" | "system";
+
+export interface ThemeState {
+  theme: ThemeType;
+  setTheme: (theme: ThemeType) => void;
+}
+
 export const useAuthStore = create(
   persist<AuthState>(
     (set) => ({
@@ -97,6 +105,21 @@ export const useAuthStore = create(
         getItem,
         removeItem: deleteItemAsync,
       })),
+    },
+  ),
+);
+
+export const useThemeStorage = create(
+  persist<ThemeState>(
+    (set) => ({
+      theme: "system",
+      setTheme(mode) {
+        set(() => ({ theme: mode }));
+      },
+    }),
+    {
+      name: "user-theme-storage",
+      storage: createJSONStorage(() => AsyncStorage),
     },
   ),
 );
