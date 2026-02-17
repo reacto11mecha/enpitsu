@@ -1,0 +1,371 @@
+diff --git a/apps/exam-app/src/app/(protected)/(tabs)/_layout.tsx b/apps/exam-app/src/app/(protected)/(tabs)/_layout.tsx
+index 35b8f0b..5250603 100644
+--- a/apps/exam-app/src/app/(protected)/(tabs)/_layout.tsx
++++ b/apps/exam-app/src/app/(protected)/(tabs)/_layout.tsx
+@@ -1,10 +1,27 @@
++import { useUnistyles } from "react-native-unistyles";
+ import { Tabs } from "expo-router";
+ import Ionicons from "@expo/vector-icons/Ionicons";
+ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+ 
+ export default function TabsLayout() {
++  const { theme } = useUnistyles();
++
+   return (
+-    <Tabs initialRouteName="index">
++    <Tabs
++      initialRouteName="index"
++      screenOptions={{
++        tabBarStyle: {
++          backgroundColor: theme.colors.surface,
++          borderTopColor: theme.colors.border,
++        },
++        tabBarActiveTintColor: theme.colors.primary,
++        tabBarInactiveTintColor: theme.colors.muted,
++        headerStyle: {
++          backgroundColor: theme.colors.surface,
++        },
++        headerTintColor: theme.colors.typography,
++      }}
++    >
+       <Tabs.Screen
+         name="settings"
+         options={{
+diff --git a/apps/exam-app/src/app/(protected)/(tabs)/index.tsx b/apps/exam-app/src/app/(protected)/(tabs)/index.tsx
+index 7f5cf2d..33aef30 100644
+--- a/apps/exam-app/src/app/(protected)/(tabs)/index.tsx
++++ b/apps/exam-app/src/app/(protected)/(tabs)/index.tsx
+@@ -8,11 +8,13 @@ import {
+   View,
+ } from "react-native";
+ import { SafeAreaView } from "react-native-safe-area-context";
+-import { StyleSheet } from "react-native-unistyles";
++import { StyleSheet, useUnistyles } from "react-native-unistyles";
+ import { Identity } from "@/components/identity";
+ import { ScanOrInputQuestionSlug } from "@/components/scan-or-input-question-slug";
+ 
+ export default function HomeScreen() {
++  useUnistyles();
++
+   const [isCorrect, setCorrect] = useState(false);
+ 
+   return (
+diff --git a/apps/exam-app/src/app/(protected)/(tabs)/info.tsx b/apps/exam-app/src/app/(protected)/(tabs)/info.tsx
+index 95086b9..b895f7f 100644
+--- a/apps/exam-app/src/app/(protected)/(tabs)/info.tsx
++++ b/apps/exam-app/src/app/(protected)/(tabs)/info.tsx
+@@ -1,6 +1,6 @@
+ import { ScrollView, Text, View } from "react-native";
+ import { SafeAreaView } from "react-native-safe-area-context";
+-import { StyleSheet } from "react-native-unistyles";
++import { StyleSheet, useUnistyles } from "react-native-unistyles";
+ import { Identity } from "@/components/identity";
+ import { format, formatDuration, intervalToDuration } from "date-fns";
+ import { id } from "date-fns/locale";
+@@ -31,6 +31,8 @@ const HISTORY_DATA = [
+ ];
+ 
+ export default function AboutScreen() {
++  useUnistyles();
++
+   return (
+     <SafeAreaView style={styles.container}>
+       <ScrollView
+diff --git a/apps/exam-app/src/app/(protected)/_layout.tsx b/apps/exam-app/src/app/(protected)/_layout.tsx
+index 430455b..34c1d0b 100644
+--- a/apps/exam-app/src/app/(protected)/_layout.tsx
++++ b/apps/exam-app/src/app/(protected)/_layout.tsx
+@@ -1,4 +1,5 @@
+ import { useState } from "react";
++import { useUnistyles } from "react-native-unistyles";
+ import { Stack } from "expo-router";
+ import { useAuthStore } from "@/hooks/useStorage";
+ import { queryClient, TRPCProvider } from "@/lib/trpc";
+@@ -9,6 +10,7 @@ import superjson from "superjson";
+ import type { AppRouter } from "@enpitsu/api";
+ 
+ export default function ProtectedLayout() {
++  const { theme } = useUnistyles();
+   const { serverUrl, token } = useAuthStore();
+ 
+   const [trpcClient] = useState(() =>
+@@ -33,7 +35,12 @@ export default function ProtectedLayout() {
+   return (
+     <QueryClientProvider client={queryClient}>
+       <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+-        <Stack>
++        <Stack
++          screenOptions={{
++            contentStyle: { backgroundColor: theme.colors.background },
++            headerShown: false,
++          }}
++        >
+           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+           <Stack.Screen name="test/[slug]" />
+         </Stack>
+diff --git a/apps/exam-app/src/app/(protected)/_layout.web.tsx b/apps/exam-app/src/app/(protected)/_layout.web.tsx
+index b13e681..1003110 100644
+--- a/apps/exam-app/src/app/(protected)/_layout.web.tsx
++++ b/apps/exam-app/src/app/(protected)/_layout.web.tsx
+@@ -1,5 +1,6 @@
+ import { useMemo, useState } from "react";
+-import { Text } from "react-native";
++import { StyleSheet, Text, View } from "react-native";
++import { useUnistyles } from "react-native-unistyles";
+ import { Stack } from "expo-router";
+ import { useAuthStore } from "@/hooks/useStorage";
+ import { queryClient, TRPCProvider } from "@/lib/trpc";
+@@ -11,6 +12,7 @@ import { UAParser } from "ua-parser-js";
+ import type { AppRouter } from "@enpitsu/api";
+ 
+ export default function ProtectedWebLayout() {
++  const { theme } = useUnistyles();
+   const { serverUrl, token } = useAuthStore();
+ 
+   const [trpcClient] = useState(() =>
+@@ -41,29 +43,72 @@ export default function ProtectedWebLayout() {
+     return { browser, device };
+   }, []);
+ 
++  const containerStyle = [
++    styles.centeredContainer,
++    { backgroundColor: theme.colors.background },
++  ];
++  const textStyle = {
++    color: theme.colors.typography,
++    textAlign: "center" as const,
++    maxWidth: 600,
++    lineHeight: 24,
++  };
++
+   if (
+     (!device.type && browser.name !== "Chrome") ||
+     ((device.type === "mobile" || device.type === "tablet") &&
+       browser.name !== "Mobile Chrome")
+   )
+-    return <Text>Anda harus menggunakan google chrome</Text>;
++    return (
++      <View style={containerStyle}>
++        <Text style={textStyle}>
++          Aplikasi ini dioptimalkan untuk Google Chrome. Mohon gunakan browser
++          Google Chrome untuk pengalaman terbaik dan menghindari kendala teknis
++          saat ujian.
++        </Text>
++      </View>
++    );
+ 
+   if (parseInt(browser.major!) < 140)
+     return (
+-      <Text>
+-        Anda sudah menggunakan google chrome, namun belum versi terbaru. Mohon
+-        perbarui chrome anda ke versi terbaru agar bisa menggunakan enpitsu.
+-      </Text>
++      <View style={containerStyle}>
++        <Text style={textStyle}>
++          Anda sudah menggunakan Google Chrome, namun belum versi terbaru (Versi
++          Anda: {browser.major}). Mohon perbarui Chrome Anda ke versi terbaru
++          (140+) agar bisa menggunakan Enpitsu.
++        </Text>
++      </View>
+     );
+ 
+   return (
+     <QueryClientProvider client={queryClient}>
+       <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+-        <Stack>
+-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
++        <Stack
++          screenOptions={{
++            contentStyle: { backgroundColor: theme.colors.background },
++            headerShown: false,
++          }}
++        >
++          <Stack.Screen
++            name="(tabs)"
++            options={{
++              contentStyle: { backgroundColor: theme.colors.background },
++              headerShown: false,
++            }}
++          />
+           <Stack.Screen name="test/[slug]" />
+         </Stack>
+       </TRPCProvider>
+     </QueryClientProvider>
+   );
+ }
++
++// Tambahkan StyleSheet statis untuk layout dasar
++const styles = StyleSheet.create({
++  centeredContainer: {
++    flex: 1,
++    justifyContent: "center",
++    alignItems: "center",
++    padding: 24,
++  },
++});
+diff --git a/apps/exam-app/src/app/_layout.tsx b/apps/exam-app/src/app/_layout.tsx
+index f4ea60e..3001eca 100644
+--- a/apps/exam-app/src/app/_layout.tsx
++++ b/apps/exam-app/src/app/_layout.tsx
+@@ -1,11 +1,13 @@
+ import "@/lib/unistyles";
+ 
++import { useEffect } from "react";
++import { Platform } from "react-native"; // 1. Import Platform
+ import { GestureHandlerRootView } from "react-native-gesture-handler";
+ import { SafeAreaProvider } from "react-native-safe-area-context";
+-import { UnistylesRuntime } from "react-native-unistyles";
++import { UnistylesRuntime, useUnistyles } from "react-native-unistyles";
+ import { Stack } from "expo-router";
+ import { StatusBar } from "expo-status-bar";
+-import { useAuthStore } from "@/hooks/useStorage";
++import { useAuthStore, useThemeStore } from "@/hooks/useStorage";
+ 
+ import "react-native-reanimated";
+ 
+@@ -13,12 +15,47 @@ import { Toaster } from "@/lib/sonner";
+ 
+ export default function RootLayout() {
+   const { isLoggedIn } = useAuthStore();
+-  const theme = UnistylesRuntime.getTheme();
++  const { themeMode } = useThemeStore();
++  const { theme } = useUnistyles();
++
++  useEffect(() => {
++    switch (themeMode) {
++      case "dark":
++        UnistylesRuntime.setAdaptiveThemes(false);
++        UnistylesRuntime.setTheme("dark");
++        break;
++      case "light":
++        UnistylesRuntime.setAdaptiveThemes(false);
++        UnistylesRuntime.setTheme("light");
++        break;
++      case "system":
++      default:
++        UnistylesRuntime.setAdaptiveThemes(true);
++        UnistylesRuntime.setTheme(
++          UnistylesRuntime.colorScheme === "dark" ? "dark" : "light",
++        );
++        break;
++    }
++  }, [themeMode]);
++
++  // Efek 2: Fix Background Body HTML (Khusus Web)
++  useEffect(() => {
++    if (Platform.OS === "web") {
++      // Ini mewarnai "kanvas" browser di belakang aplikasi
++      document.body.style.backgroundColor = theme.colors.background;
++
++      // Ini memastikan aplikasi bisa discroll jika konten panjang
++      document.documentElement.style.height = "100%";
++      document.body.style.height = "100%";
++    }
++  }, [theme.colors.background]);
+ 
+   return (
+     <SafeAreaProvider>
+-      <GestureHandlerRootView>
+-        <StatusBar style="auto" />
++      {/* PENTING: style={{ flex: 1 }} WAJIB ADA.
++          Tanpa ini, tinggi aplikasi di Web = 0, jadi tidak bisa scroll. */}
++      <GestureHandlerRootView style={{ flex: 1 }}>
++        <StatusBar style={themeMode === "dark" ? "light" : "dark"} />
+         <Stack
+           screenOptions={{
+             contentStyle: {
+diff --git a/apps/exam-app/src/components/scan-or-input-question-slug.tsx b/apps/exam-app/src/components/scan-or-input-question-slug.tsx
+index 9d23818..35cc9dd 100644
+--- a/apps/exam-app/src/components/scan-or-input-question-slug.tsx
++++ b/apps/exam-app/src/components/scan-or-input-question-slug.tsx
+@@ -11,7 +11,7 @@ import {
+   TouchableWithoutFeedback,
+   View,
+ } from "react-native";
+-import { StyleSheet } from "react-native-unistyles";
++import { StyleSheet, useUnistyles } from "react-native-unistyles";
+ import { Link } from "expo-router";
+ import { toast } from "@/lib/sonner";
+ import { useTRPC } from "@/lib/trpc";
+@@ -35,6 +35,8 @@ const formSchema = z.object({
+ });
+ 
+ export function ScanOrInputQuestionSlug() {
++  const { theme } = useUnistyles();
++
+   const [isPrecautionOpen, setOpen] = useState(false);
+ 
+   const trpc = useTRPC();
+@@ -93,10 +95,7 @@ export function ScanOrInputQuestionSlug() {
+               }
+               value={value}
+               placeholder="Masukkan kode soal"
+-              // Note: placeholderTextColor isn't style, so we can't use styles.placeholder directly here
+-              // unless we extract the color string from the theme elsewhere.
+-              // For simplicity, we assume a static muted color or use inline theme access if needed.
+-              placeholderTextColor="#a1a1aa"
++              placeholderTextColor={theme.colors.muted}
+               autoCapitalize="characters"
+               autoCorrect={false}
+             />
+diff --git a/apps/exam-app/src/hooks/useStorage.ts b/apps/exam-app/src/hooks/useStorage.ts
+index 2ab371e..27b948f 100644
+--- a/apps/exam-app/src/hooks/useStorage.ts
++++ b/apps/exam-app/src/hooks/useStorage.ts
+@@ -7,6 +7,8 @@ import type { AppSettings } from "@enpitsu/settings";
+ 
+ export type AdminResponse = Omit<AppSettings, "canLogin">;
+ 
++export type AppThemeMode = "light" | "dark" | "system";
++
+ export interface AuthState {
+   isLoggedIn: boolean;
+   token: null | string;
+@@ -31,6 +33,12 @@ export interface AuthState {
+   updateToken: (token: string) => void;
+ }
+ 
++export interface ThemeState {
++  themeMode: AppThemeMode;
++
++  setThemeMode: (mode: AppThemeMode) => void;
++}
++
+ export interface StudentAnswer {
+   slug: string;
+   dishonestCount: number | undefined;
+@@ -101,6 +109,22 @@ export const useAuthStore = create(
+   ),
+ );
+ 
++export const useThemeStore = create(
++  persist<ThemeState>(
++    (set) => ({
++      themeMode: "system",
++
++      setThemeMode(mode) {
++        set(() => ({ themeMode: mode }));
++      },
++    }),
++    {
++      name: "app-theme-persist",
++      storage: createJSONStorage(() => AsyncStorage),
++    },
++  ),
++);
++
+ export const useStudentAnswerStore = create(
+   persist<Answers>(
+     (set) => ({
+diff --git a/apps/exam-app/src/lib/unistyles.ts b/apps/exam-app/src/lib/unistyles.ts
+index 2bcee8d..e3dd027 100644
+--- a/apps/exam-app/src/lib/unistyles.ts
++++ b/apps/exam-app/src/lib/unistyles.ts
+@@ -66,7 +66,4 @@ StyleSheet.configure({
+     dark: darkTheme,
+   },
+   breakpoints,
+-  settings: {
+-    adaptiveThemes: true,
+-  },
+ });
