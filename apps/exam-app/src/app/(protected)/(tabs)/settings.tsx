@@ -10,7 +10,11 @@ import {
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { reloadAppAsync } from "expo";
 import { ModalUniversal } from "@/components/modal-universal";
-import { useAuthStore, useThemeStorage } from "@/hooks/useStorage";
+import {
+  useAuthStore,
+  useStudentAnswerStore,
+  useThemeStorage,
+} from "@/hooks/useStorage";
 import { toast } from "@/lib/sonner";
 import { useTRPC } from "@/lib/trpc";
 import { useQueryClient } from "@tanstack/react-query";
@@ -64,8 +68,9 @@ export default function SettingsScreen() {
   useUnistyles();
 
   const { theme: currentTheme, setTheme } = useThemeStorage();
-
   const { npsn, instanceName, token, updateToken, logOut } = useAuthStore();
+  const { clearAll: clearAllAnswer } = useStudentAnswerStore();
+
   const [localToken, setLocalToken] = useState(token || "");
   const [isEditingToken, setIsEditingToken] = useState(false);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
@@ -76,6 +81,7 @@ export default function SettingsScreen() {
 
   const confirmLogout = () => {
     logOut();
+    clearAllAnswer();
     setLogoutModalVisible(false);
   };
 
