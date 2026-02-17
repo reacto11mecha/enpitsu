@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Keyboard,
   NativeScrollEvent,
   ScrollView,
@@ -10,6 +11,11 @@ import {
   View,
 } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
+import {
+  BarcodeScanningResult,
+  CameraView,
+  useCameraPermissions,
+} from "expo-camera";
 import { Link } from "expo-router";
 import { ModalUniversal } from "@/components/modal-universal";
 import { toast } from "@/lib/sonner";
@@ -33,20 +39,30 @@ const formSchema = z.object({
     .min(4, { message: "Kode soal minimal memiliki panjang 4 karakter" }),
 });
 
-export function ScanOrInputQuestionSlug() {
+export function ScanOrInputQuestionSlug({
+  resetCorrect,
+}: {
+  resetCorrect: () => void;
+}) {
   const { theme } = useUnistyles();
   const [isPrecautionOpen, setOpen] = useState(false);
+
+  // State untuk Camera
+  const [isScanning, setIsScanning] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
 
   const trpc = useTRPC();
   const getQuestionMutation = useMutation(
     trpc.exam.getQuestion.mutationOptions({
       onSuccess() {
         setOpen(true);
+        setIsScanning(false);
       },
       onError(error) {
         toast.error("Gagal mengambil data soal", {
           description: error.message,
         });
+        setIsScanning(false);
       },
     }),
   );
@@ -54,6 +70,8 @@ export function ScanOrInputQuestionSlug() {
   const {
     control,
     handleSubmit,
+    setValue,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(formSchema),
@@ -67,57 +85,150 @@ export function ScanOrInputQuestionSlug() {
     getQuestionMutation.mutate(values);
   };
 
+  const handleStartScan = async () => {
+    if (!permission?.granted) {
+      const { granted } = await requestPermission();
+      if (!granted) {
+        Alert.alert(
+          "Izin Ditolak",
+          "Aplikasi membutuhkan izin kamera untuk memindai QR Code.",
+        );
+        return;
+      }
+    }
+    Keyboard.dismiss();
+    setIsScanning(true);
+  };
+
+  const handleBarcodeScanned = ({ data }: BarcodeScanningResult) => {
+    if (getQuestionMutation.isPending) return;
+    setValue("slug", data);
+    getQuestionMutation.mutate({ slug: data });
+  };
+
+  const handleReset = () => {
+    reset();
+    getQuestionMutation.reset();
+    setIsScanning(false);
+    Keyboard.dismiss();
+    resetCorrect();
+  };
+
   return (
     <View style={styles.container}>
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Kode Soal</Text>
-        <Controller
-          control={control}
-          name="slug"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              editable={!getQuestionMutation.isPending}
-              style={[
-                styles.input,
-                errors.slug ? styles.inputError : undefined,
-              ]}
-              onBlur={onBlur}
-              onChangeText={(val) =>
-                onChange(
-                  slugify(val, {
-                    trim: false,
-                    strict: true,
-                    remove: /[*+~.()'"!:@]/g,
-                  }).toUpperCase(),
-                )
-              }
-              value={value}
-              placeholder="Masukkan kode soal"
-              placeholderTextColor={theme.colors.muted}
-              autoCapitalize="characters"
-              autoCorrect={false}
+      {!isScanning && (
+        <>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Kode Soal</Text>
+            <Controller
+              control={control}
+              name="slug"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  editable={!getQuestionMutation.isPending}
+                  style={[
+                    styles.input,
+                    errors.slug ? styles.inputError : undefined,
+                  ]}
+                  onBlur={onBlur}
+                  onChangeText={(val) =>
+                    onChange(
+                      slugify(val, {
+                        trim: false,
+                        strict: true,
+                        remove: /[*+~.()'"!:@]/g,
+                      }).toUpperCase(),
+                    )
+                  }
+                  value={value}
+                  placeholder="Masukkan kode soal"
+                  placeholderTextColor={theme.colors.muted}
+                  autoCapitalize="characters"
+                  autoCorrect={false}
+                />
+              )}
             />
-          )}
-        />
-        {errors.slug && (
-          <Text style={styles.errorText}>{errors.slug.message}</Text>
-        )}
-      </View>
+            {errors.slug && (
+              <Text style={styles.errorText}>{errors.slug.message}</Text>
+            )}
+          </View>
 
-      <TouchableOpacity
-        style={[
-          styles.primaryButton,
-          getQuestionMutation.isPending ? styles.buttonDisabled : undefined,
-        ]}
-        onPress={handleSubmit(onSubmit)}
-        disabled={getQuestionMutation.isPending}
-        activeOpacity={0.8}
-      >
-        {getQuestionMutation.isPending ? (
-          <ActivityIndicator color="#fff" style={{ marginRight: 8 }} />
-        ) : null}
-        <Text style={styles.primaryButtonText}>Kerjakan Soal</Text>
-      </TouchableOpacity>
+          {/* Tombol Kerjakan (Submit Manual) */}
+          <TouchableOpacity
+            style={[
+              styles.primaryButton,
+              getQuestionMutation.isPending ? styles.buttonDisabled : undefined,
+            ]}
+            onPress={handleSubmit(onSubmit)}
+            disabled={getQuestionMutation.isPending}
+            activeOpacity={0.8}
+          >
+            {getQuestionMutation.isPending ? (
+              <ActivityIndicator color="#fff" style={{ marginRight: 8 }} />
+            ) : null}
+            <Text style={styles.primaryButtonText}>Kerjakan Soal</Text>
+          </TouchableOpacity>
+
+          {/* Tombol Buka Scanner */}
+          <TouchableOpacity
+            style={[
+              styles.secondaryButton,
+              { marginTop: 12 },
+              getQuestionMutation.isPending ? styles.buttonDisabled : undefined,
+            ]}
+            onPress={handleStartScan}
+            disabled={getQuestionMutation.isPending}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.secondaryButtonText}>Scan QR Code</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.textButton}
+            onPress={handleReset}
+            activeOpacity={0.6}
+          >
+            <Text style={styles.textButtonText}>Batal</Text>
+          </TouchableOpacity>
+        </>
+      )}
+
+      {/* TAMPILAN SCANNER (CAMERA) */}
+      {isScanning && (
+        <View style={styles.scannerContainer}>
+          <View style={styles.cameraWrapper}>
+            <CameraView
+              style={StyleSheet.absoluteFill}
+              onBarcodeScanned={handleBarcodeScanned}
+              barcodeScannerSettings={{
+                barcodeTypes: ["qr"],
+              }}
+            />
+            {getQuestionMutation.isPending && (
+              <View style={styles.loadingOverlay}>
+                <ActivityIndicator size="large" color={theme.colors.primary} />
+                <Text
+                  style={{ color: "#fff", marginTop: 10, fontWeight: "600" }}
+                >
+                  Memproses Kode...
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <Text style={styles.scannerInstruction}>
+            Arahkan kamera ke QR Code soal ujian
+          </Text>
+
+          <TouchableOpacity
+            style={[styles.cancelScanButton, { marginTop: 12 }]}
+            onPress={() => setIsScanning(false)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.cancelScanButtonText}>Batal</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <Precaution
         data={getQuestionMutation.data}
@@ -374,6 +485,74 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: 16,
     fontWeight: "600",
   },
+  secondaryButton: {
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    borderRadius: theme.radius.sm,
+    height: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  secondaryButtonText: {
+    color: theme.colors.primary,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  // STYLE BARU: Tombol Batal (Reset)
+  textButton: {
+    marginTop: 12,
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  textButtonText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: theme.colors.muted, // Menggunakan warna muted (abu-abu)
+  },
+
+  scannerContainer: {
+    width: "100%",
+    alignItems: "center",
+    height: 400,
+  },
+  cameraWrapper: {
+    width: "100%",
+    flex: 1,
+    borderRadius: theme.radius.md,
+    overflow: "hidden",
+    backgroundColor: "#000",
+    position: "relative",
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  scannerInstruction: {
+    marginTop: theme.margins.md,
+    color: theme.colors.muted,
+    fontSize: 14,
+    textAlign: "center",
+  },
+  cancelScanButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: theme.radius.full,
+    backgroundColor: theme.colors.error,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cancelScanButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+
   // Modal Styles
   modalScroll: {
     paddingHorizontal: theme.margins.lg,

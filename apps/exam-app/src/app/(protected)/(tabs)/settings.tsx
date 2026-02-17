@@ -137,17 +137,16 @@ export default function SettingsScreen() {
           </Text>
           <View style={[styles.card, { borderColor: "#fecaca" }]}>
             <Text style={styles.warningText}>
-              Keluar aplikasi akan menghapus semua riwayat data yang tersimpan
-              di perangkat ini. Pastikan anda sudah screenshot untuk
-              berjaga-jaga. Anda dapat masuk kembali menggunakan kredensial yang
-              sama.
+              Logout akan menghapus semua riwayat data yang tersimpan di
+              perangkat ini. Pastikan anda sudah screenshot untuk berjaga-jaga.
+              Anda dapat masuk kembali menggunakan kredensial yang sama.
             </Text>
             <TouchableOpacity
               style={styles.logoutButton}
               onPress={handleLogout}
               activeOpacity={0.8}
             >
-              <Text style={styles.logoutButtonText}>Keluar Aplikasi</Text>
+              <Text style={styles.logoutButtonText}>Logout</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -156,8 +155,8 @@ export default function SettingsScreen() {
       <ModalUniversal
         visible={logoutModalVisible}
         onRequestClose={() => setLogoutModalVisible(false)}
-        title="Keluar Sesi"
-        description="Apakah anda yakin ingin keluar? Riwayat pengerjaan lokal akan hilang."
+        title="Logout"
+        description="Apakah anda yakin ingin keluar? Riwayat pengerjaan lokal akan hilang. Anda dapat masuk kembali menggunakan token akses yang sama."
         footer={
           <>
             <TouchableOpacity

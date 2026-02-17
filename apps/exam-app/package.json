@@ -27,6 +27,7 @@
     "@trpc/tanstack-react-query": "catalog:",
     "expo": "~54.0.30",
     "expo-blur": "~15.0.8",
+    "expo-camera": "~17.0.10",
     "expo-constants": "~18.0.12",
     "expo-font": "~14.0.10",
     "expo-haptics": "~15.0.8",

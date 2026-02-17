@@ -44,7 +44,9 @@ export default function HomeScreen() {
               </View>
             ) : (
               <View style={styles.inputSection}>
-                <ScanOrInputQuestionSlug />
+                <ScanOrInputQuestionSlug
+                  resetCorrect={() => setCorrect(false)}
+                />
               </View>
             )}
           </View>
