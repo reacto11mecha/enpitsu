@@ -60,7 +60,6 @@ export const questionBySlugSchema = z.object({ slug: z.string().min(2) });
 export const submitAnswerSchema = z.object({
   questionId: z.number(),
   checkIn: z.date(),
-  submittedAt: z.date(),
   multipleChoices: z.array(
     z.object({
       iqid: z.number(),

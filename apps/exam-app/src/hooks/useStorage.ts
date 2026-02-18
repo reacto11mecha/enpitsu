@@ -62,6 +62,20 @@ export interface ThemeState {
   setTheme: (theme: ThemeType) => void;
 }
 
+export interface QuestionHistory {
+  questionId: number;
+  title: string;
+  slug: string;
+  checkIn: Date;
+  submittedAt: Date;
+}
+
+export interface UserQuestionHistory {
+  questions: QuestionHistory[];
+  addHistory: (history: QuestionHistory) => void;
+  clearHistory: () => void;
+}
+
 export const useAuthStore = create(
   persist<AuthState>(
     (set) => ({
@@ -219,6 +233,26 @@ export const useStudentAnswerStore = create(
     }),
     {
       name: "student-answer-persist",
+      storage: createJSONStorage(() => AsyncStorage),
+    },
+  ),
+);
+
+export const useStudentSubmitHistory = create(
+  persist<UserQuestionHistory>(
+    (set) => ({
+      questions: [],
+
+      addHistory(history) {
+        set((state) => ({ questions: [...state.questions, history] }));
+      },
+
+      clearHistory() {
+        set(() => ({ questions: [] }));
+      },
+    }),
+    {
+      name: "student-success-submit-history",
       storage: createJSONStorage(() => AsyncStorage),
     },
   ),

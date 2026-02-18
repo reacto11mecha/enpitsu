@@ -279,13 +279,15 @@ export const examRouter = {
               "Tidak bisa mengumpulkan jawaban, anda sudah mengerjakan soal ini.",
           });
 
+        const submittedAt = new Date();
+
         const newRespond = await tx
           .insert(schema.studentResponds)
           .values({
             questionId: question.id,
             studentId: ctx.student.id,
             checkIn: input.checkIn,
-            submittedAt: input.submittedAt,
+            submittedAt,
           })
           .returning({ id: schema.studentResponds.id });
 
@@ -332,6 +334,11 @@ export const examRouter = {
             }
           }
         });
+
+        return {
+          submittedAt,
+          checkIn: input.checkIn,
+        };
       }),
     ),
 

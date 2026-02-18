@@ -7,6 +7,7 @@ import type {
   AuthState,
   StudentAnswer,
   ThemeState,
+  UserQuestionHistory,
 } from "./useStorage";
 
 export const useAuthStore = create(
@@ -155,9 +156,33 @@ export const useStudentAnswerStore = create(
           answers: state.answers.filter((s) => s.slug !== slug),
         }));
       },
+
+      clearAll() {
+        set(() => ({ answers: [] }));
+      },
     }),
     {
       name: "student-answer-persist",
+      storage: createJSONStorage(() => AsyncStorage),
+    },
+  ),
+);
+
+export const useStudentSubmitHistory = create(
+  persist<UserQuestionHistory>(
+    (set) => ({
+      questions: [],
+
+      addHistory(history) {
+        set((state) => ({ questions: [...state.questions, history] }));
+      },
+
+      clearHistory() {
+        set(() => ({ questions: [] }));
+      },
+    }),
+    {
+      name: "student-success-submit-history",
       storage: createJSONStorage(() => AsyncStorage),
     },
   ),

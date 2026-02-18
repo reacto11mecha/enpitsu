@@ -59,6 +59,7 @@ export const preparedQuestionSelect = db.query.questions
       endedAt: true,
       eligible: true,
       notEligibleReason: true,
+      shuffleQuestion: true,
     },
     with: {
       allowLists: {

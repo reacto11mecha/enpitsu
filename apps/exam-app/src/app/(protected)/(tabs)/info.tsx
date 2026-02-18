@@ -1,36 +1,14 @@
 import { ScrollView, Text, View } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { Identity } from "@/components/identity";
+import { useStudentSubmitHistory } from "@/hooks/useStorage.web";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 
-// --- Mock Data ---
-const HISTORY_DATA = [
-  {
-    id: "1",
-    title: "Penilaian Akhir Semester Ganjil 2024 - Matematika Wajib",
-    slug: "PAS-MTK-2024",
-    startedAt: new Date("2024-12-02T07:30:00"),
-    endedAt: new Date("2024-12-02T09:00:00"),
-  },
-  {
-    id: "2",
-    title: "Ulangan Harian Bab 3 - Fisika Dasar",
-    slug: "UH-FIS-03",
-    startedAt: new Date("2024-11-25T10:00:00"),
-    endedAt: new Date("2024-11-25T11:30:00"),
-  },
-  {
-    id: "3",
-    title: "Kuis Biologi - Sistem Pernapasan",
-    slug: "QUIZ-BIO-05",
-    startedAt: new Date("2024-11-20T13:00:00"),
-    endedAt: new Date("2024-11-20T13:45:00"),
-  },
-];
-
 export default function AboutScreen() {
   useUnistyles();
+
+  const { questions } = useStudentSubmitHistory();
 
   return (
     <View style={styles.container}>
@@ -46,10 +24,10 @@ export default function AboutScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Riwayat Ujian</Text>
 
-          {HISTORY_DATA.length > 0 ? (
+          {questions.length > 0 ? (
             <View style={styles.listContainer}>
-              {HISTORY_DATA.map((item) => (
-                <View key={item.id} style={styles.card}>
+              {questions.map((item) => (
+                <View key={item.questionId} style={styles.card}>
                   <View style={styles.cardHeader}>
                     <Text style={styles.cardTitle}>{item.title}</Text>
                     <View style={styles.badge}>
@@ -61,32 +39,35 @@ export default function AboutScreen() {
 
                   <View style={styles.cardContent}>
                     <View style={styles.infoRow}>
-                      <Text style={styles.infoLabel}>Mulai</Text>
+                      <Text style={styles.infoLabel}>Waktu Mulai</Text>
                       <Text style={styles.infoValue}>
-                        {format(item.startedAt, "dd MMMM yyyy, HH:mm", {
+                        {format(item.checkIn, "dd MMMM yyyy, HH:mm:ss", {
                           locale: id,
                         })}
                       </Text>
                     </View>
 
                     <View style={styles.infoRow}>
-                      <Text style={styles.infoLabel}>Selesai</Text>
+                      <Text style={styles.infoLabel}>Waktu Selesai</Text>
                       <Text style={styles.infoValue}>
-                        {format(item.endedAt, "dd MMMM yyyy, HH:mm", {
+                        {format(item.submittedAt, "dd MMMM yyyy, HH:mm:ss", {
                           locale: id,
                         })}
                       </Text>
                     </View>
 
                     <View style={styles.infoRow}>
-                      <Text style={styles.infoLabel}>Durasi</Text>
+                      <Text style={styles.infoLabel}>Durasi Pengerjaan</Text>
                       <Text style={styles.infoValue}>
                         {formatDuration(
                           intervalToDuration({
-                            start: item.startedAt,
-                            end: item.endedAt,
+                            start: new Date(item.checkIn),
+                            end: new Date(item.submittedAt),
                           }),
-                          { locale: id, format: ["hours", "minutes"] },
+                          {
+                            locale: id,
+                            format: ["hours", "minutes", "seconds"],
+                          },
                         )}
                       </Text>
                     </View>

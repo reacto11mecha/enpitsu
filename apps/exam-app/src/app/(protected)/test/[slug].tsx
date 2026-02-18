@@ -1,15 +1,9 @@
-import React, {
-  useEffect,
-  useMemo,
-  // useRef,
-  useState,
-} from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  // AppState,
-  BackHandler,
   Platform,
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
@@ -17,7 +11,6 @@ import {
   View,
 } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
-// --- Hooks Proteksi ---
 import { useKeepAwake } from "expo-keep-awake";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import HtmlContent from "@/components/html-content";
@@ -28,13 +21,25 @@ import {
 } from "@/hooks/useExamSessionStatus";
 import { useFullScreen } from "@/hooks/useFullscreen";
 import { useHardwareBackPressBlocker } from "@/hooks/useHardwareBackPressBlocker";
-import { useStudentAnswerStore } from "@/hooks/useStorage";
+import {
+  useStudentAnswerStore,
+  useStudentSubmitHistory,
+} from "@/hooks/useStorage";
 import { usePreventScreenCapture } from "@/lib/screen-capture";
 import { toast } from "@/lib/sonner";
 import { useTRPC } from "@/lib/trpc";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
 import { differenceInSeconds } from "date-fns";
+
+function shuffleArray<T>(array: T[]): T[] {
+  const newArr = [...array];
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+  }
+  return newArr;
+}
 
 // Helper Format Waktu
 const formatTime = (seconds: number) => {
@@ -67,16 +72,18 @@ export default function TestPage() {
     removeAnswer,
     setDishonestCount,
   } = useStudentAnswerStore();
+  const { addHistory } = useStudentSubmitHistory();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSheetOpen, setSheetOpen] = useState(false);
 
-  // State Kecurangan
   const { reason } = useExamSessionStatus();
   const [currentReason, setCurrentReason] =
     useState<SessionStatus["reason"]>("SECURE");
   const [isCheatModalOpen, setCheatModalOpen] = useState(false);
+
+  const [refreshing, setRefreshing] = useState(false);
 
   // Ambil data sesi user
   const currentAnswerSession = answers.find((a) => a.slug === slug);
@@ -98,12 +105,19 @@ export default function TestPage() {
 
   const submitMutation = useMutation(
     trpc.exam.submitAnswer.mutationOptions({
-      onSuccess: () => {
+      onSuccess: (data) => {
         if (slug) removeAnswer(slug);
+
         toast.success("Ujian Selesai", {
           description: "Jawaban anda telah berhasil dikirim.",
         });
-        router.replace("/(protected)/(tabs)");
+
+        addHistory({
+          ...data,
+          questionId: examData!.id,
+          title: examData!.title,
+          slug: examData!.slug,
+        });
       },
       onError: (err) => {
         toast.error("Gagal Mengirim", { description: err.message });
@@ -185,38 +199,37 @@ export default function TestPage() {
     }
   }, [examData]);
 
-  // Hardware Back Button Block
-  useEffect(() => {
-    const backAction = () => {
-      Alert.alert("Tahan!", "Anda sedang dalam ujian. Keluar sekarang?", [
-        { text: "Batal", style: "cancel" },
-        {
-          text: "Keluar",
-          onPress: () => router.replace("/(protected)/(tabs)"),
-          style: "destructive",
-        },
-      ]);
-      return true;
-    };
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction,
-    );
-    return () => backHandler.remove();
-  }, []);
-
   // --- DATA PREPARATION ---
   const allQuestions = useMemo(() => {
     if (!examData) return [];
-    const pg = examData.multipleChoices.map((q) => ({
+
+    // 1. Siapkan array awal dengan tipe
+    let pgQuestions = examData.multipleChoices.map((q) => ({
       ...q,
       type: "PG" as const,
     }));
-    const essay = examData.essays.map((q) => ({
+
+    let essayQuestions = examData.essays.map((q) => ({
       ...q,
       type: "ESSAY" as const,
     }));
-    return [...pg, ...essay];
+
+    // 2. Cek apakah fitur acak diaktifkan
+    // @ts-ignore (abaikan jika tipe shuffleQuestion belum ada di definisi backend)
+    if (examData.shuffleQuestion) {
+      // A. Acak urutan SOAL (tetap dalam kelompoknya masing-masing)
+      pgQuestions = shuffleArray(pgQuestions);
+      essayQuestions = shuffleArray(essayQuestions);
+
+      // B. Acak urutan OPSI JAWABAN (Hanya untuk PG)
+      pgQuestions = pgQuestions.map((q) => ({
+        ...q,
+        options: shuffleArray(q.options),
+      }));
+    }
+
+    // 3. Gabungkan: PG Selalu Duluan, Baru Esai
+    return [...pgQuestions, ...essayQuestions];
   }, [examData]);
 
   const currentQuestion = allQuestions[currentIndex];
@@ -231,21 +244,46 @@ export default function TestPage() {
     if (!isFirstQuestion) setCurrentIndex((prev) => prev - 1);
   };
 
+  const onRefresh = () => {
+    if (!slug) return;
+    setRefreshing(true);
+    // Panggil ulang mutasi untuk mengambil soal
+    getQuestionMutation.mutate(
+      { slug },
+      {
+        onSettled: () => {
+          // Matikan loading spinner setelah selesai (sukses/gagal)
+          setRefreshing(false);
+        },
+        onSuccess: () => {
+          toast.success("Soal Diperbarui", {
+            description: "Data ujian berhasil dimuat ulang.",
+          });
+        },
+      },
+    );
+  };
+
   const handleSubmit = (force = false) => {
     if (!currentAnswerSession || !examData) return;
+
     const doSubmit = () => {
       submitMutation.mutate({
         questionId: examData.id,
         essays: currentAnswerSession.essays,
         multipleChoices: currentAnswerSession.multipleChoices,
-        checkIn: currentAnswerSession.checkIn || new Date(),
-        submittedAt: new Date(),
+        checkIn:
+          (currentAnswerSession.checkIn as unknown as string) !== ""
+            ? new Date(currentAnswerSession.checkIn as unknown as string)
+            : new Date(),
       });
     };
+
     if (force) {
       doSubmit();
       return;
     }
+
     Alert.alert("Kumpulkan Jawaban?", "Pastikan semua soal telah terisi.", [
       { text: "Batal", style: "cancel" },
       { text: "Kumpulkan", style: "default", onPress: doSubmit },
@@ -289,6 +327,171 @@ export default function TestPage() {
 
   if (getQuestionMutation.isError || !examData)
     return <View style={styles.container} />;
+
+  if (submitMutation.isSuccess && examData) {
+    return (
+      <View style={[styles.container, styles.center, { padding: 20 }]}>
+        <Ionicons
+          name="checkmark-circle"
+          size={80}
+          color={theme.colors.primary}
+        />
+        <Text
+          style={{
+            fontSize: 24,
+            fontWeight: "bold",
+            color: theme.colors.primary,
+            marginTop: 16,
+            marginBottom: 24,
+          }}
+        >
+          Ujian Selesai
+        </Text>
+
+        <View
+          style={{
+            width: "100%",
+            backgroundColor: theme.colors.surface,
+            borderRadius: 12,
+            padding: 16,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            gap: 12,
+          }}
+        >
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
+            <Text style={{ color: theme.colors.muted }}>Kode Soal</Text>
+            <Text
+              style={{ color: theme.colors.typography, fontWeight: "bold" }}
+            >
+              {slug}
+            </Text>
+          </View>
+
+          <View style={{ height: 1, backgroundColor: theme.colors.border }} />
+
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
+            <Text style={{ color: theme.colors.muted }}>Nama Soal</Text>
+            <Text
+              style={{
+                color: theme.colors.typography,
+                fontWeight: "bold",
+                maxWidth: "60%",
+                textAlign: "right",
+              }}
+            >
+              {examData.title}
+            </Text>
+          </View>
+
+          <View style={{ height: 1, backgroundColor: theme.colors.border }} />
+
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
+            <Text style={{ color: theme.colors.muted }}>Waktu Mulai</Text>
+            <Text
+              style={{ color: theme.colors.typography, fontWeight: "bold" }}
+            >
+              12:00:00 WIB
+              {/*{submissionTime?.toLocaleString("id-ID", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                })}*/}
+            </Text>
+          </View>
+
+          <View style={{ height: 1, backgroundColor: theme.colors.border }} />
+
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
+            <Text style={{ color: theme.colors.muted }}>Waktu Selesai</Text>
+            <Text
+              style={{ color: theme.colors.typography, fontWeight: "bold" }}
+            >
+              12:00:00 WIB
+              {/*{submissionTime?.toLocaleString("id-ID", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                })}*/}
+            </Text>
+          </View>
+
+          <View style={{ height: 1, backgroundColor: theme.colors.border }} />
+
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
+            <Text style={{ color: theme.colors.muted }}>Durasi Pengerjaan</Text>
+            <Text
+              style={{ color: theme.colors.typography, fontWeight: "bold" }}
+            >
+              1 Detik
+              {/*{submissionTime?.toLocaleString("id-ID", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                })}*/}
+            </Text>
+          </View>
+        </View>
+
+        <View
+          style={{
+            marginTop: 24,
+            padding: 12,
+            backgroundColor: theme.colors.inputBg,
+            borderRadius: 8,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <Ionicons name="camera" size={24} color={theme.colors.muted} />
+          <Text
+            style={{
+              flex: 1,
+              color: theme.colors.muted,
+              fontSize: 13,
+              lineHeight: 18,
+            }}
+          >
+            Mohon{" "}
+            <Text style={{ fontWeight: "bold" }}>
+              tangkap layar (screenshot)
+            </Text>{" "}
+            halaman ini sebagai bukti sah bahwa Anda telah menyelesaikan ujian.
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          style={[
+            styles.buttonPrimary,
+            { marginTop: 32, width: "100%", alignItems: "center" },
+          ]}
+          onPress={() => router.replace("/(protected)/(tabs)")}
+        >
+          <Text style={styles.buttonText}>Kembali ke Beranda</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (dishonestyCount > 2) {
     return (
@@ -412,6 +615,14 @@ export default function TestPage() {
       <ScrollView
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]} // Warna spinner android
+            tintColor={theme.colors.primary} // Warna spinner iOS
+          />
+        }
       >
         {currentQuestion && (
           <View style={styles.questionCard}>

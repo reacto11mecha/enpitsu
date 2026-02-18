@@ -15,6 +15,7 @@ import {
   useStudentAnswerStore,
   useThemeStorage,
 } from "@/hooks/useStorage";
+import { useStudentSubmitHistory } from "@/hooks/useStorage.web";
 import { toast } from "@/lib/sonner";
 import { useTRPC } from "@/lib/trpc";
 import { useQueryClient } from "@tanstack/react-query";
@@ -70,6 +71,7 @@ export default function SettingsScreen() {
   const { theme: currentTheme, setTheme } = useThemeStorage();
   const { npsn, instanceName, token, updateToken, logOut } = useAuthStore();
   const { clearAll: clearAllAnswer } = useStudentAnswerStore();
+  const { clearHistory } = useStudentSubmitHistory();
 
   const [localToken, setLocalToken] = useState(token || "");
   const [isEditingToken, setIsEditingToken] = useState(false);
@@ -82,6 +84,7 @@ export default function SettingsScreen() {
   const confirmLogout = () => {
     logOut();
     clearAllAnswer();
+    clearHistory();
     setLogoutModalVisible(false);
   };
 
