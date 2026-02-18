@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Platform,
   RefreshControl,
   ScrollView,
@@ -51,6 +50,18 @@ const formatTime = (seconds: number) => {
     .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 };
 
+// Tipe untuk konfigurasi Alert Modal
+type AlertModalConfig = {
+  visible: boolean;
+  title: string;
+  description: string;
+  buttons?: {
+    text: string;
+    onPress?: () => void;
+    style?: "default" | "cancel" | "destructive";
+  }[];
+};
+
 export default function TestPage() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { theme } = useUnistyles();
@@ -77,25 +88,55 @@ export default function TestPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSheetOpen, setSheetOpen] = useState(false);
+  const [submissionTime, setSubmissionTime] = useState<Date | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // --- STATE MODAL ALERT (PENGGANTI ALERT.ALERT) ---
+  const [alertModal, setAlertModal] = useState<AlertModalConfig>({
+    visible: false,
+    title: "",
+    description: "",
+    buttons: [],
+  });
+
+  // Helper untuk menampilkan Alert Custom
+  const showAlert = (
+    title: string,
+    description: string,
+    buttons: AlertModalConfig["buttons"] = [{ text: "OK" }],
+  ) => {
+    setAlertModal({
+      visible: true,
+      title,
+      description,
+      buttons,
+    });
+  };
+
+  const closeAlert = () => {
+    setAlertModal((prev) => ({ ...prev, visible: false }));
+  };
 
   const { reason } = useExamSessionStatus();
   const [currentReason, setCurrentReason] =
     useState<SessionStatus["reason"]>("SECURE");
   const [isCheatModalOpen, setCheatModalOpen] = useState(false);
 
-  const [refreshing, setRefreshing] = useState(false);
-
-  // Ambil data sesi user
   const currentAnswerSession = answers.find((a) => a.slug === slug);
   const dishonestyCount = currentAnswerSession?.dishonestCount ?? 0;
+  const checkIn =
+    (currentAnswerSession?.checkIn as unknown as string) !== ""
+      ? new Date(currentAnswerSession?.checkIn as unknown as string)
+      : new Date();
 
-  // --- API MUTATIONS ---
   const getQuestionMutation = useMutation(
     trpc.exam.getQuestion.mutationOptions({
       onError: (err) => {
-        Alert.alert("Gagal Memuat Soal", err.message, [
+        // GANTI ALERT: Error Load Soal
+        showAlert("Gagal Memuat Soal", err.message, [
           {
             text: "Kembali",
+            style: "default",
             onPress: () => router.replace("/(protected)/(tabs)"),
           },
         ]);
@@ -106,6 +147,7 @@ export default function TestPage() {
   const submitMutation = useMutation(
     trpc.exam.submitAnswer.mutationOptions({
       onSuccess: (data) => {
+        setSubmissionTime(data.submittedAt);
         if (slug) removeAnswer(slug);
 
         toast.success("Ujian Selesai", {
@@ -129,30 +171,19 @@ export default function TestPage() {
     trpc.exam.storeBlocklist.mutationOptions({ onError: () => {} }),
   );
 
-  // --- LOGIKA DETEKSI KECURANGAN ---
   useEffect(() => {
     if (!currentAnswerSession) return;
 
-    // Jika status berubah dari sebelumnya
     if (reason !== currentReason) {
-      // KASUS 1: User Melanggar (Keluar App / Split Screen)
       if (reason !== "SECURE") {
         setCheatModalOpen(true);
         setCurrentReason(reason);
-      }
-
-      // KASUS 2: User KEMBALI ke App (Setelah melanggar)
-      else if (reason === "SECURE" && currentReason !== "SECURE") {
+      } else if (reason === "SECURE" && currentReason !== "SECURE") {
         const newCount = dishonestyCount + 1;
-
-        // Simpan ke Store
         if (slug) setDishonestCount(slug, newCount);
-
-        // Reset State Lokal
         setCurrentReason("SECURE");
         setCheatModalOpen(false);
 
-        // Lapor ke Server jika sudah > 2
         if (newCount > 2 && getQuestionMutation.data) {
           blocklistMutation.mutate({
             questionId: getQuestionMutation.data.id,
@@ -167,7 +198,6 @@ export default function TestPage() {
     }
   }, [reason, currentReason, currentAnswerSession, slug, dishonestyCount]);
 
-  // --- SIDE EFFECTS LAINNYA ---
   useEffect(() => {
     if (slug) getQuestionMutation.mutate({ slug });
   }, [slug]);
@@ -188,9 +218,15 @@ export default function TestPage() {
         );
         setTimeLeft(diff > 0 ? diff : 0);
         if (diff <= 0) {
-          Alert.alert("Waktu Habis", "Ujian otomatis dikumpulkan.", [
-            { text: "OK", onPress: () => handleSubmit(true) },
-          ]);
+          if (!alertModal.visible) {
+            showAlert("Waktu Habis", "Ujian otomatis dikumpulkan.", [
+              {
+                text: "OK",
+                style: "default",
+                onPress: () => handleSubmit(true),
+              },
+            ]);
+          }
         }
       };
       calculateTime();
@@ -203,7 +239,6 @@ export default function TestPage() {
   const allQuestions = useMemo(() => {
     if (!examData) return [];
 
-    // 1. Siapkan array awal dengan tipe
     let pgQuestions = examData.multipleChoices.map((q) => ({
       ...q,
       type: "PG" as const,
@@ -214,21 +249,17 @@ export default function TestPage() {
       type: "ESSAY" as const,
     }));
 
-    // 2. Cek apakah fitur acak diaktifkan
-    // @ts-ignore (abaikan jika tipe shuffleQuestion belum ada di definisi backend)
+    // @ts-ignore
     if (examData.shuffleQuestion) {
-      // A. Acak urutan SOAL (tetap dalam kelompoknya masing-masing)
       pgQuestions = shuffleArray(pgQuestions);
       essayQuestions = shuffleArray(essayQuestions);
 
-      // B. Acak urutan OPSI JAWABAN (Hanya untuk PG)
       pgQuestions = pgQuestions.map((q) => ({
         ...q,
         options: shuffleArray(q.options),
       }));
     }
 
-    // 3. Gabungkan: PG Selalu Duluan, Baru Esai
     return [...pgQuestions, ...essayQuestions];
   }, [examData]);
 
@@ -247,14 +278,10 @@ export default function TestPage() {
   const onRefresh = () => {
     if (!slug) return;
     setRefreshing(true);
-    // Panggil ulang mutasi untuk mengambil soal
     getQuestionMutation.mutate(
       { slug },
       {
-        onSettled: () => {
-          // Matikan loading spinner setelah selesai (sukses/gagal)
-          setRefreshing(false);
-        },
+        onSettled: () => setRefreshing(false),
         onSuccess: () => {
           toast.success("Soal Diperbarui", {
             description: "Data ujian berhasil dimuat ulang.",
@@ -268,14 +295,13 @@ export default function TestPage() {
     if (!currentAnswerSession || !examData) return;
 
     const doSubmit = () => {
+      closeAlert();
+
       submitMutation.mutate({
         questionId: examData.id,
         essays: currentAnswerSession.essays,
         multipleChoices: currentAnswerSession.multipleChoices,
-        checkIn:
-          (currentAnswerSession.checkIn as unknown as string) !== ""
-            ? new Date(currentAnswerSession.checkIn as unknown as string)
-            : new Date(),
+        checkIn,
       });
     };
 
@@ -284,10 +310,23 @@ export default function TestPage() {
       return;
     }
 
-    Alert.alert("Kumpulkan Jawaban?", "Pastikan semua soal telah terisi.", [
-      { text: "Batal", style: "cancel" },
-      { text: "Kumpulkan", style: "default", onPress: doSubmit },
-    ]);
+    // GANTI ALERT: Konfirmasi Submit
+    showAlert(
+      "Kumpulkan Jawaban?",
+      "Pastikan semua soal telah terisi dengan benar sebelum mengumpulkan.",
+      [
+        {
+          text: "Batal",
+          style: "cancel",
+          onPress: closeAlert,
+        },
+        {
+          text: "Kumpulkan",
+          style: "default",
+          onPress: doSubmit,
+        },
+      ],
+    );
   };
 
   const jumpToQuestion = (index: number) => {
@@ -314,20 +353,110 @@ export default function TestPage() {
     return theme.colors.surface;
   };
 
+  // --- RENDERING ---
+
+  // 1. Loading
   if (getQuestionMutation.isPending) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={{ marginTop: 10, color: theme.colors.muted }}>
-          Memuat Soal...
-        </Text>
+      <>
+        <View style={[styles.container, styles.center]}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={{ marginTop: 10, color: theme.colors.muted }}>
+            Memuat Soal...
+          </Text>
+        </View>
+        {/* Render Modal Alert jika error muncul saat loading (walaupun jarang) */}
+        <ModalUniversal
+          visible={alertModal.visible}
+          onRequestClose={closeAlert}
+          title={alertModal.title}
+          description={alertModal.description}
+          footer={
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                gap: 10,
+              }}
+            >
+              {alertModal.buttons?.map((btn, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  onPress={btn.onPress || closeAlert}
+                  style={[
+                    styles.modalButton,
+                    btn.style === "cancel"
+                      ? styles.modalButtonCancel
+                      : styles.modalButtonDefault,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.modalButtonText,
+                      btn.style === "cancel" && {
+                        color: theme.colors.typography,
+                      },
+                    ]}
+                  >
+                    {btn.text}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          }
+        />
+      </>
+    );
+  }
+
+  // 2. Error / No Data (Ditangani oleh Alert Modal di atas, tapi return view kosong biar tidak crash)
+  if (getQuestionMutation.isError || !examData) {
+    return (
+      <View style={styles.container}>
+        <ModalUniversal
+          visible={alertModal.visible}
+          onRequestClose={closeAlert}
+          title={alertModal.title}
+          description={alertModal.description}
+          footer={
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                gap: 10,
+              }}
+            >
+              {alertModal.buttons?.map((btn, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  onPress={btn.onPress || closeAlert}
+                  style={[
+                    styles.modalButton,
+                    btn.style === "cancel"
+                      ? styles.modalButtonCancel
+                      : styles.modalButtonDefault,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.modalButtonText,
+                      btn.style === "cancel" && {
+                        color: theme.colors.typography,
+                      },
+                    ]}
+                  >
+                    {btn.text}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          }
+        />
       </View>
     );
   }
 
-  if (getQuestionMutation.isError || !examData)
-    return <View style={styles.container} />;
-
+  // 3. Sukses Submit
   if (submitMutation.isSuccess && examData) {
     return (
       <View style={[styles.container, styles.center, { padding: 20 }]}>
@@ -348,20 +477,8 @@ export default function TestPage() {
           Ujian Selesai
         </Text>
 
-        <View
-          style={{
-            width: "100%",
-            backgroundColor: theme.colors.surface,
-            borderRadius: 12,
-            padding: 16,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            gap: 12,
-          }}
-        >
-          <View
-            style={{ flexDirection: "row", justifyContent: "space-between" }}
-          >
+        <View style={styles.infoCard}>
+          <View style={styles.infoRow}>
             <Text style={{ color: theme.colors.muted }}>Kode Soal</Text>
             <Text
               style={{ color: theme.colors.typography, fontWeight: "bold" }}
@@ -369,12 +486,8 @@ export default function TestPage() {
               {slug}
             </Text>
           </View>
-
-          <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-
-          <View
-            style={{ flexDirection: "row", justifyContent: "space-between" }}
-          >
+          <View style={styles.dividerSuccess} />
+          <View style={styles.infoRow}>
             <Text style={{ color: theme.colors.muted }}>Nama Soal</Text>
             <Text
               style={{
@@ -387,82 +500,25 @@ export default function TestPage() {
               {examData.title}
             </Text>
           </View>
-
-          <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-
-          <View
-            style={{ flexDirection: "row", justifyContent: "space-between" }}
-          >
-            <Text style={{ color: theme.colors.muted }}>Waktu Mulai</Text>
+          <View style={styles.dividerSuccess} />
+          <View style={styles.infoRow}>
+            <Text style={{ color: theme.colors.muted }}>Waktu Submit</Text>
             <Text
               style={{ color: theme.colors.typography, fontWeight: "bold" }}
             >
-              12:00:00 WIB
-              {/*{submissionTime?.toLocaleString("id-ID", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}*/}
-            </Text>
-          </View>
-
-          <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-
-          <View
-            style={{ flexDirection: "row", justifyContent: "space-between" }}
-          >
-            <Text style={{ color: theme.colors.muted }}>Waktu Selesai</Text>
-            <Text
-              style={{ color: theme.colors.typography, fontWeight: "bold" }}
-            >
-              12:00:00 WIB
-              {/*{submissionTime?.toLocaleString("id-ID", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}*/}
-            </Text>
-          </View>
-
-          <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-
-          <View
-            style={{ flexDirection: "row", justifyContent: "space-between" }}
-          >
-            <Text style={{ color: theme.colors.muted }}>Durasi Pengerjaan</Text>
-            <Text
-              style={{ color: theme.colors.typography, fontWeight: "bold" }}
-            >
-              1 Detik
-              {/*{submissionTime?.toLocaleString("id-ID", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}*/}
+              {submissionTime?.toLocaleString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              })}
             </Text>
           </View>
         </View>
 
-        <View
-          style={{
-            marginTop: 24,
-            padding: 12,
-            backgroundColor: theme.colors.inputBg,
-            borderRadius: 8,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
+        <View style={styles.screenshotAlert}>
           <Ionicons name="camera" size={24} color={theme.colors.muted} />
           <Text
             style={{
@@ -493,6 +549,7 @@ export default function TestPage() {
     );
   }
 
+  // 4. Diskualifikasi
   if (dishonestyCount > 2) {
     return (
       <View style={[styles.container, styles.center, { padding: 20 }]}>
@@ -528,6 +585,7 @@ export default function TestPage() {
     );
   }
 
+  // 5. Main Exam View
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ gestureEnabled: false, headerShown: false }} />
@@ -584,7 +642,7 @@ export default function TestPage() {
       {/* MODAL PERINGATAN CURANG (Block Screen) */}
       <ModalUniversal
         visible={isCheatModalOpen}
-        onRequestClose={() => {}} // Disable manual close
+        onRequestClose={() => {}}
         title="Peringatan Keamanan!"
         description={`Terdeteksi aktivitas mencurigakan (${reason}). Harap segera kembali ke layar ujian!`}
         footer={
@@ -611,6 +669,41 @@ export default function TestPage() {
         </View>
       </ModalUniversal>
 
+      {/* MODAL ALERT CUSTOM (Pengganti Alert.alert) */}
+      <ModalUniversal
+        visible={alertModal.visible}
+        onRequestClose={closeAlert}
+        title={alertModal.title}
+        description={alertModal.description}
+        footer={
+          <View style={styles.modalFooter}>
+            {alertModal.buttons?.map((btn, idx) => (
+              <TouchableOpacity
+                key={idx}
+                onPress={btn.onPress || closeAlert}
+                style={[
+                  styles.modalButton,
+                  btn.style === "cancel"
+                    ? styles.modalButtonCancel
+                    : styles.modalButtonDefault,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.modalButtonText,
+                    btn.style === "cancel" && {
+                      color: theme.colors.typography,
+                    },
+                  ]}
+                >
+                  {btn.text}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        }
+      />
+
       {/* QUESTION CONTENT */}
       <ScrollView
         contentContainerStyle={styles.contentContainer}
@@ -619,8 +712,8 @@ export default function TestPage() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={[theme.colors.primary]} // Warna spinner android
-            tintColor={theme.colors.primary} // Warna spinner iOS
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
           />
         }
       >
@@ -943,6 +1036,10 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.border,
     marginBottom: 24,
   },
+  dividerSuccess: {
+    height: 1,
+    backgroundColor: theme.colors.border,
+  },
   answerArea: {
     gap: 16,
   },
@@ -1100,4 +1197,50 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: 8,
   },
   buttonText: { color: "#fff", fontWeight: "bold" },
+  modalFooter: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 12,
+    width: "100%",
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  modalButtonDefault: {
+    backgroundColor: theme.colors.primary,
+  },
+  modalButtonCancel: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  modalButtonText: {
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  // Info Card untuk Sukses Page
+  infoCard: {
+    width: "100%",
+    backgroundColor: theme.colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    gap: 12,
+  },
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  screenshotAlert: {
+    marginTop: 24,
+    padding: 12,
+    backgroundColor: theme.colors.inputBg,
+    borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
 }));
