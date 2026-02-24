@@ -1,3 +1,4 @@
+import type { AlertModalConfig } from "@/components/exam/types";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -9,9 +10,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { StyleSheet, useUnistyles } from "react-native-unistyles";
+import { useUnistyles } from "react-native-unistyles";
 import { useKeepAwake } from "expo-keep-awake";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Disqualification } from "@/components/exam/disqualification";
+import { ErrorStatus, LoadingStatus } from "@/components/exam/status-interface";
+import { styles } from "@/components/exam/styles";
+import { SuccessSubmit } from "@/components/exam/success-submit";
+import { formatTime, shuffleArray } from "@/components/exam/utils";
 import HtmlContent from "@/components/html-content";
 import { ModalUniversal } from "@/components/modal-universal";
 import {
@@ -31,50 +37,18 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
 import { differenceInSeconds } from "date-fns";
 
-function shuffleArray<T>(array: T[]): T[] {
-  const newArr = [...array];
-  for (let i = newArr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-  }
-  return newArr;
-}
-
-// Helper Format Waktu
-const formatTime = (seconds: number) => {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  return `${h.toString().padStart(2, "0")}:${m
-    .toString()
-    .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-};
-
-// Tipe untuk konfigurasi Alert Modal
-type AlertModalConfig = {
-  visible: boolean;
-  title: string;
-  description: string;
-  buttons?: {
-    text: string;
-    onPress?: () => void;
-    style?: "default" | "cancel" | "destructive";
-  }[];
-};
-
 export default function TestPage() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { theme } = useUnistyles();
+
   const router = useRouter();
   const trpc = useTRPC();
 
-  // --- AKTIFKAN PROTEKSI ---
   useHardwareBackPressBlocker();
   useFullScreen();
   useKeepAwake();
   usePreventScreenCapture();
 
-  // --- STATE MANAGEMENT ---
   const {
     answers,
     newAnswer,
@@ -88,10 +62,8 @@ export default function TestPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSheetOpen, setSheetOpen] = useState(false);
-  const [submissionTime, setSubmissionTime] = useState<Date | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  // --- STATE MODAL ALERT (PENGGANTI ALERT.ALERT) ---
   const [alertModal, setAlertModal] = useState<AlertModalConfig>({
     visible: false,
     title: "",
@@ -99,7 +71,6 @@ export default function TestPage() {
     buttons: [],
   });
 
-  // Helper untuk menampilkan Alert Custom
   const showAlert = (
     title: string,
     description: string,
@@ -124,15 +95,17 @@ export default function TestPage() {
 
   const currentAnswerSession = answers.find((a) => a.slug === slug);
   const dishonestyCount = currentAnswerSession?.dishonestCount ?? 0;
-  const checkIn =
-    (currentAnswerSession?.checkIn as unknown as string) !== ""
-      ? new Date(currentAnswerSession?.checkIn as unknown as string)
-      : new Date();
+  const checkIn = useMemo(
+    () =>
+      (currentAnswerSession?.checkIn as unknown as string) !== ""
+        ? new Date(currentAnswerSession?.checkIn as unknown as string)
+        : new Date(),
+    [currentAnswerSession?.checkIn],
+  );
 
   const getQuestionMutation = useMutation(
     trpc.exam.getQuestion.mutationOptions({
       onError: (err) => {
-        // GANTI ALERT: Error Load Soal
         showAlert("Gagal Memuat Soal", err.message, [
           {
             text: "Kembali",
@@ -147,7 +120,6 @@ export default function TestPage() {
   const submitMutation = useMutation(
     trpc.exam.submitAnswer.mutationOptions({
       onSuccess: (data) => {
-        setSubmissionTime(data.submittedAt);
         if (slug) removeAnswer(slug);
 
         toast.success("Ujian Selesai", {
@@ -168,7 +140,12 @@ export default function TestPage() {
   );
 
   const blocklistMutation = useMutation(
-    trpc.exam.storeBlocklist.mutationOptions({ onError: () => {} }),
+    trpc.exam.storeBlocklist.mutationOptions({
+      onError: () => {},
+      onSuccess() {
+        if (slug) removeAnswer(slug);
+      },
+    }),
   );
 
   useEffect(() => {
@@ -249,7 +226,6 @@ export default function TestPage() {
       type: "ESSAY" as const,
     }));
 
-    // @ts-ignore
     if (examData.shuffleQuestion) {
       pgQuestions = shuffleArray(pgQuestions);
       essayQuestions = shuffleArray(essayQuestions);
@@ -358,238 +334,48 @@ export default function TestPage() {
   // 1. Loading
   if (getQuestionMutation.isPending) {
     return (
-      <>
-        <View style={[styles.container, styles.center]}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={{ marginTop: 10, color: theme.colors.muted }}>
-            Memuat Soal...
-          </Text>
-        </View>
-        {/* Render Modal Alert jika error muncul saat loading (walaupun jarang) */}
-        <ModalUniversal
-          visible={alertModal.visible}
-          onRequestClose={closeAlert}
-          title={alertModal.title}
-          description={alertModal.description}
-          footer={
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "flex-end",
-                gap: 10,
-              }}
-            >
-              {alertModal.buttons?.map((btn, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  onPress={btn.onPress || closeAlert}
-                  style={[
-                    styles.modalButton,
-                    btn.style === "cancel"
-                      ? styles.modalButtonCancel
-                      : styles.modalButtonDefault,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.modalButtonText,
-                      btn.style === "cancel" && {
-                        color: theme.colors.typography,
-                      },
-                    ]}
-                  >
-                    {btn.text}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          }
-        />
-      </>
+      <LoadingStatus
+        modalVisible={alertModal.visible}
+        closeModal={closeAlert}
+        modalTitle={alertModal.title}
+        modalDescription={alertModal.description}
+        modalButtons={alertModal.buttons}
+      />
     );
   }
 
   // 2. Error / No Data (Ditangani oleh Alert Modal di atas, tapi return view kosong biar tidak crash)
   if (getQuestionMutation.isError || !examData) {
     return (
-      <View style={styles.container}>
-        <ModalUniversal
-          visible={alertModal.visible}
-          onRequestClose={closeAlert}
-          title={alertModal.title}
-          description={alertModal.description}
-          footer={
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "flex-end",
-                gap: 10,
-              }}
-            >
-              {alertModal.buttons?.map((btn, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  onPress={btn.onPress || closeAlert}
-                  style={[
-                    styles.modalButton,
-                    btn.style === "cancel"
-                      ? styles.modalButtonCancel
-                      : styles.modalButtonDefault,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.modalButtonText,
-                      btn.style === "cancel" && {
-                        color: theme.colors.typography,
-                      },
-                    ]}
-                  >
-                    {btn.text}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          }
-        />
-      </View>
+      <ErrorStatus
+        closeModal={closeAlert}
+        modalTitle={alertModal.title}
+        modalDescription={alertModal.description}
+        modalButtons={alertModal.buttons}
+      />
     );
   }
 
   // 3. Sukses Submit
   if (submitMutation.isSuccess && examData) {
     return (
-      <View style={[styles.container, styles.center, { padding: 20 }]}>
-        <Ionicons
-          name="checkmark-circle"
-          size={80}
-          color={theme.colors.primary}
-        />
-        <Text
-          style={{
-            fontSize: 24,
-            fontWeight: "bold",
-            color: theme.colors.primary,
-            marginTop: 16,
-            marginBottom: 24,
-          }}
-        >
-          Ujian Selesai
-        </Text>
-
-        <View style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <Text style={{ color: theme.colors.muted }}>Kode Soal</Text>
-            <Text
-              style={{ color: theme.colors.typography, fontWeight: "bold" }}
-            >
-              {slug}
-            </Text>
-          </View>
-          <View style={styles.dividerSuccess} />
-          <View style={styles.infoRow}>
-            <Text style={{ color: theme.colors.muted }}>Nama Soal</Text>
-            <Text
-              style={{
-                color: theme.colors.typography,
-                fontWeight: "bold",
-                maxWidth: "60%",
-                textAlign: "right",
-              }}
-            >
-              {examData.title}
-            </Text>
-          </View>
-          <View style={styles.dividerSuccess} />
-          <View style={styles.infoRow}>
-            <Text style={{ color: theme.colors.muted }}>Waktu Submit</Text>
-            <Text
-              style={{ color: theme.colors.typography, fontWeight: "bold" }}
-            >
-              {submissionTime?.toLocaleString("id-ID", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              })}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.screenshotAlert}>
-          <Ionicons name="camera" size={24} color={theme.colors.muted} />
-          <Text
-            style={{
-              flex: 1,
-              color: theme.colors.muted,
-              fontSize: 13,
-              lineHeight: 18,
-            }}
-          >
-            Mohon{" "}
-            <Text style={{ fontWeight: "bold" }}>
-              tangkap layar (screenshot)
-            </Text>{" "}
-            halaman ini sebagai bukti sah bahwa Anda telah menyelesaikan ujian.
-          </Text>
-        </View>
-
-        <TouchableOpacity
-          style={[
-            styles.buttonPrimary,
-            { marginTop: 32, width: "100%", alignItems: "center" },
-          ]}
-          onPress={() => router.replace("/(protected)/(tabs)")}
-        >
-          <Text style={styles.buttonText}>Kembali ke Beranda</Text>
-        </TouchableOpacity>
-      </View>
+      <SuccessSubmit
+        slug={slug}
+        title={examData.title}
+        checkIn={submitMutation.data.checkIn}
+        submittedAt={submitMutation.data.submittedAt}
+      />
     );
   }
 
   // 4. Diskualifikasi
   if (dishonestyCount > 2) {
-    return (
-      <View style={[styles.container, styles.center, { padding: 20 }]}>
-        <Ionicons name="warning" size={80} color={theme.colors.error} />
-        <Text
-          style={{
-            fontSize: 24,
-            fontWeight: "bold",
-            color: theme.colors.error,
-            marginTop: 16,
-          }}
-        >
-          Didiskualifikasi
-        </Text>
-        <Text
-          style={{
-            textAlign: "center",
-            color: theme.colors.typography,
-            marginVertical: 12,
-            fontSize: 16,
-          }}
-        >
-          Anda terdeteksi melakukan kecurangan sebanyak 3 kali. Ujian anda
-          otomatis dihentikan.
-        </Text>
-        <TouchableOpacity
-          style={styles.buttonPrimary}
-          onPress={() => router.replace("/(protected)/(tabs)")}
-        >
-          <Text style={styles.buttonText}>Kembali ke Beranda</Text>
-        </TouchableOpacity>
-      </View>
-    );
+    return <Disqualification />;
   }
 
   // 5. Main Exam View
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ gestureEnabled: false, headerShown: false }} />
-
       {/* HEADER FIXED */}
       <View style={styles.header}>
         <View style={styles.headerTitleContainer}>
@@ -636,6 +422,16 @@ export default function TestPage() {
               {formatTime(timeLeft)}
             </Text>
           </View>
+
+          {Platform.OS === "web" ? (
+            <TouchableOpacity onPress={onRefresh} style={styles.iconButton}>
+              <Ionicons
+                name="refresh-outline"
+                size={20}
+                color={theme.colors.typography}
+              />
+            </TouchableOpacity>
+          ) : null}
         </View>
       </View>
 
@@ -925,322 +721,3 @@ export default function TestPage() {
     </View>
   );
 }
-
-const styles = StyleSheet.create((theme) => ({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  center: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  header: {
-    paddingTop: Platform.OS === "android" ? 40 : 50,
-    paddingBottom: 12,
-    paddingHorizontal: 16,
-    backgroundColor: theme.colors.surface,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-    elevation: 2,
-    zIndex: 10,
-  },
-  headerTitleContainer: {
-    flex: 1,
-    marginRight: 10,
-  },
-  examTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: theme.colors.typography,
-  },
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  iconButton: {
-    padding: 8,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  timerContainer: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: theme.colors.inputBg,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  timerText: {
-    fontSize: 14,
-    fontWeight: "bold",
-    fontVariant: ["tabular-nums"],
-    color: theme.colors.typography,
-  },
-  warningBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: 8,
-    gap: 4,
-  },
-  warningText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  contentContainer: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  questionCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    minHeight: 400,
-  },
-  questionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  questionNumber: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: theme.colors.typography,
-  },
-  typeBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  htmlContainer: {
-    marginBottom: 24,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: theme.colors.border,
-    marginBottom: 24,
-  },
-  dividerSuccess: {
-    height: 1,
-    backgroundColor: theme.colors.border,
-  },
-  answerArea: {
-    gap: 16,
-  },
-  radioOption: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.background,
-  },
-  radioOptionSelected: {
-    backgroundColor: theme.colors.inputBg,
-    borderColor: theme.colors.primary,
-    borderWidth: 1.5,
-  },
-  radioCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: theme.colors.muted,
-    marginRight: 16,
-    marginTop: 2,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  radioCircleSelected: {
-    borderColor: theme.colors.primary,
-  },
-  radioDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: theme.colors.primary,
-  },
-  essayInput: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 8,
-    padding: 16,
-    minHeight: 200,
-    textAlignVertical: "top",
-    fontSize: 16,
-    backgroundColor: theme.colors.background,
-    color: theme.colors.typography,
-  },
-  footer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 80,
-    backgroundColor: theme.colors.surface,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 24,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-    elevation: 10,
-  },
-  navButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.inputBg,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  navButtonDisabled: {
-    opacity: 0.3,
-  },
-  sheetButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: theme.colors.inputBg,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: 8,
-  },
-  sheetButtonText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: theme.colors.typography,
-  },
-  gridIcon: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    width: 14,
-    height: 14,
-    gap: 2,
-    justifyContent: "center",
-  },
-  gridDot: {
-    width: 5,
-    height: 5,
-    backgroundColor: theme.colors.typography,
-    borderRadius: 1,
-  },
-  finishButton: {
-    backgroundColor: theme.colors.primary,
-    height: 48,
-    paddingHorizontal: 24,
-    borderRadius: 24,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  finishButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  gridContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    justifyContent: "center",
-    paddingVertical: 16,
-  },
-  gridItem: {
-    width: 50,
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 8,
-  },
-  modalCloseButton: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  modalCloseText: {
-    color: theme.colors.typography,
-    fontWeight: "bold",
-  },
-  buttonPrimary: {
-    backgroundColor: theme.colors.primary,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  buttonText: { color: "#fff", fontWeight: "bold" },
-  modalFooter: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 12,
-    width: "100%",
-  },
-  modalButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  modalButtonDefault: {
-    backgroundColor: theme.colors.primary,
-  },
-  modalButtonCancel: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  modalButtonText: {
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  // Info Card untuk Sukses Page
-  infoCard: {
-    width: "100%",
-    backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: 12,
-  },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  screenshotAlert: {
-    marginTop: 24,
-    padding: 12,
-    backgroundColor: theme.colors.inputBg,
-    borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-}));

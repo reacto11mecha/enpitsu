@@ -1,3 +1,5 @@
+import "@/lib/unistyles";
+
 import { useMemo, useState } from "react";
 import { Text, View } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
@@ -78,8 +80,8 @@ export default function ProtectedWebLayout() {
           />
           <Text style={styles.title}>Update Diperlukan</Text>
           <Text style={styles.message}>
-            Anda sudah menggunakan Google Chrome, namun versinya terlalu lama (
-            v{browser.major}). Mohon perbarui ke versi terbaru agar sistem ujian
+            Anda sudah menggunakan Google Chrome, namun versinya terlalu lama (v
+            {browser.major}). Mohon perbarui ke versi terbaru agar sistem ujian
             berjalan lancar.
           </Text>
         </View>
@@ -97,7 +99,10 @@ export default function ProtectedWebLayout() {
           }}
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="test/[slug]" />
+          <Stack.Screen
+            name="test/[slug]"
+            options={{ gestureEnabled: false, headerShown: false }}
+          />
         </Stack>
       </TRPCProvider>
     </QueryClientProvider>

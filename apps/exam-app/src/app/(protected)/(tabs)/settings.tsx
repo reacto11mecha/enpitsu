@@ -99,6 +99,7 @@ export default function SettingsScreen() {
     updateToken(localToken);
     setIsEditingToken(false);
     clearHistory();
+    clearAllAnswer();
 
     await queryClient.invalidateQueries(trpc.exam.getStudent.pathFilter());
 

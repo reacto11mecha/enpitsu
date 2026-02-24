@@ -35,7 +35,10 @@ export default function ProtectedLayout() {
       <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="test/[slug]" />
+          <Stack.Screen
+            name="test/[slug]"
+            options={{ gestureEnabled: false, headerShown: false }}
+          />
         </Stack>
       </TRPCProvider>
     </QueryClientProvider>

@@ -13,7 +13,7 @@ module.exports = function (api) {
       [
         "react-native-unistyles/plugin",
         {
-          root: "app",
+          root: "./src",
         },
       ],
     ],
