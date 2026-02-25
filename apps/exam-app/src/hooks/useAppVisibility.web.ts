@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
 
 export function useAppVisibility() {
-  const [isVisible, setIsVisible] = useState(!document.hidden);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    const handleVisibilityChange = () => setIsVisible(!document.hidden);
+    const updater = (current: boolean) => setIsVisible(current);
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    const cbBlur = () => void updater(false);
+    const cbFocus = () => void updater(true);
+
+    window.addEventListener("blur", cbBlur);
+    window.addEventListener("focus", cbFocus);
 
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", cbBlur);
+      window.removeEventListener("focus", cbFocus);
     };
   }, []);
 

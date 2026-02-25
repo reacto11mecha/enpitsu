@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { reloadAppAsync } from "expo";
+import { router } from "expo-router";
 import { ModalUniversal } from "@/components/modal-universal";
 import {
   useAuthStore,
@@ -107,7 +108,10 @@ export default function SettingsScreen() {
       description: "Sesaat lagi aplikasi akan refresh untuk memperbarui data.",
     });
 
-    setTimeout(() => reloadAppAsync("Refresh karena pembaharuan token."), 4000);
+    setTimeout(() => {
+      router.replace("/(protected)/(tabs)");
+      reloadAppAsync("Refresh karena pembaharuan token.");
+    }, 4000);
   };
 
   return (
