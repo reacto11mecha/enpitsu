@@ -1,7 +1,7 @@
 import { ScrollView, Text, View } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { Identity } from "@/components/identity";
-import { useStudentSubmitHistory } from "@/hooks/useStorage.web";
+import { useStudentSubmitHistory } from "@/hooks/useStorage";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 

@@ -111,6 +111,8 @@ export function ActualTest({
   }, [reason, currentReason, currentAnswerSession, slug, dishonestyCount]);
 
   const handleTimeUp = () => {
+    if (submitPending) return;
+
     toast.info("Waktu Habis", { description: "Ujian otomatis dikumpulkan." });
     handleSubmit(true);
   };
@@ -188,7 +190,36 @@ export function ActualTest({
       return;
     }
 
-    // GANTI ALERT: Konfirmasi Submit
+    const unansweredIndices: number[] = [];
+
+    allQuestions.forEach((q, idx) => {
+      let isAnswered = false;
+      if (q.type === "PG") {
+        isAnswered = currentAnswerSession.multipleChoices.some(
+          (a) => a.iqid === q.iqid,
+        );
+      } else {
+        const essayAns = currentAnswerSession.essays.find(
+          (a) => a.iqid === q.iqid,
+        );
+        isAnswered = !!essayAns?.answer?.trim();
+      }
+
+      if (!isAnswered) {
+        unansweredIndices.push(idx + 1);
+      }
+    });
+
+    if (unansweredIndices.length > 0) {
+      toast.error("Masih ada soal yang belum dijawab!", {
+        description: `Silakan periksa soal nomor: ${unansweredIndices.join(", ")}`,
+      });
+
+      setTimeout(() => setSheetOpen(true), 1000);
+
+      return;
+    }
+
     showAlert(
       "Kumpulkan Jawaban?",
       "Pastikan semua soal telah terisi dengan benar sebelum mengumpulkan.",
@@ -214,7 +245,8 @@ export function ActualTest({
 
   const getStatusColor = (index: number) => {
     const q = allQuestions[index];
-    if (!currentAnswerSession) return theme.colors.surface;
+    if (!currentAnswerSession) return theme.colors.error;
+
     let isAnswered = false;
     if (q.type === "PG") {
       isAnswered = currentAnswerSession.multipleChoices.some(
@@ -226,9 +258,10 @@ export function ActualTest({
       );
       isAnswered = !!essayAns?.answer?.trim();
     }
-    if (index === currentIndex) return theme.colors.primary;
-    if (isAnswered) return theme.colors.accent;
-    return theme.colors.surface;
+
+    if (isAnswered) return theme.colors.primary;
+
+    return theme.colors.error;
   };
 
   return (
@@ -424,6 +457,7 @@ export function ActualTest({
                         styles.radioOption,
                         isSelected && styles.radioOptionSelected,
                       ]}
+                      disabled={submitPending}
                       onPress={() =>
                         updateMultipleChoice(
                           slug!,
@@ -459,6 +493,7 @@ export function ActualTest({
                   multiline
                   placeholder="Ketik jawaban anda disini..."
                   placeholderTextColor={theme.colors.muted}
+                  editable={!submitPending}
                   value={
                     currentAnswerSession?.essays.find(
                       (a) => a.iqid === currentQuestion.iqid,
@@ -543,12 +578,68 @@ export function ActualTest({
           </TouchableOpacity>
         }
       >
-        <View style={{ maxHeight: 400 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            gap: 12,
+            marginTop: 12,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <View
+              style={{
+                width: 12,
+                height: 12,
+                borderRadius: 6,
+                backgroundColor: theme.colors.primary,
+              }}
+            />
+            <Text style={{ fontSize: 12, color: theme.colors.typography }}>
+              Sudah Dijawab
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <View
+              style={{
+                width: 12,
+                height: 12,
+                borderRadius: 6,
+                backgroundColor: theme.colors.error,
+              }}
+            />
+            <Text style={{ fontSize: 12, color: theme.colors.typography }}>
+              Belum Dijawab
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <View
+              style={{
+                width: 12,
+                height: 12,
+                borderRadius: 6,
+                borderWidth: 2,
+                borderColor: theme.colors.accent,
+                backgroundColor: "transparent",
+              }}
+            />
+            <Text style={{ fontSize: 12, color: theme.colors.typography }}>
+              Saat Ini
+            </Text>
+          </View>
+        </View>
+
+        <ScrollView
+          style={{ maxHeight: 400 }}
+          showsVerticalScrollIndicator={true}
+          contentContainerStyle={{ paddingBottom: 16 }}
+        >
           <View style={styles.gridContainer}>
             {allQuestions.map((q, idx) => {
               const bgColor = getStatusColor(idx);
-              const isSurface = bgColor === theme.colors.surface;
-              const textColor = isSurface ? theme.colors.typography : "#fff";
+              const isCurrent = idx === currentIndex;
+
               return (
                 <TouchableOpacity
                   key={idx}
@@ -556,20 +647,22 @@ export function ActualTest({
                     styles.gridItem,
                     {
                       backgroundColor: bgColor,
-                      borderWidth: isSurface ? 1 : 0,
-                      borderColor: theme.colors.border,
+                      borderWidth: isCurrent ? 3 : 0,
+                      borderColor: isCurrent
+                        ? theme.colors.accent
+                        : "transparent",
                     },
                   ]}
                   onPress={() => jumpToQuestion(idx)}
                 >
-                  <Text style={{ color: textColor, fontWeight: "bold" }}>
+                  <Text style={{ color: "#FFFFFF", fontWeight: "bold" }}>
                     {idx + 1}
                   </Text>
                 </TouchableOpacity>
               );
             })}
           </View>
-        </View>
+        </ScrollView>
       </ModalUniversal>
     </View>
   );
@@ -589,6 +682,7 @@ function ExamTimer({
     return diff > 0 ? diff : 0;
   });
 
+  const [alreadySubmitting, setAlreadySubmitting] = useState(false);
   const onTimeUpRef = useRef(onTimeUp);
   useEffect(() => {
     onTimeUpRef.current = onTimeUp;
@@ -598,15 +692,16 @@ function ExamTimer({
     const calculateTime = () => {
       const diff = differenceInSeconds(new Date(endedAt), new Date());
       setTimeLeft(diff > 0 ? diff : 0);
-      if (diff <= 0) {
+      if (diff <= 0 && !alreadySubmitting) {
         onTimeUpRef.current();
+        setAlreadySubmitting(true);
       }
     };
 
     calculateTime();
     const timer = setInterval(calculateTime, 1000);
     return () => clearInterval(timer);
-  }, [endedAt]);
+  }, [endedAt, alreadySubmitting]);
 
   return (
     <View

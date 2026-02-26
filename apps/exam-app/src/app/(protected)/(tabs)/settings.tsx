@@ -202,6 +202,8 @@ export default function SettingsScreen() {
                   placeholderTextColor="#a1a1aa"
                   editable={true}
                   onFocus={() => setIsEditingToken(true)}
+                  onSubmitEditing={handleSaveToken}
+                  returnKeyType="done"
                 />
               </View>
             </View>

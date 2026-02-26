@@ -141,6 +141,8 @@ export function ScanOrInputQuestionSlug({
                     )
                   }
                   value={value}
+                  onSubmitEditing={handleSubmit(onSubmit)}
+                  returnKeyType="search"
                   placeholder="Masukkan kode soal"
                   placeholderTextColor={theme.colors.muted}
                   autoCapitalize="characters"

@@ -14,7 +14,7 @@ import { Toaster } from "@/lib/sonner";
 
 export default function RootLayout() {
   const { isLoggedIn } = useAuthStore();
-  const { theme } = useUnistyles();
+  const { theme, rt } = useUnistyles();
 
   const { theme: userTheme } = useThemeStorage();
 
@@ -46,7 +46,10 @@ export default function RootLayout() {
             <Stack.Screen name="login" />
           </Stack.Protected>
         </Stack>
-        <Toaster />
+        <Toaster
+          theme={rt.themeName === "dark" ? "dark" : "light"}
+          richColors
+        />
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

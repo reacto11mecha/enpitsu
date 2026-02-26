@@ -1,4 +1,5 @@
 import type { AdminResponse } from "@/hooks/useStorage";
+import type { TextInputProps } from "react-native";
 import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -73,19 +74,26 @@ const BrandingHeader = () => (
   </View>
 );
 
-const StyledInput = ({ label, error, ...props }: any) => (
+interface StyledInputProps extends TextInputProps {
+  label: string;
+  error?: string | boolean;
+}
+
+const StyledInput = ({ label, error, ...props }: StyledInputProps) => (
   <View style={styles.inputWrapper}>
     <Text style={styles.inputLabel}>{label}</Text>
+
     <TextInput
       style={[
         styles.input,
         error && styles.inputError,
         props.editable === false && styles.disabledInput,
       ]}
-      placeholderTextColor={styles.inputPlaceholder.color}
+      placeholderTextColor={styles.inputPlaceholder?.color || "#9ca3af"}
       {...props}
     />
-    {error && <Text style={styles.errorText}>{error}</Text>}
+
+    {typeof error === "string" && <Text style={styles.errorText}>{error}</Text>}
   </View>
 );
 
@@ -161,6 +169,8 @@ function GetSchoolInfo({
             value={value?.toString()}
             error={errors.instance?.message}
             editable={!isSubmitting}
+            onSubmitEditing={handleSubmit(onSubmit)}
+            returnKeyType="go"
           />
         )}
       />
@@ -224,6 +234,16 @@ function ActualLogin({
     resolver: zodResolver(dynamicSchema),
   });
 
+  const onSubmit = (v: { token: string }) => {
+    logIn({
+      instanceName: honEssence.name,
+      npsn: honEssence.npsn,
+      serverUrl: `${honEssence.origin}/api/trpc`,
+      token: v.token,
+      ...settings,
+    });
+  };
+
   return (
     <View>
       <Text style={styles.stepTitle}>Masukkan Token</Text>
@@ -249,21 +269,15 @@ function ActualLogin({
             value={value}
             error={errors.token?.message}
             editable={!isSubmitting}
+            onSubmitEditing={handleSubmit(onSubmit)}
+            returnKeyType="go"
           />
         )}
       />
 
       <TouchableOpacity
         style={[styles.btn, styles.secondaryBtn]}
-        onPress={handleSubmit((v) =>
-          logIn({
-            instanceName: honEssence.name,
-            npsn: honEssence.npsn,
-            serverUrl: `${honEssence.origin}/api/trpc`,
-            token: v.token,
-            ...settings,
-          }),
-        )}
+        onPress={handleSubmit(onSubmit)}
         disabled={isSubmitting}
       >
         <Text style={styles.secondaryBtnText}>Masuk ke Aplikasi</Text>
