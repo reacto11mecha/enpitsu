@@ -111,7 +111,7 @@ export default function SettingsScreen() {
     setTimeout(() => {
       router.replace("/(protected)/(tabs)");
       reloadAppAsync("Refresh karena pembaharuan token.");
-    }, 4000);
+    }, 2500);
   };
 
   return (

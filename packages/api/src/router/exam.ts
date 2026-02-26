@@ -248,13 +248,6 @@ export const examRouter = {
               "Soal ini belum bisa diakses, belum bisa mengumpulkan jawaban.",
           });
 
-        if (question.endedAt <= new Date())
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message:
-              "Soal ini sudah melewati waktu ujian, tidak bisa mengumpulkan jawaban lagi.",
-          });
-
         const isCheated = await preparedStudentIsCheated.execute({
           questionId: input.questionId,
           studentId: ctx.student.id,
@@ -278,6 +271,52 @@ export const examRouter = {
             message:
               "Tidak bisa mengumpulkan jawaban, anda sudah mengerjakan soal ini.",
           });
+
+        const now = Date.now();
+        const endedAt = question.endedAt.getTime();
+
+        if (now > endedAt + 60000) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Soal ini sudah melewati waktu ujian (batas toleransi 1 menit telah berlalu), tidak bisa mengumpulkan jawaban lagi.",
+          });
+        }
+
+        const [multipleChoiceCount, essayCount] = await Promise.all([
+          tx.$count(
+            schema.multipleChoices,
+            eq(schema.multipleChoices.questionId, question.id),
+          ),
+          tx.$count(schema.essays, eq(schema.essays.questionId, question.id)),
+        ]);
+
+        if (now <= endedAt) {
+          if (input.multipleChoices.length !== multipleChoiceCount) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "Harap menjawab semua soal pilihan ganda sebelum submit.",
+            });
+          }
+
+          if (input.essays.length !== essayCount) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Harap menjawab semua soal esai sebelum submit.",
+            });
+          }
+
+          // Validasi tidak ada esai kosong
+          const incompleteEssays = input.essays.filter((e) => !e.answer.trim());
+          if (incompleteEssays.length > 0) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "Harap menjawab semua soal esai (tidak boleh ada jawaban kosong).",
+            });
+          }
+        }
 
         const submittedAt = new Date();
 

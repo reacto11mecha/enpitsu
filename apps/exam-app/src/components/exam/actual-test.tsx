@@ -1,7 +1,7 @@
 import "@/lib/unistyles";
 
 import type { SessionStatus } from "@/hooks/useExamSessionStatus";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -61,12 +61,11 @@ export function ActualTest({
   modalVisible,
   modalButtons,
 }: Props) {
-  const { theme } = useUnistyles();
+  const { theme, rt } = useUnistyles();
 
   usePreventScreenCapture();
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(0);
   const [isSheetOpen, setSheetOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -111,32 +110,10 @@ export function ActualTest({
     }
   }, [reason, currentReason, currentAnswerSession, slug, dishonestyCount]);
 
-  // Timer Logic
-  useEffect(() => {
-    if (examData) {
-      const calculateTime = () => {
-        const diff = differenceInSeconds(
-          new Date(examData.endedAt),
-          new Date(),
-        );
-        setTimeLeft(diff > 0 ? diff : 0);
-        if (diff <= 0) {
-          if (!modalVisible) {
-            showAlert("Waktu Habis", "Ujian otomatis dikumpulkan.", [
-              {
-                text: "OK",
-                style: "default",
-                onPress: () => handleSubmit(true),
-              },
-            ]);
-          }
-        }
-      };
-      calculateTime();
-      const timer = setInterval(calculateTime, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [examData]);
+  const handleTimeUp = () => {
+    toast.info("Waktu Habis", { description: "Ujian otomatis dikumpulkan." });
+    handleSubmit(true);
+  };
 
   // --- DATA PREPARATION ---
   const allQuestions = useMemo(() => {
@@ -289,19 +266,13 @@ export function ActualTest({
             <Text style={styles.warningText}>{dishonestyCount} / 3</Text>
           </View>
 
-          {/* TIMER */}
-          <View
-            style={[
-              styles.timerContainer,
-              timeLeft < 300 && { backgroundColor: theme.colors.error },
-            ]}
-          >
-            <Text
-              style={[styles.timerText, timeLeft < 300 && { color: "#fff" }]}
-            >
-              {formatTime(timeLeft)}
-            </Text>
-          </View>
+          {examData ? (
+            <ExamTimer
+              endedAt={examData.endedAt}
+              theme={theme}
+              onTimeUp={handleTimeUp}
+            />
+          ) : null}
 
           {Platform.OS === "web" ? (
             <TouchableOpacity onPress={onRefresh} style={styles.iconButton}>
@@ -431,6 +402,7 @@ export function ActualTest({
                 dom={{ scrollEnabled: false, matchContents: true }}
                 html={currentQuestion.question}
                 color={theme.colors.typography}
+                theme={rt.themeName === "dark" ? "dark" : "light"}
                 fontSize={18}
               />
             </View>
@@ -475,6 +447,7 @@ export function ActualTest({
                           html={opt.answer}
                           color={theme.colors.typography}
                           fontSize={16}
+                          theme={rt.themeName === "dark" ? "dark" : "light"}
                         />
                       </View>
                     </TouchableOpacity>
@@ -598,6 +571,53 @@ export function ActualTest({
           </View>
         </View>
       </ModalUniversal>
+    </View>
+  );
+}
+
+function ExamTimer({
+  endedAt,
+  theme,
+  onTimeUp,
+}: {
+  endedAt: string | Date;
+  theme: any;
+  onTimeUp: () => void;
+}) {
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const diff = differenceInSeconds(new Date(endedAt), new Date());
+    return diff > 0 ? diff : 0;
+  });
+
+  const onTimeUpRef = useRef(onTimeUp);
+  useEffect(() => {
+    onTimeUpRef.current = onTimeUp;
+  }, [onTimeUp]);
+
+  useEffect(() => {
+    const calculateTime = () => {
+      const diff = differenceInSeconds(new Date(endedAt), new Date());
+      setTimeLeft(diff > 0 ? diff : 0);
+      if (diff <= 0) {
+        onTimeUpRef.current();
+      }
+    };
+
+    calculateTime();
+    const timer = setInterval(calculateTime, 1000);
+    return () => clearInterval(timer);
+  }, [endedAt]);
+
+  return (
+    <View
+      style={[
+        styles.timerContainer,
+        timeLeft < 300 && { backgroundColor: theme.colors.error },
+      ]}
+    >
+      <Text style={[styles.timerText, timeLeft < 300 && { color: "#fff" }]}>
+        {formatTime(timeLeft)}
+      </Text>
     </View>
   );
 }

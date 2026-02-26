@@ -70,7 +70,7 @@ export const submitAnswerSchema = z.object({
   essays: z.array(
     z.object({
       iqid: z.number(),
-      answer: z.string().min(1),
+      answer: z.string(),
     }),
   ),
 });
