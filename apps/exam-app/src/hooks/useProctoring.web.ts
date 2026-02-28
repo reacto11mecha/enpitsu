@@ -1,4 +1,8 @@
 // NO-OP
-export function useProctoring() {
-  return { isSplitScreen: false, hasOverlay: false };
+export function useProctoring(shouldPollStatus?: boolean) {
+  return {
+    isSplitScreen: false,
+    hasOverlay: false,
+    isLocked: true,
+  };
 }

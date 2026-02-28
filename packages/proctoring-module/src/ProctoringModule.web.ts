@@ -1,38 +1,29 @@
-// Web implementation stub - native functionality not available on web
 import { EventSubscription } from "expo-modules-core";
 
-import {
-  OverlayDetectedEvent,
-  SplitScreenChangeEvent,
-} from "./ProctoringModule.types";
-
-// Mock implementation for web
-export function isSplitScreenActive(): boolean {
-  console.warn("Proctoring module is not supported on web");
-  return false;
-}
-
-export function addOverlayListener(
-  listener: (event: OverlayDetectedEvent) => void,
-): EventSubscription {
-  console.warn("Overlay detection is not supported on web");
-  return { remove: () => {} } as EventSubscription;
-}
-
-export function addSplitScreenListener(
-  listener: (event: SplitScreenChangeEvent) => void,
-): EventSubscription {
-  console.warn("Split screen detection is not supported on web");
-  return { remove: () => {} } as EventSubscription;
-}
-
-export function removeAllListeners(): void {
-  // No-op for web
-}
-
-export const NativeProctoringModule = {
-  isSplitScreenActive: () => false,
-  addListener: () => ({ remove: () => {} }) as EventSubscription,
-  removeAllListeners: () => {},
-  removeListeners: () => {},
+export default {
+  isSplitScreenActive: (): boolean => {
+    console.warn(
+      "[ProctoringModule] isSplitScreenActive is not supported on web",
+    );
+    return false;
+  },
+  isOverlayActive: (): boolean => {
+    console.warn("[ProctoringModule] isOverlayActive is not supported on web");
+    return false;
+  },
+  isLocked: (): boolean => {
+    console.warn("[ProctoringModule] isLocked is not supported on web");
+    return true;
+  },
+  startLockTask: (): void => {
+    console.warn("[ProctoringModule] startLockTask is not supported on web");
+  },
+  stopLockTask: (): void => {
+    console.warn("[ProctoringModule] stopLockTask is not supported on web");
+  },
+  addListener: (): EventSubscription => {
+    return { remove: () => {} } as EventSubscription;
+  },
+  removeAllListeners: (): void => {},
+  removeListeners: (): void => {},
 };

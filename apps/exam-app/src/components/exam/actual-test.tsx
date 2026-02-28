@@ -22,6 +22,7 @@ import { usePreventScreenCapture } from "@/lib/screen-capture";
 import { toast } from "@/lib/sonner";
 import { Ionicons } from "@expo/vector-icons";
 import { differenceInSeconds } from "date-fns";
+import { isLocked, startLockTask, stopLockTask } from "proctoring-module";
 
 import type { RouterInputs, RouterOutputs } from "@enpitsu/api";
 
@@ -69,13 +70,16 @@ export function ActualTest({
   const [isSheetOpen, setSheetOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Default to true if it's the web environment, otherwise false
+  const [isReady, setReady] = useState(Platform.OS === "web");
+  const [isPreparing, setIsPreparing] = useState(false);
+
   const { updateMultipleChoice, updateEssay, setDishonestCount } =
     useStudentAnswerStore();
 
-  const { reason } = useExamSessionStatus();
+  const { reason } = useExamSessionStatus(true);
   const [currentReason, setCurrentReason] =
     useState<SessionStatus["reason"]>("SECURE");
-  const [isCheatModalOpen, setCheatModalOpen] = useState(false);
 
   const checkIn = useMemo(
     () =>
@@ -86,35 +90,68 @@ export function ActualTest({
   );
 
   useEffect(() => {
+    startLockTask();
+
+    return () => {
+      stopLockTask();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Abaikan deteksi jika user sedang di layar persiapan/peringatan
+    if (!isReady) return;
     if (!currentAnswerSession) return;
 
     if (reason !== currentReason) {
       if (reason !== "SECURE") {
-        setCheatModalOpen(true);
         setCurrentReason(reason);
-      } else if (reason === "SECURE" && currentReason !== "SECURE") {
-        const newCount = dishonestyCount + 1;
 
+        setReady(false);
+
+        // 2. Berikan penalti
+        const newCount = dishonestyCount + 1;
         if (slug) setDishonestCount(slug, newCount);
 
-        setCurrentReason("SECURE");
-        setCheatModalOpen(false);
-
-        if (newCount > 2) triggerBlocklist();
-        else {
+        if (newCount > 2) {
+          triggerBlocklist();
+        } else {
           toast.error(`Peringatan Kecurangan (${newCount}/3)`, {
-            description: "Dilarang keluar dari aplikasi ujian!",
+            description: "Aktivitas dilarang terdeteksi!",
           });
+
+          if (reason === "UNLOCKED") {
+            setTimeout(() => {
+              startLockTask();
+            }, 500);
+          }
         }
+      } else if (reason === "SECURE" && currentReason !== "SECURE") {
+        // Status kembali aman
+        setCurrentReason("SECURE");
       }
     }
-  }, [reason, currentReason, currentAnswerSession, slug, dishonestyCount]);
+  }, [
+    reason,
+    currentReason,
+    currentAnswerSession,
+    slug,
+    dishonestyCount,
+    isReady,
+  ]);
 
-  const handleTimeUp = () => {
-    if (submitPending) return;
-
-    toast.info("Waktu Habis", { description: "Ujian otomatis dikumpulkan." });
-    handleSubmit(true);
+  const getReasonText = (r: string) => {
+    switch (r) {
+      case "UNLOCKED":
+        return "Layar tidak disematkan (Screen Pinning dilepas)";
+      case "SPLIT_SCREEN":
+        return "Layar terbagi (Split Screen) aktif";
+      case "OVERLAY":
+        return "Aplikasi mengambang (Floating App) terdeteksi";
+      case "BACKGROUND":
+        return "Keluar dari aplikasi ujian";
+      default:
+        return "Aktivitas ilegal";
+    }
   };
 
   // --- DATA PREPARATION ---
@@ -148,7 +185,38 @@ export function ActualTest({
   const isLastQuestion = currentIndex === allQuestions.length - 1;
   const isFirstQuestion = currentIndex === 0;
 
-  // --- HANDLERS ---
+  const handleStartTest = () => {
+    setIsPreparing(true);
+
+    if (!isLocked()) startLockTask();
+
+    setTimeout(
+      () => {
+        if (Platform.OS === "android" && !isLocked()) {
+          setIsPreparing(false);
+
+          toast.error("Gagal Mengunci Layar", {
+            description:
+              "Sistem gagal menyematkan layar. Tutup jendela mengambang/split screen, ketuk area kosong di layar ini agar aplikasi fokus, lalu coba lagi.",
+          });
+
+          return;
+        }
+
+        setReady(true);
+        setIsPreparing(false);
+      },
+      Platform.OS === "web" ? 10 : 3000,
+    );
+  };
+
+  const handleTimeUp = () => {
+    if (submitPending) return;
+
+    toast.info("Waktu Habis", { description: "Ujian otomatis dikumpulkan." });
+    handleSubmit(true);
+  };
+
   const handleNext = () => {
     if (!isLastQuestion) setCurrentIndex((prev) => prev + 1);
   };
@@ -264,6 +332,94 @@ export function ActualTest({
     return theme.colors.error;
   };
 
+  if (!isReady) {
+    const isWarning = dishonestyCount > 0;
+
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center", padding: 24 },
+        ]}
+      >
+        <Ionicons
+          name={isWarning ? "warning" : "shield-checkmark"}
+          size={80}
+          color={isWarning ? theme.colors.error : theme.colors.primary}
+        />
+
+        <Text
+          style={{
+            fontSize: 22,
+            fontWeight: "bold",
+            marginTop: 20,
+            textAlign: "center",
+            color: isWarning ? theme.colors.error : theme.colors.typography,
+          }}
+        >
+          {isWarning
+            ? `Peringatan Keamanan (${dishonestyCount}/3)`
+            : "Siap Memulai Ujian?"}
+        </Text>
+
+        <Text
+          style={{
+            marginTop: 12,
+            textAlign: "center",
+            color: theme.colors.muted,
+            fontSize: 16,
+            lineHeight: 24,
+            marginBottom: 32,
+          }}
+        >
+          {isWarning
+            ? `Sistem mendeteksi adanya aktivitas yang dilarang (${getReasonText(currentReason)}). Jika pelanggaran mencapai 3 kali, Anda akan otomatis didiskualifikasi.`
+            : "Sistem keamanan akan mengunci perangkat Anda ke dalam aplikasi ini. Setiap upaya untuk melepas kuncian, membuka layar ganda, atau membuka aplikasi mengambang akan otomatis dihitung sebagai pelanggaran."}
+        </Text>
+
+        <TouchableOpacity
+          style={[
+            styles.finishButton,
+            {
+              width: "100%",
+              opacity: isPreparing ? 0.7 : 1,
+              backgroundColor: isWarning
+                ? theme.colors.error
+                : theme.colors.primary,
+            },
+            Platform.OS === "web"
+              ? {
+                  shadowColor: isWarning
+                    ? theme.colors.error
+                    : theme.colors.primary,
+                }
+              : {},
+          ]}
+          onPress={handleStartTest}
+          disabled={isPreparing}
+        >
+          {isPreparing ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text
+              style={[
+                styles.finishButtonText,
+                {
+                  includeFontPadding: false,
+                  textAlignVertical: "center",
+                },
+              ]}
+            >
+              {isWarning
+                ? "Saya Mengerti & Lanjutkan Ujian"
+                : "Saya Mengerti & Mulai Ujian"}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {/* HEADER FIXED */}
@@ -318,36 +474,6 @@ export function ActualTest({
           ) : null}
         </View>
       </View>
-
-      {/* MODAL PERINGATAN CURANG (Block Screen) */}
-      <ModalUniversal
-        visible={isCheatModalOpen}
-        onRequestClose={() => {}}
-        title="Peringatan Keamanan!"
-        description={`Terdeteksi aktivitas mencurigakan (${reason}). Harap segera kembali ke layar ujian!`}
-        footer={
-          <View style={{ width: "100%", alignItems: "center" }}>
-            <ActivityIndicator size="large" color={theme.colors.error} />
-            <Text
-              style={{
-                marginTop: 10,
-                color: theme.colors.error,
-                fontWeight: "bold",
-              }}
-            >
-              Menunggu Anda Kembali...
-            </Text>
-          </View>
-        }
-      >
-        <View style={{ alignItems: "center", padding: 20 }}>
-          <Ionicons
-            name="eye-off-outline"
-            size={64}
-            color={theme.colors.error}
-          />
-        </View>
-      </ModalUniversal>
 
       {/* MODAL ALERT CUSTOM (Pengganti Alert.alert) */}
       <ModalUniversal
@@ -690,11 +816,13 @@ function ExamTimer({
 
   useEffect(() => {
     const calculateTime = () => {
-      const diff = differenceInSeconds(new Date(endedAt), new Date());
-      setTimeLeft(diff > 0 ? diff : 0);
-      if (diff <= 0 && !alreadySubmitting) {
-        onTimeUpRef.current();
-        setAlreadySubmitting(true);
+      if (!alreadySubmitting) {
+        const diff = differenceInSeconds(new Date(endedAt), new Date());
+        setTimeLeft(diff > 0 ? diff : 0);
+        if (diff <= 0) {
+          onTimeUpRef.current();
+          setAlreadySubmitting(true);
+        }
       }
     };
 

@@ -15,6 +15,14 @@ export function isSplitScreenActive(): boolean {
 }
 
 /**
+ * Checks if the device is currently has a floating window app
+ * @returns boolean indicating if there's a floating window
+ */
+export function isOverlayActive(): boolean {
+  return NativeProctoringModule.isOverlayActive();
+}
+
+/**
  * Adds a listener for overlay detection events
  * @param listener Callback function that receives overlay detection events
  * @returns EventSubscription that can be used to remove the listener
@@ -34,6 +42,28 @@ export function addSplitScreenListener(
   listener: (event: SplitScreenChangeEvent) => void,
 ): EventSubscription {
   return NativeProctoringModule.addListener("onSplitScreenChange", listener);
+}
+
+/**
+ * Checks if the device is currently in Lock Task (Screen Pinning) mode
+ * @returns boolean indicating if locked
+ */
+export function isLocked(): boolean {
+  return NativeProctoringModule.isLocked();
+}
+
+/**
+ * Starts the Lock Task (Screen Pinning) mode
+ */
+export function startLockTask(): void {
+  NativeProctoringModule.startLockTask();
+}
+
+/**
+ * Stops the Lock Task (Screen Pinning) mode
+ */
+export function stopLockTask(): void {
+  NativeProctoringModule.stopLockTask();
 }
 
 /**

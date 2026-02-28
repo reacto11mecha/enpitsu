@@ -5,7 +5,7 @@ type SessionStatus = {
   reason: "SECURE" | "BACKGROUND";
 };
 
-export function useExamSessionStatus(): SessionStatus {
+export function useExamSessionStatus(isExamActive?: boolean): SessionStatus {
   const { isVisible } = useAppVisibility();
 
   if (!isVisible) {

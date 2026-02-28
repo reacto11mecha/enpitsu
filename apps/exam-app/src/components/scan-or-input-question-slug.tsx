@@ -16,7 +16,7 @@ import {
   CameraView,
   useCameraPermissions,
 } from "expo-camera";
-import { Link } from "expo-router";
+import { router } from "expo-router";
 import { ModalUniversal } from "@/components/modal-universal";
 import { toast } from "@/lib/sonner";
 import { useTRPC } from "@/lib/trpc";
@@ -24,6 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
+import { isSplitScreenActive } from "proctoring-module";
 import { Controller, useForm } from "react-hook-form";
 import slugify from "slugify";
 import { z } from "zod";
@@ -409,15 +410,26 @@ export const Precaution = ({
             <Text style={styles.cancelButtonText}>Batal</Text>
           </TouchableOpacity>
           {scrolledToBottom ? (
-            <Link href={`/test/${data?.slug}`} replace asChild>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={handleClose}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.actionButtonText}>Kerjakan</Text>
-              </TouchableOpacity>
-            </Link>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => {
+                if (isSplitScreenActive()) {
+                  Alert.alert(
+                    "Anda terdeteksi menggunakan split screen!",
+                    "Mohon tutup aplikasi split screen sebelum melanjutkan.",
+                  );
+
+                  return;
+                }
+
+                handleClose();
+
+                router.replace(`/test/${data?.slug}`);
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.actionButtonText}>Kerjakan</Text>
+            </TouchableOpacity>
           ) : (
             <TouchableOpacity
               style={[styles.actionButton, styles.buttonDisabled]}

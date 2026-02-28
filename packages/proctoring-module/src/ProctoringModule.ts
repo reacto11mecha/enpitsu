@@ -6,6 +6,12 @@ import { ProctoringModuleEvents } from "./ProctoringModule.types";
 declare class NativeProctoringModule extends NativeModule<ProctoringModuleEvents> {
   // Synchronous function to check split screen status
   isSplitScreenActive: () => boolean;
+  isOverlayActive: () => boolean;
+
+  // Lock Task functions
+  isLocked: () => boolean;
+  startLockTask: () => void;
+  stopLockTask: () => void;
 }
 
 // Export the native module instance
