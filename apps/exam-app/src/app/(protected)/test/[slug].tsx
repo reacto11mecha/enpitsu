@@ -152,7 +152,7 @@ export default function TestPage() {
     submitMutation.mutate(data);
 
   // 1. Loading
-  if (getQuestionMutation.isPending) {
+  if (getQuestionMutation.isPending && !examData) {
     return (
       <LoadingStatus
         modalVisible={alertModal.visible}
@@ -165,7 +165,7 @@ export default function TestPage() {
   }
 
   // 2. Error / No Data (Ditangani oleh Alert Modal di atas, tapi return view kosong biar tidak crash)
-  if (getQuestionMutation.isError || !examData) {
+  if (!examData) {
     return (
       <ErrorStatus
         closeModal={closeAlert}

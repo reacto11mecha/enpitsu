@@ -1,5 +1,7 @@
 package expo.modules.proctoringmodule
 
+import android.content.Intent
+import android.net.Uri
 import android.app.ActivityManager
 import android.content.Context
 import android.os.Build
@@ -62,6 +64,40 @@ class ProctoringModule : Module() {
 
     Function("isOverlayActive") {
         return@Function isOverlayDetected
+    }
+
+    Function("getBlacklistedApps") {
+        val detectedApps = mutableListOf<String>()
+        val packageManager = appContext.activityProvider?.currentActivity?.packageManager ?: return@Function detectedApps
+
+        val blacklist = listOf(
+            "com.lwi.android.flapps",
+            "com.lwi.android.flappsfull",
+        )
+
+        for (packageName in blacklist) {
+            try {
+              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                packageManager.getPackageInfo(packageName, android.content.pm.PackageManager.PackageInfoFlags.of(0L))
+              } else {
+                @Suppress("DEPRECATION")
+                packageManager.getPackageInfo(packageName, 0)
+              }
+              detectedApps.add(packageName)
+            } catch (e: Exception) {
+            }
+          }
+          return@Function detectedApps
+    }
+
+    Function("uninstallApp") { packageName: String ->
+        val currentActivity = appContext.activityProvider?.currentActivity ?: return@Function
+
+        val intent = Intent(Intent.ACTION_DELETE)
+        intent.data = Uri.parse("package:$packageName")
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        currentActivity.startActivity(intent)
     }
 
     OnActivityEntersForeground {

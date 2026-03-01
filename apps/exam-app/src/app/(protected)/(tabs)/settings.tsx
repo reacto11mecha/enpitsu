@@ -93,10 +93,13 @@ export default function SettingsScreen() {
   const trpc = useTRPC();
 
   const handleSaveToken = async () => {
+    if (localToken === token) return;
+
     if (!localToken.trim()) {
       toast.error("Token tidak boleh kosong");
       return;
     }
+
     updateToken(localToken);
     setIsEditingToken(false);
     clearHistory();

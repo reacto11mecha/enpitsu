@@ -7,6 +7,8 @@ declare class NativeProctoringModule extends NativeModule<ProctoringModuleEvents
   // Synchronous function to check split screen status
   isSplitScreenActive: () => boolean;
   isOverlayActive: () => boolean;
+  getBlacklistedApps: () => string[];
+  uninstallApp: (packageName: string) => void;
 
   // Lock Task functions
   isLocked: () => boolean;

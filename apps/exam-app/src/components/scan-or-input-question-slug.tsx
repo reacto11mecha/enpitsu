@@ -1,9 +1,10 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Keyboard,
   NativeScrollEvent,
+  Platform,
   ScrollView,
   Text,
   TextInput,
@@ -24,7 +25,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
-import { isSplitScreenActive } from "proctoring-module";
+import {
+  getBlacklistedApps,
+  isSplitScreenActive,
+  uninstallApp,
+} from "proctoring-module";
 import { Controller, useForm } from "react-hook-form";
 import slugify from "slugify";
 import { z } from "zod";
@@ -90,10 +95,10 @@ export function ScanOrInputQuestionSlug({
     if (!permission?.granted) {
       const { granted } = await requestPermission();
       if (!granted) {
-        Alert.alert(
-          "Izin Ditolak",
-          "Aplikasi membutuhkan izin kamera untuk memindai QR Code.",
-        );
+        toast.error("Izin Ditolak", {
+          description:
+            "Aplikasi membutuhkan izin kamera untuk memindai QR Code.",
+        });
         return;
       }
     }
@@ -382,6 +387,8 @@ export const Precaution = ({
 }) => {
   useUnistyles();
 
+  const isAlertShowing = useRef(false);
+
   const [scrolledToBottom, setScroll] = useState(false);
 
   const setScrollBottom = useCallback(
@@ -393,6 +400,47 @@ export const Precaution = ({
     close();
     setScrollBottom(false);
   };
+
+  useEffect(() => {
+    if (!open) return;
+
+    const checkCheatApps = () => {
+      if (Platform.OS === "android") {
+        const detectedCheats = getBlacklistedApps();
+
+        if (detectedCheats.length > 0) {
+          if (!isAlertShowing.current) {
+            isAlertShowing.current = true;
+            const appToUninstall = detectedCheats[0];
+
+            setTimeout(() => {
+              Alert.alert(
+                "Aplikasi Dilarang Terdeteksi!",
+                `Sistem mendeteksi aplikasi ilegal (${appToUninstall}) di perangkat Anda. Anda harus menghapusnya untuk melanjutkan.`,
+                [
+                  {
+                    text: "Hapus Aplikasi Sekarang",
+                    onPress: () => {
+                      isAlertShowing.current = false;
+                      uninstallApp(appToUninstall);
+                    },
+                  },
+                ],
+                { cancelable: false },
+              );
+            }, 2500);
+          }
+        } else {
+          isAlertShowing.current = false;
+        }
+      }
+    };
+
+    checkCheatApps();
+    const interval = setInterval(checkCheatApps, 3000);
+
+    return () => clearInterval(interval);
+  }, [open]);
 
   return (
     <ModalUniversal
@@ -413,6 +461,13 @@ export const Precaution = ({
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => {
+                if (
+                  Platform.OS === "android" &&
+                  getBlacklistedApps().length > 0
+                ) {
+                  return;
+                }
+
                 if (isSplitScreenActive()) {
                   Alert.alert(
                     "Anda terdeteksi menggunakan split screen!",

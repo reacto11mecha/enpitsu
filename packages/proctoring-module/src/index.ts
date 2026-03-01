@@ -67,6 +67,22 @@ export function stopLockTask(): void {
 }
 
 /**
+ * Check if there are blacklisted apps installed
+ * @returns List of blacklisted apps
+ */
+export function getBlacklistedApps(): string[] {
+  return NativeProctoringModule.getBlacklistedApps();
+}
+
+/**
+ * Prompt user to uninstall blacklisted app
+ * @param packageName android package name that need to be uninstall
+ */
+export function uninstallApp(packageName: string): void {
+  NativeProctoringModule.uninstallApp(packageName);
+}
+
+/**
  * Removes all listeners for a specific event
  * @param eventName The name of the event to remove all listeners for
  */

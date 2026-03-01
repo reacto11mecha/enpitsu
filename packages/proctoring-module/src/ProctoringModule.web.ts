@@ -21,6 +21,10 @@ export default {
   stopLockTask: (): void => {
     console.warn("[ProctoringModule] stopLockTask is not supported on web");
   },
+  getBlacklistedApps: (): string[] => [],
+  uninstallApp: (packageName: string): void => {
+    console.warn("[ProctoringModule] uninstallApp is not supported on web");
+  },
   addListener: (): EventSubscription => {
     return { remove: () => {} } as EventSubscription;
   },
