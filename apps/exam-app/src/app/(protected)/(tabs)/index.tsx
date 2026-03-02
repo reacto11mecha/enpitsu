@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -10,9 +11,14 @@ import {
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { Identity } from "@/components/identity";
 import { ScanOrInputQuestionSlug } from "@/components/scan-or-input-question-slug";
+import { useTRPC } from "@/lib/trpc";
+import { useQuery } from "@tanstack/react-query";
 
 export default function HomeScreen() {
-  useUnistyles();
+  const { theme } = useUnistyles();
+
+  const trpc = useTRPC();
+  const studentQuery = useQuery(trpc.exam.getStudent.queryOptions());
 
   const [isCorrect, setCorrect] = useState(false);
 
@@ -26,10 +32,23 @@ export default function HomeScreen() {
           style={{ flex: 1 }}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={studentQuery.isRefetching}
+              onRefresh={() => studentQuery.refetch()}
+              colors={[theme.colors.primary]}
+              tintColor={theme.colors.primary}
+            />
+          }
         >
           <View style={styles.contentContainer}>
             <View style={styles.section}>
-              <Identity title="Sebelum mengerjakan," />
+              <Identity
+                title="Sebelum mengerjakan,"
+                error={studentQuery.error}
+                isPending={studentQuery.isPending}
+                student={studentQuery.data?.student}
+              />
             </View>
 
             {!isCorrect ? (

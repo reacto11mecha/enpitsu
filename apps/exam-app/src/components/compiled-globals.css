@@ -7037,7 +7037,8 @@
     }
   }
   body {
-    background-color: var(--background);
+    /*background-color: var(--background);*/
+    background-color: transparent;
     color: var(--foreground);
   }
 }

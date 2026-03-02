@@ -1,6 +1,7 @@
 import type { ThemeType } from "@/hooks/useStorage";
 import { useState } from "react";
 import {
+  Platform,
   ScrollView,
   Text,
   TextInput,
@@ -108,7 +109,10 @@ export default function SettingsScreen() {
     await queryClient.invalidateQueries(trpc.exam.getStudent.pathFilter());
 
     toast.success("Token berhasil diperbarui", {
-      description: "Sesaat lagi aplikasi akan refresh untuk memperbarui data.",
+      description:
+        Platform.OS === "web"
+          ? "Sesaat lagi web akan refresh untuk memperbarui data"
+          : "Sesaat lagi aplikasi akan restart untuk memperbarui data.",
     });
 
     setTimeout(() => {

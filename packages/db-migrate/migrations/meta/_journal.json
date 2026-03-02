@@ -22,6 +22,13 @@
       "when": 1757095258480,
       "tag": "0002_messy_sprite",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772358092380,
+      "tag": "0003_tidy_sentry",
+      "breakpoints": true
     }
   ]
 }

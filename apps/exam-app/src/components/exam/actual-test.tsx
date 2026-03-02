@@ -74,8 +74,12 @@ export function ActualTest({
   const [isReady, setReady] = useState(Platform.OS === "web");
   const [isPreparing, setIsPreparing] = useState(false);
 
-  const { updateMultipleChoice, updateEssay, setDishonestCount } =
-    useStudentAnswerStore();
+  const {
+    updateMultipleChoice,
+    updateEssay,
+    setDishonestCount,
+    appendDishonestLog,
+  } = useStudentAnswerStore();
 
   const { reason } = useExamSessionStatus(true);
   const [currentReason, setCurrentReason] =
@@ -98,17 +102,17 @@ export function ActualTest({
   }, []);
 
   useEffect(() => {
-    // Abaikan deteksi jika user sedang di layar persiapan/peringatan
     if (!isReady) return;
     if (!currentAnswerSession) return;
 
     if (reason !== currentReason) {
+      appendDishonestLog(slug, { reason, time: new Date() });
+
       if (reason !== "SECURE") {
         setCurrentReason(reason);
 
         setReady(false);
 
-        // 2. Berikan penalti
         const newCount = dishonestyCount + 1;
         if (slug) setDishonestCount(slug, newCount);
 
@@ -126,7 +130,6 @@ export function ActualTest({
           }
         }
       } else if (reason === "SECURE" && currentReason !== "SECURE") {
-        // Status kembali aman
         setCurrentReason("SECURE");
       }
     }
@@ -523,7 +526,7 @@ export function ActualTest({
           />
         }
       >
-        {currentQuestion && (
+        {currentQuestion ? (
           <View style={styles.questionCard}>
             <View style={styles.questionHeader}>
               <Text style={styles.questionNumber}>
@@ -632,7 +635,7 @@ export function ActualTest({
               )}
             </View>
           </View>
-        )}
+        ) : null}
       </ScrollView>
 
       {/* FOOTER NAVIGASI */}

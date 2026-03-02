@@ -87,6 +87,7 @@ export const useStudentAnswerStore = create(
             checkIn: new Date(),
             essays: [],
             multipleChoices: [],
+            dishonestLog: [],
           } satisfies StudentAnswer;
 
           return {
@@ -147,6 +148,16 @@ export const useStudentAnswerStore = create(
         set((state) => ({
           answers: state.answers.map((s) =>
             s.slug === slug ? { ...s, dishonestCount: count } : s,
+          ),
+        }));
+      },
+
+      appendDishonestLog(slug, newLog) {
+        set((state) => ({
+          answers: state.answers.map((s) =>
+            s.slug === slug
+              ? { ...s, dishonestLog: [...s.dishonestLog, newLog] }
+              : s,
           ),
         }));
       },

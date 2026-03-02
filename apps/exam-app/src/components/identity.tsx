@@ -1,35 +1,43 @@
+import type { inferOutput } from "@trpc/tanstack-react-query";
 import { useEffect } from "react";
-import { ActivityIndicator, Alert, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { useAuthStore } from "@/hooks/useStorage";
-import { useTRPC } from "@/lib/trpc";
-import { useQuery } from "@tanstack/react-query";
+import { toast } from "@/lib/sonner";
 
 import "@/lib/unistyles";
 
-export function Identity({ title }: { title: string }) {
+import { TRPCClientErrorLike } from "@trpc/client";
+
+import type { AppRouter } from "@enpitsu/api";
+import { RouterOutputs } from "@enpitsu/api";
+
+export function Identity({
+  title,
+  isPending: isLoading,
+  student,
+  error,
+}: {
+  title: string;
+  isPending: boolean;
+  student: RouterOutputs["exam"]["getStudent"]["student"] | undefined;
+  error: TRPCClientErrorLike<AppRouter> | null;
+}) {
   useUnistyles();
 
   const { instanceName } = useAuthStore();
-  const trpc = useTRPC();
-
-  const studentQuery = useQuery(trpc.exam.getStudent.queryOptions());
 
   useEffect(() => {
-    if (studentQuery.error) {
-      Alert.alert(
-        "Gagal mengambil data pribadi",
-        `Operasi mengambil data gagal, mohon coba lagi. Error: ${
-          studentQuery.error.message === "Failed to fetch"
+    if (error) {
+      toast.error("Gagal mengambil data pribadi", {
+        description: `Operasi mengambil data gagal, mohon coba lagi. Error: ${
+          error.message === "Failed to fetch"
             ? "Gagal meraih server"
-            : studentQuery.error.message
+            : error.message
         }`,
-      );
+      });
     }
-  }, [studentQuery.error]);
-
-  const isLoading = studentQuery.isLoading;
-  const student = studentQuery.data?.student;
+  }, [error]);
 
   return (
     <View style={styles.container}>

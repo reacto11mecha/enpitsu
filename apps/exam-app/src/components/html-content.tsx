@@ -25,10 +25,6 @@ export default function HtmlContent({
     }
   }, [theme]);
 
-  useEffect(() => {
-    document.body.style.backgroundColor = "transparent";
-  }, []);
-
   const hljsThemeUrl =
     theme === "dark"
       ? "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css"

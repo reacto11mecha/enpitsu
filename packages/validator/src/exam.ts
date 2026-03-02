@@ -78,4 +78,10 @@ export const submitAnswerSchema = z.object({
 export const studentBlocklistSchema = z.object({
   questionId: z.number(),
   time: z.date(),
+  activityLog: z.array(
+    z.object({
+      time: z.date(),
+      reason: z.string(),
+    }),
+  ),
 });

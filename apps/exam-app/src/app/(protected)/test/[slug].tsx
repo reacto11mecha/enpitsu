@@ -17,7 +17,7 @@ import { toast } from "@/lib/sonner";
 import { useTRPC } from "@/lib/trpc";
 import { useMutation } from "@tanstack/react-query";
 
-import { RouterInputs } from "@enpitsu/api";
+import type { RouterInputs, RouterOutputs } from "@enpitsu/api";
 
 export default function TestPage() {
   useUnistyles();
@@ -30,6 +30,9 @@ export default function TestPage() {
   useFullScreen();
   useKeepAwake();
 
+  const [examData, setExamData] = useState<
+    RouterOutputs["exam"]["getQuestion"] | undefined
+  >(undefined);
   const [canUpdateDishonestyCount, setCanUpdateDishonestyCount] =
     useState(true);
   const [dishonestyCount, setDishonestyCount] = useState(0);
@@ -129,13 +132,18 @@ export default function TestPage() {
     }
   }, [currentAnswerSession, canUpdateDishonestyCount]);
 
-  const examData = getQuestionMutation.data;
+  useEffect(() => {
+    if (getQuestionMutation.data) {
+      setExamData(getQuestionMutation.data);
+    }
+  }, [getQuestionMutation.data]);
 
   const triggerBlocklist = () => {
-    if (examData) {
+    if (examData && currentAnswerSession) {
       blocklistMutation.mutate({
         questionId: examData.id,
         time: new Date(),
+        activityLog: currentAnswerSession.dishonestLog,
       });
     }
   };

@@ -1,12 +1,17 @@
-import { ScrollView, Text, View } from "react-native";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { Identity } from "@/components/identity";
 import { useStudentSubmitHistory } from "@/hooks/useStorage";
+import { useTRPC } from "@/lib/trpc";
+import { useQuery } from "@tanstack/react-query";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 
 export default function AboutScreen() {
-  useUnistyles();
+  const { theme } = useUnistyles();
+
+  const trpc = useTRPC();
+  const studentQuery = useQuery(trpc.exam.getStudent.queryOptions());
 
   const { questions } = useStudentSubmitHistory();
 
@@ -16,9 +21,22 @@ export default function AboutScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={[styles.scrollContent, { flexGrow: 1 }]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={studentQuery.isRefetching}
+            onRefresh={() => studentQuery.refetch()}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+          />
+        }
       >
         <View style={styles.section}>
-          <Identity title="Identitas Anda" />
+          <Identity
+            title="Identitas Anda"
+            error={studentQuery.error}
+            isPending={studentQuery.isPending}
+            student={studentQuery.data?.student}
+          />
         </View>
 
         <View style={styles.section}>

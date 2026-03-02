@@ -34,6 +34,10 @@ export interface AuthState {
 export interface StudentAnswer {
   slug: string;
   dishonestCount: number | undefined;
+  dishonestLog: {
+    time: Date;
+    reason: string;
+  }[];
   checkIn: Date | undefined;
   multipleChoices: {
     iqid: number;
@@ -51,6 +55,10 @@ export interface Answers {
   updateMultipleChoice: (slug: string, iqid: number, answer: number) => void;
   updateEssay: (slug: string, iqid: number, answer: string) => void;
   setDishonestCount: (slug: string, count: number) => void;
+  appendDishonestLog: (
+    slug: string,
+    newLog: StudentAnswer["dishonestLog"][number],
+  ) => void;
   removeAnswer: (slug: string) => void;
   clearAll: () => void;
 }
@@ -157,6 +165,7 @@ export const useStudentAnswerStore = create(
             checkIn: new Date(),
             essays: [],
             multipleChoices: [],
+            dishonestLog: [],
           } satisfies StudentAnswer;
 
           return {
@@ -217,6 +226,16 @@ export const useStudentAnswerStore = create(
         set((state) => ({
           answers: state.answers.map((s) =>
             s.slug === slug ? { ...s, dishonestCount: count } : s,
+          ),
+        }));
+      },
+
+      appendDishonestLog(slug, newLog) {
+        set((state) => ({
+          answers: state.answers.map((s) =>
+            s.slug === slug
+              ? { ...s, dishonestLog: [...s.dishonestLog, newLog] }
+              : s,
           ),
         }));
       },

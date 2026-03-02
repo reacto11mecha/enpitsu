@@ -241,6 +241,9 @@ export const studentBlocklists = myPgTable("studentBlocklist", {
   studentId: integer("student_id")
     .notNull()
     .references(() => students.id),
+  activityLog: json("activity_log")
+    .$type<{ time: Date; reason: string }[]>()
+    .notNull(),
 });
 
 export const studentBlocklistRelations = relations(
