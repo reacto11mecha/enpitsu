@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "exam-app",
+    "name": "Enpitsu Exam App",
     "slug": "exam-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,17 +8,21 @@
     "scheme": "examapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.examapp"
-    },
     "android": {
+      "package": "id.my.rmecha.enpitsu",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
         "backgroundColor": "#7cdc9c"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.examapp"
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.BATTERY_STATS",
+        "android.permission.QUERY_ALL_PACKAGES",
+        "android.permission.REQUEST_DELETE_PACKAGES"
+      ]
     },
     "web": {
       "bundler": "metro",

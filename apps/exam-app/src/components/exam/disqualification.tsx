@@ -1,5 +1,6 @@
 import "@/lib/unistyles";
 
+import { useEffect } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { useUnistyles } from "react-native-unistyles";
 import { router } from "expo-router";
@@ -7,8 +8,18 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { styles } from "./styles";
 
-export function Disqualification() {
+export function Disqualification({
+  pendingSubmit,
+  triggerBlocklist,
+}: {
+  pendingSubmit: boolean;
+  triggerBlocklist: () => void;
+}) {
   const { theme } = useUnistyles();
+
+  useEffect(() => {
+    triggerBlocklist();
+  }, []);
 
   return (
     <View style={[styles.container, styles.center, { padding: 20 }]}>
@@ -36,6 +47,7 @@ export function Disqualification() {
       </Text>
       <TouchableOpacity
         style={styles.buttonPrimary}
+        disabled={pendingSubmit}
         onPress={() => router.replace("/(protected)/(tabs)")}
       >
         <Text style={styles.buttonText}>Kembali ke Beranda</Text>

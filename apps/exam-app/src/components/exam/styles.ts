@@ -37,6 +37,31 @@ export const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     gap: 8,
   },
+  headerRight: {
+    alignItems: "flex-end", // Rata kanan
+    gap: 6, // Jarak antara baris atas dan bawah
+  },
+  headerSecondaryActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: theme.colors.inputBg,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: theme.colors.typography,
+  },
   iconButton: {
     padding: 8,
     borderRadius: 20,

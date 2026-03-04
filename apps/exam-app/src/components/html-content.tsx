@@ -40,6 +40,19 @@ export default function HtmlContent({
 
       <link rel="stylesheet" href={hljsThemeUrl} crossOrigin="anonymous" />
 
+      {/* TAMBAHKAN BLOK STYLE INI */}
+      <style>{`
+        pre, code {
+          white-space: pre-wrap !important;
+          word-break: break-all !important;
+          overflow-wrap: break-word !important;
+        }
+
+        table {
+          max-width: 100%;
+        }
+    `}</style>
+
       <div
         style={{
           color,

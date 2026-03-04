@@ -197,8 +197,13 @@ export default function TestPage() {
   }
 
   // 4. Diskualifikasi
-  if (blocklistMutation.isPending || dishonestyCount > 2) {
-    return <Disqualification />;
+  if (dishonestyCount > 2) {
+    return (
+      <Disqualification
+        pendingSubmit={blocklistMutation.isPending}
+        triggerBlocklist={triggerBlocklist}
+      />
+    );
   }
 
   // 5. Main Exam View
@@ -210,7 +215,6 @@ export default function TestPage() {
       dishonestyCount={dishonestyCount}
       submitPending={submitMutation.isPending}
       triggerRefresh={triggerRefresh}
-      triggerBlocklist={triggerBlocklist}
       submitAnswer={submitAnswer}
       showAlert={showAlert}
       modalVisible={alertModal.visible}

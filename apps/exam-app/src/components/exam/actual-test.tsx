@@ -12,7 +12,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import { useUnistyles } from "react-native-unistyles";
+import { runOnJS } from "react-native-worklets";
+import { BatteryState, useBatteryLevel, useBatteryState } from "expo-battery";
+import { useNetworkState } from "expo-network";
 import { router } from "expo-router";
 import HtmlContent from "@/components/html-content";
 import { ModalUniversal } from "@/components/modal-universal";
@@ -30,13 +40,14 @@ import { styles } from "./styles";
 import { AcceptingModalProps, AlertModalConfig } from "./types";
 import { formatTime, shuffleArray } from "./utils";
 
+const ZOOM_SENSITIVITY = 0.5;
+
 type Props = {
   examData: RouterOutputs["exam"]["getQuestion"] | undefined;
   currentAnswerSession: StudentAnswer | undefined;
   slug: string;
   dishonestyCount: number;
   submitPending: boolean;
-  triggerBlocklist: () => void;
   triggerRefresh: (onSettled: () => void, onSuccess: () => void) => void;
   submitAnswer: (data: RouterInputs["exam"]["submitAnswer"]) => void;
   showAlert: (
@@ -53,7 +64,6 @@ export function ActualTest({
   dishonestyCount,
   submitPending,
   triggerRefresh,
-  triggerBlocklist,
   submitAnswer,
   showAlert,
   closeModal,
@@ -69,6 +79,103 @@ export function ActualTest({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSheetOpen, setSheetOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [isZoomMode, setIsZoomMode] = useState(false);
+
+  const batteryLevel = useBatteryLevel();
+  const batteryState = useBatteryState();
+  const networkState = useNetworkState();
+
+  const isOnline =
+    networkState.isConnected && networkState.isInternetReachable !== false;
+
+  const getBatteryIcon = () => {
+    if (batteryState === BatteryState.CHARGING) return "battery-charging";
+    if (batteryLevel === null) return "battery-half-outline";
+    if (batteryLevel > 0.8) return "battery-full";
+    if (batteryLevel > 0.3) return "battery-half";
+    return "battery-dead";
+  };
+
+  const getBatteryColor = () => {
+    if (batteryState === BatteryState.CHARGING) return "#10B981"; // Hijau saat cas
+    if (batteryLevel !== null && batteryLevel <= 0.2) return theme.colors.error; // Merah saat < 20%
+    return theme.colors.typography;
+  };
+
+  // --- REANIMATED ZOOM LOGIC ---
+  const scale = useSharedValue(1);
+  const savedScale = useSharedValue(1);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const savedTranslateX = useSharedValue(0);
+  const savedTranslateY = useSharedValue(0);
+
+  const pinchGesture = Gesture.Pinch()
+    .onStart(() => {
+      // Nonaktifkan scroll pada ScrollView saat mulai mencubit
+      runOnJS(setIsZoomMode)(true);
+    })
+    .onUpdate((e) => {
+      const smoothedScale = 1 + (e.scale - 1) * ZOOM_SENSITIVITY;
+
+      scale.value = Math.max(1, Math.min(savedScale.value * smoothedScale, 4));
+    })
+    .onEnd(() => {
+      savedScale.value = scale.value;
+      if (scale.value <= 1) {
+        // Reset posisi jika zoom out habis
+        translateX.value = withSpring(0);
+        translateY.value = withSpring(0);
+        savedTranslateX.value = 0;
+        savedTranslateY.value = 0;
+        scale.value = withSpring(1);
+        savedScale.value = 1;
+        runOnJS(setIsZoomMode)(false);
+      }
+    });
+
+  const panGesture = Gesture.Pan()
+    .enabled(isZoomMode) // Hanya aktif saat sedang di-zoom
+    .onUpdate((e) => {
+      if (scale.value > 1) {
+        translateX.value = savedTranslateX.value + e.translationX;
+        translateY.value = savedTranslateY.value + e.translationY;
+      }
+    })
+    .onEnd(() => {
+      if (scale.value > 1) {
+        savedTranslateX.value = translateX.value;
+        savedTranslateY.value = translateY.value;
+      }
+    });
+
+  // Gabungkan Pinch dan Pan agar bisa dilakukan bersamaan
+  const composedGesture = Gesture.Simultaneous(pinchGesture, panGesture);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+      { scale: scale.value },
+    ],
+  }));
+
+  // Fungsi toggle untuk tombol mengambang (Floating Button)
+  const toggleZoom = () => {
+    if (scale.value > 1) {
+      scale.value = withTiming(1);
+      savedScale.value = 1;
+      translateX.value = withTiming(0);
+      translateY.value = withTiming(0);
+      savedTranslateX.value = 0;
+      savedTranslateY.value = 0;
+      setIsZoomMode(false);
+    } else {
+      scale.value = withTiming(2); // Zoom in default ke 2x
+      savedScale.value = 2;
+      setIsZoomMode(true);
+    }
+  };
 
   // Default to true if it's the web environment, otherwise false
   const [isReady, setReady] = useState(Platform.OS === "web");
@@ -116,9 +223,7 @@ export function ActualTest({
         const newCount = dishonestyCount + 1;
         if (slug) setDishonestCount(slug, newCount);
 
-        if (newCount > 2) {
-          triggerBlocklist();
-        } else {
+        if (newCount < 3) {
           toast.error(`Peringatan Kecurangan (${newCount}/3)`, {
             description: "Aktivitas dilarang terdeteksi!",
           });
@@ -425,56 +530,94 @@ export function ActualTest({
 
   return (
     <View style={styles.container}>
-      {/* HEADER FIXED */}
       <View style={styles.header}>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.examTitle} numberOfLines={1}>
+          <Text style={styles.examTitle} numberOfLines={2}>
             {examData!.title}
           </Text>
         </View>
 
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            onPress={() => router.replace("/(protected)/(tabs)")}
-            style={styles.iconButton}
-          >
-            <Ionicons
-              name="home-outline"
-              size={20}
-              color={theme.colors.typography}
-            />
-          </TouchableOpacity>
-
-          {/* INDIKATOR KECURANGAN */}
-          <View
-            style={[
-              styles.warningBadge,
-              dishonestyCount > 0
-                ? { backgroundColor: theme.colors.error }
-                : { backgroundColor: theme.colors.primary },
-            ]}
-          >
-            <Ionicons name="alert-circle" size={16} color="#fff" />
-            <Text style={styles.warningText}>{dishonestyCount} / 3</Text>
-          </View>
-
-          {examData ? (
-            <ExamTimer
-              endedAt={examData.endedAt}
-              theme={theme}
-              onTimeUp={handleTimeUp}
-            />
-          ) : null}
-
-          {Platform.OS === "web" ? (
-            <TouchableOpacity onPress={onRefresh} style={styles.iconButton}>
+        <View style={styles.headerRight}>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              onPress={() => router.replace("/(protected)/(tabs)")}
+              style={styles.iconButton}
+            >
               <Ionicons
-                name="refresh-outline"
+                name="home-outline"
                 size={20}
                 color={theme.colors.typography}
               />
             </TouchableOpacity>
-          ) : null}
+
+            <View
+              style={[
+                styles.warningBadge,
+                dishonestyCount > 0
+                  ? { backgroundColor: theme.colors.error }
+                  : { backgroundColor: theme.colors.primary },
+              ]}
+            >
+              <Ionicons name="alert-circle" size={16} color="#fff" />
+              <Text style={styles.warningText}>{dishonestyCount} / 3</Text>
+            </View>
+
+            {examData ? (
+              <ExamTimer
+                endedAt={examData.endedAt}
+                theme={theme}
+                onTimeUp={handleTimeUp}
+              />
+            ) : null}
+
+            {Platform.OS === "web" ? (
+              <TouchableOpacity onPress={onRefresh} style={styles.iconButton}>
+                <Ionicons
+                  name="refresh-outline"
+                  size={20}
+                  color={theme.colors.typography}
+                />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+
+          <View style={styles.headerSecondaryActions}>
+            <View style={styles.statusBadge}>
+              <Ionicons
+                name={isOnline ? "wifi" : "cloud-offline"}
+                size={12}
+                color={isOnline ? "#10B981" : theme.colors.error}
+              />
+              <Text
+                style={[
+                  styles.statusText,
+                  !isOnline && { color: theme.colors.error },
+                ]}
+              >
+                {isOnline ? "Online" : "Offline"}
+              </Text>
+            </View>
+
+            {/* Indikator Baterai */}
+            <View style={styles.statusBadge}>
+              <Ionicons
+                name={getBatteryIcon()}
+                size={12}
+                color={getBatteryColor()}
+              />
+              <Text
+                style={[
+                  styles.statusText,
+                  batteryLevel !== null &&
+                    batteryLevel <= 0.2 && { color: theme.colors.error },
+                ]}
+              >
+                {batteryLevel !== null
+                  ? `${Math.round(batteryLevel * 100)}%`
+                  : "--%"}
+              </Text>
+            </View>
+          </View>
         </View>
       </View>
 
@@ -517,126 +660,162 @@ export function ActualTest({
       <ScrollView
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={!isZoomMode}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
+            enabled={!isZoomMode}
             colors={[theme.colors.primary]}
             tintColor={theme.colors.primary}
           />
         }
       >
         {currentQuestion ? (
-          <View style={styles.questionCard}>
-            <View style={styles.questionHeader}>
-              <Text style={styles.questionNumber}>
-                Soal {currentIndex + 1}{" "}
-                <Text
-                  style={{ fontWeight: "normal", color: theme.colors.muted }}
-                >
-                  dari {allQuestions.length}
+          <GestureDetector gesture={composedGesture}>
+            <Animated.View
+              style={[styles.questionCard, animatedStyle, { width: "100%" }]}
+            >
+              <View style={styles.questionHeader}>
+                <Text style={styles.questionNumber}>
+                  Soal {currentIndex + 1}{" "}
+                  <Text
+                    style={{ fontWeight: "normal", color: theme.colors.muted }}
+                  >
+                    dari {allQuestions.length}
+                  </Text>
                 </Text>
-              </Text>
-              <View
-                style={[
-                  styles.typeBadge,
-                  {
-                    backgroundColor:
-                      currentQuestion.type === "PG" ? "#E0F2FE" : "#FCE7F3",
-                  },
-                ]}
-              >
-                <Text
-                  style={{
-                    fontSize: 10,
-                    color:
-                      currentQuestion.type === "PG" ? "#0284C7" : "#DB2777",
-                    fontWeight: "bold",
-                  }}
+                <View
+                  style={[
+                    styles.typeBadge,
+                    {
+                      backgroundColor:
+                        currentQuestion.type === "PG" ? "#E0F2FE" : "#FCE7F3",
+                    },
+                  ]}
                 >
-                  {currentQuestion.type === "PG" ? "Pilihan Ganda" : "Esai"}
-                </Text>
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      color:
+                        currentQuestion.type === "PG" ? "#0284C7" : "#DB2777",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {currentQuestion.type === "PG" ? "Pilihan Ganda" : "Esai"}
+                  </Text>
+                </View>
               </View>
-            </View>
 
-            <View style={styles.htmlContainer}>
-              <HtmlContent
-                dom={{ scrollEnabled: false, matchContents: true }}
-                html={currentQuestion.question}
-                color={theme.colors.typography}
-                theme={rt.themeName === "dark" ? "dark" : "light"}
-                fontSize={18}
-              />
-            </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.answerArea}>
-              {currentQuestion.type === "PG" ? (
-                currentQuestion.options.map((opt, idx) => {
-                  const isSelected =
-                    currentAnswerSession?.multipleChoices.find(
-                      (a) => a.iqid === currentQuestion.iqid,
-                    )?.choosedAnswer === opt.order;
-
-                  return (
-                    <TouchableOpacity
-                      key={idx}
-                      style={[
-                        styles.radioOption,
-                        isSelected && styles.radioOptionSelected,
-                      ]}
-                      disabled={submitPending}
-                      onPress={() =>
-                        updateMultipleChoice(
-                          slug!,
-                          currentQuestion.iqid,
-                          opt.order,
-                        )
-                      }
-                      activeOpacity={0.8}
-                    >
-                      <View
-                        style={[
-                          styles.radioCircle,
-                          isSelected && styles.radioCircleSelected,
-                        ]}
-                      >
-                        {isSelected && <View style={styles.radioDot} />}
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <HtmlContent
-                          dom={{ scrollEnabled: false, matchContents: true }}
-                          html={opt.answer}
-                          color={theme.colors.typography}
-                          fontSize={16}
-                          theme={rt.themeName === "dark" ? "dark" : "light"}
-                        />
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })
-              ) : (
-                <TextInput
-                  style={styles.essayInput}
-                  multiline
-                  placeholder="Ketik jawaban anda disini..."
-                  placeholderTextColor={theme.colors.muted}
-                  editable={!submitPending}
-                  value={
-                    currentAnswerSession?.essays.find(
-                      (a) => a.iqid === currentQuestion.iqid,
-                    )?.answer || ""
-                  }
-                  onChangeText={(val) =>
-                    updateEssay(slug!, currentQuestion.iqid, val)
-                  }
+              <View style={styles.htmlContainer}>
+                <HtmlContent
+                  dom={{ scrollEnabled: false, matchContents: true }}
+                  html={currentQuestion.question}
+                  color={theme.colors.typography}
+                  theme={rt.themeName === "dark" ? "dark" : "light"}
+                  fontSize={18}
                 />
-              )}
-            </View>
-          </View>
+              </View>
+
+              <View style={styles.divider} />
+
+              <View style={styles.answerArea}>
+                {currentQuestion.type === "PG" ? (
+                  currentQuestion.options.map((opt, idx) => {
+                    const isSelected =
+                      currentAnswerSession?.multipleChoices.find(
+                        (a) => a.iqid === currentQuestion.iqid,
+                      )?.choosedAnswer === opt.order;
+
+                    return (
+                      <TouchableOpacity
+                        key={idx}
+                        style={[
+                          styles.radioOption,
+                          isSelected && styles.radioOptionSelected,
+                        ]}
+                        disabled={submitPending}
+                        onPress={() =>
+                          updateMultipleChoice(
+                            slug!,
+                            currentQuestion.iqid,
+                            opt.order,
+                          )
+                        }
+                        activeOpacity={0.8}
+                      >
+                        <View
+                          style={[
+                            styles.radioCircle,
+                            isSelected && styles.radioCircleSelected,
+                          ]}
+                        >
+                          {isSelected && <View style={styles.radioDot} />}
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <HtmlContent
+                            dom={{ scrollEnabled: false, matchContents: true }}
+                            html={opt.answer}
+                            color={theme.colors.typography}
+                            fontSize={16}
+                            theme={rt.themeName === "dark" ? "dark" : "light"}
+                          />
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })
+                ) : (
+                  <TextInput
+                    style={styles.essayInput}
+                    multiline
+                    placeholder="Ketik jawaban anda disini..."
+                    placeholderTextColor={theme.colors.muted}
+                    editable={!submitPending}
+                    value={
+                      currentAnswerSession?.essays.find(
+                        (a) => a.iqid === currentQuestion.iqid,
+                      )?.answer || ""
+                    }
+                    onChangeText={(val) =>
+                      updateEssay(slug!, currentQuestion.iqid, val)
+                    }
+                  />
+                )}
+              </View>
+            </Animated.View>
+          </GestureDetector>
         ) : null}
       </ScrollView>
+
+      {/* FLOATING TOGGLE ZOOM BUTTON */}
+      <TouchableOpacity
+        onPress={toggleZoom}
+        activeOpacity={0.8}
+        style={{
+          position: "absolute",
+          right: 16,
+          bottom: 100, // Posisinya melayang di atas footer
+          zIndex: 99,
+          backgroundColor: isZoomMode
+            ? theme.colors.primary
+            : theme.colors.surface,
+          borderRadius: 50,
+          padding: 14,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          elevation: 5,
+          shadowColor: "#000",
+          shadowOpacity: 0.2,
+          shadowRadius: 5,
+          shadowOffset: { width: 0, height: 2 },
+        }}
+      >
+        <Ionicons
+          name={isZoomMode ? "search" : "search-outline"}
+          size={26}
+          color={isZoomMode ? "#fff" : theme.colors.typography}
+        />
+      </TouchableOpacity>
 
       {/* FOOTER NAVIGASI */}
       <View style={styles.footer}>
