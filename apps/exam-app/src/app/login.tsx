@@ -27,7 +27,12 @@ type HonEssence = HonResponse["data"];
 const api = {
   async getSchoolData(npsn: number): Promise<HonEssence | null> {
     try {
-      const url = new URL(process.env.EXPO_PUBLIC_NPSN_SRV_URL!);
+      // bug dari expo
+      // environment yang bersifat public dan di inline harus di bongkar dulu dan disimpar ke dalam variabel.
+      // ga tau apakah ini dari bug expo beneran atau compiler di laptop gw yang trippin.
+      const srvUrl = process.env.EXPO_PUBLIC_NPSN_SRV_URL;
+
+      const url = new URL(srvUrl!);
       const res = await fetch(`${url.origin}/school/${npsn}`, {
         headers: { Accept: "application/json" },
       });
