@@ -341,7 +341,7 @@ export function ActualTest({
       () => setRefreshing(false),
       () => {
         toast.success("Soal Diperbarui", {
-          description: "Data ujian berhasil dimuat ulang.",
+          description: "Soal ujian berhasil dimuat ulang.",
         });
       },
     );

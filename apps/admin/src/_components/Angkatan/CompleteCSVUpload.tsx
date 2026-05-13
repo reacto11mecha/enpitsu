@@ -331,6 +331,34 @@ export function CompleteCSVUpload({
                 Untuk mengunggah seluruh data, pastikan data yang anda unggah
                 mengikuti format berikut ini.
               </AlertDialogDescription>
+              <Table className="my-2">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nama</TableHead>
+                    <TableHead>Nomor Peserta</TableHead>
+                    <TableHead>Ruang</TableHead>
+                    <TableHead>Kelas</TableHead>
+                    <TableHead>Token</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="italic">
+                      nama lengkap peserta
+                    </TableCell>
+                    <TableCell className="italic">
+                      nomor peserta yang sudah panitia tetapkan
+                    </TableCell>
+                    <TableCell className="italic">ruangan peserta</TableCell>
+                    <TableCell className="italic">kelas asal peserta</TableCell>
+                    <TableCell className="italic">token akses</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+              <AlertDialogDescription className="text-center">
+                Urutan kolom boleh acak tetapi judul kolom wajib ada dan sama
+                dengan contoh.
+              </AlertDialogDescription>
             </AlertDialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>

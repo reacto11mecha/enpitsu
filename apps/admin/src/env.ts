@@ -28,6 +28,7 @@ export const env = createEnv({
    */
   client: {
     NEXT_PUBLIC_RUNNING_EDITION: z.string(),
+    NEXT_PUBLIC_YJS_SERVER: z.string().url(),
   },
   /**
    * Destructure all variables from `process.env` to make sure they aren't tree-shaken away.
@@ -37,6 +38,7 @@ export const env = createEnv({
     PORT: process.env.PORT,
 
     NEXT_PUBLIC_RUNNING_EDITION: process.env.NEXT_PUBLIC_RUNNING_EDITION,
+    NEXT_PUBLIC_YJS_SERVER: process.env.NEXT_PUBLIC_YJS_SERVER,
   },
 
   skipValidation:
