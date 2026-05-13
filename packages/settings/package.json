@@ -1,0 +1,33 @@
+{
+  "name": "@enpitsu/settings",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "license": "MIT",
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "lint": "eslint",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@enpitsu/redis": "workspace:^0.1.0"
+  },
+  "devDependencies": {
+    "@enpitsu/eslint-config": "workspace:^0.2.0",
+    "@enpitsu/prettier-config": "workspace:^0.1.0",
+    "@enpitsu/tsconfig": "workspace:^0.1.0",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@enpitsu/eslint-config/base"
+    ]
+  },
+  "prettier": "@enpitsu/prettier-config"
+}

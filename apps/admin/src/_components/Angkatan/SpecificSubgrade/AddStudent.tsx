@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 
-import { validateId } from "@enpitsu/token-generator";
+import type { AppSettings } from "@enpitsu/settings";
+import type { TAddStudentSchema } from "@enpitsu/validator/grade";
+import { AddStudentConstructor } from "@enpitsu/validator/grade";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -33,34 +34,10 @@ import {
 import { Input } from "~/components/ui/input";
 import { useTRPC } from "~/trpc/react";
 
-const formSchema = z.object({
-  name: z
-    .string()
-    .min(2, { message: "Nama wajib di isi!" })
-    .max(255, { message: "Nama terlalu panjang!" }),
-  participantNumber: z
-    .string()
-    .min(5, { message: "Nomor peserta wajib di isi!" })
-    .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-  room: z
-    .string()
-    .min(1, { message: "Ruangan peserta wajib di isi!" })
-    .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-  token: z
-    .string()
-    .min(1, {
-      message: "Token wajib di isi!",
-    })
-    .min(13, { message: "Panjang nomor peserta wajb 13 karakter!" })
-    .max(14, { message: "Panjang nomor peserta tidak boleh dari 14 karakter!" })
-    .refine(validateId, { message: "Format token tidak sesuai!" }),
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
 export const AddStudent = ({
   grade,
   subgrade,
+  appSettings,
 }: {
   grade: {
     id: number;
@@ -71,14 +48,29 @@ export const AddStudent = ({
     label: string;
     gradeId: number;
   };
+  appSettings: AppSettings;
 }) => {
   const [open, setOpen] = useState(false);
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const AddStudentSchema = useMemo(() => {
+    return AddStudentConstructor({
+      validator: (txt: string) => {
+        try {
+          return new RegExp(appSettings.tokenSource).test(txt);
+        } catch (e: unknown) {
+          return false;
+        }
+      },
+      minimalTokenLength: appSettings.minimalTokenLength,
+      maximalTokenLength: appSettings.maximalTokenLength,
+    });
+  }, [appSettings]);
+
+  const form = useForm<TAddStudentSchema>({
+    resolver: zodResolver(AddStudentSchema),
     defaultValues: {
       name: "",
       participantNumber: "",
@@ -109,7 +101,7 @@ export const AddStudent = ({
     }),
   );
 
-  function onSubmit(values: FormValues) {
+  function onSubmit(values: TAddStudentSchema) {
     createStudentMutation.mutate({ ...values, subgradeId: subgrade.id });
   }
 

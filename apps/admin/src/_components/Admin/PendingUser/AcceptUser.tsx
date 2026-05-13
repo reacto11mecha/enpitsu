@@ -3,7 +3,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+
+import type { TUpdateAcceptRoleSchema } from "@enpitsu/validator/admin";
+import { UpdateAcceptRoleSchema } from "@enpitsu/validator/admin";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -32,12 +34,6 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 
-const FormSchema = z.object({
-  role: z.enum(["user", "admin"], {
-    required_error: "Dimohon untuk memilih tingkatan pengguna",
-  }),
-});
-
 export const AcceptUser = ({
   isOpen,
   toggleOpen,
@@ -49,10 +45,10 @@ export const AcceptUser = ({
   toggleOpen: () => void;
   isDisabled: boolean;
   isLoading: boolean;
-  onSubmit: (data: z.infer<typeof FormSchema>) => void;
+  onSubmit: (data: TUpdateAcceptRoleSchema) => void;
 }) => {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<TUpdateAcceptRoleSchema>({
+    resolver: zodResolver(UpdateAcceptRoleSchema),
   });
 
   return (
@@ -75,7 +71,7 @@ export const AcceptUser = ({
             pilih tingkatan pengguna tersebut pada pilihan di bawah lalu{" "}
             <b>Izinkan</b>.
           </DialogDescription>
-          <DialogDescription className="text-start">
+          <div className="text-start">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -107,7 +103,7 @@ export const AcceptUser = ({
                 />
               </form>
             </Form>
-          </DialogDescription>
+          </div>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:justify-start">
           <DialogClose asChild>

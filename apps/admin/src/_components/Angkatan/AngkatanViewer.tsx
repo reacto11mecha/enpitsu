@@ -6,6 +6,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronsRight, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import type { AppSettings } from "@enpitsu/settings";
+
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -25,8 +27,13 @@ import {
 import { Input } from "~/components/ui/input";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useTRPC } from "~/trpc/react";
+import { CompleteCSVUpload } from "./CompleteCSVUpload";
 
-export const AngkatanViewer = () => {
+export const AngkatanViewer = ({
+  appSettings,
+}: {
+  appSettings: AppSettings;
+}) => {
   const [open, setOpen] = useState(false);
   const [currentDeleteID, setCurrentDeleteID] = useState<null | number>(null);
   const [confirmationText, setConfirmText] = useState("");
@@ -73,9 +80,15 @@ export const AngkatanViewer = () => {
         </>
       ) : null}
 
-      {!grades.isPending && grades.data && grades.data.length === 0
-        ? "Belum ada data."
-        : null}
+      {!grades.isPending && grades.data && grades.data.length === 0 ? (
+        <div className="flex flex-col space-y-2 rounded-2xl border p-3">
+          <CompleteCSVUpload appSettings={appSettings} />
+          <p className="text-center">
+            Belum ada data. Anda dapat mengunggah keseluruhan data dengan format
+            csv melalui tombol di atas atau menambahkannya secara manual.
+          </p>
+        </div>
+      ) : null}
 
       {!grades.isPending &&
         grades.data?.map((grade) => (

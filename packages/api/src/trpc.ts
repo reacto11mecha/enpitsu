@@ -14,7 +14,7 @@ import type { Session } from "@enpitsu/auth";
 import { auth, validateToken } from "@enpitsu/auth";
 import { db, preparedGetStudent } from "@enpitsu/db/client";
 import { cache } from "@enpitsu/redis";
-import { validateId } from "@enpitsu/token-generator";
+import { settings } from "@enpitsu/settings";
 
 export type TStudent = NonNullable<Awaited<ReturnType<typeof getStudent>>>;
 
@@ -182,11 +182,16 @@ export const adminProcedure = t.procedure
   .use(enforceUserIsAuthedAsAdmin);
 
 const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
+  const appSettings = settings.getSettings();
+
   if (!ctx.studentToken) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  if (!validateId(ctx.studentToken)) {
+  // this could be fail. so, let it fail
+  const regex = new RegExp(appSettings.tokenSource, appSettings.tokenFlags);
+
+  if (!regex.test(ctx.studentToken)) {
     throw new TRPCError({ code: "BAD_REQUEST" });
   }
 

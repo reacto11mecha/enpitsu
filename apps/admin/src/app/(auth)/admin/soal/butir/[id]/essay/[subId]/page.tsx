@@ -21,6 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { env } from "~/env";
 import { SetStrictEqual } from "./set-strict-equal";
 
 const getRandomColor = (): string => {
@@ -35,16 +36,15 @@ const getRandomColor = (): string => {
 export default async function EssayEditor({
   params,
 }: {
-  params: {
+  params: Promise<{
     subId: string;
     id: string;
-  };
+  }>;
 }) {
   const identity = await auth();
 
   if (!identity) redirect("/login");
 
-  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { id: _id, subId: _essayId } = await params;
 
   const id = parseInt(_id);
@@ -150,7 +150,7 @@ export default async function EssayEditor({
           <div>
             <MainEditor
               cursorColor={cursorColor}
-              roomName={`q-essay-question_${id}-${essayId}`}
+              roomName={`${env.NEXT_PUBLIC_RUNNING_EDITION}|q-essay-question_${id}-${essayId}`}
               username={identity.user.name!}
               showName
             >
@@ -161,7 +161,7 @@ export default async function EssayEditor({
           <div>
             <TextareaEditor
               cursorColor={cursorColor}
-              roomName={`q-essay-answer_${id}-${essayId}`}
+              roomName={`${env.NEXT_PUBLIC_RUNNING_EDITION}|q-essay-answer_${id}-${essayId}`}
               username={identity.user.name!}
             >
               <SetStrictEqual essayId={essayId} />

@@ -1,0 +1,42 @@
+{
+  "name": "proctoring-module",
+  "version": "0.1.0",
+  "description": "Watch floating app state in current app",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "build": "expo-module build",
+    "clean": "expo-module clean",
+    "lint": "expo-module lint",
+    "test": "expo-module test",
+    "prepare": "expo-module prepare",
+    "prepublishOnly": "expo-module prepublishOnly",
+    "expo-module": "expo-module",
+    "open:ios": "xed example/ios",
+    "open:android": "open -a \"Android Studio\" example/android"
+  },
+  "keywords": [
+    "react-native",
+    "expo",
+    "proctoring-module",
+    "ProctoringModule"
+  ],
+  "repository": "https://github.com/reacto11mecha/enpitsu",
+  "bugs": {
+    "url": "https://github.com/reacto11mecha/enpitsu/issues"
+  },
+  "author": "Ezra Khairan Permana <ezrakhairan123@gmail.com> (https://github.com/reacto11mecha)",
+  "license": "MIT",
+  "homepage": "https://github.com/reacto11mecha/enpitsu#readme",
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.17",
+    "expo": "~54.0.34",
+    "expo-module-scripts": "^4.1.10",
+    "react-native": "0.81.5"
+  }
+}

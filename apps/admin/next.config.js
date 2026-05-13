@@ -13,6 +13,7 @@ const config = {
     "@enpitsu/auth",
     "@enpitsu/db",
     "@enpitsu/redis",
+    "@enpitsu/settings",
   ],
 
   output: "standalone",
@@ -35,7 +36,7 @@ const config = {
   },
 
   /** We already do linting and typechecking as separate tasks in CI */
-  eslint: { ignoreDuringBuilds: true },
+  // eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
 };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import ExcelJS from "exceljs";
@@ -9,7 +9,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { validateId } from "@enpitsu/token-generator";
+import type { AppSettings } from "@enpitsu/settings";
+import { UploadStudentXLSXSchemaConstructor } from "@enpitsu/validator/grade";
 
 import {
   AlertDialog,
@@ -34,32 +35,28 @@ import {
 import { Input } from "~/components/ui/input";
 import { useTRPC } from "~/trpc/react";
 
-const FileValueSchema = z.array(
-  z.object({
-    subgradeName: z.string(),
-    data: z.array(
-      z.object({
-        Nama: z
-          .string()
-          .min(2, { message: "Nama wajib di isi!" })
-          .max(255, { message: "Nama terlalu panjang!" }),
-        "Nomor Peserta": z
-          .string()
-          .min(5, { message: "Nomor peserta wajib di isi!" })
-          .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-        Ruang: z
-          .string()
-          .min(1, { message: "Ruangan peserta wajib di isi!" })
-          .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-        Token: z
-          .string()
-          .min(13, { message: "Panjang token minimal 13 karakter!" })
-          .max(14, { message: "Panjang token tidak boleh dari 14 karakter!" })
-          .refine(validateId, { message: "Format token tidak sesuai!" }),
-      }),
+const ExcelUploadStudentByGrade = z.object({
+  xlsx: z
+    .instanceof(FileList, { message: "Dibutuhkan file xlsx!" })
+    .refine((files) => files.length > 0, `Dibutuhkan file xlsx!`)
+    .refine(
+      (files) => files.length <= 1,
+      `Hanya diperbolehkan upload 1 file saja!`,
+    )
+    .refine(
+      (files) =>
+        Array.from(files).every(
+          (file) =>
+            file.type ===
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ),
+      "Hanya bisa file xlsx saja!",
     ),
-  }),
-);
+});
+
+export type TExcelUploadStudentByGrade = z.infer<
+  typeof ExcelUploadStudentByGrade
+>;
 
 const ReusableAlertDialog = ({
   open,
@@ -260,12 +257,28 @@ export const ExcelStudentsBySubgradeDownload = ({
 
 export const ExcelUploadStudentsByGrade = ({
   gradeId,
+  appSettings,
 }: {
   gradeId: number;
+  appSettings: AppSettings;
 }) => {
   const [open, setOpen] = useState(false);
 
   const trpc = useTRPC();
+
+  const FileValueSchema = useMemo(() => {
+    return UploadStudentXLSXSchemaConstructor({
+      validator: (txt: string) => {
+        try {
+          return new RegExp(appSettings.tokenSource).test(txt);
+        } catch (e: unknown) {
+          return false;
+        }
+      },
+      minimalTokenLength: appSettings.minimalTokenLength,
+      maximalTokenLength: appSettings.maximalTokenLength,
+    });
+  }, [appSettings]);
 
   const excelMutationApi = useMutation(
     trpc.grade.uploadSpecificGradeExcel.mutationOptions({
@@ -291,30 +304,11 @@ export const ExcelUploadStudentsByGrade = ({
     if (!excelMutationApi.isPending) setOpen((prev) => !prev);
   }, [excelMutationApi.isPending]);
 
-  const formSchema = z.object({
-    xlsx: z
-      .instanceof(FileList, { message: "Dibutuhkan file xlsx!" })
-      .refine((files) => files.length > 0, `Dibutuhkan file xlsx!`)
-      .refine(
-        (files) => files.length <= 1,
-        `Hanya diperbolehkan upload 1 file saja!`,
-      )
-      .refine(
-        (files) =>
-          Array.from(files).every(
-            (file) =>
-              file.type ===
-              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          ),
-        "Hanya bisa file xlsx saja!",
-      ),
+  const form = useForm<TExcelUploadStudentByGrade>({
+    resolver: zodResolver(ExcelUploadStudentByGrade),
   });
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-  });
-
-  async function onXLSXSubmit(values: z.infer<typeof formSchema>) {
+  async function onXLSXSubmit(values: TExcelUploadStudentByGrade) {
     const file = values.xlsx.item(0)!;
     const buffer = await file.arrayBuffer();
 

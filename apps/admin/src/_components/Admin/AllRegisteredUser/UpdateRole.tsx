@@ -5,7 +5,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+
+import type { TUpdateAcceptRoleSchema } from "@enpitsu/validator/admin";
+import { UpdateAcceptRoleSchema } from "@enpitsu/validator/admin";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -33,12 +35,6 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useTRPC } from "~/trpc/react";
-
-const FormSchema = z.object({
-  role: z.enum(["user", "admin"], {
-    required_error: "Dimohon untuk memilih tingkatan pengguna",
-  }),
-});
 
 export const UpdateRole = ({
   isOpen,
@@ -75,14 +71,16 @@ export const UpdateRole = ({
     }),
   );
 
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<TUpdateAcceptRoleSchema>({
+    resolver: zodResolver(UpdateAcceptRoleSchema),
     defaultValues: {
       role: currRole,
     },
   });
 
-  const onSubmit = (data: z.infer<typeof FormSchema>) =>
+  const fieldRoleValue = form.watch("role");
+
+  const onSubmit = (data: TUpdateAcceptRoleSchema) =>
     updateRoleMutation.mutate({ id: userId, ...data });
 
   return (
@@ -100,7 +98,7 @@ export const UpdateRole = ({
             dan cek apakah dia adalah orang yang benar dan pantas di ubah
             tingkatannya supaya tidak menimbulkan keributan.
           </DialogDescription>
-          <DialogDescription className="text-start">
+          <div className="text-start">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -132,7 +130,7 @@ export const UpdateRole = ({
                 />
               </form>
             </Form>
-          </DialogDescription>
+          </div>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:justify-start">
           <DialogClose asChild>
@@ -146,8 +144,7 @@ export const UpdateRole = ({
           </DialogClose>
           <Button
             disabled={
-              updateRoleMutation.isPending ||
-              currRole === form.getValues("role")
+              updateRoleMutation.isPending || currRole === fieldRoleValue
             }
             onClick={form.handleSubmit(onSubmit)}
           >

@@ -25,6 +25,7 @@ import { Editor, EditorContainer } from "~/components/ui/editor";
 import { FixedToolbar } from "~/components/ui/fixed-toolbar";
 import { FixedToolbarButtons } from "~/components/ui/fixed-toolbar-buttons";
 import { RemoteCursorOverlay } from "~/components/ui/remote-cursor-overlay";
+import { env } from "~/env";
 import { useMounted } from "~/hooks/use-mounted";
 
 const INITIAL_VALUE = [
@@ -64,7 +65,11 @@ export function MainEditor({
       type: "hocuspocus",
       options: {
         name: roomName,
-        url: "ws://localhost:1234",
+        // Ubah url provider sebelum naik production
+        url:
+          env.NODE_ENV === "production"
+            ? env.NEXT_PUBLIC_YJS_SERVER
+            : "ws://localhost:1234",
       },
     };
 

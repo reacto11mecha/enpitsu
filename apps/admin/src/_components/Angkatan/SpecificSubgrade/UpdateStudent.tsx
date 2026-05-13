@@ -5,9 +5,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 
 import type { RouterOutputs } from "@enpitsu/api";
+import type { TUpdateStudentSchema } from "@enpitsu/validator/grade";
+import { UpdateStudentSchema } from "@enpitsu/validator/grade";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -30,23 +31,6 @@ import {
 import { Input } from "~/components/ui/input";
 import { useTRPC } from "~/trpc/react";
 
-const schema = z.object({
-  name: z
-    .string()
-    .min(2, { message: "Nama wajib di isi!" })
-    .max(255, { message: "Nama terlalu panjang!" }),
-  participantNumber: z
-    .string()
-    .min(5, { message: "Nomor peserta wajib di isi!" })
-    .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-  room: z
-    .string()
-    .min(1, { message: "Ruangan peserta wajib di isi!" })
-    .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-});
-
-type FormValues = z.infer<typeof schema>;
-
 type StudentType = RouterOutputs["grade"]["getStudents"][number];
 
 export const UpdateStudent = ({
@@ -61,8 +45,8 @@ export const UpdateStudent = ({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  const form = useForm<TUpdateStudentSchema>({
+    resolver: zodResolver(UpdateStudentSchema),
     defaultValues: {
       name: student.name,
       room: student.room,
@@ -124,7 +108,7 @@ export const UpdateStudent = ({
     }),
   );
 
-  const onSubmit = (values: FormValues) =>
+  const onSubmit = (values: TUpdateStudentSchema) =>
     editStudentMutation.mutate({ id: student.id, ...values });
 
   return (

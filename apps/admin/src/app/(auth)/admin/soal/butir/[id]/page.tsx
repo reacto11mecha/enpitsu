@@ -34,9 +34,8 @@ import { Button } from "~/components/ui/button";
 export default async function QuestionItemsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { id: idParams } = await params;
   const id = parseInt(idParams);
 
@@ -130,7 +129,7 @@ export default async function QuestionItemsPage({
                       />
                     )}
 
-                    <p className="scroll-m-10">Opsi Jawaban :</p>
+                    <p className="scroll-m-10 opacity-75">Opsi Jawaban :</p>
 
                     <RadioGroup
                       defaultValue={String(choice.correctAnswerOrder)}

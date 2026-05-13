@@ -7,9 +7,10 @@
     "AUTH_GOOGLE_ID",
     "AUTH_GOOGLE_SECRET",
     "AUTH_REDIRECT_PROXY_URL",
+    "EXPO_PUBLIC_NPSN_SRV_URL",
     "AUTH_SECRET",
     "AUTH_URL",
-    "VITE_TRPC_URL",
+    "NEXT_PUBLIC_YJS_SERVER",
     "SPECIAL_USER_ADMIN"
   ],
   "globalPassThroughEnv": [
@@ -39,6 +40,10 @@
       ]
     },
     "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "dev-native": {
       "persistent": true,
       "cache": false
     },

@@ -10,6 +10,7 @@ import { id } from "date-fns/locale";
 import {
   ArrowUpDown,
   ClipboardCheck,
+  CopyPlus,
   LayoutList,
   ListX,
   MoreHorizontal,
@@ -44,6 +45,7 @@ import {
 import { useTRPC } from "~/trpc/react";
 import { CreateQRCodes } from "./CreateQRCodes";
 import { DeleteParentQuestion } from "./DeleteParentQuestion";
+import { DuplicateParentQuestion } from "./DuplicateParentQuestion";
 
 type QuestionList = RouterOutputs["question"]["getQuestions"][number];
 
@@ -241,6 +243,9 @@ export const columns: ColumnDef<QuestionList>[] = [
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const [openDelete, setOpenDelete] = useState(false);
 
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [openDuplicate, setOpenDuplicate] = useState(false);
+
       return (
         <>
           <DropdownMenu>
@@ -263,6 +268,13 @@ export const columns: ColumnDef<QuestionList>[] = [
                   <PencilLine className="mr-2 h-4 md:w-4" />
                   Identitas Soal
                 </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setOpenDuplicate(true)}
+                className="cursor-pointer"
+              >
+                <CopyPlus className="mr-2 h-4 md:w-4" />
+                Duplikat Soal
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer" asChild>
                 <Link href={`/admin/soal/answer/${question.id}`}>
@@ -292,6 +304,13 @@ export const columns: ColumnDef<QuestionList>[] = [
             setOpenDelete={setOpenDelete}
             title={question.title}
             id={question.id}
+          />
+          <DuplicateParentQuestion
+            openDuplicate={openDuplicate}
+            setOpenDuplicate={setOpenDuplicate}
+            title={question.title}
+            id={question.id}
+            slug={question.slug}
           />
         </>
       );

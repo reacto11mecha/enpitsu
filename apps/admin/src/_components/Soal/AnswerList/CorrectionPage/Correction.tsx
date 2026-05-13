@@ -146,8 +146,8 @@ export const Correction = ({
                   multipleChoicesQuery.data
                     .map(
                       (choice) =>
-                        choices.find((c) => c.choiceId === choice.iqid)!
-                          .answer === choice.correctAnswerOrder,
+                        choices.find((c) => c.choiceId === choice.iqid)
+                          ?.answer === choice.correctAnswerOrder,
                     )
                     .filter((a) => !!a).length
                 }{" "}
@@ -172,7 +172,7 @@ export const Correction = ({
                   <h3
                     className={`correction scroll-m-20 text-base tracking-tight ${
                       choice.correctAnswerOrder ===
-                      choices.find((c) => c.choiceId === choice.iqid)!.answer
+                      choices.find((c) => c.choiceId === choice.iqid)?.answer
                         ? "text-green-600"
                         : "text-rose-600"
                     }`}
@@ -182,7 +182,7 @@ export const Correction = ({
                 <CardContent>
                   <RadioGroup
                     defaultValue={String(
-                      choices.find((c) => c.choiceId === choice.iqid)!.answer,
+                      choices.find((c) => c.choiceId === choice.iqid)?.answer,
                     )}
                   >
                     {choice.options.map((option, idx) => (
@@ -190,8 +190,8 @@ export const Correction = ({
                         className={`flex min-h-10 items-center space-x-3 rounded px-2 py-3 ${
                           option.order === choice.correctAnswerOrder
                             ? "bg-green-500/40 dark:bg-green-700/30"
-                            : choices.find((c) => c.choiceId === choice.iqid)!
-                                  .answer === option.order
+                            : choices.find((c) => c.choiceId === choice.iqid)
+                                  ?.answer === option.order
                               ? "bg-rose-500/40 dark:bg-rose-700/30"
                               : ""
                         }`}

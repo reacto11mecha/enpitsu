@@ -2,22 +2,34 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { asc, eq } from "@enpitsu/db";
+import { asc, count, eq, isNull, sql } from "@enpitsu/db";
 import * as schema from "@enpitsu/db/schema";
 import { cache } from "@enpitsu/redis";
-import { validateId } from "@enpitsu/token-generator";
+import {
+  CompleteCSVUploadSchema,
+  CreateSubgradeSchema,
+  GetStudentSchema,
+  JustNumberSchema,
+  MultiTemporaryBan,
+  NewGradeOrSubgradeSchema,
+  StudentRelatedConstructor,
+  TemporaryBanSchema,
+  UniversalGradeIdSchema,
+  UniversalIdSchema,
+  UniversalSubgradeIdSchema,
+  UploadSpecificGradeExcel,
+} from "@enpitsu/validator/grade";
 
 import { adminProcedure } from "../trpc";
+
+const { CreateStudentMany, CreateStudentSchema, UpdateStudentServerSchema } =
+  StudentRelatedConstructor();
 
 export const gradeRouter = {
   getGrades: adminProcedure.query(({ ctx }) => ctx.db.query.grades.findMany()),
 
   getSubgrades: adminProcedure
-    .input(
-      z.object({
-        gradeId: z.number(),
-      }),
-    )
+    .input(UniversalGradeIdSchema)
     .query(({ ctx, input }) =>
       ctx.db.query.subGrades.findMany({
         where: eq(schema.subGrades.gradeId, input.gradeId),
@@ -28,8 +40,58 @@ export const gradeRouter = {
       }),
     ),
 
+  completeCSVUpload: adminProcedure
+    .input(CompleteCSVUploadSchema)
+    .mutation(async ({ ctx, input }) => {
+      const [gradeRes, subgradeRes, studentRes] = await Promise.all([
+        ctx.db.select({ count: count() }).from(schema.grades),
+        ctx.db.select({ count: count() }).from(schema.subGrades),
+        ctx.db.select({ count: count() }).from(schema.students),
+      ]);
+
+      const gradeLen = gradeRes[0]!.count;
+      const subgradeLen = subgradeRes[0]!.count;
+      const studentLen = studentRes[0]!.count;
+
+      if (gradeLen > 0 || subgradeLen > 0 || studentLen > 0)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Terdapat data di database, tidak bisa melakukan operasi ini lagi. Kosongkan terlebih dahulu tabel kelas, sub-kelas, dan peserta.",
+        });
+
+      for (const grade of input) {
+        await ctx.db.transaction(async (tx) => {
+          const newGrade = await tx
+            .insert(schema.grades)
+            .values({ label: grade.grade })
+            .returning({ gradeId: schema.grades.id });
+
+          const gradeId = newGrade[0]!.gradeId;
+
+          for (const subgrade of grade.subgrade) {
+            const newSubgrade = await tx
+              .insert(schema.subGrades)
+              .values({ label: subgrade.label, gradeId })
+              .returning({ subgradeId: schema.subGrades.id });
+            const subgradeId = newSubgrade[0]!.subgradeId;
+
+            await tx.insert(schema.students).values(
+              subgrade.participants.map((p) => ({
+                name: p.Nama,
+                token: p.Token,
+                participantNumber: p["Nomor Peserta"],
+                room: p.Ruang,
+                subgradeId,
+              })),
+            );
+          }
+        });
+      }
+    }),
+
   getStudents: adminProcedure
-    .input(z.object({ subgradeId: z.number().nullable() }))
+    .input(GetStudentSchema)
     .query(async ({ ctx, input }) => {
       if (!input.subgradeId) return [];
 
@@ -39,55 +101,32 @@ export const gradeRouter = {
       });
     }),
 
-  getSubgrade: adminProcedure.input(z.number()).query(({ ctx, input }) =>
+  getSubgrade: adminProcedure.input(JustNumberSchema).query(({ ctx, input }) =>
     ctx.db.query.subGrades.findFirst({
       where: eq(schema.subGrades.id, input),
     }),
   ),
 
   createGrade: adminProcedure
-    .input(z.object({ label: z.string() }))
+    .input(NewGradeOrSubgradeSchema)
     .mutation(({ ctx, input }) => {
       return ctx.db.insert(schema.grades).values(input);
     }),
 
   createSubgrade: adminProcedure
-    .input(
-      z.object({
-        gradeId: z.number(),
-        label: z.string(),
-      }),
-    )
+    .input(CreateSubgradeSchema)
     .mutation(({ ctx, input }) => {
       return ctx.db.insert(schema.subGrades).values(input);
     }),
 
   createStudent: adminProcedure
-    .input(
-      z.object({
-        name: z.string(),
-        participantNumber: z.string(),
-        room: z.string(),
-        subgradeId: z.number(),
-        token: z.string(),
-      }),
-    )
+    .input(CreateStudentSchema)
     .mutation(({ ctx, input }) => {
       return ctx.db.insert(schema.students).values(input);
     }),
 
   createStudentMany: adminProcedure
-    .input(
-      z.array(
-        z.object({
-          name: z.string(),
-          participantNumber: z.string(),
-          room: z.string(),
-          subgradeId: z.number(),
-          token: z.string(),
-        }),
-      ),
-    )
+    .input(CreateStudentMany)
     .mutation(({ ctx, input }) => {
       return ctx.db.insert(schema.students).values(input);
     }),
@@ -132,14 +171,7 @@ export const gradeRouter = {
     ),
 
   updateStudent: adminProcedure
-    .input(
-      z.object({
-        id: z.number(),
-        name: z.string(),
-        participantNumber: z.string(),
-        room: z.string(),
-      }),
-    )
+    .input(UpdateStudentServerSchema)
     .mutation(({ ctx, input }) => {
       return ctx.db
         .update(schema.students)
@@ -152,7 +184,7 @@ export const gradeRouter = {
     }),
 
   deleteGrade: adminProcedure
-    .input(z.number())
+    .input(JustNumberSchema)
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.transaction(async (tx) => {
         const subgrades = await tx.query.subGrades.findMany({
@@ -204,7 +236,7 @@ export const gradeRouter = {
     }),
 
   deleteSubgrade: adminProcedure
-    .input(z.number())
+    .input(JustNumberSchema)
     .mutation(async ({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
         await tx.delete(schema.subGrades).where(eq(schema.subGrades.id, input));
@@ -218,7 +250,7 @@ export const gradeRouter = {
     ),
 
   deleteStudent: adminProcedure
-    .input(z.number())
+    .input(JustNumberSchema)
     .mutation(async ({ ctx, input }) => {
       return ctx.db
         .delete(schema.students)
@@ -226,24 +258,7 @@ export const gradeRouter = {
     }),
 
   uploadSpecificGradeExcel: adminProcedure
-    .input(
-      z.object({
-        gradeId: z.number(),
-        data: z.array(
-          z.object({
-            subgradeName: z.string(),
-            data: z.array(
-              z.object({
-                Nama: z.string().min(2).max(255),
-                "Nomor Peserta": z.string().min(5).max(50),
-                Ruang: z.string().min(1).max(50),
-                Token: z.string().min(13).max(14).refine(validateId),
-              }),
-            ),
-          }),
-        ),
-      }),
-    )
+    .input(UploadSpecificGradeExcel)
     .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
         const subgrades = await tx.query.subGrades.findMany({
@@ -291,7 +306,7 @@ export const gradeRouter = {
     ),
 
   downloadSpecificGradeExcel: adminProcedure
-    .input(z.object({ gradeId: z.number() }))
+    .input(UniversalGradeIdSchema)
     .mutation(async ({ ctx, input }) => {
       const gradesData = await ctx.db.query.grades.findFirst({
         where: eq(schema.grades.id, input.gradeId),
@@ -333,10 +348,10 @@ export const gradeRouter = {
     }),
 
   downloadSpecificSubgradeExcel: adminProcedure
-    .input(z.object({ subgradeId: z.number() }))
+    .input(UniversalSubgradeIdSchema)
     .mutation(async ({ ctx, input }) => {
       const subgradeData = await ctx.db.query.subGrades.findFirst({
-        where: eq(schema.grades.id, input.subgradeId),
+        where: eq(schema.subGrades.id, input.subgradeId),
         columns: {
           label: true,
         },
@@ -388,18 +403,42 @@ export const gradeRouter = {
     }),
   ),
 
-  addTemporaryBan: adminProcedure
-    .input(
-      z.object({
-        studentId: z.number().min(1),
-        startedAt: z.date(),
-        endedAt: z.date(),
-        reason: z.string().min(5),
-      }),
-    )
+  getStudentNotInTemporaryBan: adminProcedure.query(({ ctx }) =>
+    ctx.db
+      .select({
+        id: schema.students.id,
+        name: sql<string>`${schema.grades.label} || '-' || ${schema.subGrades.label} || ' ' || ${schema.students.name} `,
+      })
+      .from(schema.students)
+      .leftJoin(
+        schema.studentTemporaryBans,
+        eq(schema.students.id, schema.studentTemporaryBans.studentId),
+      )
+      .innerJoin(
+        schema.subGrades,
+        eq(schema.subGrades.id, schema.students.subgradeId),
+      )
+      .innerJoin(schema.grades, eq(schema.grades.id, schema.subGrades.gradeId))
+      .where(isNull(schema.studentTemporaryBans.id))
+      .orderBy(
+        asc(schema.grades.label),
+        asc(schema.subGrades.label),
+        asc(schema.students.name),
+      ),
+  ),
+
+  addTemporaryBans: adminProcedure
+    .input(MultiTemporaryBan)
     .mutation(async ({ ctx, input }) => {
       try {
-        return await ctx.db.insert(schema.studentTemporaryBans).values(input);
+        return await ctx.db.insert(schema.studentTemporaryBans).values(
+          input.studentIds.map((id) => ({
+            studentId: id,
+            startedAt: input.startedAt,
+            endedAt: input.endedAt,
+            reason: input.reason,
+          })),
+        );
       } catch (e) {
         // @ts-expect-error unknown error value
         if (e.code === "23505" && e.constraint_name === "uniq_student_id")
@@ -417,14 +456,7 @@ export const gradeRouter = {
     }),
 
   editTemporaryBan: adminProcedure
-    .input(
-      z.object({
-        id: z.number().min(1),
-        startedAt: z.date(),
-        endedAt: z.date(),
-        reason: z.string().min(5),
-      }),
-    )
+    .input(TemporaryBanSchema)
     .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
         await tx
@@ -434,12 +466,12 @@ export const gradeRouter = {
             endedAt: input.endedAt,
             reason: input.reason,
           })
-          .where(eq(schema.studentTemporaryBans.id, input.id));
+          .where(eq(schema.studentTemporaryBans.id, input.studentId));
       }),
     ),
 
   deleteSingleTemporaryBan: adminProcedure
-    .input(z.object({ id: z.number().min(1) }))
+    .input(UniversalIdSchema)
     .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
         await tx

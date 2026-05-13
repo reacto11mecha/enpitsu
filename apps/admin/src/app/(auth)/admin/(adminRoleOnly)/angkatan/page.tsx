@@ -1,7 +1,18 @@
+import { connection } from "next/server";
+
+import { settings } from "@enpitsu/settings";
+
 import { AngkatanViewer } from "~/_components/Angkatan/AngkatanViewer";
 import { NewAngkatan } from "~/_components/Angkatan/NewAngkatan";
 
-export default function AngkatanPage() {
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export default async function AngkatanPage() {
+  await connection();
+
+  const appSettings = settings.getSettings();
+
   return (
     <div className="mt-5 flex flex-col gap-8 px-5">
       <div className="space-y-1">
@@ -19,7 +30,7 @@ export default function AngkatanPage() {
 
         <NewAngkatan />
 
-        <AngkatanViewer />
+        <AngkatanViewer appSettings={appSettings} />
       </div>
     </div>
   );
