@@ -27,7 +27,7 @@
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@trpc/tanstack-react-query": "catalog:",
-    "expo": "~54.0.30",
+    "expo": "~54.0.34",
     "expo-battery": "^55.0.8",
     "expo-blur": "~15.0.8",
     "expo-camera": "~17.0.10",

@@ -81,27 +81,6 @@ export function ActualTest({
   const [refreshing, setRefreshing] = useState(false);
   const [isZoomMode, setIsZoomMode] = useState(false);
 
-  const batteryLevel = useBatteryLevel();
-  const batteryState = useBatteryState();
-  const networkState = useNetworkState();
-
-  const isOnline =
-    networkState.isConnected && networkState.isInternetReachable !== false;
-
-  const getBatteryIcon = () => {
-    if (batteryState === BatteryState.CHARGING) return "battery-charging";
-    if (batteryLevel === null) return "battery-half-outline";
-    if (batteryLevel > 0.8) return "battery-full";
-    if (batteryLevel > 0.3) return "battery-half";
-    return "battery-dead";
-  };
-
-  const getBatteryColor = () => {
-    if (batteryState === BatteryState.CHARGING) return "#10B981"; // Hijau saat cas
-    if (batteryLevel !== null && batteryLevel <= 0.2) return theme.colors.error; // Merah saat < 20%
-    return theme.colors.typography;
-  };
-
   // --- REANIMATED ZOOM LOGIC ---
   const scale = useSharedValue(1);
   const savedScale = useSharedValue(1);
@@ -581,43 +560,7 @@ export function ActualTest({
             ) : null}
           </View>
 
-          <View style={styles.headerSecondaryActions}>
-            <View style={styles.statusBadge}>
-              <Ionicons
-                name={isOnline ? "wifi" : "cloud-offline"}
-                size={12}
-                color={isOnline ? "#10B981" : theme.colors.error}
-              />
-              <Text
-                style={[
-                  styles.statusText,
-                  !isOnline && { color: theme.colors.error },
-                ]}
-              >
-                {isOnline ? "Online" : "Offline"}
-              </Text>
-            </View>
-
-            {/* Indikator Baterai */}
-            <View style={styles.statusBadge}>
-              <Ionicons
-                name={getBatteryIcon()}
-                size={12}
-                color={getBatteryColor()}
-              />
-              <Text
-                style={[
-                  styles.statusText,
-                  batteryLevel !== null &&
-                    batteryLevel <= 0.2 && { color: theme.colors.error },
-                ]}
-              >
-                {batteryLevel !== null
-                  ? `${Math.round(batteryLevel * 100)}%`
-                  : "--%"}
-              </Text>
-            </View>
-          </View>
+          {Platform.OS !== "web" ? <Indicator /> : null}
         </View>
       </View>
 
@@ -972,6 +915,65 @@ export function ActualTest({
           </View>
         </ScrollView>
       </ModalUniversal>
+    </View>
+  );
+}
+
+function Indicator() {
+  const { theme } = useUnistyles();
+
+  const batteryLevel = useBatteryLevel();
+  const batteryState = useBatteryState();
+  const networkState = useNetworkState();
+
+  const isOnline =
+    networkState.isConnected && networkState.isInternetReachable !== false;
+
+  const getBatteryIcon = () => {
+    if (batteryState === BatteryState.CHARGING) return "battery-charging";
+    if (batteryLevel === null) return "battery-half-outline";
+    if (batteryLevel > 0.8) return "battery-full";
+    if (batteryLevel > 0.3) return "battery-half";
+    return "battery-dead";
+  };
+
+  const getBatteryColor = () => {
+    if (batteryState === BatteryState.CHARGING) return "#10B981"; // Hijau saat cas
+    if (batteryLevel !== null && batteryLevel <= 0.2) return theme.colors.error; // Merah saat < 20%
+    return theme.colors.typography;
+  };
+
+  return (
+    <View style={styles.headerSecondaryActions}>
+      <View style={styles.statusBadge}>
+        <Ionicons
+          name={isOnline ? "wifi" : "cloud-offline"}
+          size={12}
+          color={isOnline ? "#10B981" : theme.colors.error}
+        />
+        <Text
+          style={[
+            styles.statusText,
+            !isOnline && { color: theme.colors.error },
+          ]}
+        >
+          {isOnline ? "Online" : "Offline"}
+        </Text>
+      </View>
+
+      {/* Indikator Baterai */}
+      <View style={styles.statusBadge}>
+        <Ionicons name={getBatteryIcon()} size={12} color={getBatteryColor()} />
+        <Text
+          style={[
+            styles.statusText,
+            batteryLevel !== null &&
+              batteryLevel <= 0.2 && { color: theme.colors.error },
+          ]}
+        >
+          {batteryLevel !== null ? `${Math.round(batteryLevel * 100)}%` : "--%"}
+        </Text>
+      </View>
     </View>
   );
 }
