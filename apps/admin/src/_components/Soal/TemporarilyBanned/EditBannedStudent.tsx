@@ -1,14 +1,23 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { format, startOfDay } from "date-fns";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+
+import type { TEditBannedStudentSchema } from "@enpitsu/validator/exam";
+import { EditBannedStudentSchema } from "@enpitsu/validator/exam";
+
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@enpitsu/ui/dialog";
+} from "~/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,36 +26,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { format, startOfDay } from "date-fns";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-
-import { api } from "~/trpc/react";
-
-const formSchema = z
-  .object({
-    studentName: z.string(),
-    startedAt: z.date({
-      required_error: "Diperlukan kapan waktu ujian dimulai!",
-    }),
-    endedAt: z.date({
-      required_error: "Diperlukan kapan waktu ujian selesai!",
-    }),
-    reason: z
-      .string()
-      .min(3, { message: "Minimal alasan memiliki 3 karakter!" }),
-  })
-  .refine((data) => data.startedAt < data.endedAt, {
-    path: ["endedAt"],
-    message: "Waktu selesai tidak boleh kurang dari waktu mulai!",
-  });
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { useTRPC } from "~/trpc/react";
 
 export function EditBannedStudent({
-  id,
+  studentId,
   reason,
   studentName,
   studentClassName,
@@ -55,7 +40,7 @@ export function EditBannedStudent({
   isDialogOpen,
   setDialogOpen,
 }: {
-  id: number;
+  studentId: number;
   reason: string;
   studentName: string;
   studentClassName: string;
@@ -64,28 +49,33 @@ export function EditBannedStudent({
   isDialogOpen: boolean;
   setDialogOpen: Dispatch<SetStateAction<boolean>>;
 }) {
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const editBannedStudent = api.grade.editTemporaryBan.useMutation({
-    async onSuccess() {
-      await apiUtils.question.getStudentTempobans.invalidate();
+  const editBannedStudent = useMutation(
+    trpc.grade.editTemporaryBan.mutationOptions({
+      async onSuccess() {
+        await queryClient.invalidateQueries(
+          trpc.question.getStudentTempobans.pathFilter(),
+        );
 
-      toast.success("Pembaharuan Larangan Berhasil!", {
-        description: `Berhasil mengubah peserta!`,
-      });
+        toast.success("Pembaharuan Larangan Berhasil!", {
+          description: `Berhasil mengubah peserta!`,
+        });
 
-      setDialogOpen(false);
-    },
+        setDialogOpen(false);
+      },
 
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<TEditBannedStudentSchema>({
+    resolver: zodResolver(EditBannedStudentSchema),
     defaultValues: {
       studentName,
       reason,
@@ -116,7 +106,7 @@ export function EditBannedStudent({
             <form
               onSubmit={form.handleSubmit((val) =>
                 editBannedStudent.mutate({
-                  id,
+                  studentId,
                   startedAt: val.startedAt,
                   endedAt: val.endedAt,
                   reason: val.reason,
@@ -125,7 +115,7 @@ export function EditBannedStudent({
               className="space-y-3"
             >
               <div className="flex flex-col gap-5 md:grid md:grid-cols-4">
-                <div className="flex flex-col md:w-[150px]">
+                <div className="flex w-full flex-col">
                   <FormLabel className="mb-2">Kelas</FormLabel>
                   <FormControl>
                     <Input disabled value={studentClassName} />

@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+import { format, formatDuration, intervalToDuration } from "date-fns";
+import { id } from "date-fns/locale";
+
 import {
   Card,
   CardContent,
@@ -8,20 +11,18 @@ import {
   CardFooter,
   CardHeader,
   // CardTitle,
-} from "@enpitsu/ui/card";
-import { Label } from "@enpitsu/ui/label";
-import { RadioGroup, RadioGroupItem } from "@enpitsu/ui/radio-group";
-import { Skeleton } from "@enpitsu/ui/skeleton";
-import { Textarea } from "@enpitsu/ui/textarea";
-import { format, formatDuration, intervalToDuration } from "date-fns";
-import { id } from "date-fns/locale";
-
-import { api } from "~/trpc/react";
+} from "~/components/ui/card";
+import { Label } from "~/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+import { Skeleton } from "~/components/ui/skeleton";
+import { Textarea } from "~/components/ui/textarea";
+import { useTRPC } from "~/trpc/react";
 
 import "katex/dist/katex.min.css";
 
-import { Separator } from "@enpitsu/ui/separator";
+import { useQuery } from "@tanstack/react-query";
 
+import { Separator } from "~/components/ui/separator";
 import { UpdateEssayScore } from "./UpdateEssayScore";
 
 export const Correction = ({
@@ -45,30 +46,38 @@ export const Correction = ({
   choices: { choiceId: number; answer: number }[];
   essays: { id: number; essayId: number; answer: string }[];
 }) => {
-  const multipleChoicesQuery = api.question.getMultipleChoices.useQuery(
-    {
-      questionId,
-    },
-    {
-      refetchOnWindowFocus: false,
-    },
+  const trpc = useTRPC();
+
+  const multipleChoicesQuery = useQuery(
+    trpc.question.getMultipleChoices.queryOptions(
+      {
+        questionId,
+      },
+      {
+        refetchOnWindowFocus: false,
+      },
+    ),
   );
 
-  const essayScoresQuery = api.question.getEssaysScore.useQuery(
-    {
-      respondId,
-    },
-    {
-      enabled: false,
-    },
+  const essayScoresQuery = useQuery(
+    trpc.question.getEssaysScore.queryOptions(
+      {
+        respondId,
+      },
+      {
+        enabled: false,
+      },
+    ),
   );
-  const essaysQuery = api.question.getEssays.useQuery(
-    {
-      questionId,
-    },
-    {
-      refetchOnWindowFocus: false,
-    },
+  const essaysQuery = useQuery(
+    trpc.question.getEssays.queryOptions(
+      {
+        questionId,
+      },
+      {
+        refetchOnWindowFocus: false,
+      },
+    ),
   );
 
   useEffect(() => {
@@ -129,7 +138,7 @@ export const Correction = ({
             </h3>
 
             {multipleChoicesQuery.isPending ? (
-              <Skeleton className="w-15 h-6" />
+              <Skeleton className="h-6 w-15" />
             ) : !multipleChoicesQuery.isError ? (
               <span>
                 Jumlah Benar:{" "}
@@ -137,8 +146,8 @@ export const Correction = ({
                   multipleChoicesQuery.data
                     .map(
                       (choice) =>
-                        choices.find((c) => c.choiceId === choice.iqid)!
-                          .answer === choice.correctAnswerOrder,
+                        choices.find((c) => c.choiceId === choice.iqid)
+                          ?.answer === choice.correctAnswerOrder,
                     )
                     .filter((a) => !!a).length
                 }{" "}
@@ -163,7 +172,7 @@ export const Correction = ({
                   <h3
                     className={`correction scroll-m-20 text-base tracking-tight ${
                       choice.correctAnswerOrder ===
-                      choices.find((c) => c.choiceId === choice.iqid)!.answer
+                      choices.find((c) => c.choiceId === choice.iqid)?.answer
                         ? "text-green-600"
                         : "text-rose-600"
                     }`}
@@ -173,7 +182,7 @@ export const Correction = ({
                 <CardContent>
                   <RadioGroup
                     defaultValue={String(
-                      choices.find((c) => c.choiceId === choice.iqid)!.answer,
+                      choices.find((c) => c.choiceId === choice.iqid)?.answer,
                     )}
                   >
                     {choice.options.map((option, idx) => (
@@ -181,8 +190,8 @@ export const Correction = ({
                         className={`flex min-h-10 items-center space-x-3 rounded px-2 py-3 ${
                           option.order === choice.correctAnswerOrder
                             ? "bg-green-500/40 dark:bg-green-700/30"
-                            : choices.find((c) => c.choiceId === choice.iqid)!
-                                  .answer === option.order
+                            : choices.find((c) => c.choiceId === choice.iqid)
+                                  ?.answer === option.order
                               ? "bg-rose-500/40 dark:bg-rose-700/30"
                               : ""
                         }`}
@@ -214,7 +223,7 @@ export const Correction = ({
             </h3>
 
             {essaysQuery.isPending || essayScoresQuery.isPending ? (
-              <Skeleton className="w-15 h-6" />
+              <Skeleton className="h-6 w-15" />
             ) : !essaysQuery.isError && !essayScoresQuery.isError ? (
               <span>
                 Jumlah Benar:{" "}

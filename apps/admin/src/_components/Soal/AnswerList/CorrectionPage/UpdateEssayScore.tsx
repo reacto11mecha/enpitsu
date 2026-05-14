@@ -1,5 +1,13 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader2, X as NuhUh, Check as YuhUh } from "lucide-react";
+import { useForm } from "react-hook-form";
+
+import type { TUpdateEssayScoreSchema } from "@enpitsu/validator/exam";
+import { UpdateEssayScoreSchema } from "@enpitsu/validator/exam";
+
 import {
   Form,
   FormControl,
@@ -8,73 +16,65 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, X as NuhUh, Check as YuhUh } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
-import { api } from "~/trpc/react";
-
-const formSchema = z.object({
-  score: z.coerce
-    .number({
-      invalid_type_error: "Hanya bisa di isikan nilai angka!",
-      required_error: "Skor dibutuhkan!",
-    })
-    .min(0, { message: "Skor minimum di angka 0!" })
-    .max(1, { message: "Skor maximum di angka 1!" }),
-});
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { useTRPC } from "~/trpc/react";
 
 export const UpdateEssayScore = ({
   score,
   id,
-  respondId,
+  respondId: _,
 }: {
   score: string;
   id: number;
   respondId: number;
 }) => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<TUpdateEssayScoreSchema>({
+    resolver: zodResolver(UpdateEssayScoreSchema),
     defaultValues: {
       score: parseFloat(score),
     },
   });
 
-  const apiUtils = api.useUtils();
-  const updateScoreMutation = api.question.updateEssayScore.useMutation({
-    async onMutate(updatedData) {
-      // Cancel outgoing fetches (so they don't overwrite our optimistic update)
-      await apiUtils.question.getEssaysScore.cancel();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-      // Get the data from the queryCache
-      const prevData = apiUtils.question.getEssaysScore.getData();
+  const updateScoreMutation = useMutation(
+    trpc.question.updateEssayScore.mutationOptions({
+      // async onMutate(updatedData) {
+      //   // Cancel outgoing fetches (so they don't overwrite our optimistic update)
+      //   await apiUtils.question.getEssaysScore.cancel();
 
-      // Optimistically update the data with our new post
-      apiUtils.question.getEssaysScore.setData({ respondId }, (old) =>
-        old?.map((d) =>
-          d.id === id ? { ...d, score: String(updatedData.score) } : d,
-        ),
-      );
+      //   // Get the data from the queryCache
+      //   const prevData = apiUtils.question.getEssaysScore.getData();
 
-      // Return the previous data so we can revert if something goes wrong
-      return { prevData };
-    },
-    onError(err, newPost, ctx) {
-      // If the mutation fails, use the context-value from onMutate
-      apiUtils.question.getEssaysScore.setData({ respondId }, ctx?.prevData);
-    },
-    onSuccess(data) {
-      form.setValue("score", parseFloat(data.at(0)!.score));
-    },
-    async onSettled() {
-      // Sync with server once mutation has settled
-      await apiUtils.question.getEssaysScore.invalidate();
-    },
-  });
-  const onSubmit = ({ score }: z.infer<typeof formSchema>) => {
+      //   // Optimistically update the data with our new post
+      //   apiUtils.question.getEssaysScore.setData({ respondId }, (old) =>
+      //     old?.map((d) =>
+      //       d.id === id ? { ...d, score: String(updatedData.score) } : d,
+      //     ),
+      //   );
+
+      //   // Return the previous data so we can revert if something goes wrong
+      //   return { prevData };
+      // },
+      // onError(err, newPost, ctx) {
+      //   // If the mutation fails, use the context-value from onMutate
+      //   apiUtils.question.getEssaysScore.setData({ respondId }, ctx?.prevData);
+      // },
+      onSuccess(data) {
+        form.setValue("score", parseFloat(data.at(0)!.score));
+      },
+      async onSettled() {
+        // // Sync with server once mutation has settled
+        // await apiUtils.invalidate();
+        await queryClient.invalidateQueries(
+          trpc.question.getEssaysScore.pathFilter(),
+        );
+      },
+    }),
+  );
+  const onSubmit = ({ score }: TUpdateEssayScoreSchema) => {
     updateScoreMutation.mutate({ score, id });
   };
 

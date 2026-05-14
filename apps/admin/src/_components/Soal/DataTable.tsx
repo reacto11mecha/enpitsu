@@ -1,34 +1,16 @@
 "use client";
 
-import type { RouterOutputs } from "@enpitsu/api";
 import type { ColumnDef } from "@tanstack/react-table";
 import { createContext, useContext, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "@enpitsu/ui/avatar";
-import { Badge, badgeVariants } from "@enpitsu/ui/badge";
-import { Button } from "@enpitsu/ui/button";
-import { Checkbox } from "@enpitsu/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@enpitsu/ui/dropdown-menu";
-import { Input } from "@enpitsu/ui/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@enpitsu/ui/tooltip";
+import { useQuery } from "@tanstack/react-query";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import { id } from "date-fns/locale";
 import {
   ArrowUpDown,
   ClipboardCheck,
+  CopyPlus,
   LayoutList,
   ListX,
   MoreHorizontal,
@@ -38,10 +20,32 @@ import {
   UserRoundX,
 } from "lucide-react";
 
+import type { RouterOutputs } from "@enpitsu/api";
+
 import { ReusableDataTable } from "~/_components/data-table";
-import { api } from "~/trpc/react";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge, badgeVariants } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import { useTRPC } from "~/trpc/react";
 import { CreateQRCodes } from "./CreateQRCodes";
 import { DeleteParentQuestion } from "./DeleteParentQuestion";
+import { DuplicateParentQuestion } from "./DuplicateParentQuestion";
 
 type QuestionList = RouterOutputs["question"]["getQuestions"][number];
 
@@ -210,7 +214,7 @@ export const columns: ColumnDef<QuestionList>[] = [
       const currentUserRole = useContext(RoleContext);
 
       return (
-        <div className="space-x-0.5 space-y-0.5">
+        <div className="space-y-0.5 space-x-0.5">
           {row.original.allowLists.map((allow) =>
             currentUserRole === "admin" ? (
               <Link
@@ -239,6 +243,9 @@ export const columns: ColumnDef<QuestionList>[] = [
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const [openDelete, setOpenDelete] = useState(false);
 
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [openDuplicate, setOpenDuplicate] = useState(false);
+
       return (
         <>
           <DropdownMenu>
@@ -261,6 +268,13 @@ export const columns: ColumnDef<QuestionList>[] = [
                   <PencilLine className="mr-2 h-4 md:w-4" />
                   Identitas Soal
                 </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setOpenDuplicate(true)}
+                className="cursor-pointer"
+              >
+                <CopyPlus className="mr-2 h-4 md:w-4" />
+                Duplikat Soal
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer" asChild>
                 <Link href={`/admin/soal/answer/${question.id}`}>
@@ -291,6 +305,13 @@ export const columns: ColumnDef<QuestionList>[] = [
             title={question.title}
             id={question.id}
           />
+          <DuplicateParentQuestion
+            openDuplicate={openDuplicate}
+            setOpenDuplicate={setOpenDuplicate}
+            title={question.title}
+            id={question.id}
+            slug={question.slug}
+          />
         </>
       );
     },
@@ -304,7 +325,8 @@ export function DataTable({
   countValue: number;
   currUserRole: "admin" | "user";
 }) {
-  const questionsQuery = api.question.getQuestions.useQuery();
+  const trpc = useTRPC();
+  const questionsQuery = useQuery(trpc.question.getQuestions.queryOptions());
 
   return (
     <RoleContext.Provider value={currUserRole}>

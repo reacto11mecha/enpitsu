@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+
 import { auth } from "@enpitsu/auth";
 
 import { DataTable } from "~/_components/Soal/AggregateCheatedStudents";
@@ -15,7 +16,7 @@ export default async function AggregateListPage() {
           <h2 className="text-2xl font-bold tracking-tight">
             Data Agregat Kecurangan Peserta
           </h2>
-          <p className="w-full text-muted-foreground md:w-[85%] lg:w-[75%]">
+          <p className="text-muted-foreground w-full md:w-[85%] lg:w-[75%]">
             Lihat siapa saja yang melakukan kecurangan dan menghapus status
             kecurangan pada halaman ini dari semua mata pelajaran ulangan.
           </p>

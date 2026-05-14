@@ -1,7 +1,16 @@
-import type { RouterOutputs } from "@enpitsu/api";
 import type { Dispatch, SetStateAction } from "react";
 import { useMemo } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import { useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
+
+import type { RouterOutputs } from "@enpitsu/api";
+import type { TUpdateStudentSchema } from "@enpitsu/validator/grade";
+import { UpdateStudentSchema } from "@enpitsu/validator/grade";
+
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -10,7 +19,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@enpitsu/ui/dialog";
+} from "~/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -18,32 +27,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useForm, useWatch } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-
-import { api } from "~/trpc/react";
-
-const schema = z.object({
-  name: z
-    .string()
-    .min(2, { message: "Nama wajib di isi!" })
-    .max(255, { message: "Nama terlalu panjang!" }),
-  participantNumber: z
-    .string()
-    .min(5, { message: "Nomor peserta wajib di isi!" })
-    .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-  room: z
-    .string()
-    .min(1, { message: "Ruangan peserta wajib di isi!" })
-    .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-});
-
-type FormValues = z.infer<typeof schema>;
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { useTRPC } from "~/trpc/react";
 
 type StudentType = RouterOutputs["grade"]["getStudents"][number];
 
@@ -56,10 +42,11 @@ export const UpdateStudent = ({
   setOpenEdit: Dispatch<SetStateAction<boolean>>;
   student: StudentType;
 }) => {
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  const form = useForm<TUpdateStudentSchema>({
+    resolver: zodResolver(UpdateStudentSchema),
     defaultValues: {
       name: student.name,
       room: student.room,
@@ -99,25 +86,29 @@ export const UpdateStudent = ({
     ],
   );
 
-  const editStudentMutation = api.grade.updateStudent.useMutation({
-    async onSuccess() {
-      await apiUtils.grade.getStudents.invalidate();
+  const editStudentMutation = useMutation(
+    trpc.grade.updateStudent.mutationOptions({
+      async onSuccess() {
+        await queryClient.invalidateQueries(
+          trpc.grade.getStudents.pathFilter(),
+        );
 
-      setOpenEdit(false);
+        setOpenEdit(false);
 
-      toast.success("Pembaruan Berhasil!", {
-        description: "Berhasil memperbarui identitas murid.",
-      });
-    },
+        toast.success("Pembaruan Berhasil!", {
+          description: "Berhasil memperbarui identitas murid.",
+        });
+      },
 
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
-  const onSubmit = (values: FormValues) =>
+  const onSubmit = (values: TUpdateStudentSchema) =>
     editStudentMutation.mutate({ id: student.id, ...values });
 
   return (

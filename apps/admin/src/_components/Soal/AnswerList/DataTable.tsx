@@ -1,27 +1,29 @@
 "use client";
 
-import type { RouterOutputs } from "@enpitsu/api";
 import type { ColumnDef } from "@tanstack/react-table";
 import { createContext, useCallback, useContext, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import Link from "next/link";
-import { Badge, badgeVariants } from "@enpitsu/ui/badge";
-import { Button } from "@enpitsu/ui/button";
-import { Checkbox } from "@enpitsu/ui/checkbox";
+import { useQuery } from "@tanstack/react-query";
+import { format, formatDuration, intervalToDuration } from "date-fns";
+import { id } from "date-fns/locale";
+import { ListChecks, MoreHorizontal, Trash2 } from "lucide-react";
+
+import type { RouterOutputs } from "@enpitsu/api";
+
+import { ReusableDataTable } from "~/_components/data-table";
+import { Badge, badgeVariants } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@enpitsu/ui/dropdown-menu";
-import { Input } from "@enpitsu/ui/input";
-import { format, formatDuration, intervalToDuration } from "date-fns";
-import { id } from "date-fns/locale";
-import { ListChecks, MoreHorizontal, Trash2 } from "lucide-react";
-
-import { ReusableDataTable } from "~/_components/data-table";
-import { api } from "~/trpc/react";
+} from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
+import { useTRPC } from "~/trpc/react";
 import {
   DeleteManyStudentAnswer,
   DeleteSingleStudentAnswer,
@@ -194,10 +196,12 @@ export function DataTable({
   title: string;
   currUserRole: "admin" | "user";
 }) {
-  const specificAnswerByQuestionQuery =
-    api.question.getStudentAnswersByQuestion.useQuery({
+  const trpc = useTRPC();
+  const specificAnswerByQuestionQuery = useQuery(
+    trpc.question.getStudentAnswersByQuestion.queryOptions({
       questionId,
-    });
+    }),
+  );
 
   return (
     <RoleContext.Provider value={currUserRole}>

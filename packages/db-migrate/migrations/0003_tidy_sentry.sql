@@ -1,0 +1,1 @@
+ALTER TABLE "enpitsu_studentBlocklist" ADD COLUMN "activity_log" json NOT NULL;

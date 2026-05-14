@@ -1,24 +1,26 @@
 "use client";
 
-import type { RouterOutputs } from "@enpitsu/api";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useCallback, useState } from "react";
 import { Space_Mono } from "next/font/google";
-import { Avatar, AvatarFallback, AvatarImage } from "@enpitsu/ui/avatar";
-import { Button } from "@enpitsu/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
+import { MoreHorizontal, PencilLine } from "lucide-react";
+
+import type { RouterOutputs } from "@enpitsu/api";
+
+import { ReusableDataTable } from "~/_components/data-table";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@enpitsu/ui/dropdown-menu";
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
-import { MoreHorizontal, PencilLine } from "lucide-react";
-
-import { ReusableDataTable } from "~/_components/data-table";
-import { api } from "~/trpc/react";
+} from "~/components/ui/dropdown-menu";
+import { useTRPC } from "~/trpc/react";
 import { UpdateRole } from "./UpdateRole";
 
 type PendingUserList = RouterOutputs["admin"]["getAllRegisteredUser"][number];
@@ -115,8 +117,10 @@ export const columns: ColumnDef<PendingUserList>[] = [
 ];
 
 export function AllRegisteredUser() {
-  const allRegisteredUserQuery =
-    api.admin.getAllRegisteredUser.useQuery(undefined);
+  const trpc = useTRPC();
+  const allRegisteredUserQuery = useQuery(
+    trpc.admin.getAllRegisteredUser.queryOptions(),
+  );
 
   return (
     <div className="w-full">

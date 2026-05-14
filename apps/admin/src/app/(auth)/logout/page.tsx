@@ -1,5 +1,6 @@
 import { signOut } from "@enpitsu/auth";
-import { Button } from "@enpitsu/ui/button";
+
+import { Button } from "~/components/ui/button";
 
 export default function LogoutPage() {
   return (

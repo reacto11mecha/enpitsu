@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { useMutation } from "@tanstack/react-query";
+import { ListRestart } from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -11,11 +15,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@enpitsu/ui/dialog";
-import { ListRestart } from "lucide-react";
-import { toast } from "sonner";
-
-import { api } from "~/trpc/react";
+} from "~/components/ui/dialog";
+import { useTRPC } from "~/trpc/react";
 
 export const RecalcEssayAnswer = ({
   questionId,
@@ -25,20 +26,24 @@ export const RecalcEssayAnswer = ({
   title: string;
 }) => {
   const [open, setOpen] = useState(false);
+  const trpc = useTRPC();
 
-  const recalcMutationApi = api.question.recalcEssayScore.useMutation({
-    onSuccess() {
-      toast.success("Berhasil dikalkulasi ulang!", {
-        description: "Semua respon jawaban dari peserta berhasil terkalkulasi!",
-      });
-      setOpen(false);
-    },
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+  const recalcMutationApi = useMutation(
+    trpc.question.recalcEssayScore.mutationOptions({
+      onSuccess() {
+        toast.success("Berhasil dikalkulasi ulang!", {
+          description:
+            "Semua respon jawaban dari peserta berhasil terkalkulasi!",
+        });
+        setOpen(false);
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   return (
     <Dialog

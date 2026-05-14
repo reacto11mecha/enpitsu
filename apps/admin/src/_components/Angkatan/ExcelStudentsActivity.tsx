@@ -1,7 +1,17 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { validateId } from "@enpitsu/token-generator";
+import { useCallback, useMemo, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import ExcelJS from "exceljs";
+import { HardDriveUpload, Sheet } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
+import type { AppSettings } from "@enpitsu/settings";
+import { UploadStudentXLSXSchemaConstructor } from "@enpitsu/validator/grade";
+
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -11,8 +21,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@enpitsu/ui/alert-dialog";
-import { Button } from "@enpitsu/ui/button";
+} from "~/components/ui/alert-dialog";
+import { Button } from "~/components/ui/button";
 import {
   Form,
   FormControl,
@@ -21,43 +31,32 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import ExcelJS from "exceljs";
-import { HardDriveUpload, Sheet } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { useTRPC } from "~/trpc/react";
 
-import { api } from "~/trpc/react";
-
-const FileValueSchema = z.array(
-  z.object({
-    subgradeName: z.string(),
-    data: z.array(
-      z.object({
-        Nama: z
-          .string()
-          .min(2, { message: "Nama wajib di isi!" })
-          .max(255, { message: "Nama terlalu panjang!" }),
-        "Nomor Peserta": z
-          .string()
-          .min(5, { message: "Nomor peserta wajib di isi!" })
-          .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-        Ruang: z
-          .string()
-          .min(1, { message: "Ruangan peserta wajib di isi!" })
-          .max(50, { message: "Panjang maksimal hanya 50 karakter!" }),
-        Token: z
-          .string()
-          .min(13, { message: "Panjang token wajib 13 karakter!" })
-          .max(13, { message: "Panjang token wajib 13 karakter!" })
-          .refine(validateId, { message: "Format token tidak sesuai!" }),
-      }),
+const ExcelUploadStudentByGrade = z.object({
+  xlsx: z
+    .instanceof(FileList, { message: "Dibutuhkan file xlsx!" })
+    .refine((files) => files.length > 0, `Dibutuhkan file xlsx!`)
+    .refine(
+      (files) => files.length <= 1,
+      `Hanya diperbolehkan upload 1 file saja!`,
+    )
+    .refine(
+      (files) =>
+        Array.from(files).every(
+          (file) =>
+            file.type ===
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ),
+      "Hanya bisa file xlsx saja!",
     ),
-  }),
-);
+});
+
+export type TExcelUploadStudentByGrade = z.infer<
+  typeof ExcelUploadStudentByGrade
+>;
 
 const ReusableAlertDialog = ({
   open,
@@ -105,51 +104,56 @@ export const ExcelStudentsByGradeDownload = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  const excelMutationApi = api.grade.downloadSpecificGradeExcel.useMutation({
-    async onSuccess(result) {
-      const workbook = new ExcelJS.Workbook();
+  const trpc = useTRPC();
 
-      workbook.created = new Date();
+  const excelMutationApi = useMutation(
+    trpc.grade.downloadSpecificGradeExcel.mutationOptions({
+      async onSuccess(result) {
+        const workbook = new ExcelJS.Workbook();
 
-      for (const subgrade of result.subgrades) {
-        const worksheet = workbook.addWorksheet(
-          `${result.label} ${subgrade.label}`,
-        );
+        workbook.created = new Date();
 
-        worksheet.addRow(["Nama", "Token", "Nomor Peserta", "Ruangan"]);
+        for (const subgrade of result.subgrades) {
+          const worksheet = workbook.addWorksheet(
+            `${result.label} ${subgrade.label}`,
+          );
 
-        for (const student of subgrade.students) {
-          worksheet.addRow([
-            student.name,
-            student.token,
-            student.participantNumber,
-            student.room,
-          ]);
+          worksheet.addRow(["Nama", "Token", "Nomor Peserta", "Ruangan"]);
+
+          for (const student of subgrade.students) {
+            worksheet.addRow([
+              student.name,
+              student.token,
+              student.participantNumber,
+              student.room,
+            ]);
+          }
         }
-      }
 
-      const buffer = await workbook.xlsx.writeBuffer();
+        const buffer = await workbook.xlsx.writeBuffer();
 
-      const blob = new Blob([buffer]);
-      const url = URL.createObjectURL(blob);
+        const blob = new Blob([buffer]);
+        const url = URL.createObjectURL(blob);
 
-      const anchor = document.createElement("a");
+        const anchor = document.createElement("a");
 
-      anchor.href = url;
-      anchor.download = `Data Seluruh Peserta-${+Date.now()}-Seluruh kelas ${result.label
+        anchor.href = url;
+        anchor.download = `Data Seluruh Peserta-${+Date.now()}-Seluruh kelas ${
+          result.label
         }-.xlsx`;
 
-      anchor.click();
-      anchor.remove();
+        anchor.click();
+        anchor.remove();
 
-      setOpen(false);
-    },
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+        setOpen(false);
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   const onOpenChange = useCallback(() => {
     if (!excelMutationApi.isPending) setOpen((prev) => !prev);
@@ -180,49 +184,54 @@ export const ExcelStudentsBySubgradeDownload = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  const excelMutationApi = api.grade.downloadSpecificSubgradeExcel.useMutation({
-    async onSuccess(result) {
-      const workbook = new ExcelJS.Workbook();
+  const trpc = useTRPC();
 
-      workbook.created = new Date();
+  const excelMutationApi = useMutation(
+    trpc.grade.downloadSpecificSubgradeExcel.mutationOptions({
+      async onSuccess(result) {
+        const workbook = new ExcelJS.Workbook();
 
-      const worksheet = workbook.addWorksheet(
-        `${result.grade.label} ${result.label}`,
-      );
+        workbook.created = new Date();
 
-      worksheet.addRow(["Nama", "Token", "Nomor Peserta", "Ruangan"]);
+        const worksheet = workbook.addWorksheet(
+          `${result.grade.label} ${result.label}`,
+        );
 
-      for (const student of result.students) {
-        worksheet.addRow([
-          student.name,
-          student.token,
-          student.participantNumber,
-          student.room,
-        ]);
-      }
+        worksheet.addRow(["Nama", "Token", "Nomor Peserta", "Ruangan"]);
 
-      const buffer = await workbook.xlsx.writeBuffer();
+        for (const student of result.students) {
+          worksheet.addRow([
+            student.name,
+            student.token,
+            student.participantNumber,
+            student.room,
+          ]);
+        }
 
-      const blob = new Blob([buffer]);
-      const url = URL.createObjectURL(blob);
+        const buffer = await workbook.xlsx.writeBuffer();
 
-      const anchor = document.createElement("a");
+        const blob = new Blob([buffer]);
+        const url = URL.createObjectURL(blob);
 
-      anchor.href = url;
-      anchor.download = `Data Peserta-${+Date.now()}-Spesifik kelas ${result.grade.label
+        const anchor = document.createElement("a");
+
+        anchor.href = url;
+        anchor.download = `Data Peserta-${+Date.now()}-Spesifik kelas ${
+          result.grade.label
         } ${result.label}.xlsx`;
 
-      anchor.click();
-      anchor.remove();
+        anchor.click();
+        anchor.remove();
 
-      setOpen(false);
-    },
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+        setOpen(false);
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   const onOpenChange = useCallback(() => {
     if (!excelMutationApi.isPending) setOpen((prev) => !prev);
@@ -248,57 +257,58 @@ export const ExcelStudentsBySubgradeDownload = ({
 
 export const ExcelUploadStudentsByGrade = ({
   gradeId,
+  appSettings,
 }: {
   gradeId: number;
+  appSettings: AppSettings;
 }) => {
   const [open, setOpen] = useState(false);
 
-  const excelMutationApi = api.grade.uploadSpecificGradeExcel.useMutation({
-    onSuccess() {
-      setOpen(false);
+  const trpc = useTRPC();
 
-      form.reset();
+  const FileValueSchema = useMemo(() => {
+    return UploadStudentXLSXSchemaConstructor({
+      validator: (txt: string) => {
+        try {
+          return new RegExp(appSettings.tokenSource).test(txt);
+        } catch (e: unknown) {
+          return false;
+        }
+      },
+      minimalTokenLength: appSettings.minimalTokenLength,
+      maximalTokenLength: appSettings.maximalTokenLength,
+    });
+  }, [appSettings]);
 
-      toast.success("Upload Data Peserta Berhasil!", {
-        description:
-          "Mohon untuk mengecek kembali apakah data yang di upload sudah sesuai atau belum.",
-      });
-    },
-    onError(error) {
-      toast.error("Operasi Upload Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+  const excelMutationApi = useMutation(
+    trpc.grade.uploadSpecificGradeExcel.mutationOptions({
+      onSuccess() {
+        setOpen(false);
+
+        form.reset();
+
+        toast.success("Upload Data Peserta Berhasil!", {
+          description:
+            "Mohon untuk mengecek kembali apakah data yang di upload sudah sesuai atau belum.",
+        });
+      },
+      onError(error) {
+        toast.error("Operasi Upload Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   const onOpenChange = useCallback(() => {
     if (!excelMutationApi.isPending) setOpen((prev) => !prev);
   }, [excelMutationApi.isPending]);
 
-  const formSchema = z.object({
-    xlsx: z
-      .instanceof(FileList, { message: "Dibutuhkan file xlsx!" })
-      .refine((files) => files.length > 0, `Dibutuhkan file xlsx!`)
-      .refine(
-        (files) => files.length <= 1,
-        `Hanya diperbolehkan upload 1 file saja!`,
-      )
-      .refine(
-        (files) =>
-          Array.from(files).every(
-            (file) =>
-              file.type ===
-              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          ),
-        "Hanya bisa file xlsx saja!",
-      ),
+  const form = useForm<TExcelUploadStudentByGrade>({
+    resolver: zodResolver(ExcelUploadStudentByGrade),
   });
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-  });
-
-  async function onXLSXSubmit(values: z.infer<typeof formSchema>) {
+  async function onXLSXSubmit(values: TExcelUploadStudentByGrade) {
     const file = values.xlsx.item(0)!;
     const buffer = await file.arrayBuffer();
 

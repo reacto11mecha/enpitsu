@@ -1,33 +1,32 @@
 import type { TRPCRouterRecord } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
+
 import { and, eq, not, sql } from "@enpitsu/db";
 import * as schema from "@enpitsu/db/schema";
-import { cache } from "@enpitsu/redis";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
+import { settings } from "@enpitsu/settings";
+import {
+  AppRoleSchema,
+  BasicIdString,
+  ToggleCanLoginSchema,
+  ToggleEnforceAndroid,
+  TokenSetting,
+} from "@enpitsu/validator/admin";
 
 import { adminProcedure } from "../trpc";
 
 export const adminRouter = {
   // Can login status
-  getCanLoginStatus: adminProcedure.query(async () => {
-    try {
-      const status = await cache.get("login-status");
+  getCanLoginStatus: adminProcedure.query(() => {
+    const { canLogin } = settings.getSettings();
 
-      return status
-        ? { canLogin: JSON.parse(status) as boolean }
-        : { canLogin: true };
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err: unknown) {
-      return { canLogin: false };
-    }
+    return { canLogin };
   }),
 
   updateCanLogin: adminProcedure
-    .input(z.object({ canLogin: z.boolean() }))
+    .input(ToggleCanLoginSchema)
     .mutation(async ({ input }) => {
       try {
-        return await cache.set("login-status", JSON.stringify(input.canLogin));
+        return await settings.updateSettings.canLogin(input.canLogin);
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err: unknown) {
@@ -35,6 +34,30 @@ export const adminRouter = {
           code: "BAD_REQUEST",
           message:
             "Gagal memperbarui status, website ini otomatis tidak bisa login karena masalah dengan konektivitas caching system.",
+        });
+      }
+    }),
+
+  getEnforceAndroidSetting: adminProcedure.query(() => {
+    const { enforceMobileIfAndroid } = settings.getSettings();
+
+    return { enforceMobileIfAndroid };
+  }),
+
+  updateAndroidEnforcingSetting: adminProcedure
+    .input(ToggleEnforceAndroid)
+    .mutation(async ({ input }) => {
+      try {
+        return await settings.updateSettings.enforceMobileIfAndroid(
+          input.enforceMobileIfAndroid,
+        );
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (err: unknown) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Gagal memperbarui status, terdapat masalah dengan konektivitas caching system.",
         });
       }
     }),
@@ -59,7 +82,7 @@ export const adminRouter = {
   ),
 
   rejectPendingUser: adminProcedure
-    .input(z.object({ id: z.string() }))
+    .input(BasicIdString)
     .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
         const specificUser = await tx.query.users.findFirst({
@@ -91,12 +114,7 @@ export const adminRouter = {
     ),
 
   acceptPendingUser: adminProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        role: z.enum(["admin", "user"]),
-      }),
-    )
+    .input(AppRoleSchema)
     .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
         if (ctx.session.user.id === input.id)
@@ -132,12 +150,7 @@ export const adminRouter = {
     ),
 
   updateUserRole: adminProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        role: z.enum(["admin", "user"]),
-      }),
-    )
+    .input(AppRoleSchema)
     .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
         if (ctx.session.user.id === input.id)
@@ -164,4 +177,29 @@ export const adminRouter = {
           .where(eq(schema.users.id, input.id));
       }),
     ),
+
+  getTokenSettings: adminProcedure.query(() => {
+    const { tokenSource, tokenFlags, minimalTokenLength, maximalTokenLength } =
+      settings.getSettings();
+
+    return {
+      tokenSource,
+      tokenFlags,
+      minimalTokenLength,
+      maximalTokenLength,
+    };
+  }),
+
+  updateTokenSettings: adminProcedure
+    .input(TokenSetting)
+    .mutation(async ({ input }) => {
+      await settings.updateSettings.tokenSource(input.tokenSource);
+      await settings.updateSettings.tokenFlags(input.tokenFlags);
+      await settings.updateSettings.minimalTokenLength(
+        input.minimalTokenLength,
+      );
+      await settings.updateSettings.maximalTokenLength(
+        input.maximalTokenLength,
+      );
+    }),
 } satisfies TRPCRouterRecord;

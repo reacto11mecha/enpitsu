@@ -2,8 +2,19 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Button } from "@enpitsu/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@enpitsu/ui/card";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChevronsRight, Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+import type { AppSettings } from "@enpitsu/settings";
+
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "~/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -12,15 +23,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@enpitsu/ui/dialog";
-import { Input } from "@enpitsu/ui/input";
-import { Skeleton } from "@enpitsu/ui/skeleton";
-import { ChevronsRight, Loader2, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { Skeleton } from "~/components/ui/skeleton";
+import { useTRPC } from "~/trpc/react";
+import { CompleteCSVUpload } from "./CompleteCSVUpload";
 
-import { api } from "~/trpc/react";
-
-export const AngkatanViewer = () => {
+export const AngkatanViewer = ({
+  appSettings,
+}: {
+  appSettings: AppSettings;
+}) => {
   const [open, setOpen] = useState(false);
   const [currentDeleteID, setCurrentDeleteID] = useState<null | number>(null);
   const [confirmationText, setConfirmText] = useState("");
@@ -30,29 +43,32 @@ export const AngkatanViewer = () => {
     [confirmationText],
   );
 
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const grades = api.grade.getGrades.useQuery(undefined);
+  const grades = useQuery(trpc.grade.getGrades.queryOptions());
 
-  const gradeDeleteMutation = api.grade.deleteGrade.useMutation({
-    async onSuccess() {
-      setOpen(false);
+  const gradeDeleteMutation = useMutation(
+    trpc.grade.deleteGrade.mutationOptions({
+      async onSuccess() {
+        setOpen(false);
 
-      setConfirmText("");
-      setCurrentDeleteID(null);
+        setConfirmText("");
+        setCurrentDeleteID(null);
 
-      await apiUtils.grade.invalidate();
+        await queryClient.invalidateQueries(trpc.grade.pathFilter());
 
-      toast.success("Penghapusan Berhasil!", {
-        description: "Berhasil menghapus seluruh data angkatan.",
-      });
-    },
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+        toast.success("Penghapusan Berhasil!", {
+          description: "Berhasil menghapus seluruh data angkatan.",
+        });
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
@@ -64,9 +80,15 @@ export const AngkatanViewer = () => {
         </>
       ) : null}
 
-      {!grades.isPending && grades.data && grades.data.length === 0
-        ? "Belum ada data."
-        : null}
+      {!grades.isPending && grades.data && grades.data.length === 0 ? (
+        <div className="flex flex-col space-y-2 rounded-2xl border p-3">
+          <CompleteCSVUpload appSettings={appSettings} />
+          <p className="text-center">
+            Belum ada data. Anda dapat mengunggah keseluruhan data dengan format
+            csv melalui tombol di atas atau menambahkannya secara manual.
+          </p>
+        </div>
+      ) : null}
 
       {!grades.isPending &&
         grades.data?.map((grade) => (

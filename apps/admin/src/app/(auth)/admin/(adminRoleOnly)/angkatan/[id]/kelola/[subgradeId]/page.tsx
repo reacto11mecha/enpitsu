@@ -1,15 +1,22 @@
 import { redirect } from "next/navigation";
+
 import { asc, eq } from "@enpitsu/db";
 import { db } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
+import { settings } from "@enpitsu/settings";
 
 import { DataTable } from "~/_components/Angkatan/SpecificSubgrade/DataTable";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function ManageSpecificSubgrade(props: {
-  params: { id: string; subgradeId: string };
+  params: Promise<{ id: string; subgradeId: string }>;
 }) {
-  const gradeId = parseInt(props.params.id);
-  const subgradeId = parseInt(props.params.subgradeId);
+  const params = await props.params;
+
+  const gradeId = parseInt(params.id);
+  const subgradeId = parseInt(params.subgradeId);
 
   if (isNaN(gradeId) || isNaN(subgradeId)) return redirect("/admin/angkatan");
 
@@ -32,6 +39,8 @@ export default async function ManageSpecificSubgrade(props: {
     where: eq(schema.students.subgradeId, subgradeId),
     orderBy: [asc(schema.students.name)],
   });
+
+  const appSettings = settings.getSettings();
 
   return (
     <div className="mt-5 flex flex-col gap-7 px-5">
@@ -56,6 +65,7 @@ export default async function ManageSpecificSubgrade(props: {
           subgrade={specificSubgrade}
           grade={specificGrade}
           initialData={students}
+          appSettings={appSettings}
         />
       </div>
     </div>

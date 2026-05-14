@@ -1,6 +1,10 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useMemo, useState } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,12 +13,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@enpitsu/ui/dialog";
-import { Input } from "@enpitsu/ui/input";
-import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
-
-import { api } from "~/trpc/react";
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { useTRPC } from "~/trpc/react";
 
 export const DeleteStudent = ({
   openDelete,
@@ -27,7 +28,8 @@ export const DeleteStudent = ({
   name: string;
   id: number;
 }) => {
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   const [confirmationText, setConfirmText] = useState("");
 
@@ -36,24 +38,28 @@ export const DeleteStudent = ({
     [confirmationText],
   );
 
-  const studentDeleteMutation = api.grade.deleteStudent.useMutation({
-    async onSuccess() {
-      setOpenDelete(false);
+  const studentDeleteMutation = useMutation(
+    trpc.grade.deleteStudent.mutationOptions({
+      async onSuccess() {
+        setOpenDelete(false);
 
-      setConfirmText("");
+        setConfirmText("");
 
-      await apiUtils.grade.getStudents.invalidate();
+        await queryClient.invalidateQueries(
+          trpc.grade.getStudents.pathFilter(),
+        );
 
-      toast.success("Penghapusan Berhasil!", {
-        description: "Berhasil menghapus murid spesifik.",
-      });
-    },
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+        toast.success("Penghapusan Berhasil!", {
+          description: "Berhasil menghapus murid spesifik.",
+        });
+      },
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   return (
     <Dialog

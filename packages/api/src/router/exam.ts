@@ -1,4 +1,6 @@
 import type { TRPCRouterRecord } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
+
 import { eq } from "@enpitsu/db";
 import {
   preparedQuestionSelect,
@@ -8,8 +10,11 @@ import {
 } from "@enpitsu/db/client";
 import * as schema from "@enpitsu/db/schema";
 import { cache } from "@enpitsu/redis";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
+import {
+  questionBySlugSchema,
+  studentBlocklistSchema,
+  submitAnswerSchema,
+} from "@enpitsu/validator/exam";
 
 import type { TStudent } from "../trpc";
 import { studentProcedure } from "../trpc";
@@ -94,7 +99,7 @@ export const examRouter = {
   getStudent: studentProcedure.query(({ ctx }) => ({ student: ctx.student })),
 
   getQuestion: studentProcedure
-    .input(z.object({ slug: z.string().min(2) }))
+    .input(questionBySlugSchema)
     .mutation(async ({ ctx, input }) => {
       try {
         const cachedQuestion = await cache.get(
@@ -154,7 +159,7 @@ export const examRouter = {
     }),
 
   queryQuestion: studentProcedure
-    .input(z.object({ slug: z.string().min(2) }))
+    .input(questionBySlugSchema)
     .query(async ({ ctx, input }) => {
       try {
         const cachedQuestion = await cache.get(
@@ -217,26 +222,7 @@ export const examRouter = {
     }),
 
   submitAnswer: studentProcedure
-    .input(
-      z.object({
-        questionId: z.number(),
-        checkIn: z.date(),
-        submittedAt: z.date(),
-        multipleChoices: z.array(
-          z.object({
-            iqid: z.number(),
-            choosedAnswer: z.number().min(1),
-          }),
-        ),
-
-        essays: z.array(
-          z.object({
-            iqid: z.number(),
-            answer: z.string().min(1),
-          }),
-        ),
-      }),
-    )
+    .input(submitAnswerSchema)
     .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
         const question = await tx.query.questions.findFirst({
@@ -260,13 +246,6 @@ export const examRouter = {
             code: "BAD_REQUEST",
             message:
               "Soal ini belum bisa diakses, belum bisa mengumpulkan jawaban.",
-          });
-
-        if (question.endedAt <= new Date())
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message:
-              "Soal ini sudah melewati waktu ujian, tidak bisa mengumpulkan jawaban lagi.",
           });
 
         const isCheated = await preparedStudentIsCheated.execute({
@@ -293,13 +272,61 @@ export const examRouter = {
               "Tidak bisa mengumpulkan jawaban, anda sudah mengerjakan soal ini.",
           });
 
+        const now = Date.now();
+        const endedAt = question.endedAt.getTime();
+
+        if (now > endedAt + 60000) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Soal ini sudah melewati waktu ujian (batas toleransi 1 menit telah berlalu), tidak bisa mengumpulkan jawaban lagi.",
+          });
+        }
+
+        const [multipleChoiceCount, essayCount] = await Promise.all([
+          tx.$count(
+            schema.multipleChoices,
+            eq(schema.multipleChoices.questionId, question.id),
+          ),
+          tx.$count(schema.essays, eq(schema.essays.questionId, question.id)),
+        ]);
+
+        if (now <= endedAt) {
+          if (input.multipleChoices.length !== multipleChoiceCount) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "Harap menjawab semua soal pilihan ganda sebelum submit.",
+            });
+          }
+
+          if (input.essays.length !== essayCount) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Harap menjawab semua soal esai sebelum submit.",
+            });
+          }
+
+          // Validasi tidak ada esai kosong
+          const incompleteEssays = input.essays.filter((e) => !e.answer.trim());
+          if (incompleteEssays.length > 0) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "Harap menjawab semua soal esai (tidak boleh ada jawaban kosong).",
+            });
+          }
+        }
+
+        const submittedAt = new Date();
+
         const newRespond = await tx
           .insert(schema.studentResponds)
           .values({
             questionId: question.id,
             studentId: ctx.student.id,
             checkIn: input.checkIn,
-            submittedAt: input.submittedAt,
+            submittedAt,
           })
           .returning({ id: schema.studentResponds.id });
 
@@ -346,11 +373,16 @@ export const examRouter = {
             }
           }
         });
+
+        return {
+          submittedAt,
+          checkIn: input.checkIn,
+        };
       }),
     ),
 
   storeBlocklist: studentProcedure
-    .input(z.object({ questionId: z.number(), time: z.date() }))
+    .input(studentBlocklistSchema)
     .mutation(async ({ ctx, input }) => {
       const isCheated = await preparedStudentIsCheated.execute({
         questionId: input.questionId,

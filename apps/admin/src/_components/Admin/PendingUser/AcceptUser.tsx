@@ -1,6 +1,13 @@
 "use client";
 
-import { Button } from "@enpitsu/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+
+import type { TUpdateAcceptRoleSchema } from "@enpitsu/validator/admin";
+import { UpdateAcceptRoleSchema } from "@enpitsu/validator/admin";
+
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -10,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@enpitsu/ui/dialog";
+} from "~/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -18,24 +25,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
+} from "~/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@enpitsu/ui/select";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
-const FormSchema = z.object({
-  role: z.enum(["user", "admin"], {
-    required_error: "Dimohon untuk memilih tingkatan pengguna",
-  }),
-});
+} from "~/components/ui/select";
 
 export const AcceptUser = ({
   isOpen,
@@ -48,10 +45,10 @@ export const AcceptUser = ({
   toggleOpen: () => void;
   isDisabled: boolean;
   isLoading: boolean;
-  onSubmit: (data: z.infer<typeof FormSchema>) => void;
+  onSubmit: (data: TUpdateAcceptRoleSchema) => void;
 }) => {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<TUpdateAcceptRoleSchema>({
+    resolver: zodResolver(UpdateAcceptRoleSchema),
   });
 
   return (
@@ -74,7 +71,7 @@ export const AcceptUser = ({
             pilih tingkatan pengguna tersebut pada pilihan di bawah lalu{" "}
             <b>Izinkan</b>.
           </DialogDescription>
-          <DialogDescription className="text-start">
+          <div className="text-start">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -106,7 +103,7 @@ export const AcceptUser = ({
                 />
               </form>
             </Form>
-          </DialogDescription>
+          </div>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:justify-start">
           <DialogClose asChild>

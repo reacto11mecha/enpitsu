@@ -1,6 +1,15 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useMemo } from "react";
-import { Button } from "@enpitsu/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import { useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
+
+import type { TNewGradeOrSubgradeSchema } from "@enpitsu/validator/grade";
+import { NewGradeOrSubgradeSchema } from "@enpitsu/validator/grade";
+
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,7 +18,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@enpitsu/ui/dialog";
+} from "~/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,19 +26,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@enpitsu/ui/form";
-import { Input } from "@enpitsu/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useForm, useWatch } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-
-import { api } from "~/trpc/react";
-
-const schema = z.object({
-  label: z.string().min(1, { message: "Harus ada isinya!" }),
-});
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { useTRPC } from "~/trpc/react";
 
 export const RenameSubgrade = ({
   openEdit,
@@ -44,10 +43,11 @@ export const RenameSubgrade = ({
   param: string;
   id: number;
 }) => {
-  const apiUtils = api.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
+  const form = useForm<TNewGradeOrSubgradeSchema>({
+    resolver: zodResolver(NewGradeOrSubgradeSchema),
     defaultValues: {
       label: param,
     },
@@ -63,23 +63,27 @@ export const RenameSubgrade = ({
     [param, labelValue],
   );
 
-  const editSubgradeMutation = api.grade.updateSubgrade.useMutation({
-    async onSuccess() {
-      await apiUtils.grade.getSubgrades.invalidate();
+  const editSubgradeMutation = useMutation(
+    trpc.grade.updateSubgrade.mutationOptions({
+      async onSuccess() {
+        await queryClient.invalidateQueries(
+          trpc.grade.getSubgrades.pathFilter(),
+        );
 
-      setOpenEdit(false);
+        setOpenEdit(false);
 
-      toast.success("Pembaruan Berhasil!", {
-        description: "Berhasil mengubah nama kelas .",
-      });
-    },
+        toast.success("Pembaruan Berhasil!", {
+          description: "Berhasil mengubah nama kelas .",
+        });
+      },
 
-    onError(error) {
-      toast.error("Operasi Gagal", {
-        description: `Terjadi kesalahan, Error: ${error.message}`,
-      });
-    },
-  });
+      onError(error) {
+        toast.error("Operasi Gagal", {
+          description: `Terjadi kesalahan, Error: ${error.message}`,
+        });
+      },
+    }),
+  );
 
   const onSubmit = (values: z.infer<typeof schema>) =>
     editSubgradeMutation.mutate({ id, label: values.label });

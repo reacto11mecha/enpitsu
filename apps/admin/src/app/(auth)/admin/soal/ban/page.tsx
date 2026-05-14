@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+
 import { auth } from "@enpitsu/auth";
 
 import { DataTable } from "~/_components/Soal/TemporarilyBannedStudents";
@@ -15,7 +16,7 @@ export default async function TemporaryBanPage() {
           <h2 className="text-2xl font-bold tracking-tight">
             Data Larangan Peserta Sementara
           </h2>
-          <p className="w-full text-muted-foreground md:w-[85%] lg:w-[75%]">
+          <p className="text-muted-foreground w-full md:w-[85%] lg:w-[75%]">
             Halaman ini bertujuan untuk menambahkan peserta tidak bisa
             mengerjakan soal dalam rentang waktu tertentu, semisal belum
             mengerjakan tugas tertentu yang menjadi syarat ujian. Tambahkan

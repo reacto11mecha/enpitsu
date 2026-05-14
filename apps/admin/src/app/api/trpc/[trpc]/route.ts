@@ -1,6 +1,7 @@
+import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+
 import { appRouter, createTRPCContext } from "@enpitsu/api";
 import { auth } from "@enpitsu/auth";
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 
 import { env } from "~/env";
 
@@ -8,9 +9,8 @@ import { env } from "~/env";
  * Configure basic CORS headers
  * You should extend this to match your needs
  */
-function setCorsHeaders(res: Response) {
+export function setCorsHeaders(res: Response) {
   res.headers.set("Access-Control-Allow-Origin", env.CORS_ORIGIN);
-  res.headers.set("Access-Control-Request-Method", "*");
   res.headers.set("Access-Control-Allow-Methods", "OPTIONS, GET, POST");
   res.headers.set("Access-Control-Allow-Headers", "*");
 }

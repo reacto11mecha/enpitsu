@@ -1,4 +1,3 @@
-// import { nanoid } from "@enpitsu/token-generator";
 import { relations } from "drizzle-orm";
 import { integer, serial, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 
