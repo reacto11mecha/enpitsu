@@ -9,6 +9,7 @@ import type { EditorRefApi } from "~/_components/Editor/MainEditor";
 import { MainEditor } from "~/_components/Editor/MainEditor";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { env } from "~/env";
 import { useTRPC } from "~/trpc/react";
 
 export function AnswerOptions({
@@ -110,6 +111,11 @@ export function AnswerOptions({
             ref={(el: EditorRefApi) => setRef(option.idx, el)}
             roomName={option.roomName}
             username={username}
+            url={
+              env.NODE_ENV === "production"
+                ? env.YJS_SERVER
+                : "ws://localhost:1234"
+            }
           >
             <div className="flex flex-row items-center gap-2">
               {correctAnswerOptionQuery.data?.correctAnswerOrder ===

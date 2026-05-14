@@ -20,16 +20,15 @@ export const env = createEnv({
     DATABASE_URL: z.string().url(),
     REDIS_URL: z.string().url(),
     CORS_ORIGIN: z.string(),
+    RUNNING_EDITION: z.string(),
+    YJS_SERVER: z.string().url(),
   },
 
   /**
    * Specify your client-side environment variables schema here.
    * For them to be exposed to the client, prefix them with `NEXT_PUBLIC_`.
    */
-  client: {
-    NEXT_PUBLIC_RUNNING_EDITION: z.string(),
-    NEXT_PUBLIC_YJS_SERVER: z.string().url(),
-  },
+  client: {},
   /**
    * Destructure all variables from `process.env` to make sure they aren't tree-shaken away.
    */
@@ -37,8 +36,8 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     PORT: process.env.PORT,
 
-    NEXT_PUBLIC_RUNNING_EDITION: process.env.NEXT_PUBLIC_RUNNING_EDITION,
-    NEXT_PUBLIC_YJS_SERVER: process.env.NEXT_PUBLIC_YJS_SERVER,
+    RUNNING_EDITION: process.env.RUNNING_EDITION,
+    YJS_SERVER: process.env.YJS_SERVER,
   },
 
   skipValidation:

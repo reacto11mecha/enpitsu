@@ -10,7 +10,7 @@
     "EXPO_PUBLIC_NPSN_SRV_URL",
     "AUTH_SECRET",
     "AUTH_URL",
-    "NEXT_PUBLIC_YJS_SERVER",
+    "YJS_SERVER",
     "SPECIAL_USER_ADMIN"
   ],
   "globalPassThroughEnv": [

@@ -150,8 +150,13 @@ export default async function EssayEditor({
           <div>
             <MainEditor
               cursorColor={cursorColor}
-              roomName={`${env.NEXT_PUBLIC_RUNNING_EDITION}|q-essay-question_${id}-${essayId}`}
+              roomName={`${env.RUNNING_EDITION}|q-essay-question_${id}-${essayId}`}
               username={identity.user.name!}
+              url={
+                env.NODE_ENV === "production"
+                  ? env.YJS_SERVER
+                  : "ws://localhost:1234"
+              }
               showName
             >
               <p>Pokok pertanyaan.</p>
@@ -161,7 +166,7 @@ export default async function EssayEditor({
           <div>
             <TextareaEditor
               cursorColor={cursorColor}
-              roomName={`${env.NEXT_PUBLIC_RUNNING_EDITION}|q-essay-answer_${id}-${essayId}`}
+              roomName={`${env.RUNNING_EDITION}|q-essay-answer_${id}-${essayId}`}
               username={identity.user.name!}
             >
               <SetStrictEqual essayId={essayId} />

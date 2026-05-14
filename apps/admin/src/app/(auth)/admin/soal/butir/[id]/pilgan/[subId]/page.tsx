@@ -151,8 +151,13 @@ export default async function ChoiceEditor({
           <div>
             <MainEditor
               cursorColor={cursorColor}
-              roomName={`${env.NEXT_PUBLIC_RUNNING_EDITION}|q-choice-parent_${id}-${choiceId}`}
+              roomName={`${env.RUNNING_EDITION}|q-choice-parent_${id}-${choiceId}`}
               username={identity.user.name!}
+              url={
+                env.NODE_ENV === "production"
+                  ? env.YJS_SERVER
+                  : "ws://localhost:1234"
+              }
               showName
             >
               <p>Pokok pertanyaan.</p>
@@ -167,7 +172,7 @@ export default async function ChoiceEditor({
               length: parentQuestion.multipleChoiceOptions,
             }).map((_, idx) => ({
               idx,
-              roomName: `${env.NEXT_PUBLIC_RUNNING_EDITION}|q-choice-opt_${id}-${choiceId}-${idx}`,
+              roomName: `${env.RUNNING_EDITION}|q-choice-opt_${id}-${choiceId}-${idx}`,
             }))}
           />
         </CardContent>

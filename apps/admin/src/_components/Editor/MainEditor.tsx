@@ -45,6 +45,7 @@ export function MainEditor({
   roomName,
   showName = false,
   cursorColor,
+  url,
   children,
   ref,
 }: {
@@ -52,6 +53,7 @@ export function MainEditor({
   roomName: string;
   showName?: boolean;
   cursorColor: string;
+  url: string;
   children?: React.ReactNode;
   ref?: React.RefObject<EditorRefApi>;
 }) {
@@ -66,10 +68,7 @@ export function MainEditor({
       options: {
         name: roomName,
         // Ubah url provider sebelum naik production
-        url:
-          env.NODE_ENV === "production"
-            ? env.NEXT_PUBLIC_YJS_SERVER
-            : "ws://localhost:1234",
+        url,
       },
     };
 
@@ -98,7 +97,7 @@ export function MainEditor({
       ydoc: doc,
       providers: [hocuspocusProvider, indexedDBProvider],
     };
-  }, [roomName]);
+  }, [roomName, url]);
 
   const editor = usePlateEditor(
     {

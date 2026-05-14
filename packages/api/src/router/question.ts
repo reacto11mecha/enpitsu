@@ -571,8 +571,7 @@ export const questionRouter = {
             if (!oldDoc) return null;
 
             // Gunakan env variable saat ini untuk prefix nama baru agar kompatibel dengan frontend
-            const currentEdition =
-              process.env.NEXT_PUBLIC_RUNNING_EDITION ?? "v1";
+            const currentEdition = process.env.RUNNING_EDITION ?? "v1";
             const newName = `${currentEdition}${newSuffix}`;
 
             await tx.insert(schema.yjsDocuments).values({
