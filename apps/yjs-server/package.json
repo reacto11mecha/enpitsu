@@ -58,6 +58,7 @@
     "@slate-yjs/core": "^1.0.2",
     "@t3-oss/env-core": "^0.13.8",
     "@udecode/cn": "^49.0.15",
+    "bullmq": "^5.56.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
