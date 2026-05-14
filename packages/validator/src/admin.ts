@@ -14,6 +14,12 @@ export const ToggleCanLoginSchema = z.object({
 
 export type TToggleCanLoginSchema = z.infer<typeof ToggleCanLoginSchema>;
 
+export const ToggleEnforceAndroid = z.object({
+  enforceMobileIfAndroid: z.boolean(),
+});
+
+export type TToggleEnforceAndroid = z.infer<typeof ToggleEnforceAndroid>;
+
 const tokenSourceBase = z.string().min(3);
 const tokenFlagsBase = z.string();
 

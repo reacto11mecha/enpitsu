@@ -8,6 +8,7 @@ import {
   AppRoleSchema,
   BasicIdString,
   ToggleCanLoginSchema,
+  ToggleEnforceAndroid,
   TokenSetting,
 } from "@enpitsu/validator/admin";
 
@@ -33,6 +34,30 @@ export const adminRouter = {
           code: "BAD_REQUEST",
           message:
             "Gagal memperbarui status, website ini otomatis tidak bisa login karena masalah dengan konektivitas caching system.",
+        });
+      }
+    }),
+
+  getEnforceAndroidSetting: adminProcedure.query(() => {
+    const { enforceMobileIfAndroid } = settings.getSettings();
+
+    return { enforceMobileIfAndroid };
+  }),
+
+  updateAndroidEnforcingSetting: adminProcedure
+    .input(ToggleEnforceAndroid)
+    .mutation(async ({ input }) => {
+      try {
+        return await settings.updateSettings.enforceMobileIfAndroid(
+          input.enforceMobileIfAndroid,
+        );
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (err: unknown) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Gagal memperbarui status, terdapat masalah dengan konektivitas caching system.",
         });
       }
     }),

@@ -1,6 +1,9 @@
 import { AllRegisteredUser } from "~/_components/Admin/AllRegisteredUser/index";
 import { PendingUser } from "~/_components/Admin/PendingUser/index";
-import { ToggleCanLogin } from "~/_components/Admin/ToggleCanLogin";
+import {
+  ToggleCanLogin,
+  ToggleEnforceAndroidUsage,
+} from "~/_components/Admin/Toggler";
 import { TokenSetting } from "~/_components/Admin/TokenSetting";
 
 export default function AdminPage() {
@@ -14,6 +17,8 @@ export default function AdminPage() {
       </div>
 
       <ToggleCanLogin />
+
+      <ToggleEnforceAndroidUsage />
 
       <div className="flex flex-col gap-3">
         <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
