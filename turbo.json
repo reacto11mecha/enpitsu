@@ -11,6 +11,7 @@
     "AUTH_SECRET",
     "AUTH_URL",
     "YJS_SERVER",
+    "RUNNING_EDITION",
     "SPECIAL_USER_ADMIN"
   ],
   "globalPassThroughEnv": [
