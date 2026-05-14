@@ -18,6 +18,7 @@ export interface AuthState {
   tokenFlags: null | string;
   minimalTokenLength: null | number;
   maximalTokenLength: null | number;
+  enforceMobileIfAndroid: boolean;
 
   logOut: () => void;
   logIn: (
@@ -29,6 +30,7 @@ export interface AuthState {
     } & AdminResponse,
   ) => void;
   updateToken: (token: string) => void;
+  updateSubstantialSetting: (params: AdminResponse) => void;
 }
 
 export interface StudentAnswer {
@@ -96,6 +98,7 @@ export const useAuthStore = create(
       tokenFlags: null,
       minimalTokenLength: null,
       maximalTokenLength: null,
+      enforceMobileIfAndroid: false,
 
       logOut() {
         set((state) => ({
@@ -109,6 +112,7 @@ export const useAuthStore = create(
           tokenFlags: null,
           minimalTokenLength: null,
           maximalTokenLength: null,
+          enforceMobileIfAndroid: false,
         }));
       },
 
@@ -116,6 +120,13 @@ export const useAuthStore = create(
         set((state) => ({
           ...state,
           isLoggedIn: true,
+          ...params,
+        }));
+      },
+
+      updateSubstantialSetting(params) {
+        set((state) => ({
+          ...state,
           ...params,
         }));
       },

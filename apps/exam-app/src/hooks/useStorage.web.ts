@@ -22,6 +22,7 @@ export const useAuthStore = create(
       tokenFlags: null,
       minimalTokenLength: null,
       maximalTokenLength: null,
+      enforceMobileIfAndroid: false,
 
       logOut() {
         set((state) => ({
@@ -35,6 +36,7 @@ export const useAuthStore = create(
           tokenFlags: null,
           minimalTokenLength: null,
           maximalTokenLength: null,
+          enforceMobileIfAndroid: false,
         }));
       },
 
@@ -42,6 +44,13 @@ export const useAuthStore = create(
         set((state) => ({
           ...state,
           isLoggedIn: true,
+          ...params,
+        }));
+      },
+
+      updateSubstantialSetting(params) {
+        set((state) => ({
+          ...state,
           ...params,
         }));
       },

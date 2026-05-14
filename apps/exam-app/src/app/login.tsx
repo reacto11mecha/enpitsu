@@ -24,7 +24,7 @@ interface HonResponse {
 }
 type HonEssence = HonResponse["data"];
 
-const api = {
+export const api = {
   async getSchoolData(npsn: number): Promise<HonEssence | null> {
     try {
       // bug dari expo

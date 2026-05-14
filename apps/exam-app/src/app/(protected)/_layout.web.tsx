@@ -1,11 +1,12 @@
 import "@/lib/unistyles";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Text, View } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
-import { Stack } from "expo-router";
+import { Link, Stack } from "expo-router";
 import { useAuthStore } from "@/hooks/useStorage";
 import { queryClient, TRPCProvider } from "@/lib/trpc";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
@@ -14,10 +15,27 @@ import { UAParser } from "ua-parser-js";
 
 import type { AppRouter } from "@enpitsu/api";
 
-export default function ProtectedWebLayout() {
-  useUnistyles();
+import { api } from "../login";
 
-  const { serverUrl, token } = useAuthStore();
+export default function ProtectedWebLayout() {
+  const { theme } = useUnistyles();
+
+  const { serverUrl, token, enforceMobileIfAndroid, updateSubstantialSetting } =
+    useAuthStore();
+
+  useEffect(() => {
+    async function refreshSettings() {
+      if (serverUrl) {
+        const newData = await api.getSettings(
+          serverUrl.replace("/api/trpc", ""),
+        );
+
+        if (newData) updateSubstantialSetting(newData);
+      }
+    }
+
+    void refreshSettings();
+  }, []);
 
   const [trpcClient] = useState(() =>
     createTRPCClient<AppRouter>({
@@ -38,11 +56,14 @@ export default function ProtectedWebLayout() {
     }),
   );
 
-  const { browser, device } = useMemo(() => {
+  const { browser, device, osName } = useMemo(() => {
     const parser = new UAParser();
+
     const browser = parser.getBrowser();
     const device = parser.getDevice();
-    return { browser, device };
+    const { name } = parser.getOS();
+
+    return { browser, device, osName: name };
   }, []);
 
   if (
@@ -57,6 +78,7 @@ export default function ProtectedWebLayout() {
             name="google-chrome"
             size={64}
             style={styles.icon}
+            color={theme.colors.primary}
           />
           <Text style={styles.title}>Browser Tidak Didukung</Text>
           <Text style={styles.message}>
@@ -74,15 +96,44 @@ export default function ProtectedWebLayout() {
       <View style={styles.container}>
         <View style={styles.card}>
           <MaterialCommunityIcons
-            name="alert-decagram"
+            name="update"
             size={64}
             style={styles.warningIcon}
+            color="#f59e0b"
           />
           <Text style={styles.title}>Update Diperlukan</Text>
           <Text style={styles.message}>
             Anda sudah menggunakan Google Chrome, namun versinya terlalu lama (v
             {browser.major}). Mohon perbarui ke versi terbaru agar sistem ujian
             berjalan lancar.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (osName === "Android" && enforceMobileIfAndroid) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.card}>
+          <Ionicons
+            name="phone-portrait-outline"
+            size={64}
+            style={styles.icon}
+            color={theme.colors.typography}
+          />
+          <Text style={styles.title}>Gunakan Aplikasi Mobile</Text>
+          <Text style={styles.message}>
+            Administrator mewajibkan anda untuk menggunakan aplikasi android.{" "}
+            <Link
+              style={[styles.highlight, { textDecorationLine: "underline" }]}
+              href="https://enpitsu.my.id/android.apk"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Unduh disini
+            </Link>{" "}
+            untuk melanjutkan instalasi dan penggunaan aplikasi.
           </Text>
         </View>
       </View>
@@ -139,7 +190,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   warningIcon: {
     marginBottom: theme.margins.lg,
-    color: "#f59e0b", // Amber/Warning color
   },
   title: {
     fontSize: 24,

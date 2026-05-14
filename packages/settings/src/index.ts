@@ -12,6 +12,7 @@ export interface AppSettings {
   tokenFlags: string;
   minimalTokenLength: number;
   maximalTokenLength: number;
+  enforceMobileIfAndroid: boolean;
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -20,6 +21,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   tokenFlags: "",
   minimalTokenLength: 6,
   maximalTokenLength: 6,
+  enforceMobileIfAndroid: false,
 };
 
 export class SettingsManager extends EventEmitter {
@@ -80,6 +82,7 @@ export class SettingsManager extends EventEmitter {
             String(DEFAULT_SETTINGS.maximalTokenLength),
           10,
         ),
+        enforceMobileIfAndroid: stored.enforceMobileIfAndroid === "true",
       };
 
       this.localSettings = parsedSettings;
@@ -152,6 +155,8 @@ export class SettingsManager extends EventEmitter {
       this.updateBuilder("minimalTokenLength", len),
     maximalTokenLength: (len: number) =>
       this.updateBuilder("maximalTokenLength", len),
+    enforceMobileIfAndroid: (status: boolean) =>
+      this.updateBuilder("enforceMobileIfAndroid", status),
   } as const;
 }
 
