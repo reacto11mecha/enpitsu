@@ -99,6 +99,9 @@ export default async function ChoiceEditor({
 
   const cursorColor = getRandomColor();
 
+  const resolvedYjsUrl =
+    env.NODE_ENV === "production" ? env.YJS_SERVER : "ws://localhost:1234";
+
   return (
     <div className="space-y-4 p-5">
       <div className="flex flex-col justify-between gap-3 md:flex-row md:gap-0">
@@ -153,11 +156,7 @@ export default async function ChoiceEditor({
               cursorColor={cursorColor}
               roomName={`${env.RUNNING_EDITION}|q-choice-parent_${id}-${choiceId}`}
               username={identity.user.name!}
-              url={
-                env.NODE_ENV === "production"
-                  ? env.YJS_SERVER
-                  : "ws://localhost:1234"
-              }
+              url={resolvedYjsUrl}
               showName
             >
               <p>Pokok pertanyaan.</p>
@@ -168,6 +167,7 @@ export default async function ChoiceEditor({
             cursorColor={cursorColor}
             choiceId={choiceId}
             username={identity.user.name!}
+            yjsUrl={resolvedYjsUrl}
             options={Array.from({
               length: parentQuestion.multipleChoiceOptions,
             }).map((_, idx) => ({
