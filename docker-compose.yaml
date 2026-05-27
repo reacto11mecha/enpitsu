@@ -89,6 +89,8 @@ services:
   sfs:
     container_name: enpitsu_chibisafe_sfs
     image: halverneus/static-file-server:v1.8.3
+    profiles:
+          - files
     ports:
       - "8002:8080"
     volumes:
@@ -101,6 +103,8 @@ services:
   chibisafe:
     container_name: enpitsu_chibisafe
     image: chibisafe/chibisafe:latest
+    profiles:
+      - files
     environment:
       - BASE_API_URL=http://chibisafe_server:8000
     expose:
@@ -112,6 +116,8 @@ services:
   chibisafe_server:
     container_name: enpitsu_chibisafe_server
     image: chibisafe/chibisafe-server:latest
+    profiles:
+      - files
     volumes:
       - chibisafe_db:/app/database:rw
       - chibisafe_uploads:/app/uploads:rw
