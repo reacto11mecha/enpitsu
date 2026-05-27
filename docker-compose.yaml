@@ -69,7 +69,7 @@ services:
 
   yjs:
     container_name: enpitsu_yjs_server
-    image: rmecha/enpitsu-yjs-server:main
+    image: rmecha/enpitsu-yjs:main
     restart: always
     depends_on:
       web:
