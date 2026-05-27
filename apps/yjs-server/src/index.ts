@@ -280,32 +280,34 @@ export const yjsServer = async () => {
     ],
 
     async onAuthenticate(data) {
-      const cookie = data.requestHeaders.cookie;
+      const cookieString = data.requestHeaders.cookie || "";
 
       const cookies = (
-        cookie !== ""
+        cookieString !== ""
           ? Object.fromEntries(
-              cookie!
+              cookieString
                 .split("; ")
-                .map((v) => v.split(/=(.*)/s).map(decodeURIComponent)),
+                .map((v) => v.split(/=(.*)/s).map(decodeURIComponent))
             )
           : {}
-      ) as { "authjs.session-token"?: string };
+      ) as {
+        "authjs.session-token"?: string;
+        "__Secure-authjs.session-token"?: string;
+      };
 
-      if (
-        !cookies["authjs.session-token"] ||
-        cookies["authjs.session-token"] === ""
-      )
+      const token = cookies["authjs.session-token"] || cookies["__Secure-authjs.session-token"];
+
+      if (!token || token === "") {
         throw new Error("Unauthorized");
+      }
 
-      const token = cookies["authjs.session-token"];
+      const session = await db.query.sessions.findFirst({
+        where: eq(schema.sessions.sessionToken, token),
+      });
 
-      if (
-        !(await db.query.sessions.findFirst({
-          where: eq(schema.sessions.sessionToken, token),
-        }))
-      )
+      if (!session) {
         throw new Error("You aint logged in bruv");
+      }
     },
   });
 
