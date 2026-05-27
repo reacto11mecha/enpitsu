@@ -128,6 +128,24 @@ services:
       - 8000:8000
     restart: unless-stopped
 
+  # Nginx
+  nginx:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: enpitsu_nginx
+    restart: unless-stopped
+
+    ports:
+      - '8080:80'
+      - '4433:443'
+      - '8181:81'
+
+    environment:
+      TZ: "Asia/Jakarta"
+
+    volumes:
+      - nginx_data:/data
+      - nginx_letsencrypt:/etc/letsencrypt
+
 volumes:
   db:
   cache:
@@ -135,3 +153,5 @@ volumes:
   chibisafe_db:
   chibisafe_uploads:
   chibisafe_logs:
+  nginx_data:
+  nginx_letsencrypt:
