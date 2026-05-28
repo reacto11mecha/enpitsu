@@ -287,7 +287,7 @@ export const yjsServer = async () => {
           ? Object.fromEntries(
               cookieString
                 .split("; ")
-                .map((v) => v.split(/=(.*)/s).map(decodeURIComponent))
+                .map((v) => v.split(/=(.*)/s).map(decodeURIComponent)),
             )
           : {}
       ) as {
@@ -295,7 +295,9 @@ export const yjsServer = async () => {
         "__Secure-authjs.session-token"?: string;
       };
 
-      const token = cookies["authjs.session-token"] || cookies["__Secure-authjs.session-token"];
+      const token =
+        cookies["authjs.session-token"] ||
+        cookies["__Secure-authjs.session-token"];
 
       if (!token || token === "") {
         throw new Error("Unauthorized");

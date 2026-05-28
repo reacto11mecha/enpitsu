@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Text, View } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { Link, Stack } from "expo-router";
+import Head from "expo-router/head";
 import { useAuthStore } from "@/hooks/useStorage";
 import { queryClient, TRPCProvider } from "@/lib/trpc";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -72,71 +73,88 @@ export default function ProtectedWebLayout() {
       browser.name !== "Mobile Chrome")
   ) {
     return (
-      <View style={styles.container}>
-        <View style={styles.card}>
-          <MaterialCommunityIcons
-            name="google-chrome"
-            size={64}
-            style={styles.icon}
-            color={theme.colors.primary}
-          />
-          <Text style={styles.title}>Browser Tidak Didukung</Text>
-          <Text style={styles.message}>
-            Aplikasi Enpitsu dirancang khusus untuk berjalan di{" "}
-            <Text style={styles.highlight}>Google Chrome</Text>. Mohon ganti
-            browser Anda untuk melanjutkan ujian.
-          </Text>
+      <>
+        <Head>
+          <title>Browser tidak didukung | えんぴつ</title>
+        </Head>
+        <View style={styles.container}>
+          <View style={styles.card}>
+            <MaterialCommunityIcons
+              name="google-chrome"
+              size={64}
+              style={styles.icon}
+              color={theme.colors.primary}
+            />
+            <Text style={styles.title}>Browser Tidak Didukung</Text>
+            <Text style={styles.message}>
+              Aplikasi Enpitsu dirancang khusus untuk berjalan di{" "}
+              <Text style={styles.highlight}>Google Chrome</Text>. Mohon ganti
+              browser Anda untuk melanjutkan ujian.
+            </Text>
+          </View>
         </View>
-      </View>
+      </>
     );
   }
 
   if (parseInt(browser.major!) < 120) {
     return (
-      <View style={styles.container}>
-        <View style={styles.card}>
-          <MaterialCommunityIcons
-            name="update"
-            size={64}
-            style={styles.warningIcon}
-            color="#f59e0b"
-          />
-          <Text style={styles.title}>Update Diperlukan</Text>
-          <Text style={styles.message}>
-            Anda sudah menggunakan Google Chrome, namun versinya terlalu lama (v
-            {browser.major}). Mohon perbarui ke versi terbaru agar sistem ujian
-            berjalan lancar.
-          </Text>
+      <>
+        <Head>
+          <title>Update google chrome anda | えんぴつ</title>
+        </Head>
+        <View style={styles.container}>
+          <View style={styles.card}>
+            <MaterialCommunityIcons
+              name="update"
+              size={64}
+              style={styles.warningIcon}
+              color="#f59e0b"
+            />
+            <Text style={styles.title}>Update Diperlukan</Text>
+            <Text style={styles.message}>
+              Anda sudah menggunakan Google Chrome, namun versinya terlalu lama
+              (v
+              {browser.major}). Mohon perbarui ke versi terbaru agar sistem
+              ujian berjalan lancar.
+            </Text>
+          </View>
         </View>
-      </View>
+      </>
     );
   }
 
   if (osName === "Android" && enforceMobileIfAndroid) {
     return (
-      <View style={styles.container}>
-        <View style={styles.card}>
-          <Ionicons
-            name="phone-portrait-outline"
-            size={64}
-            style={styles.icon}
-            color={theme.colors.typography}
-          />
-          <Text style={styles.title}>Gunakan Aplikasi Mobile</Text>
-          <Text style={styles.message}>
-            Administrator mewajibkan anda untuk menggunakan aplikasi android.{" "}
-            <Link
-              style={[styles.highlight, { textDecorationLine: "underline" }]}
-              href="https://enpitsu.my.id/android.apk"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Unduh disini
-            </Link>{" "}
-            untuk melanjutkan instalasi dan penggunaan aplikasi.
-          </Text>
+      <>
+        <Head>
+          <title>Wajib gunakan aplikasi android | えんぴつ</title>
+        </Head>
+
+        <View style={styles.container}>
+          <View style={styles.card}>
+            <Ionicons
+              name="phone-portrait-outline"
+              size={64}
+              style={styles.icon}
+              color={theme.colors.typography}
+            />
+            <Text style={styles.title}>Gunakan Aplikasi Mobile</Text>
+            <Text style={styles.message}>
+              Administrator mewajibkan anda untuk menggunakan aplikasi android.{" "}
+              <Link
+                style={[styles.highlight, { textDecorationLine: "underline" }]}
+                href="https://drive.google.com/drive/folders/1uSYsRfoccur1UJ8ZDch9h6fOmc00jhUS?usp=sharing"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Unduh disini
+              </Link>{" "}
+              untuk melanjutkan instalasi dan penggunaan aplikasi.
+            </Text>
+          </View>
         </View>
-      </View>
+      </>
     );
   }
 

@@ -11,13 +11,14 @@ import {
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { reloadAppAsync } from "expo";
 import { router } from "expo-router";
+import Head from "expo-router/head";
 import { ModalUniversal } from "@/components/modal-universal";
 import {
   useAuthStore,
   useStudentAnswerStore,
+  useStudentSubmitHistory,
   useThemeStorage,
 } from "@/hooks/useStorage";
-import { useStudentSubmitHistory } from "@/hooks/useStorage.web";
 import { toast } from "@/lib/sonner";
 import { useTRPC } from "@/lib/trpc";
 import { useQueryClient } from "@tanstack/react-query";
@@ -122,166 +123,172 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.header}>
-          <Text style={styles.title}>Pengaturan</Text>
-          <Text style={styles.description}>
-            Kelola konfigurasi aplikasi dan sesi anda.
-          </Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tampilan Aplikasi</Text>
-
-          <View style={styles.card}>
-            <ThemeOption
-              label="Ikuti Sistem"
-              value="system"
-              description="Menyesuaikan dengan preferensi perangkat anda"
-              current={currentTheme}
-              onSelect={setTheme}
-            />
-            <View style={styles.separator} />
-            <ThemeOption
-              label="Mode Terang"
-              value="light"
-              current={currentTheme}
-              onSelect={setTheme}
-            />
-            <View style={styles.separator} />
-            <ThemeOption
-              label="Mode Gelap"
-              value="dark"
-              current={currentTheme}
-              onSelect={setTheme}
-            />
+    <>
+      <Head>
+        <title>Pengaturan | えんぴつ</title>
+      </Head>
+      <View style={styles.container}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
+            <Text style={styles.title}>Pengaturan</Text>
+            <Text style={styles.description}>
+              Kelola konfigurasi aplikasi dan sesi anda.
+            </Text>
           </View>
 
-          <Text style={styles.helperText}>
-            Pilih "Ikuti Sistem" jika Anda ingin aplikasi otomatis berubah warna
-            saat HP Anda berganti mode terang/gelap.
-          </Text>
-        </View>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Tampilan Aplikasi</Text>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Identitas Sekolah</Text>
-          <View style={styles.card}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Nama Instansi</Text>
-              <TextInput
-                style={[styles.input, styles.inputDisabled]}
-                value={instanceName || "-"}
-                editable={false}
+            <View style={styles.card}>
+              <ThemeOption
+                label="Ikuti Sistem"
+                value="system"
+                description="Menyesuaikan dengan preferensi perangkat anda"
+                current={currentTheme}
+                onSelect={setTheme}
+              />
+              <View style={styles.separator} />
+              <ThemeOption
+                label="Mode Terang"
+                value="light"
+                current={currentTheme}
+                onSelect={setTheme}
+              />
+              <View style={styles.separator} />
+              <ThemeOption
+                label="Mode Gelap"
+                value="dark"
+                current={currentTheme}
+                onSelect={setTheme}
               />
             </View>
-            <View style={styles.separator} />
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>NPSN</Text>
-              <TextInput
-                style={[styles.input, styles.inputDisabled]}
-                value={npsn?.toString() || "-"}
-                editable={false}
-              />
-              <Text style={styles.helperText}>
-                Ingin mengganti NPSN? Anda harus keluar (Logout) terlebih
-                dahulu.
-              </Text>
-            </View>
+
+            <Text style={styles.helperText}>
+              Pilih "Ikuti Sistem" jika Anda ingin aplikasi otomatis berubah
+              warna saat HP Anda berganti mode terang/gelap.
+            </Text>
           </View>
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Akses</Text>
-          <View style={styles.card}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Token Akses</Text>
-              <View style={styles.row}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Identitas Sekolah</Text>
+            <View style={styles.card}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Nama Instansi</Text>
                 <TextInput
-                  style={[styles.input, { flex: 1 }]}
-                  value={localToken}
-                  onChangeText={setLocalToken}
-                  placeholder="Masukkan token baru"
-                  placeholderTextColor="#a1a1aa"
-                  editable={true}
-                  onFocus={() => setIsEditingToken(true)}
-                  onSubmitEditing={handleSaveToken}
-                  returnKeyType="done"
+                  style={[styles.input, styles.inputDisabled]}
+                  value={instanceName || "-"}
+                  editable={false}
                 />
               </View>
-            </View>
-            {isEditingToken && localToken !== token && (
-              <View style={styles.actionRow}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setLocalToken(token || "");
-                    setIsEditingToken(false);
-                  }}
-                  style={styles.cancelButton}
-                >
-                  <Text style={styles.cancelButtonText}>Batal</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleSaveToken}
-                  style={styles.saveButton}
-                >
-                  <Text style={styles.saveButtonText}>Simpan Token</Text>
-                </TouchableOpacity>
+              <View style={styles.separator} />
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>NPSN</Text>
+                <TextInput
+                  style={[styles.input, styles.inputDisabled]}
+                  value={npsn?.toString() || "-"}
+                  editable={false}
+                />
+                <Text style={styles.helperText}>
+                  Ingin mengganti NPSN? Anda harus keluar (Logout) terlebih
+                  dahulu.
+                </Text>
               </View>
-            )}
+            </View>
           </View>
-        </View>
 
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: "#ef4444" }]}>
-            Sesi Anda
-          </Text>
-          <View style={[styles.card, { borderColor: "#fecaca" }]}>
-            <Text style={styles.warningText}>
-              Logout akan menghapus semua riwayat data yang tersimpan di
-              perangkat ini. Pastikan anda sudah screenshot untuk berjaga-jaga.
-              Anda dapat masuk kembali menggunakan kredensial yang sama.
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Akses</Text>
+            <View style={styles.card}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Token Akses</Text>
+                <View style={styles.row}>
+                  <TextInput
+                    style={[styles.input, { flex: 1 }]}
+                    value={localToken}
+                    onChangeText={setLocalToken}
+                    placeholder="Masukkan token baru"
+                    placeholderTextColor="#a1a1aa"
+                    editable={true}
+                    onFocus={() => setIsEditingToken(true)}
+                    onSubmitEditing={handleSaveToken}
+                    returnKeyType="done"
+                  />
+                </View>
+              </View>
+              {isEditingToken && localToken !== token && (
+                <View style={styles.actionRow}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setLocalToken(token || "");
+                      setIsEditingToken(false);
+                    }}
+                    style={styles.cancelButton}
+                  >
+                    <Text style={styles.cancelButtonText}>Batal</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleSaveToken}
+                    style={styles.saveButton}
+                  >
+                    <Text style={styles.saveButtonText}>Simpan Token</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: "#ef4444" }]}>
+              Sesi Anda
             </Text>
-            <TouchableOpacity
-              style={styles.logoutButton}
-              onPress={handleLogout}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.logoutButtonText}>Logout</Text>
-            </TouchableOpacity>
+            <View style={[styles.card, { borderColor: "#fecaca" }]}>
+              <Text style={styles.warningText}>
+                Logout akan menghapus semua riwayat data yang tersimpan di
+                perangkat ini. Pastikan anda sudah screenshot untuk
+                berjaga-jaga. Anda dapat masuk kembali menggunakan kredensial
+                yang sama.
+              </Text>
+              <TouchableOpacity
+                style={styles.logoutButton}
+                onPress={handleLogout}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.logoutButtonText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
 
-      <ModalUniversal
-        visible={logoutModalVisible}
-        onRequestClose={() => setLogoutModalVisible(false)}
-        title="Logout"
-        description="Apakah anda yakin ingin keluar? Riwayat pengerjaan lokal akan hilang. Anda dapat masuk kembali menggunakan token akses yang sama."
-        footer={
-          <>
-            <TouchableOpacity
-              style={styles.modalCancelButton}
-              onPress={() => setLogoutModalVisible(false)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.modalCancelButtonText}>Batal</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.modalLogoutButton}
-              onPress={confirmLogout}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.modalLogoutButtonText}>Keluar</Text>
-            </TouchableOpacity>
-          </>
-        }
-      />
-    </View>
+        <ModalUniversal
+          visible={logoutModalVisible}
+          onRequestClose={() => setLogoutModalVisible(false)}
+          title="Logout"
+          description="Apakah anda yakin ingin keluar? Riwayat pengerjaan lokal akan hilang. Anda dapat masuk kembali menggunakan token akses yang sama."
+          footer={
+            <>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setLogoutModalVisible(false)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.modalCancelButtonText}>Batal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalLogoutButton}
+                onPress={confirmLogout}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.modalLogoutButtonText}>Keluar</Text>
+              </TouchableOpacity>
+            </>
+          }
+        />
+      </View>
+    </>
   );
 }
 

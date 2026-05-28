@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
+import Head from "expo-router/head";
 import { fetch } from "expo/fetch";
 import { useAuthStore } from "@/hooks/useStorage";
 import { toast } from "@/lib/sonner";
@@ -107,25 +108,31 @@ export default function LoginScreen() {
   const [settings, setSettings] = useState<AdminResponse | null>(null);
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
-      <StatusBar barStyle="default" />
-      <View style={styles.card}>
-        <BrandingHeader />
-        {!honEssence || !settings ? (
-          <GetSchoolInfo
-            onComplete={(h, s) => {
-              setHonEssence(h);
-              setSettings(s);
-            }}
-          />
-        ) : (
-          <ActualLogin honEssence={honEssence} settings={settings} />
-        )}
-      </View>
-    </KeyboardAvoidingView>
+    <>
+      <Head>
+        <title>Login terlebih dahulu | えんぴつ</title>
+      </Head>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+      >
+        <StatusBar barStyle="default" />
+        <View style={styles.card}>
+          <BrandingHeader />
+          {!honEssence || !settings ? (
+            <GetSchoolInfo
+              onComplete={(h, s) => {
+                setHonEssence(h);
+                setSettings(s);
+              }}
+            />
+          ) : (
+            <ActualLogin honEssence={honEssence} settings={settings} />
+          )}
+        </View>
+      </KeyboardAvoidingView>
+    </>
   );
 }
 

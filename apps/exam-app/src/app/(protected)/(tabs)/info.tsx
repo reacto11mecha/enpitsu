@@ -1,5 +1,6 @@
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
+import Head from "expo-router/head";
 import { Identity } from "@/components/identity";
 import { useStudentSubmitHistory } from "@/hooks/useStorage";
 import { useTRPC } from "@/lib/trpc";
@@ -16,98 +17,103 @@ export default function AboutScreen() {
   const { questions } = useStudentSubmitHistory();
 
   return (
-    <View style={styles.container}>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={[styles.scrollContent, { flexGrow: 1 }]}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={studentQuery.isRefetching}
-            onRefresh={() => studentQuery.refetch()}
-            colors={[theme.colors.primary]}
-            tintColor={theme.colors.primary}
-          />
-        }
-      >
-        <View style={styles.section}>
-          <Identity
-            title="Identitas Anda"
-            error={studentQuery.error}
-            isPending={studentQuery.isPending}
-            student={studentQuery.data?.student}
-          />
-        </View>
+    <>
+      <Head>
+        <title>Informasi | えんぴつ</title>
+      </Head>
+      <View style={styles.container}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={[styles.scrollContent, { flexGrow: 1 }]}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={studentQuery.isRefetching}
+              onRefresh={() => studentQuery.refetch()}
+              colors={[theme.colors.primary]}
+              tintColor={theme.colors.primary}
+            />
+          }
+        >
+          <View style={styles.section}>
+            <Identity
+              title="Identitas Anda"
+              error={studentQuery.error}
+              isPending={studentQuery.isPending}
+              student={studentQuery.data?.student}
+            />
+          </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Riwayat Ujian</Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Riwayat Ujian</Text>
 
-          {questions.length > 0 ? (
-            <View style={styles.listContainer}>
-              {questions.map((item) => (
-                <View key={item.questionId} style={styles.card}>
-                  <View style={styles.cardHeader}>
-                    <Text style={styles.cardTitle}>{item.title}</Text>
-                    <View style={styles.badge}>
-                      <Text style={styles.badgeText}>{item.slug}</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.separator} />
-
-                  <View style={styles.cardContent}>
-                    <View style={styles.infoRow}>
-                      <Text style={styles.infoLabel}>Waktu Mulai</Text>
-                      <Text style={styles.infoValue}>
-                        {format(item.checkIn, "dd MMMM yyyy, HH:mm:ss", {
-                          locale: id,
-                        })}
-                      </Text>
+            {questions.length > 0 ? (
+              <View style={styles.listContainer}>
+                {questions.map((item) => (
+                  <View key={item.questionId} style={styles.card}>
+                    <View style={styles.cardHeader}>
+                      <Text style={styles.cardTitle}>{item.title}</Text>
+                      <View style={styles.badge}>
+                        <Text style={styles.badgeText}>{item.slug}</Text>
+                      </View>
                     </View>
 
-                    <View style={styles.infoRow}>
-                      <Text style={styles.infoLabel}>Waktu Selesai</Text>
-                      <Text style={styles.infoValue}>
-                        {format(item.submittedAt, "dd MMMM yyyy, HH:mm:ss", {
-                          locale: id,
-                        })}
-                      </Text>
-                    </View>
+                    <View style={styles.separator} />
 
-                    <View style={styles.infoRow}>
-                      <Text style={styles.infoLabel}>Durasi Pengerjaan</Text>
-                      <Text style={styles.infoValue}>
-                        {formatDuration(
-                          intervalToDuration({
-                            start: new Date(item.checkIn),
-                            end: new Date(item.submittedAt),
-                          }),
-                          {
+                    <View style={styles.cardContent}>
+                      <View style={styles.infoRow}>
+                        <Text style={styles.infoLabel}>Waktu Mulai</Text>
+                        <Text style={styles.infoValue}>
+                          {format(item.checkIn, "dd MMMM yyyy, HH:mm:ss", {
                             locale: id,
-                            format: ["hours", "minutes", "seconds"],
-                          },
-                        )}
-                      </Text>
+                          })}
+                        </Text>
+                      </View>
+
+                      <View style={styles.infoRow}>
+                        <Text style={styles.infoLabel}>Waktu Selesai</Text>
+                        <Text style={styles.infoValue}>
+                          {format(item.submittedAt, "dd MMMM yyyy, HH:mm:ss", {
+                            locale: id,
+                          })}
+                        </Text>
+                      </View>
+
+                      <View style={styles.infoRow}>
+                        <Text style={styles.infoLabel}>Durasi Pengerjaan</Text>
+                        <Text style={styles.infoValue}>
+                          {formatDuration(
+                            intervalToDuration({
+                              start: new Date(item.checkIn),
+                              end: new Date(item.submittedAt),
+                            }),
+                            {
+                              locale: id,
+                              format: ["hours", "minutes", "seconds"],
+                            },
+                          )}
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <View style={styles.placeholderCard}>
-              <Text style={styles.placeholderTitle}>
-                Belum ada riwayat ditampilkan
-              </Text>
-              <Text style={styles.placeholderText}>
-                Halaman ini nantinya akan menampilkan daftar soal yang telah
-                Anda kerjakan, lengkap dengan detail nama soal, kode soal, waktu
-                mulai, waktu selesai, dan durasi pengerjaan.
-              </Text>
-            </View>
-          )}
-        </View>
-      </ScrollView>
-    </View>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.placeholderCard}>
+                <Text style={styles.placeholderTitle}>
+                  Belum ada riwayat ditampilkan
+                </Text>
+                <Text style={styles.placeholderText}>
+                  Halaman ini nantinya akan menampilkan daftar soal yang telah
+                  Anda kerjakan, lengkap dengan detail nama soal, kode soal,
+                  waktu mulai, waktu selesai, dan durasi pengerjaan.
+                </Text>
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      </View>
+    </>
   );
 }
 

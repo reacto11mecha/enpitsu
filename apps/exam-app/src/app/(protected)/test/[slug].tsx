@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useUnistyles } from "react-native-unistyles";
 import { useKeepAwake } from "expo-keep-awake";
 import { router, useLocalSearchParams } from "expo-router";
+import Head from "expo-router/head";
 import { ActualTest } from "@/components/exam/actual-test";
 import { Disqualification } from "@/components/exam/disqualification";
 import { ErrorStatus, LoadingStatus } from "@/components/exam/status-interface";
@@ -162,66 +163,93 @@ export default function TestPage() {
   // 1. Loading
   if (getQuestionMutation.isPending && !examData) {
     return (
-      <LoadingStatus
-        modalVisible={alertModal.visible}
-        closeModal={closeAlert}
-        modalTitle={alertModal.title}
-        modalDescription={alertModal.description}
-        modalButtons={alertModal.buttons}
-      />
+      <>
+        <Head>
+          <title>Memuat data soal, mohon tunggu | えんぴつ</title>
+        </Head>
+        <LoadingStatus
+          modalVisible={alertModal.visible}
+          closeModal={closeAlert}
+          modalTitle={alertModal.title}
+          modalDescription={alertModal.description}
+          modalButtons={alertModal.buttons}
+        />
+      </>
     );
   }
 
   // 2. Error / No Data (Ditangani oleh Alert Modal di atas, tapi return view kosong biar tidak crash)
   if (!examData) {
     return (
-      <ErrorStatus
-        closeModal={closeAlert}
-        modalTitle={alertModal.title}
-        modalDescription={alertModal.description}
-        modalButtons={alertModal.buttons}
-      />
+      <>
+        <Head>
+          <title>Terjai error | えんぴつ</title>
+        </Head>
+        <ErrorStatus
+          closeModal={closeAlert}
+          modalTitle={alertModal.title}
+          modalDescription={alertModal.description}
+          modalButtons={alertModal.buttons}
+        />
+      </>
     );
   }
 
   // 3. Sukses Submit
   if (submitMutation.isSuccess && examData) {
     return (
-      <SuccessSubmit
-        slug={slug}
-        title={examData.title}
-        checkIn={submitMutation.data.checkIn}
-        submittedAt={submitMutation.data.submittedAt}
-      />
+      <>
+        <Head>
+          <title>Berhasil submit soal {examData.title} | えんぴつ</title>
+        </Head>
+        <SuccessSubmit
+          slug={slug}
+          title={examData.title}
+          checkIn={submitMutation.data.checkIn}
+          submittedAt={submitMutation.data.submittedAt}
+        />
+      </>
     );
   }
 
   // 4. Diskualifikasi
   if (dishonestyCount > 2) {
     return (
-      <Disqualification
-        pendingSubmit={blocklistMutation.isPending}
-        triggerBlocklist={triggerBlocklist}
-      />
+      <>
+        <Head>
+          <title>Anda telah didiskualifikasi!</title>
+        </Head>
+
+        <Disqualification
+          pendingSubmit={blocklistMutation.isPending}
+          triggerBlocklist={triggerBlocklist}
+        />
+      </>
     );
   }
 
   // 5. Main Exam View
   return (
-    <ActualTest
-      examData={examData}
-      currentAnswerSession={currentAnswerSession}
-      slug={slug}
-      dishonestyCount={dishonestyCount}
-      submitPending={submitMutation.isPending}
-      triggerRefresh={triggerRefresh}
-      submitAnswer={submitAnswer}
-      showAlert={showAlert}
-      modalVisible={alertModal.visible}
-      closeModal={closeAlert}
-      modalTitle={alertModal.title}
-      modalDescription={alertModal.description}
-      modalButtons={alertModal.buttons}
-    />
+    <>
+      <Head>
+        <title>{examData.title} | えんぴつ</title>
+      </Head>
+
+      <ActualTest
+        examData={examData}
+        currentAnswerSession={currentAnswerSession}
+        slug={slug}
+        dishonestyCount={dishonestyCount}
+        submitPending={submitMutation.isPending}
+        triggerRefresh={triggerRefresh}
+        submitAnswer={submitAnswer}
+        showAlert={showAlert}
+        modalVisible={alertModal.visible}
+        closeModal={closeAlert}
+        modalTitle={alertModal.title}
+        modalDescription={alertModal.description}
+        modalButtons={alertModal.buttons}
+      />
+    </>
   );
 }

@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
+import Head from "expo-router/head";
 import { Identity } from "@/components/identity";
 import { ScanOrInputQuestionSlug } from "@/components/scan-or-input-question-slug";
 import { useTRPC } from "@/lib/trpc";
@@ -23,55 +24,62 @@ export default function HomeScreen() {
   const [isCorrect, setCorrect] = useState(false);
 
   return (
-    <View style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}
-      >
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={studentQuery.isRefetching}
-              onRefresh={() => studentQuery.refetch()}
-              colors={[theme.colors.primary]}
-              tintColor={theme.colors.primary}
-            />
-          }
+    <>
+      <Head>
+        <title>Beranda | えんぴつ</title>
+      </Head>
+      <View style={styles.container}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.keyboardView}
         >
-          <View style={styles.contentContainer}>
-            <View style={styles.section}>
-              <Identity
-                title="Sebelum mengerjakan,"
-                error={studentQuery.error}
-                isPending={studentQuery.isPending}
-                student={studentQuery.data?.student}
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={studentQuery.isRefetching}
+                onRefresh={() => studentQuery.refetch()}
+                colors={[theme.colors.primary]}
+                tintColor={theme.colors.primary}
               />
-            </View>
-
-            {!isCorrect ? (
-              <View style={styles.actionContainer}>
-                <TouchableOpacity
-                  onPress={() => setCorrect(true)}
-                  style={styles.primaryButton}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.primaryButtonText}>Ya, sudah benar</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.inputSection}>
-                <ScanOrInputQuestionSlug
-                  resetCorrect={() => setCorrect(false)}
+            }
+          >
+            <View style={styles.contentContainer}>
+              <View style={styles.section}>
+                <Identity
+                  title="Sebelum mengerjakan,"
+                  error={studentQuery.error}
+                  isPending={studentQuery.isPending}
+                  student={studentQuery.data?.student}
                 />
               </View>
-            )}
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+
+              {!isCorrect ? (
+                <View style={styles.actionContainer}>
+                  <TouchableOpacity
+                    onPress={() => setCorrect(true)}
+                    style={styles.primaryButton}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.primaryButtonText}>
+                      Ya, sudah benar
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.inputSection}>
+                  <ScanOrInputQuestionSlug
+                    resetCorrect={() => setCorrect(false)}
+                  />
+                </View>
+              )}
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
+    </>
   );
 }
 
