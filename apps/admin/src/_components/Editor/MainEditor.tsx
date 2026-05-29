@@ -44,6 +44,7 @@ export function MainEditor({
   roomName,
   showName = false,
   cursorColor,
+  isQuestion = true,
   url,
   children,
   ref,
@@ -52,6 +53,7 @@ export function MainEditor({
   roomName: string;
   showName?: boolean;
   cursorColor: string;
+  isQuestion?: boolean;
   url: string;
   children?: React.ReactNode;
   ref?: React.RefObject<EditorRefApi>;
@@ -66,7 +68,6 @@ export function MainEditor({
       type: "hocuspocus",
       options: {
         name: roomName,
-        // Ubah url provider sebelum naik production
         url,
       },
     };
@@ -154,6 +155,7 @@ export function MainEditor({
     <Plate editor={editor}>
       <CollaborativeEditor
         showName={showName}
+        isQuestion={isQuestion}
         cursorColor={cursorColor}
         username={username}
       >
@@ -168,10 +170,12 @@ function CollaborativeEditor({
   username,
   showName,
   children,
+  isQuestion,
 }: {
   cursorColor: string;
   username: string;
   showName: boolean;
+  isQuestion: boolean;
   children: React.ReactNode;
 }) {
   const editor = useEditorRef();
@@ -237,7 +241,11 @@ function CollaborativeEditor({
         <Editor
           autoFocusOnEditable={false}
           className="pb-7"
-          placeholder="Klik disini untuk mengetikkan pertanyaan"
+          placeholder={
+            isQuestion
+              ? "Klik disini untuk mengetikkan pertanyaan"
+              : "Klik disini untuk mengetikkan jawaban"
+          }
         />
       </EditorContainer>
     </div>

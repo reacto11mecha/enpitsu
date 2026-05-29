@@ -108,6 +108,7 @@ export function AnswerOptions({
           <MainEditor
             key={option.idx}
             cursorColor={cursorColor}
+            isQuestion={false}
             // @ts-expect-error udah lah begini aja
             ref={(el: EditorRefApi) => setRef(option.idx, el)}
             roomName={option.roomName}

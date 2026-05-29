@@ -661,16 +661,8 @@ export const questionRouter = {
       await ctx.db.transaction(async (tx) => {
         const currentQuestion = await tx.query.questions.findFirst({
           where: eq(schema.questions.id, input.id),
-          columns: {
-            slug: true,
-          },
-          with: {
-            responds: {
-              columns: {
-                id: true,
-              },
-            },
-          },
+          columns: { slug: true },
+          with: { responds: { columns: { id: true } } },
         });
 
         if (!currentQuestion)
@@ -678,6 +670,21 @@ export const questionRouter = {
             code: "NOT_FOUND",
             message: "Soal tidak dtemukan!",
           });
+
+        await tx.transaction(async (tx2) => {
+          for (const respond of currentQuestion.responds) {
+            await tx2
+              .delete(schema.studentRespondChoices)
+              .where(eq(schema.studentRespondChoices.respondId, respond.id));
+            await tx2
+              .delete(schema.studentRespondEssays)
+              .where(eq(schema.studentRespondEssays.respondId, respond.id));
+
+            await tx2
+              .delete(schema.studentResponds)
+              .where(eq(schema.studentResponds.id, respond.id));
+          }
+        });
 
         await tx
           .delete(schema.allowLists)
@@ -691,20 +698,6 @@ export const questionRouter = {
         await tx
           .delete(schema.essays)
           .where(eq(schema.essays.questionId, input.id));
-
-        await tx.transaction(async (tx2) => {
-          for (const respond of currentQuestion.responds) {
-            await tx2
-              .delete(schema.studentResponds)
-              .where(eq(schema.studentResponds.id, respond.id));
-            await tx2
-              .delete(schema.studentRespondChoices)
-              .where(eq(schema.studentRespondChoices.respondId, respond.id));
-            await tx2
-              .delete(schema.studentRespondEssays)
-              .where(eq(schema.studentRespondEssays.respondId, respond.id));
-          }
-        });
 
         await tx
           .delete(schema.questions)
