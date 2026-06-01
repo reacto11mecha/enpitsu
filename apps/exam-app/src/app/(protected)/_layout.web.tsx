@@ -70,7 +70,7 @@ export default function ProtectedWebLayout() {
     if (typeof window !== "undefined" && typeof navigator !== "undefined") {
       const hasTouch = navigator.maxTouchPoints > 0;
 
-      if (ua.includes("HeyTapBrowser")) {
+      if (ua.includes("HeyTapBrowser") || ua.includes("HiBrowser")) {
         spoofed = true;
       }
 
