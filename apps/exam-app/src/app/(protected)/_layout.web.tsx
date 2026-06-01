@@ -57,14 +57,31 @@ export default function ProtectedWebLayout() {
     }),
   );
 
-  const { browser, device, osName } = useMemo(() => {
+  const { browser, device, osName, isSpoofedAndroid } = useMemo(() => {
     const parser = new UAParser();
 
     const browser = parser.getBrowser();
     const device = parser.getDevice();
     const { name } = parser.getOS();
+    const ua = parser.getUA();
 
-    return { browser, device, osName: name };
+    let spoofed = false;
+
+    if (typeof window !== "undefined" && typeof navigator !== "undefined") {
+      const hasTouch = navigator.maxTouchPoints > 0;
+
+      if (ua.includes("HeyTapBrowser")) {
+        spoofed = true;
+      }
+
+      const claimsLinuxDesktop = ua.includes("X11; Linux x86_64");
+
+      if (claimsLinuxDesktop && hasTouch) {
+        spoofed = true;
+      }
+    }
+
+    return { browser, device, osName: name, isSpoofedAndroid: spoofed };
   }, []);
 
   if (
@@ -124,7 +141,9 @@ export default function ProtectedWebLayout() {
     );
   }
 
-  if (osName === "Android" && enforceMobileIfAndroid) {
+  const actuallyAndroid = osName === "Android" || isSpoofedAndroid;
+
+  if (actuallyAndroid && enforceMobileIfAndroid) {
     return (
       <>
         <Head>
