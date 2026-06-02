@@ -90,6 +90,8 @@ export function ActualTest({
   const savedTranslateY = useSharedValue(0);
 
   const pinchGesture = Gesture.Pinch()
+    // Matikan deteksi pinch di Web jika belum masuk mode zoom
+    .enabled(Platform.OS === "web" ? isZoomMode : true)
     .onStart(() => {
       // Nonaktifkan scroll pada ScrollView saat mulai mencubit
       runOnJS(setIsZoomMode)(true);
@@ -617,7 +619,19 @@ export function ActualTest({
         {currentQuestion ? (
           <GestureDetector gesture={composedGesture}>
             <Animated.View
-              style={[styles.questionCard, animatedStyle, { width: "100%" }]}
+              style={[
+                styles.questionCard,
+                animatedStyle,
+                {
+                  width: "100%",
+                  touchAction:
+                    Platform.OS === "web"
+                      ? isZoomMode
+                        ? "none"
+                        : "pan-y"
+                      : "auto",
+                },
+              ]}
             >
               <View style={styles.questionHeader}>
                 <Text style={styles.questionNumber}>
