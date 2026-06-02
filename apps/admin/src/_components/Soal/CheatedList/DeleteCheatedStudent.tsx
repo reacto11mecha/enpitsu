@@ -336,7 +336,7 @@ export const AggregateDeleteCheatedStudent = () => {
             <div className="flex flex-col gap-2">
               <DialogDescription className="text-start">
                 Jika anda yakin dan ingin melanjutkan, ketik{" "}
-                <b className="select-none">
+                <b>
                   saya ingin menghapus seluruh data kecurangan peserta pada
                   aplikasi ini
                 </b>{" "}

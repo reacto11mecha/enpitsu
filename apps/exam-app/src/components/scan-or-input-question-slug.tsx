@@ -457,35 +457,35 @@ export const Precaution = ({
           >
             <Text style={styles.cancelButtonText}>Batal</Text>
           </TouchableOpacity>
-          {scrolledToBottom ? (
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => {
-                if (
-                  Platform.OS === "android" &&
-                  getBlacklistedApps().length > 0
-                ) {
-                  return;
-                }
+          {/*{scrolledToBottom ? (*/}
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => {
+              if (
+                Platform.OS === "android" &&
+                getBlacklistedApps().length > 0
+              ) {
+                return;
+              }
 
-                if (isSplitScreenActive()) {
-                  Alert.alert(
-                    "Anda terdeteksi menggunakan split screen!",
-                    "Mohon tutup aplikasi split screen sebelum melanjutkan.",
-                  );
+              if (isSplitScreenActive()) {
+                Alert.alert(
+                  "Anda terdeteksi menggunakan split screen!",
+                  "Mohon tutup aplikasi split screen sebelum melanjutkan.",
+                );
 
-                  return;
-                }
+                return;
+              }
 
-                handleClose();
+              handleClose();
 
-                router.replace(`/test/${data?.slug}`);
-              }}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.actionButtonText}>Kerjakan</Text>
-            </TouchableOpacity>
-          ) : (
+              router.replace(`/test/${data?.slug}`);
+            }}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.actionButtonText}>Kerjakan</Text>
+          </TouchableOpacity>
+          {/*) : (
             <TouchableOpacity
               style={[styles.actionButton, styles.buttonDisabled]}
               disabled={true}
@@ -493,7 +493,7 @@ export const Precaution = ({
             >
               <Text style={styles.actionButtonText}>Kerjakan</Text>
             </TouchableOpacity>
-          )}
+          )}*/}
         </>
       }
     >
