@@ -84,11 +84,7 @@ export default function ProtectedWebLayout() {
     return { browser, device, osName: name, isSpoofedAndroid: spoofed };
   }, []);
 
-  if (
-    (!device.type && browser.name !== "Chrome") ||
-    ((device.type === "mobile" || device.type === "tablet") &&
-      browser.name !== "Mobile Chrome")
-  ) {
+  if (!browser.name || !browser.name.includes("Chrome")) {
     return (
       <>
         <Head>
