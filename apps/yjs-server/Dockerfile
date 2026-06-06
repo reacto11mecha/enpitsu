@@ -1,7 +1,7 @@
 FROM node:20 AS base
 
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN <<EOF 
+RUN <<EOF
   apt-get update -y
   apt-get install libc6 libc++1 bash -y
   npm install -g pnpm@10.14.0
@@ -30,7 +30,7 @@ COPY --from=pruned-repo /app/out/full/ .
 COPY turbo.json turbo.json
 
 ## This would be useful for browser environment variables that are actually baked at build time and you aren't passing them in otherwise.
-# COPY .env.production .env.production  
+# COPY .env.production .env.production
 RUN CI=true SKIP_ENV_VALIDATION=true turbo run build --filter=@enpitsu/yjs-server...
 
 WORKDIR /app/apps/yjs-server
@@ -50,7 +50,7 @@ EOF
 
 FROM base AS runner
 # Don't run production as root
-RUN <<EOF 
+RUN <<EOF
   addgroup --system --gid 1001 nodejs
   adduser --system --uid 1001 processor
 EOF
@@ -66,4 +66,5 @@ COPY <<EOF /yjs-server/index.js
 import "@enpitsu/yjs-server";
 EOF
 
-CMD ["node", "index.js"]
+# ADD THE --import FLAG HERE
+CMD ["node", "--import", "@enpitsu/yjs-server/dist/instrumentation.js", "index.js"]

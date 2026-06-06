@@ -1,3 +1,4 @@
+import { SpanStatusCode, trace } from "@opentelemetry/api";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 
 import { appRouter, createTRPCContext } from "@enpitsu/api";
@@ -35,6 +36,15 @@ const handler = auth(async (req) => {
       }),
     onError({ error, path }) {
       console.error(`>>> tRPC Error on '${path}'`, error);
+
+      const span = trace.getActiveSpan();
+      if (span) {
+        span.recordException(error);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+      }
     },
   });
 

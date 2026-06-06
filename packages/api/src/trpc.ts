@@ -6,6 +6,7 @@
  * tl;dr - this is where all the tRPC server stuff is created and plugged in.
  * The pieces you will need to use are documented accordingly near the end
  */
+import { SpanStatusCode, trace } from "@opentelemetry/api";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
@@ -130,13 +131,58 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 });
 
 /**
+ * Middleware for OpenTelemetry Tracing
+ * Creates a dedicated span for the tRPC procedure and logs any TRPCErrors
+ */
+const otelMiddleware = t.middleware(async ({ path, type, next }) => {
+  const tracer = trace.getTracer("trpc-server");
+
+  // Create a new span named e.g., "trpc mutation admin.rejectPendingUser"
+  return await tracer.startActiveSpan(`trpc ${type} ${path}`, async (span) => {
+    span.setAttribute("trpc.path", path);
+    span.setAttribute("trpc.type", type);
+
+    try {
+      const result = await next();
+
+      // If tRPC handled an error (like throwing a TRPCError), log it
+      if (!result.ok) {
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: result.error.message,
+        });
+        span.recordException(result.error);
+      } else {
+        span.setStatus({ code: SpanStatusCode.OK });
+      }
+
+      return result;
+    } catch (error) {
+      // If a catastrophic unhandled error occurs
+      if (error instanceof Error) {
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        span.recordException(error);
+      }
+      throw error;
+    } finally {
+      span.end();
+    }
+  });
+});
+
+/**
  * Public (unauthed) procedure
  *
  * This is the base piece you use to build new queries and mutations on your
  * tRPC API. It does not guarantee that a user querying is authorized, but you
  * can still access user session data if they are logged in
  */
-export const publicProcedure = t.procedure.use(timingMiddleware);
+export const publicProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(otelMiddleware);
 
 /**
  * Protected (authenticated) procedure
@@ -148,6 +194,7 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
  */
 export const protectedProcedure = t.procedure
   .use(timingMiddleware)
+  .use(otelMiddleware)
   .use(({ ctx, next }) => {
     if (!ctx.session?.user) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
@@ -179,6 +226,7 @@ const enforceUserIsAuthedAsAdmin = t.middleware(({ ctx, next }) => {
 
 export const adminProcedure = t.procedure
   .use(timingMiddleware)
+  .use(otelMiddleware)
   .use(enforceUserIsAuthedAsAdmin);
 
 const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
@@ -260,4 +308,5 @@ const enforceUserIsStudent = t.middleware(async ({ ctx, next }) => {
 
 export const studentProcedure = t.procedure
   .use(timingMiddleware)
+  .use(otelMiddleware)
   .use(enforceUserIsStudent);

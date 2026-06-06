@@ -8,6 +8,9 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
     REDIS_URL: z.string().url(),
+
+    OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url(),
+    OTEL_EXPORTER_OTLP_PROTOCOL: z.string(),
   },
 
   runtimeEnv: process.env,

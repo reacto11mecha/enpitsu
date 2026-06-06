@@ -2,7 +2,7 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
   clean: true,
-  entry: ["./index.ts"],
+  entry: ["./index.ts", "./instrumentation.ts"],
   watch: ["src/**/*.(ts,tsx)"],
   noExternal: ["@enpitsu/db", "@platejs/math", "@enpitsu/redis"],
   external: ["ioredis", "bullmq"],

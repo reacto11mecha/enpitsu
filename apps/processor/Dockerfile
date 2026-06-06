@@ -1,7 +1,7 @@
 FROM node:20 AS base
 
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN <<EOF 
+RUN <<EOF
   apt-get update -y
   apt-get install libc6 libc++1 bash -y
   npm install -g pnpm@10.14.0
@@ -30,7 +30,7 @@ COPY --from=pruned-repo /app/out/full/ .
 COPY turbo.json turbo.json
 
 ## This would be useful for browser environment variables that are actually baked at build time and you aren't passing them in otherwise.
-# COPY .env.production .env.production  
+# COPY .env.production .env.production
 RUN CI=true SKIP_ENV_VALIDATION=true turbo run build --filter=@enpitsu/processor...
 
 WORKDIR /app/apps/processor
@@ -50,7 +50,7 @@ EOF
 
 FROM base AS runner
 # Don't run production as root
-RUN <<EOF 
+RUN <<EOF
   addgroup --system --gid 1001 nodejs
   adduser --system --uid 1001 processor
 EOF
@@ -61,9 +61,35 @@ COPY --from=builder --chown=processor:nodejs /question-processor /question-proce
 
 WORKDIR /question-processor
 
+COPY <<EOF /question-processor/instrumentation.js
+import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
+import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import { resourceFromAttributes } from "@opentelemetry/resources";
+import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs";
+import { NodeSDK } from "@opentelemetry/sdk-node";
+import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
+
+const logExporter = new OTLPLogExporter();
+
+const sdk = new NodeSDK({
+  resource: resourceFromAttributes({
+    [ATTR_SERVICE_NAME]: "enpitsu-question-processor",
+  }),
+  traceExporter: new OTLPTraceExporter(),
+  logRecordProcessor: new BatchLogRecordProcessor(logExporter),
+  instrumentations: [getNodeAutoInstrumentations()],
+});
+
+sdk.start();
+
+process.on("SIGTERM", () => {
+  sdk.shutdown().then(() => console.log("Tracing and Logging terminated"));
+});
+EOF
+
 COPY <<EOF /question-processor/index.js
 "use strict";
-
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -80,4 +106,5 @@ EOF
 RUN mkdir -p /question-processor/logs
 RUN chown -R ${USER}:${USER} /question-processor/logs
 
-CMD ["node", "index.js"]
+# 3. Launch Node with the --import flag for ESM OpenTelemetry support
+CMD ["node", "--import", "./instrumentation.js", "index.js"]
